@@ -1,0 +1,89 @@
+import { useState } from 'react';
+
+const Navbar = () => {
+  const [isOpen, setIsOpen] = useState(false);
+
+  const navLinks = [
+    { name: 'Features', href: '#features' },
+    { name: 'Pricing', href: '#pricing' },
+    { name: 'Resources', href: '#resources' },
+  ];
+
+  return (
+    <header className="sticky top-0 z-50 flex flex-col border-b border-solid border-slate-200 dark:border-[#232f48] bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md">
+      <div className="flex items-center justify-between px-6 py-4 lg:px-20">
+        <a href="/" className="flex items-center gap-3 text-white transition-opacity hover:opacity-80">
+          <div className="size-8 text-primary">
+            <svg fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" stroke="#135bec" stroke-linecap="round" stroke-linejoin="round" stroke-width="3"></path>
+              <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" stroke="#10b981" stroke-linecap="round" stroke-linejoin="round" stroke-width="3"></path>
+            </svg>
+          </div>
+          <h2 className="text-xl font-bold leading-tight tracking-tight">
+            <b><span className="text-[#10b981]">good</span></b>
+            <b><span className="text-[#135bec]"> Link</span></b>
+          </h2>
+        </a>
+
+        {/* Desktop Navigation */}
+        <div className="hidden md:flex flex-1 justify-center">
+          <div className="flex items-center gap-9">
+            {navLinks.map((link) => (
+              <a 
+                key={link.name}
+                className="text-slate-600 dark:text-slate-300 hover:text-primary dark:hover:text-primary transition-colors text-sm font-medium leading-normal" 
+                href={link.href}
+              >
+                {link.name}
+              </a>
+            ))}
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2">
+          {/* Action Buttons - Hidden on mobile, shown in menu */}
+          <div className="hidden sm:flex items-center gap-2">
+            <button className="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-primary hover:bg-primary/90 text-white text-sm font-bold leading-normal tracking-[0.015em] transition-colors shadow-lg shadow-primary/30">
+              <span className="truncate">Login</span>
+            </button>
+          </div>
+
+          {/* Hamburger Menu Token */}
+          <button 
+            onClick={() => setIsOpen(!isOpen)}
+            className="flex md:hidden items-center justify-center size-10 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-[#232f48] transition-colors"
+          >
+            <span className="material-symbols-outlined text-2xl">
+              {isOpen ? 'close' : 'menu'}
+            </span>
+          </button>
+        </div>
+      </div>
+
+      {/* Mobile Menu Overlay */}
+      {isOpen && (
+        <div className="md:hidden flex flex-col border-t border-slate-200 dark:border-[#232f48] bg-background-light dark:bg-background-dark p-6 gap-6 animate-in slide-in-from-top-4 duration-200">
+          <div className="flex flex-col gap-4">
+            {navLinks.map((link) => (
+              <a 
+                key={link.name}
+                onClick={() => setIsOpen(false)}
+                className="text-slate-900 dark:text-white hover:text-primary dark:hover:text-primary transition-colors text-lg font-bold" 
+                href={link.href}
+              >
+                {link.name}
+              </a>
+            ))}
+          </div>
+          <div className="flex flex-col gap-3 pt-6 border-t border-slate-200 dark:border-[#232f48]">
+            <button className="flex w-full cursor-pointer items-center justify-center rounded-lg h-12 bg-primary text-white font-bold transition-colors shadow-lg shadow-primary/30">
+              Login
+            </button>
+          </div>
+        </div>
+      )}
+    </header>
+  );
+};
+
+export default Navbar;

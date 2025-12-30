@@ -1,0 +1,60 @@
+html {
+  scroll-behavior: smooth;
+}
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 222 36% 10%; /* #101622 */
+    --foreground: 210 40% 98%;
+    --card: 222 36% 10%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222 36% 10%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 220 85% 50%; /* #135bec */
+    --primary-foreground: 210 40% 98%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 222 36% 18%; /* #232f48 approx */
+    --input: 222 36% 18%;
+    --ring: 220 85% 50%;
+    --radius: 0.5rem;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border selection:bg-primary selection:text-white;
+  }
+  body {
+    @apply bg-background text-foreground font-display antialiased;
+  }
+}
+
+/* Custom scrollbar for a cleaner tech look */
+::-webkit-scrollbar {
+    width: 8px;
+}
+::-webkit-scrollbar-track {
+    background: #101622; 
+}
+::-webkit-scrollbar-thumb {
+    background: #232f48; 
+    border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: #324467; 
+}
+
+.layout-content-container {
+  @apply mx-auto max-w-[1200px];
+}
