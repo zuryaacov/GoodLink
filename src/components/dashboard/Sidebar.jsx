@@ -20,7 +20,7 @@ const Sidebar = ({ className = "", onLinkClick }) => {
   };
 
   // Base classes with default width if not overridden
-  const baseClasses = `flex flex-col h-screen bg-[#101622] border-r border-[#232f48] pt-6 ${className.includes('w-') ? '' : 'w-64'} ${className}`;
+  const baseClasses = `flex flex-col bg-[#101622] border-r border-[#232f48] pt-6 ${className.includes('w-') ? '' : 'w-64'} ${className.includes('h-') ? '' : 'h-screen'} ${className}`;
 
   return (
     <aside className={baseClasses}>
@@ -39,7 +39,7 @@ const Sidebar = ({ className = "", onLinkClick }) => {
         </Link>
       </div>
 
-      <nav className="flex-1 px-3 flex flex-col gap-1">
+      <nav className="flex-1 px-3 flex flex-col gap-1 overflow-y-auto">
         {sidebarLinks.map((link) => (
           <NavLink
             key={link.name}
