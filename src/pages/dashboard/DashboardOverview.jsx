@@ -60,9 +60,9 @@ const DashboardOverview = () => {
               <thead>
                  <tr className="border-b border-[#232f48] text-slate-400 text-xs uppercase tracking-wider">
                     <th className="p-4 font-medium">Link Name</th>
-                    <th className="p-4 font-medium">Clicks</th>
-                    <th className="p-4 font-medium">Conversions</th>
-                    <th className="p-4 font-medium">Status</th>
+                    <th className="p-4 font-medium text-right md:text-left">Clicks</th>
+                    <th className="p-4 font-medium hidden md:table-cell">Conversions</th>
+                    <th className="p-4 font-medium hidden md:table-cell">Status</th>
                  </tr>
               </thead>
               <tbody className="text-sm">
@@ -70,23 +70,23 @@ const DashboardOverview = () => {
                     <td className="p-4">
                        <div className="flex flex-col">
                           <span className="text-white font-bold">Summer Sale Campaign</span>
-                          <span className="text-slate-500 text-xs">goodlink.ai/summer24</span>
+                          <span className="text-slate-500 text-xs truncate max-w-[150px] md:max-w-none">goodlink.ai/summer24</span>
                        </div>
                     </td>
-                    <td className="p-4 text-white">4,231</td>
-                    <td className="p-4 text-white">312</td>
-                    <td className="p-4"><span className="text-green-400 bg-green-400/10 px-2 py-1 rounded text-xs font-bold">Active</span></td>
+                    <td className="p-4 text-white text-right md:text-left">4,231</td>
+                    <td className="p-4 text-white hidden md:table-cell">312</td>
+                    <td className="p-4 hidden md:table-cell"><span className="text-green-400 bg-green-400/10 px-2 py-1 rounded text-xs font-bold">Active</span></td>
                  </tr>
                  <tr className="border-b border-[#232f48]/50 hover:bg-white/5 transition-colors">
                      <td className="p-4">
                        <div className="flex flex-col">
                           <span className="text-white font-bold">Instagram Bio</span>
-                          <span className="text-slate-500 text-xs">goodlink.ai/ig-bio</span>
+                          <span className="text-slate-500 text-xs truncate max-w-[150px] md:max-w-none">goodlink.ai/ig-bio</span>
                        </div>
                     </td>
-                    <td className="p-4 text-white">2,105</td>
-                    <td className="p-4 text-white">156</td>
-                    <td className="p-4"><span className="text-green-400 bg-green-400/10 px-2 py-1 rounded text-xs font-bold">Active</span></td>
+                    <td className="p-4 text-white text-right md:text-left">2,105</td>
+                    <td className="p-4 text-white hidden md:table-cell">156</td>
+                    <td className="p-4 hidden md:table-cell"><span className="text-green-400 bg-green-400/10 px-2 py-1 rounded text-xs font-bold">Active</span></td>
                  </tr>
               </tbody>
            </table>
