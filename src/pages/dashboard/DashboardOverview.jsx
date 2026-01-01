@@ -26,7 +26,7 @@ const DashboardOverview = () => {
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
         <StatCard 
           title="Total Clicks" 
           value="12,543" 
@@ -49,7 +49,7 @@ const DashboardOverview = () => {
       </div>
 
       {/* Top Links Section */}
-      <div className="bg-[#101622] border border-[#232f48] rounded-2xl p-6">
+      <div className="bg-[#101622] border border-[#232f48] rounded-2xl p-4 md:p-6">
         <div className="flex items-center justify-between mb-6">
            <h2 className="text-xl font-bold text-white">Top Performing Links</h2>
            <button className="text-primary text-sm font-bold hover:underline">View All</button>
