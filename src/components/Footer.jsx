@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 
 const Footer = () => {
   return (
@@ -6,7 +7,7 @@ const Footer = () => {
       <div className="mx-auto max-w-[1200px]">
         <div className="grid grid-cols-2 gap-8 md:grid-cols-4 lg:grid-cols-5">
           <div className="col-span-2 lg:col-span-2 flex flex-col gap-4">
-            <a href="/" className="flex items-center gap-3 text-white transition-opacity hover:opacity-80">
+            <Link to="/" className="flex items-center gap-3 text-white transition-opacity hover:opacity-80">
               <div className="size-10 text-primary">
                 <svg fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                   <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" stroke="#135bec" strokeLinecap="round" strokeLinejoin="round" strokeWidth="3"></path>
@@ -17,7 +18,7 @@ const Footer = () => {
                 <b><span className="text-[#10b981]">Good</span></b>
                 <b><span className="text-[#135bec]"> Link</span></b>
               </h2>
-            </a>
+            </Link>
             <p className="text-sm text-slate-500 dark:text-slate-400 max-w-xs">
               The advanced link management platform for high-performance marketers. Track, optimize, and scale.
             </p>

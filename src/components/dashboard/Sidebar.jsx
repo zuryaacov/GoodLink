@@ -1,5 +1,6 @@
 import React from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useNavigate, Link } from 'react-router-dom';
+import { supabase } from '../../lib/supabase';
 
 const sidebarLinks = [
   { name: 'Overview', href: '/dashboard', icon: 'dashboard' },
@@ -10,10 +11,17 @@ const sidebarLinks = [
 ];
 
 const Sidebar = ({ className = "" }) => {
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    navigate('/');
+  };
+
   return (
     <aside className={`flex flex-col w-64 h-screen bg-[#101622] border-r border-[#232f48] pt-6 ${className}`}>
       <div className="px-6 mb-8">
-        <div className="flex items-center gap-3 text-white">
+        <Link to="/" className="flex items-center gap-3 text-white transition-opacity hover:opacity-80">
           <div className="size-8 text-primary">
             <svg fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
               <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" stroke="#135bec" strokeLinecap="round" strokeLinejoin="round" strokeWidth="3"></path>
@@ -24,7 +32,7 @@ const Sidebar = ({ className = "" }) => {
             <b><span className="text-[#10b981]">Good</span></b>
             <b><span className="text-[#135bec]"> Link</span></b>
           </h2>
-        </div>
+        </Link>
       </div>
 
       <nav className="flex-1 px-3 flex flex-col gap-1">
@@ -47,7 +55,7 @@ const Sidebar = ({ className = "" }) => {
         ))}
       </nav>
 
-      <div className="p-4 border-t border-[#232f48]">
+      <div className="p-4 border-t border-[#232f48] flex flex-col gap-2">
         <div className="flex items-center gap-3 px-3 py-2">
             <div className="size-8 rounded-full bg-gradient-to-tr from-primary to-[#10b981] flex items-center justify-center text-white font-bold text-xs">
                 U
@@ -57,6 +65,14 @@ const Sidebar = ({ className = "" }) => {
                 <span className="text-xs text-slate-500">Free Plan</span>
             </div>
         </div>
+        
+        <button 
+          onClick={handleLogout}
+          className="flex items-center gap-3 px-3 py-2 w-full text-slate-400 hover:text-white hover:bg-white/5 rounded-xl transition-all duration-200 text-sm font-medium"
+        >
+          <span className="material-symbols-outlined text-[20px]">logout</span>
+          Logout
+        </button>
       </div>
     </aside>
   );

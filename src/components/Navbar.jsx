@@ -38,7 +38,7 @@ const Navbar = () => {
   return (
     <header className="sticky top-0 z-50 flex flex-col border-b border-solid border-slate-200 dark:border-[#232f48] bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md">
       <div className="flex items-center justify-between px-6 py-4 lg:px-20">
-        <a href="/" className="flex items-center gap-3 text-white transition-opacity hover:opacity-80">
+        <Link to="/" className="flex items-center gap-3 text-white transition-opacity hover:opacity-80">
           <div className="size-10 text-primary">
             <svg fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
               <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" stroke="#135bec" strokeLinecap="round" strokeLinejoin="round" strokeWidth="3"></path>
@@ -49,7 +49,7 @@ const Navbar = () => {
             <b><span className="text-[#10b981]">Good</span></b>
             <b><span className="text-[#135bec]"> Link</span></b>
           </h2>
-        </a>
+        </Link>
 
         {/* Desktop Navigation */}
         <div className="hidden md:flex flex-1 justify-center">
