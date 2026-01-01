@@ -103,7 +103,7 @@ const Navbar = () => {
         </div>
       </div>
 
-      {/* Mobile Menu Overlay */}
+          {/* Mobile Menu Overlay */}
       {isOpen && (
         <div className="md:hidden flex flex-col border-t border-slate-200 dark:border-[#232f48] bg-background-light dark:bg-background-dark p-6 gap-6 animate-in slide-in-from-top-4 duration-200">
           <div className="flex flex-col gap-4">
@@ -117,11 +117,24 @@ const Navbar = () => {
                 {link.name}
               </a>
             ))}
+            {/* Mobile Dashboard Link when logged in */}
+            {user && (
+              <Link 
+                to="/dashboard"
+                onClick={() => setIsOpen(false)}
+                className="text-slate-900 dark:text-white hover:text-primary dark:hover:text-primary transition-colors text-lg font-bold"
+              >
+                Dashboard
+              </Link>
+            )}
           </div>
           <div className="flex flex-col gap-3 pt-6 border-t border-slate-200 dark:border-[#232f48]">
             {user ? (
               <button 
-                onClick={handleLogout}
+                onClick={() => {
+                  handleLogout();
+                  setIsOpen(false);
+                }}
                 className="flex w-full cursor-pointer items-center justify-center rounded-lg h-12 bg-slate-200 dark:bg-[#232f48] text-slate-900 dark:text-white font-bold transition-colors"
               >
                 Logout

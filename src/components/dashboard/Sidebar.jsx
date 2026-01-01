@@ -10,7 +10,7 @@ const sidebarLinks = [
   { name: 'Analytics', href: '/dashboard/analytics', icon: 'insights' },
 ];
 
-const Sidebar = ({ className = "" }) => {
+const Sidebar = ({ className = "", onLinkClick }) => {
   const navigate = useNavigate();
 
   const handleLogout = async () => {
@@ -45,6 +45,7 @@ const Sidebar = ({ className = "" }) => {
             key={link.name}
             to={link.href}
             end={link.href === '/dashboard'} // Only match exact path for Overview
+            onClick={onLinkClick}
             className={({ isActive }) =>
               `flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium transition-all duration-200 ${
                 isActive
