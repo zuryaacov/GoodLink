@@ -46,7 +46,7 @@ const Navbar = () => {
             </svg>
           </div>
           <h2 className="text-xl font-bold leading-tight tracking-tight">
-            <b><span className="text-[#10b981]">good</span></b>
+            <b><span className="text-[#10b981]">Good</span></b>
             <b><span className="text-[#135bec]"> Link</span></b>
           </h2>
         </a>
