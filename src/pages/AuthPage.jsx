@@ -44,7 +44,7 @@ const AuthPage = () => {
           password
         });
         if (error) throw error;
-        navigate('/');
+        navigate('/dashboard');
       } else if (view === 'signup') {
         if (password !== confirmPassword) {
           throw new Error("Passwords do not match");

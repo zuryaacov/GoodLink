@@ -1,0 +1,55 @@
+import React, { useState } from 'react';
+import { Outlet } from 'react-router-dom';
+import Sidebar from '../components/dashboard/Sidebar';
+
+const DashboardLayout = () => {
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  return (
+    <div className="flex min-h-screen bg-[#0b0f19]">
+      {/* Desktop Sidebar */}
+      <div className="hidden lg:block fixed inset-y-0 left-0 z-50">
+        <Sidebar className="w-64" />
+      </div>
+
+      {/* Main Content Area */}
+      <div className="flex-1 lg:ml-64 flex flex-col min-h-screen">
+        {/* Mobile Header */}
+        <header className="lg:hidden h-16 bg-[#101622] border-b border-[#232f48] flex items-center justify-between px-4 sticky top-0 z-40">
+           <div className="flex items-center gap-2">
+             <div className="size-6 text-primary">
+                <svg fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" stroke="#135bec" strokeLinecap="round" strokeLinejoin="round" strokeWidth="3"></path>
+                  <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" stroke="#10b981" strokeLinecap="round" strokeLinejoin="round" strokeWidth="3"></path>
+                </svg>
+              </div>
+              <span className="font-bold text-white text-lg">GoodLink</span>
+           </div>
+           
+           <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className="text-white p-2">
+             <span className="material-symbols-outlined">{isMobileMenuOpen ? 'close' : 'menu'}</span>
+           </button>
+        </header>
+
+        {/* Mobile Sidebar Overlay */}
+        {isMobileMenuOpen && (
+          <div className="lg:hidden fixed inset-0 z-50 bg-[#0b0f19]">
+             <div className="flex justify-between items-center p-4 border-b border-[#232f48]">
+                <span className="text-white font-bold">Menu</span>
+                <button onClick={() => setIsMobileMenuOpen(false)} className="text-white">
+                  <span className="material-symbols-outlined">close</span>
+                </button>
+             </div>
+             <Sidebar className="w-full h-[calc(100vh-64px)] border-none" />
+          </div>
+        )}
+
+        <main className="flex-1 p-6 overflow-y-auto">
+          <Outlet />
+        </main>
+      </div>
+    </div>
+  );
+};
+
+export default DashboardLayout;

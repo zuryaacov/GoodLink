@@ -70,12 +70,20 @@ const Navbar = () => {
           {/* Action Buttons - Hidden on mobile, shown in menu */}
           <div className="hidden sm:flex items-center gap-2">
             {user ? (
-              <button 
-                onClick={handleLogout}
-                className="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-slate-200 dark:bg-[#232f48] hover:bg-slate-300 dark:hover:bg-[#324467] text-slate-900 dark:text-white text-sm font-bold leading-normal tracking-[0.015em] transition-colors"
-              >
-                <span className="truncate">Logout</span>
-              </button>
+              <>
+                <Link
+                  to="/dashboard"
+                  className="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-primary text-white hover:bg-primary/90 text-sm font-bold leading-normal tracking-[0.015em] transition-colors"
+                >
+                  <span className="truncate">Dashboard</span>
+                </Link>
+                <button 
+                  onClick={handleLogout}
+                  className="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-slate-200 dark:bg-[#232f48] hover:bg-slate-300 dark:hover:bg-[#324467] text-slate-900 dark:text-white text-sm font-bold leading-normal tracking-[0.015em] transition-colors"
+                >
+                  <span className="truncate">Logout</span>
+                </button>
+              </>
             ) : (
               <Link to="/login" className="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-primary hover:bg-primary/90 text-white text-sm font-bold leading-normal tracking-[0.015em] transition-colors shadow-lg shadow-primary/30">
                 <span className="truncate">Login</span>
