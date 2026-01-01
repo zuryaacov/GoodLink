@@ -55,15 +55,17 @@ const DashboardLayout = () => {
                 animate={{ x: 0 }}
                 exit={{ x: '-100%' }}
                 transition={{ duration: 0.3, ease: 'easeInOut' }}
-                className="absolute left-0 top-0 bottom-0 w-64 bg-[#101622] shadow-2xl"
+                className="absolute left-0 top-0 bottom-0 w-64 bg-[#101622] shadow-2xl flex flex-col"
               >
-                <div className="flex justify-between items-center p-4 border-b border-[#232f48]">
+                <div className="flex justify-between items-center p-4 border-b border-[#232f48] flex-shrink-0">
                   <span className="text-white font-bold ml-2">Menu</span>
                   <button onClick={() => setIsMobileMenuOpen(false)} className="text-slate-400 hover:text-white">
                     <span className="material-symbols-outlined">close</span>
                   </button>
                 </div>
-                <Sidebar className="w-full h-full border-none pt-2" onLinkClick={() => setIsMobileMenuOpen(false)} />
+                <div className="flex-1 overflow-hidden">
+                  <Sidebar className="w-full h-full border-none pt-2" onLinkClick={() => setIsMobileMenuOpen(false)} />
+                </div>
               </motion.div>
             </div>
           )}
