@@ -33,14 +33,20 @@ const DashboardLayout = () => {
 
         {/* Mobile Sidebar Overlay */}
         {isMobileMenuOpen && (
-          <div className="lg:hidden fixed inset-0 z-50 bg-[#0b0f19]">
-             <div className="flex justify-between items-center p-4 border-b border-[#232f48]">
-                <span className="text-white font-bold">Menu</span>
-                <button onClick={() => setIsMobileMenuOpen(false)} className="text-white">
-                  <span className="material-symbols-outlined">close</span>
-                </button>
+          <div className="lg:hidden fixed inset-0 z-50">
+             {/* Backdrop */}
+             <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={() => setIsMobileMenuOpen(false)}></div>
+             
+             {/* Sidebar Container */}
+             <div className="absolute left-0 top-0 bottom-0 w-64 bg-[#101622] shadow-2xl animate-in slide-in-from-left duration-200">
+               <div className="flex justify-between items-center p-4 border-b border-[#232f48]">
+                  <span className="text-white font-bold ml-2">Menu</span>
+                  <button onClick={() => setIsMobileMenuOpen(false)} className="text-slate-400 hover:text-white">
+                    <span className="material-symbols-outlined">close</span>
+                  </button>
+               </div>
+               <Sidebar className="w-full h-full border-none pt-2" />
              </div>
-             <Sidebar className="w-full h-[calc(100vh-64px)] border-none" />
           </div>
         )}
 

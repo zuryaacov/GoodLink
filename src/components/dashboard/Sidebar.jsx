@@ -19,8 +19,11 @@ const Sidebar = ({ className = "" }) => {
     await supabase.auth.signOut();
   };
 
+  // Base classes with default width if not overridden
+  const baseClasses = `flex flex-col h-screen bg-[#101622] border-r border-[#232f48] pt-6 ${className.includes('w-') ? '' : 'w-64'} ${className}`;
+
   return (
-    <aside className={`flex flex-col w-64 h-screen bg-[#101622] border-r border-[#232f48] pt-6 ${className}`}>
+    <aside className={baseClasses}>
       <div className="px-6 mb-8">
         <Link to="/" className="flex items-center gap-3 text-white transition-opacity hover:opacity-80">
           <div className="size-10 text-primary">
