@@ -50,7 +50,6 @@ const Step1FastTrack = ({
   onSafetyCheckUpdate,
 }) => {
   const [domains, setDomains] = useState(["goodlink.ai"]);
-  const [loadingDomains, setLoadingDomains] = useState(false);
   const [fetchingTitle, setFetchingTitle] = useState(false);
   const [safetyCheck, setSafetyCheck] = useState({
     loading: false,
@@ -61,7 +60,6 @@ const Step1FastTrack = ({
 
   useEffect(() => {
     const fetchDomains = async () => {
-      setLoadingDomains(true);
       try {
         const {
           data: { user },
@@ -72,27 +70,10 @@ const Step1FastTrack = ({
         }
       } catch (error) {
         console.error("Error fetching domains:", error);
-      } finally {
-        setLoadingDomains(false);
       }
     };
     fetchDomains();
   }, []);
-
-  // Helper function to normalize URL (add https:// if missing)
-  const normalizeUrl = (urlString) => {
-    if (!urlString || !urlString.trim()) return null;
-
-    const trimmed = urlString.trim();
-
-    // If already has protocol, return as is
-    if (trimmed.startsWith("http://") || trimmed.startsWith("https://")) {
-      return trimmed;
-    }
-
-    // Add https:// if missing
-    return `https://${trimmed}`;
-  };
 
   // Safety check function - called when user leaves the field
   const performSafetyCheck = async () => {
@@ -205,7 +186,7 @@ const Step1FastTrack = ({
     }
   };
 
-  const handleUrlPaste = (e) => {
+  const handleUrlPaste = () => {
     // Let the onChange handler deal with it
     // The useEffect will automatically fetch the title
   };
@@ -219,7 +200,15 @@ const Step1FastTrack = ({
     updateFormData("domain", domain);
   };
 
-  const canCreate = formData.targetUrl && formData.targetUrl.trim();
+  // Show "Create with Defaults" button only when:
+  // 1. URL is verified (safety check passed)
+  // 2. Slug is provided (user entered or auto-generated)
+  const canCreate =
+    formData.targetUrl &&
+    formData.targetUrl.trim() &&
+    safetyCheck.isSafe === true &&
+    formData.slug &&
+    formData.slug.trim();
 
   return (
     <motion.div
