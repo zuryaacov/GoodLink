@@ -43,7 +43,6 @@ const Step1FastTrack = ({ formData, updateFormData, generateRandomSlug, onQuickC
   const [domains, setDomains] = useState(['goodlink.ai']);
   const [loadingDomains, setLoadingDomains] = useState(false);
   const [fetchingTitle, setFetchingTitle] = useState(false);
-  const [urlPasted, setUrlPasted] = useState(false);
   const [safetyCheck, setSafetyCheck] = useState({
     loading: false,
     isSafe: null,
@@ -131,53 +130,55 @@ const Step1FastTrack = ({ formData, updateFormData, generateRandomSlug, onQuickC
     return () => clearTimeout(timeoutId);
   }, [formData.targetUrl]);
 
-  // Auto-fetch title when URL is pasted
+  // Auto-fetch title when URL changes (only if name is empty or was reset)
   useEffect(() => {
-    const handleUrlPaste = async () => {
-      if (formData.targetUrl && !formData.name && urlPasted) {
-        // Normalize URL (add https:// if missing)
-        const normalizedUrl = normalizeUrl(formData.targetUrl);
-        if (!normalizedUrl) {
-          setFetchingTitle(false);
-          setUrlPasted(false);
-          return;
-        }
+    const fetchTitle = async () => {
+      if (!formData.targetUrl || !formData.targetUrl.trim()) {
+        setFetchingTitle(false);
+        return;
+      }
 
-        // Validate URL format
-        try {
-          new URL(normalizedUrl);
-          setFetchingTitle(true);
-          const title = await fetchPageTitle(normalizedUrl);
-          if (title) {
-            updateFormData('name', title);
-          }
-        } catch (error) {
-          // Invalid URL, skip fetching
-          console.log('Invalid URL format, skipping title fetch');
-        } finally {
-          setFetchingTitle(false);
-          setUrlPasted(false);
+      // Normalize URL (add https:// if missing)
+      const normalizedUrl = normalizeUrl(formData.targetUrl);
+      if (!normalizedUrl) {
+        setFetchingTitle(false);
+        return;
+      }
+
+      // Validate URL format
+      try {
+        new URL(normalizedUrl);
+        setFetchingTitle(true);
+        const title = await fetchPageTitle(normalizedUrl);
+        if (title) {
+          updateFormData('name', title);
         }
+      } catch (error) {
+        // Invalid URL, skip fetching
+        console.log('Invalid URL format, skipping title fetch');
+      } finally {
+        setFetchingTitle(false);
       }
     };
 
-    const timeoutId = setTimeout(handleUrlPaste, 1500);
+    // Debounce the title fetch - only fetch if name is empty or URL changed significantly
+    const timeoutId = setTimeout(fetchTitle, 1500);
     return () => clearTimeout(timeoutId);
-  }, [formData.targetUrl, urlPasted, formData.name, updateFormData]);
+  }, [formData.targetUrl, updateFormData]);
 
   const handleUrlChange = (e) => {
     const url = e.target.value;
     updateFormData('targetUrl', url);
-    if (url && !urlPasted) {
-      setUrlPasted(true);
+    
+    // Reset name when URL changes (will be auto-filled again by useEffect)
+    if (url && url !== formData.targetUrl) {
+      updateFormData('name', '');
     }
   };
 
   const handleUrlPaste = (e) => {
-    const url = e.clipboardData.getData('text');
-    if (url) {
-      setUrlPasted(true);
-    }
+    // Let the onChange handler deal with it
+    // The useEffect will automatically fetch the title
   };
 
   const handleMagicWand = () => {

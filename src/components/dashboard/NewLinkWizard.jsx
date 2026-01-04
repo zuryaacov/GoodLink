@@ -303,13 +303,31 @@ const NewLinkWizard = ({ isOpen, onClose }) => {
           {currentStep < steps.length ? (
             <button
               onClick={nextStep}
-              disabled={currentStep === 1 && formData.urlSafety?.isSafe === false}
+              disabled={
+                currentStep === 1 && (
+                  formData.urlSafety?.isSafe === false || 
+                  formData.urlSafety?.isSafe === null ||
+                  !formData.targetUrl?.trim()
+                )
+              }
               className={`px-6 py-2.5 bg-primary hover:bg-primary/90 text-white font-bold rounded-xl transition-colors ${
-                currentStep === 1 && formData.urlSafety?.isSafe === false
+                currentStep === 1 && (
+                  formData.urlSafety?.isSafe === false || 
+                  formData.urlSafety?.isSafe === null ||
+                  !formData.targetUrl?.trim()
+                )
                   ? 'opacity-50 cursor-not-allowed'
                   : ''
               }`}
-              title={currentStep === 1 && formData.urlSafety?.isSafe === false ? 'Cannot proceed with unsafe URL' : ''}
+              title={
+                currentStep === 1 && formData.urlSafety?.isSafe === false
+                  ? 'Cannot proceed with unsafe URL'
+                  : currentStep === 1 && formData.urlSafety?.isSafe === null
+                  ? 'Please wait for URL safety verification...'
+                  : currentStep === 1 && !formData.targetUrl?.trim()
+                  ? 'Please enter a URL'
+                  : ''
+              }
             >
               Continue
             </button>
