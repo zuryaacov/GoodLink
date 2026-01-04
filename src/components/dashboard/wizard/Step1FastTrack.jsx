@@ -168,6 +168,30 @@ const Step1FastTrack = ({
     // Use normalized URL from validation
     const normalizedUrl = validation.normalizedUrl;
 
+    // Check if URL is pointing to goodlink.ai (not allowed - cannot redirect to own domain)
+    try {
+      const urlObj = new URL(normalizedUrl);
+      const hostname = urlObj.hostname.toLowerCase().replace(/^www\./, "");
+
+      if (hostname === "goodlink.ai") {
+        setSafetyCheck({
+          loading: false,
+          isSafe: false,
+          threatType: null,
+          error:
+            "Redirect cannot be to goodlink.ai. Please use a different URL.",
+          urlExists: false,
+        });
+        if (onSafetyCheckUpdate) {
+          onSafetyCheckUpdate({ isSafe: false, threatType: null });
+        }
+        return;
+      }
+    } catch (error) {
+      // If URL parsing fails, continue with normal validation
+      console.error("Error checking goodlink.ai domain:", error);
+    }
+
     // Perform safety check with normalized URL (only if validation passed)
     setSafetyCheck((prev) => ({ ...prev, loading: true }));
     const result = await checkUrlSafety(normalizedUrl);
@@ -510,18 +534,29 @@ const Step1FastTrack = ({
             >
               <div className="flex items-start gap-3">
                 <span className="material-symbols-outlined text-red-400 text-xl flex-shrink-0">
-                  {safetyCheck.urlExists ? "link_off" : "warning"}
+                  {safetyCheck.urlExists
+                    ? "link_off"
+                    : safetyCheck.error &&
+                      safetyCheck.error.includes("goodlink.ai")
+                    ? "block"
+                    : "warning"}
                 </span>
                 <div className="flex-1">
                   <h4 className="text-red-400 font-bold text-sm mb-1">
                     {safetyCheck.urlExists
                       ? "URL Already Exists"
+                      : safetyCheck.error &&
+                        safetyCheck.error.includes("goodlink.ai")
+                      ? "Invalid Redirect Target"
                       : "Unsafe Link Detected"}
                   </h4>
                   <p className="text-red-300 text-xs">
                     {safetyCheck.urlExists
                       ? safetyCheck.error ||
                         "This URL already exists in your links. Please use a different URL."
+                      : safetyCheck.error &&
+                        safetyCheck.error.includes("goodlink.ai")
+                      ? safetyCheck.error
                       : `This URL has been flagged as ${
                           safetyCheck.threatType || "potentially unsafe"
                         } by Google Safe Browsing. We recommend not using this link for security reasons.`}
