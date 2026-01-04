@@ -7,14 +7,14 @@ const DashboardLayout = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   return (
-    <div className="flex min-h-screen bg-[#0b0f19]">
+    <div className="flex h-screen bg-[#0b0f19] overflow-hidden">
       {/* Desktop Sidebar */}
       <div className="hidden lg:block fixed inset-y-0 left-0 z-50">
         <Sidebar className="w-64" />
       </div>
 
       {/* Main Content Area */}
-      <div className="flex-1 lg:ml-64 flex flex-col min-h-screen">
+      <div className="flex-1 lg:ml-64 flex flex-col h-full overflow-hidden">
          {/* Mobile Header */}
         <header className="lg:hidden h-16 bg-[#101622] border-b border-[#232f48] flex items-center justify-between px-4 sticky top-0 z-40">
            <Link to="/" className="flex items-center gap-2">
@@ -71,7 +71,7 @@ const DashboardLayout = () => {
           )}
         </AnimatePresence>
 
-        <main className="flex-1 p-4 lg:p-6 overflow-y-auto">
+        <main className="flex-1 p-4 lg:p-6 overflow-y-auto overflow-x-hidden w-full">
           <Outlet />
         </main>
       </div>
