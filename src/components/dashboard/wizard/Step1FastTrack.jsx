@@ -189,17 +189,42 @@ const Step1FastTrack = ({
         if (!linksError && existingLinks && existingLinks.length > 0) {
           // Normalize URLs for comparison (remove trailing slashes, lowercase, etc.)
           const normalizeForComparison = (url) => {
+            if (!url || typeof url !== "string") return "";
+
             try {
-              const urlObj = new URL(url);
-              // Remove trailing slash, convert to lowercase, remove www. prefix
-              let normalized = urlObj.href.toLowerCase().replace(/\/$/, "");
-              // Remove www. prefix for comparison
-              if (normalized.includes("://www.")) {
-                normalized = normalized.replace("://www.", "://");
+              let urlToNormalize = url.trim().toLowerCase();
+
+              // Add https:// if no protocol
+              if (
+                !urlToNormalize.startsWith("http://") &&
+                !urlToNormalize.startsWith("https://")
+              ) {
+                urlToNormalize = `https://${urlToNormalize}`;
               }
+
+              // Parse as URL
+              const urlObj = new URL(urlToNormalize);
+
+              // Build normalized URL: protocol + hostname (without www) + pathname (without trailing slash)
+              let normalized = `${urlObj.protocol}//${urlObj.hostname.replace(
+                /^www\./,
+                ""
+              )}`;
+
+              // Add pathname without trailing slash
+              if (urlObj.pathname && urlObj.pathname !== "/") {
+                normalized += urlObj.pathname.replace(/\/$/, "");
+              }
+
+              // Add search params if they exist
+              if (urlObj.search) {
+                normalized += urlObj.search;
+              }
+
               return normalized;
             } catch {
-              return url.toLowerCase().replace(/\/$/, "");
+              // Fallback: just lowercase and trim, remove trailing slash
+              return url.toLowerCase().trim().replace(/\/$/, "");
             }
           };
 
