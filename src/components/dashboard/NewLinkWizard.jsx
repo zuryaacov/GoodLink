@@ -262,7 +262,6 @@ const NewLinkWizard = ({ isOpen, onClose }) => {
                 key="step1"
                 formData={formData}
                 updateFormData={updateFormData}
-                generateRandomSlug={generateRandomSlug}
                 onQuickCreate={handleSubmit}
                 onSafetyCheckUpdate={(safety) => updateFormData('urlSafety', safety)}
               />

@@ -45,13 +45,14 @@ const fetchPageTitle = async (url) => {
 const Step1FastTrack = ({
   formData,
   updateFormData,
-  generateRandomSlug,
   onQuickCreate,
   onSafetyCheckUpdate,
 }) => {
   const [domains, setDomains] = useState(["goodlink.ai"]);
   const [hasCustomDomains, setHasCustomDomains] = useState(false);
   const [fetchingTitle, setFetchingTitle] = useState(false);
+  const [checkingSlug, setCheckingSlug] = useState(false);
+  const [slugError, setSlugError] = useState(null);
   const [safetyCheck, setSafetyCheck] = useState({
     loading: false,
     isSafe: null,
@@ -244,9 +245,62 @@ const Step1FastTrack = ({
     // The useEffect will automatically fetch the title
   };
 
-  const handleMagicWand = () => {
-    const randomSlug = generateRandomSlug();
-    updateFormData("slug", randomSlug);
+  const handleCheckSlug = async () => {
+    // Clear previous error
+    setSlugError(null);
+
+    // Check if user has entered a slug
+    if (!formData.slug || !formData.slug.trim()) {
+      setSlugError("Please enter a slug before checking");
+      return;
+    }
+
+    const slugToCheck = formData.slug.trim();
+    const selectedDomain = formData.domain || domains[0];
+
+    setCheckingSlug(true);
+
+    try {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!user) {
+        setSlugError("You must be logged in to check slug availability");
+        setCheckingSlug(false);
+        return;
+      }
+
+      // Check if slug already exists in links table for this user and domain
+      const { data: existingLinks, error } = await supabase
+        .from("links")
+        .select("id, slug, domain")
+        .eq("user_id", user.id)
+        .eq("slug", slugToCheck)
+        .eq("domain", selectedDomain)
+        .limit(1);
+
+      if (error) {
+        console.error("Error checking slug:", error);
+        setSlugError("Error checking slug availability. Please try again.");
+        setCheckingSlug(false);
+        return;
+      }
+
+      if (existingLinks && existingLinks.length > 0) {
+        setSlugError(
+          `This slug "${slugToCheck}" is already taken for domain "${selectedDomain}". Please choose a different slug.`
+        );
+      } else {
+        // Slug is available - clear any previous error
+        setSlugError(null);
+      }
+    } catch (error) {
+      console.error("Error checking slug:", error);
+      setSlugError("Error checking slug availability. Please try again.");
+    } finally {
+      setCheckingSlug(false);
+    }
   };
 
   const handleDomainSelect = (domain) => {
@@ -417,22 +471,54 @@ const Step1FastTrack = ({
           <input
             type="text"
             value={formData.slug}
-            onChange={(e) => updateFormData("slug", e.target.value)}
+            onChange={(e) => {
+              updateFormData("slug", e.target.value);
+              // Clear error when user types
+              if (slugError) {
+                setSlugError(null);
+              }
+            }}
             placeholder="e.g., iphone-deal"
-            className="flex-1 px-4 py-3 bg-[#0b0f19] border border-[#232f48] rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-primary transition-colors"
+            className={`flex-1 px-4 py-3 bg-[#0b0f19] border rounded-xl text-white placeholder-slate-500 focus:outline-none transition-colors ${
+              slugError
+                ? "border-red-500 focus:border-red-500"
+                : "border-[#232f48] focus:border-primary"
+            }`}
           />
           <button
-            onClick={handleMagicWand}
-            className="px-5 py-3 bg-primary/10 hover:bg-primary/20 border border-primary/30 text-primary rounded-xl transition-colors flex items-center gap-2 font-medium"
-            title="Generate random secure slug"
+            onClick={handleCheckSlug}
+            disabled={checkingSlug}
+            className="px-5 py-3 bg-primary/10 hover:bg-primary/20 border border-primary/30 text-primary rounded-xl transition-colors flex items-center gap-2 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+            title="Check if slug is available"
           >
-            <span className="material-symbols-outlined">auto_awesome</span>
-            <span className="hidden sm:inline">Magic</span>
+            {checkingSlug ? (
+              <>
+                <span className="material-symbols-outlined animate-spin">
+                  refresh
+                </span>
+                <span className="hidden sm:inline">Checking...</span>
+              </>
+            ) : (
+              <>
+                <span className="material-symbols-outlined">check_circle</span>
+                <span className="hidden sm:inline">Check</span>
+              </>
+            )}
           </button>
         </div>
-        <p className="text-xs text-slate-500 mt-2">
-          Leave empty to auto-generate, or click Magic to generate a random slug
-        </p>
+        {slugError ? (
+          <motion.p
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-red-400 text-xs mt-2 text-left"
+          >
+            {slugError}
+          </motion.p>
+        ) : (
+          <p className="text-xs text-slate-500 mt-2">
+            Enter a slug and click Check to verify availability
+          </p>
+        )}
       </div>
 
       {/* Custom Domain Chips - Only show if user has at least one custom domain */}
