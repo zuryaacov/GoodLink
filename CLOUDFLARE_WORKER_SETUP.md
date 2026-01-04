@@ -18,6 +18,7 @@ npm install -g wrangler
 ```
 
 Or use npx:
+
 ```bash
 npx wrangler --version
 ```
@@ -58,6 +59,7 @@ wrangler deploy
 ### 7. Get Your Worker URL
 
 After deployment, Wrangler will output your worker URL. It will look like:
+
 ```
 https://url-safety-check.your-subdomain.workers.dev
 ```
@@ -78,12 +80,16 @@ Add the worker URL to your Vercel environment variables:
 You can test the worker using curl:
 
 ```bash
-curl -X POST https://your-worker-url.workers.dev \
+curl -X POST https://url-safety-check.yaacov-zur.workers.dev \
   -H "Content-Type: application/json" \
-  -d '{"url": "https://example.com"}'
+  -d '{"url": "https://www.saasaipartners.com"}'
 ```
 
+curl -k -X POST https://url-safety-check.yaacov-zur.workers.dev \
+ -H "Content-Type: application/json" \
+ -d '{"url": "https://testsafebrowsing.appspot.com/s/malware.html"}'
 Expected response for a safe URL:
+
 ```json
 {
   "isSafe": true,
@@ -92,6 +98,7 @@ Expected response for a safe URL:
 ```
 
 Expected response for an unsafe URL:
+
 ```json
 {
   "isSafe": false,
@@ -130,4 +137,3 @@ Expected response for an unsafe URL:
 - Cloudflare Workers: Free tier includes 100,000 requests/day
 - Google Safe Browsing API: Free tier includes 10,000 requests/day
 - Monitor usage in both dashboards to avoid unexpected charges
-
