@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { supabase } from '../../../lib/supabase';
 import { checkUrlSafety } from '../../../lib/urlSafetyCheck';
+import { validateUrl } from '../../../lib/urlValidation';
 
 // Utility function to fetch page title from URL
 const fetchPageTitle = async (url) => {
@@ -94,25 +95,26 @@ const Step1FastTrack = ({ formData, updateFormData, generateRandomSlug, onQuickC
       return;
     }
 
-    // Normalize URL (add https:// if missing)
-    const normalizedUrl = normalizeUrl(formData.targetUrl);
-    if (!normalizedUrl) {
-      setSafetyCheck({ loading: false, isSafe: null, threatType: null, error: null });
-      return;
-    }
-
-    // Validate URL format
-    try {
-      new URL(normalizedUrl);
-    } catch {
-      setSafetyCheck({ loading: false, isSafe: null, threatType: null, error: 'Invalid URL format' });
+    // Comprehensive URL validation BEFORE making API calls
+    const validation = validateUrl(formData.targetUrl);
+    
+    if (!validation.isValid) {
+      setSafetyCheck({
+        loading: false,
+        isSafe: null,
+        threatType: null,
+        error: validation.error || 'Invalid URL format',
+      });
       if (onSafetyCheckUpdate) {
         onSafetyCheckUpdate({ isSafe: null, threatType: null });
       }
       return;
     }
 
-    // Perform safety check with normalized URL
+    // Use normalized URL from validation
+    const normalizedUrl = validation.normalizedUrl;
+
+    // Perform safety check with normalized URL (only if validation passed)
     setSafetyCheck(prev => ({ ...prev, loading: true }));
     const result = await checkUrlSafety(normalizedUrl);
     const safetyState = {
@@ -143,16 +145,19 @@ const Step1FastTrack = ({ formData, updateFormData, generateRandomSlug, onQuickC
       return;
     }
 
-    // Normalize URL (add https:// if missing)
-    const normalizedUrl = normalizeUrl(formData.targetUrl);
-    if (!normalizedUrl) {
+    // Comprehensive URL validation BEFORE making API calls
+    const validation = validateUrl(formData.targetUrl);
+    
+    if (!validation.isValid) {
       setFetchingTitle(false);
       return;
     }
 
-    // Validate URL format
+    // Use normalized URL from validation
+    const normalizedUrl = validation.normalizedUrl;
+
+    // Fetch title only if validation passed
     try {
-      new URL(normalizedUrl);
       setFetchingTitle(true);
       const title = await fetchPageTitle(normalizedUrl);
       if (title && title.trim()) {
@@ -169,7 +174,7 @@ const Step1FastTrack = ({ formData, updateFormData, generateRandomSlug, onQuickC
       }
     } catch (error) {
       // Invalid URL, skip fetching
-      console.log('Invalid URL format, skipping title fetch');
+      console.log('Error fetching title:', error);
     } finally {
       setFetchingTitle(false);
     }
@@ -266,6 +271,25 @@ const Step1FastTrack = ({ formData, updateFormData, generateRandomSlug, onQuickC
             </div>
           </div>
           
+          {/* Validation Error */}
+          {!safetyCheck.loading && safetyCheck.error && safetyCheck.isSafe === null && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mt-4 p-4 bg-yellow-500/10 border-2 border-yellow-500/50 rounded-xl"
+            >
+              <div className="flex items-start gap-3">
+                <span className="material-symbols-outlined text-yellow-400 text-xl flex-shrink-0">info</span>
+                <div className="flex-1">
+                  <h4 className="text-yellow-400 font-bold text-sm mb-1">Invalid URL Format</h4>
+                  <p className="text-yellow-300 text-xs">
+                    {safetyCheck.error}
+                  </p>
+                </div>
+              </div>
+            </motion.div>
+          )}
+
           {/* Safety Warning */}
           {!safetyCheck.loading && safetyCheck.isSafe === false && (
             <motion.div
