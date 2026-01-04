@@ -132,54 +132,48 @@ const Step1FastTrack = ({ formData, updateFormData, generateRandomSlug, onQuickC
     }
   };
 
-  // Auto-fetch title when URL changes - only after user stops typing
-  useEffect(() => {
-    const fetchTitle = async () => {
-      if (!formData.targetUrl || !formData.targetUrl.trim()) {
-        setFetchingTitle(false);
-        // Clear name if URL is empty
-        if (formData.name && formData.name.trim()) {
-          updateFormData('name', '');
+  // Auto-fetch title function - called when user leaves the field
+  const fetchTitle = async () => {
+    if (!formData.targetUrl || !formData.targetUrl.trim()) {
+      setFetchingTitle(false);
+      // Clear name if URL is empty
+      if (formData.name && formData.name.trim()) {
+        updateFormData('name', '');
+      }
+      return;
+    }
+
+    // Normalize URL (add https:// if missing)
+    const normalizedUrl = normalizeUrl(formData.targetUrl);
+    if (!normalizedUrl) {
+      setFetchingTitle(false);
+      return;
+    }
+
+    // Validate URL format
+    try {
+      new URL(normalizedUrl);
+      setFetchingTitle(true);
+      const title = await fetchPageTitle(normalizedUrl);
+      if (title && title.trim()) {
+        updateFormData('name', title.trim());
+      } else {
+        // If no title found, use domain name as fallback
+        try {
+          const urlObj = new URL(normalizedUrl);
+          const domainName = urlObj.hostname.replace('www.', '');
+          updateFormData('name', domainName);
+        } catch {
+          // If still fails, leave empty
         }
-        return;
       }
-
-      // Normalize URL (add https:// if missing)
-      const normalizedUrl = normalizeUrl(formData.targetUrl);
-      if (!normalizedUrl) {
-        setFetchingTitle(false);
-        return;
-      }
-
-      // Validate URL format
-      try {
-        new URL(normalizedUrl);
-        setFetchingTitle(true);
-        const title = await fetchPageTitle(normalizedUrl);
-        if (title && title.trim()) {
-          updateFormData('name', title.trim());
-        } else {
-          // If no title found, use domain name as fallback
-          try {
-            const urlObj = new URL(normalizedUrl);
-            const domainName = urlObj.hostname.replace('www.', '');
-            updateFormData('name', domainName);
-          } catch {
-            // If still fails, leave empty
-          }
-        }
-      } catch (error) {
-        // Invalid URL, skip fetching
-        console.log('Invalid URL format, skipping title fetch');
-      } finally {
-        setFetchingTitle(false);
-      }
-    };
-
-    // Wait 2 seconds after user stops typing before fetching title
-    const timeoutId = setTimeout(fetchTitle, 2000);
-    return () => clearTimeout(timeoutId);
-  }, [formData.targetUrl, updateFormData, formData.name]);
+    } catch (error) {
+      // Invalid URL, skip fetching
+      console.log('Invalid URL format, skipping title fetch');
+    } finally {
+      setFetchingTitle(false);
+    }
+  };
 
   const handleUrlChange = (e) => {
     const url = e.target.value;
@@ -229,7 +223,10 @@ const Step1FastTrack = ({ formData, updateFormData, generateRandomSlug, onQuickC
               value={formData.targetUrl}
               onChange={handleUrlChange}
               onPaste={handleUrlPaste}
-              onBlur={performSafetyCheck}
+              onBlur={() => {
+                performSafetyCheck();
+                fetchTitle();
+              }}
               placeholder="Paste your URL here..."
               className={`w-full px-6 py-5 text-lg bg-[#0b0f19] border-2 rounded-2xl text-white placeholder-slate-500 focus:outline-none transition-all shadow-lg ${
                 safetyCheck.isSafe === false
