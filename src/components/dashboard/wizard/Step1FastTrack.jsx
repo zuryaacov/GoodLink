@@ -69,6 +69,21 @@ const Step1FastTrack = ({ formData, updateFormData, generateRandomSlug, onQuickC
     fetchDomains();
   }, []);
 
+  // Helper function to normalize URL (add https:// if missing)
+  const normalizeUrl = (urlString) => {
+    if (!urlString || !urlString.trim()) return null;
+    
+    const trimmed = urlString.trim();
+    
+    // If already has protocol, return as is
+    if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
+      return trimmed;
+    }
+    
+    // Add https:// if missing
+    return `https://${trimmed}`;
+  };
+
   // Safety check when URL changes
   useEffect(() => {
     const performSafetyCheck = async () => {
@@ -77,17 +92,24 @@ const Step1FastTrack = ({ formData, updateFormData, generateRandomSlug, onQuickC
         return;
       }
 
-      // Validate URL format first
+      // Normalize URL (add https:// if missing)
+      const normalizedUrl = normalizeUrl(formData.targetUrl);
+      if (!normalizedUrl) {
+        setSafetyCheck({ loading: false, isSafe: null, threatType: null, error: null });
+        return;
+      }
+
+      // Validate URL format
       try {
-        new URL(formData.targetUrl);
+        new URL(normalizedUrl);
       } catch {
         setSafetyCheck({ loading: false, isSafe: null, threatType: null, error: 'Invalid URL format' });
         return;
       }
 
-      // Perform safety check
+      // Perform safety check with normalized URL
       setSafetyCheck(prev => ({ ...prev, loading: true }));
-      const result = await checkUrlSafety(formData.targetUrl);
+      const result = await checkUrlSafety(normalizedUrl);
       const safetyState = {
         loading: false,
         isSafe: result.isSafe,
@@ -113,11 +135,19 @@ const Step1FastTrack = ({ formData, updateFormData, generateRandomSlug, onQuickC
   useEffect(() => {
     const handleUrlPaste = async () => {
       if (formData.targetUrl && !formData.name && urlPasted) {
+        // Normalize URL (add https:// if missing)
+        const normalizedUrl = normalizeUrl(formData.targetUrl);
+        if (!normalizedUrl) {
+          setFetchingTitle(false);
+          setUrlPasted(false);
+          return;
+        }
+
         // Validate URL format
         try {
-          new URL(formData.targetUrl);
+          new URL(normalizedUrl);
           setFetchingTitle(true);
-          const title = await fetchPageTitle(formData.targetUrl);
+          const title = await fetchPageTitle(normalizedUrl);
           if (title) {
             updateFormData('name', title);
           }

@@ -17,8 +17,14 @@
 export async function checkUrlSafety(url) {
   const workerUrl = import.meta.env.VITE_SAFETY_CHECK_WORKER_URL;
 
+  console.log('🔍 Safety Check Debug:', {
+    workerUrl: workerUrl || 'NOT SET',
+    url: url,
+    envVars: Object.keys(import.meta.env).filter(k => k.includes('SAFETY') || k.includes('WORKER')),
+  });
+
   if (!workerUrl) {
-    console.warn('VITE_SAFETY_CHECK_WORKER_URL not configured. Skipping safety check.');
+    console.error('❌ VITE_SAFETY_CHECK_WORKER_URL not configured. Please add it to Vercel environment variables.');
     // Fail open - if worker URL not configured, assume safe
     return {
       isSafe: true,
@@ -39,6 +45,7 @@ export async function checkUrlSafety(url) {
   }
 
   try {
+    console.log('📤 Sending safety check request to:', workerUrl);
     const response = await fetch(workerUrl, {
       method: 'POST',
       headers: {
@@ -47,11 +54,16 @@ export async function checkUrlSafety(url) {
       body: JSON.stringify({ url }),
     });
 
+    console.log('📥 Response status:', response.status, response.statusText);
+
     if (!response.ok) {
-      throw new Error(`Worker responded with status ${response.status}`);
+      const errorText = await response.text();
+      console.error('❌ Worker error response:', errorText);
+      throw new Error(`Worker responded with status ${response.status}: ${errorText}`);
     }
 
     const data = await response.json();
+    console.log('✅ Safety check result:', data);
 
     // Handle error responses from worker
     if (data.error) {
