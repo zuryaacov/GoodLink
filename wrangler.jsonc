@@ -1,6 +1,7 @@
 {
   "name": "goodlink",
   "compatibility_date": "2026-01-05",
+  "main": "_worker.js",
   "assets": {
     "directory": "./dist"
   }
