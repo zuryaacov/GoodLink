@@ -24,7 +24,7 @@ export async function checkUrlSafety(url) {
   });
 
   if (!workerUrl) {
-    console.error('❌ VITE_SAFETY_CHECK_WORKER_URL not configured. Please add it to Vercel environment variables.');
+    console.error('❌ VITE_SAFETY_CHECK_WORKER_URL not configured. Please add it to your environment variables (.env.local for local development, or your deployment platform settings).');
     // Fail open - if worker URL not configured, assume safe
     return {
       isSafe: true,
