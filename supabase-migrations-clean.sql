@@ -24,6 +24,7 @@ CREATE TABLE links (
   fraud_shield TEXT DEFAULT 'none',
   bot_action TEXT DEFAULT 'block',
   geo_rules JSONB DEFAULT '[]'::jsonb,
+  status BOOLEAN DEFAULT true,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW(),
   UNIQUE(user_id, slug, domain)
