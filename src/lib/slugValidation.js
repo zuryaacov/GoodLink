@@ -655,13 +655,16 @@ async function checkSlugWithNaturalLanguage(slug) {
     // moderateText endpoint format
     const apiUrl = `https://language.googleapis.com/v1/documents:moderateText?key=${naturalLanguageApiKey}`;
     
+    // Add context prefix to help API understand the content better
+    const contentWithContext = `the content of this page is about ${slug}`;
+    
     // Request body for Natural Language API Content Moderation
     // Format according to Google Cloud Natural Language API documentation
     // moderateText requires: { document: { type: "PLAIN_TEXT", content: "text", language: "en" } }
     const requestBody = {
       document: {
         type: 'PLAIN_TEXT',
-        content: slug, // slug already has hyphens converted to spaces
+        content: contentWithContext, // slug with context prefix
         language: 'en',
       },
     };
