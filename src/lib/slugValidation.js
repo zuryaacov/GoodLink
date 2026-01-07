@@ -551,12 +551,13 @@ async function checkSlugWithNaturalLanguage(slug) {
     
     // Request body for Natural Language API Content Moderation
     // Format according to Google Cloud Natural Language API documentation
-    // moderateText requires: { document: { type: "PLAIN_TEXT", content: "text" } }
+    // moderateText requires: { document: { type: "PLAIN_TEXT", content: "text" }, language: "en" }
     const requestBody = {
       document: {
         type: 'PLAIN_TEXT',
         content: slug, // slug already has hyphens converted to spaces
       },
+      language: 'en',
     };
     
     console.log('📋 Request body:', JSON.stringify(requestBody, null, 2));
