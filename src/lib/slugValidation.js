@@ -259,6 +259,93 @@ const moderationCache = new Map();
 const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 
 /**
+ * List of blocked words/phrases - checked before API calls
+ * These are words that should be blocked regardless of API results
+ */
+const BLOCKED_WORDS = [
+  // --- GAMBLING & BETTING (הימורים) ---
+  'gambling', 'casino', 'betting', 'poker', 'slots', 'roulette', 'jackpot', 
+  'bet', 'bet365', 'baccarat', 'lottery', 'bookie', 'wagering', 'casino-online',
+  
+  // --- ADULT CONTENT (תוכן למבוגרים) ---
+  'porn', 'sex', 'xxx', 'adult', 'nude', 'naked', 'erotic', 'brazers', 'hentai',
+  'escort', 'camgirl', 'milf', 'playboy', 'strip', 'vixen', 'hardcore', 'softcore',
+  'sexual', 'penis', 'vagina', 'clitoris', 'boobs', 'butt', 'asshole',
+  
+  // --- DRUGS & ILLICIT SUBSTANCES (סמים וחומרים אסורים) ---
+  'drugs', 'weed', 'marijuana', 'cocaine', 'heroin', 'meth', 'mdma', 'ecstasy',
+  'pills', 'lsd', 'fentanyl', 'narcotics', 'cannabis', 'hashish', 'vape', 'smoke',
+  'high-times', 'psychedelic', 'dealer', 'inject',
+  
+  // --- VIOLENCE & WEAPONS (אלימות ונשק) ---
+  'bomb', 'weapon', 'gun', 'firearm', 'shoot', 'kill', 'murder', 'terror', 
+  'terrorism', 'explosion', 'ammo', 'ammunition', 'grenade', 'knife', 'stab', 
+  'suicide', 'deadly', 'assassin', 'sniper', 'slaughter', 'massacre',
+  
+  // --- OFFENSIVE & HATE SPEECH (ביטויים פוגעניים ושנאה) ---
+  'nigger', 'faggot', 'retard', 'bitch', 'bastard', 'cunt', 'dick', 'fuck', 
+  'shit', 'slut', 'whore', 'racist', 'nazi', 'hitler', 'white-power', 'hate',
+  'motherfucker', 'piss', 'crap',
+  
+  // --- SCAMS & FRAUD (הונאות ודיוג) ---
+  'hack', 'cracked', 'phishing', 'scam', 'fraud', 'exploit', 'malware', 'virus',
+  'identity-theft', 'carding', 'spoof', 'pyramid-scheme', 'free-money',
+  
+  // --- OTHER SENSITIVE TOPICS (נושאים רגישים נוספים) ---
+  'abortion', 'darknet', 'darkweb', 'tor-link', 'hitman', 'deepfake'
+];
+
+/**
+ * Check if slug contains blocked words (before API calls)
+ * 
+ * @param {string} slug - The slug to check (with hyphens converted to spaces)
+ * @returns {{isSafe: boolean, blockedWord?: string, error?: string}}
+ */
+function checkBlockedWords(slug) {
+  // Convert slug to lowercase and split by spaces/hyphens for word matching
+  const slugLower = slug.toLowerCase();
+  const slugWords = slugLower.split(/[\s-]+/); // Split by spaces or hyphens
+  
+  // Check each word in the slug against blocked words list
+  for (const word of slugWords) {
+    // Check exact match
+    if (BLOCKED_WORDS.includes(word)) {
+      return {
+        isSafe: false,
+        blockedWord: word,
+        error: `This slug contains inappropriate content and cannot be used.`,
+      };
+    }
+    
+    // Check if any blocked word appears in this word (for partial matches)
+    for (const blockedWord of BLOCKED_WORDS) {
+      if (word.includes(blockedWord) || blockedWord.includes(word)) {
+        return {
+          isSafe: false,
+          blockedWord: blockedWord,
+          error: `This slug contains inappropriate content and cannot be used.`,
+        };
+      }
+    }
+  }
+  
+  // Also check if slug contains any blocked word as substring
+  for (const blockedWord of BLOCKED_WORDS) {
+    if (slugLower.includes(blockedWord)) {
+      return {
+        isSafe: false,
+        blockedWord: blockedWord,
+        error: `This slug contains inappropriate content and cannot be used.`,
+      };
+    }
+  }
+  
+  return {
+    isSafe: true,
+  };
+}
+
+/**
  * Retry helper with exponential backoff
  */
 async function retryWithBackoff(fn, maxRetries = 2, initialDelay = 2000) {
@@ -296,6 +383,25 @@ export async function checkSlugContent(slug) {
   
   // Convert hyphens to spaces for analysis (before sending to API)
   const slugForAnalysis = slug.replace(/-/g, ' ');
+  
+  // First check against blocked words list (before API calls)
+  console.log('🔍 Checking slug against blocked words list...');
+  const blockedWordsCheck = checkBlockedWords(slugForAnalysis);
+  if (!blockedWordsCheck.isSafe) {
+    console.warn('🚫 Slug blocked by word filter:', {
+      slug,
+      blockedWord: blockedWordsCheck.blockedWord,
+    });
+    const result = {
+      isSafe: false,
+      error: blockedWordsCheck.error || 'This slug contains inappropriate content and cannot be used.',
+      blockedByWordFilter: true,
+    };
+    // Cache the result
+    moderationCache.set(cacheKey, { result, timestamp: Date.now() });
+    return result;
+  }
+  console.log('✅ Slug passed word filter check');
   
   console.log('🔍 Checking slug content with Google Perspective API:', {
     slug,
