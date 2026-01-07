@@ -469,9 +469,26 @@ export async function checkSlugContent(slug) {
         };
       } else {
         console.log('✅ Slug passed Perspective API check:', scores);
-        result = {
-          isSafe: true,
-        };
+        
+        // After Perspective API passes, check with Natural Language API
+        console.log('🔍 Running additional check with Google Natural Language API...');
+        const naturalLanguageResult = await checkSlugWithNaturalLanguage(slugForAnalysis);
+        
+        if (!naturalLanguageResult.isSafe) {
+          // Natural Language API flagged the slug
+          console.warn('🚫 Slug flagged by Natural Language API:', naturalLanguageResult);
+          result = {
+            isSafe: false,
+            error: naturalLanguageResult.error || `This slug contains inappropriate content and cannot be used.`,
+            sentiment: naturalLanguageResult.sentiment,
+          };
+        } else {
+          // Both checks passed
+          result = {
+            isSafe: true,
+            sentiment: naturalLanguageResult.sentiment,
+          };
+        }
       }
     } else {
       // No scores returned - assume safe
@@ -490,6 +507,131 @@ export async function checkSlugContent(slug) {
     return {
       isSafe: true,
       error: 'Content moderation check failed. Please try again.',
+    };
+  }
+}
+
+/**
+ * Check slug content with Google Natural Language API (Sentiment Analysis)
+ * This is called after Perspective API check
+ * 
+ * @param {string} slug - The slug to check (with hyphens converted to spaces)
+ * @returns {Promise<{isSafe: boolean, error?: string, sentiment?: object}>}
+ */
+async function checkSlugWithNaturalLanguage(slug) {
+  const naturalLanguageApiKey = import.meta.env.VITE_GOOGLE_NATURAL_LANGUAGE_API_KEY || import.meta.env.VITE_PERSPECTIVE_API_KEY;
+  
+  // Use Perspective API key if Natural Language API key not set (same Google Cloud project)
+  if (!naturalLanguageApiKey) {
+    console.warn('⚠️ Google Natural Language API key not configured. Skipping Natural Language check.');
+    console.warn('💡 To enable, add VITE_GOOGLE_NATURAL_LANGUAGE_API_KEY (or use Perspective API key).');
+    return {
+      isSafe: true,
+    };
+  }
+  
+  // Check if running on localhost (CORS issues)
+  const isLocalhost = 
+    typeof window !== 'undefined' && 
+    (window.location.hostname === 'localhost' || 
+     window.location.hostname === '127.0.0.1' ||
+     window.location.hostname === '');
+  
+  if (isLocalhost) {
+    console.warn('⚠️ Skipping Natural Language API check on localhost (CORS restrictions).');
+    return { isSafe: true };
+  }
+  
+  try {
+    console.log('📤 Sending request to Google Natural Language API...');
+    
+    // Natural Language API endpoint for sentiment analysis
+    const apiUrl = `https://language.googleapis.com/v1/documents:analyzeSentiment?key=${naturalLanguageApiKey}`;
+    
+    // Request body for Natural Language API
+    const requestBody = {
+      document: {
+        type: 'PLAIN_TEXT',
+        content: slug, // slug already has hyphens converted to spaces
+      },
+      encodingType: 'UTF8',
+    };
+    
+    const response = await fetch(apiUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(requestBody),
+    });
+    
+    console.log('📥 Natural Language API response status:', response.status, response.statusText);
+    
+    if (!response.ok) {
+      const errorData = await response.text();
+      console.error('❌ Natural Language API error:', {
+        status: response.status,
+        statusText: response.statusText,
+        error: errorData,
+      });
+      
+      // Fail open - don't block if Natural Language API fails
+      return {
+        isSafe: true,
+        error: 'Natural Language API check unavailable.',
+      };
+    }
+    
+    // Parse the successful response
+    const data = await response.json();
+    console.log('✅ Natural Language API response:', data);
+    
+    // Sentiment score ranges from -1.0 (negative) to 1.0 (positive)
+    // Sentiment magnitude indicates the overall strength of emotion (0.0 to infinity)
+    // For moderation: negative sentiment with high magnitude might indicate harmful content
+    const sentiment = data.documentSentiment;
+    const sentimentScore = sentiment?.score || 0;
+    const sentimentMagnitude = sentiment?.magnitude || 0;
+    
+    // Threshold: if sentiment is very negative (-0.5 or lower) with high magnitude (0.5+), flag as unsafe
+    const NEGATIVE_SENTIMENT_THRESHOLD = -0.5;
+    const MAGNITUDE_THRESHOLD = 0.5;
+    
+    if (sentimentScore <= NEGATIVE_SENTIMENT_THRESHOLD && sentimentMagnitude >= MAGNITUDE_THRESHOLD) {
+      console.warn('🚫 Slug flagged by Natural Language API:', {
+        slug,
+        sentimentScore,
+        sentimentMagnitude,
+      });
+      
+      return {
+        isSafe: false,
+        sentiment: {
+          score: sentimentScore,
+          magnitude: sentimentMagnitude,
+        },
+        error: `This slug contains negative/inappropriate content and cannot be used.`,
+      };
+    } else {
+      console.log('✅ Slug passed Natural Language API check:', {
+        sentimentScore,
+        sentimentMagnitude,
+      });
+      
+      return {
+        isSafe: true,
+        sentiment: {
+          score: sentimentScore,
+          magnitude: sentimentMagnitude,
+        },
+      };
+    }
+  } catch (error) {
+    console.error('❌ Error checking slug with Natural Language API:', error);
+    // Fail open - if check fails, allow the slug
+    return {
+      isSafe: true,
+      error: 'Natural Language API check failed. Please try again.',
     };
   }
 }
