@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { supabase } from "../../../lib/supabase";
 import { checkUrlSafety } from "../../../lib/urlSafetyCheck";
 import { validateUrl } from "../../../lib/urlValidation";
+import { validateSlug, validateSlugFormat } from "../../../lib/slugValidation";
 
 // Utility function to fetch page title from URL
 const fetchPageTitle = async (url) => {
@@ -54,6 +55,7 @@ const Step1FastTrack = ({
   const [checkingSlug, setCheckingSlug] = useState(false);
   const [slugError, setSlugError] = useState(null);
   const [isSlugAvailable, setIsSlugAvailable] = useState(null); // null = not checked, true = available, false = taken
+  const [lastSlugCheck, setLastSlugCheck] = useState(null); // Track last check time for debouncing
   const [safetyCheck, setSafetyCheck] = useState({
     loading: false,
     isSafe: null,
@@ -361,10 +363,20 @@ const Step1FastTrack = ({
       return;
     }
 
-    const slugToCheck = formData.slug.trim();
+    // Debouncing: Don't check the same slug too frequently (wait at least 2 seconds)
+    const now = Date.now();
+    const slugToCheck = formData.slug.trim().toLowerCase();
+    if (lastSlugCheck && 
+        lastSlugCheck.slug === slugToCheck && 
+        now - lastSlugCheck.timestamp < 2000) {
+      console.log('⏸️ Debouncing: Skipping check (too soon after last check)');
+      return;
+    }
+
     const selectedDomain = formData.domain || domains[0];
 
     setCheckingSlug(true);
+    setLastSlugCheck({ slug: slugToCheck, timestamp: now });
 
     try {
       const {
@@ -378,30 +390,27 @@ const Step1FastTrack = ({
         return;
       }
 
-      // Check if slug already exists in links table for this user and domain
-      const { data: existingLinks, error } = await supabase
-        .from("links")
-        .select("id, slug, domain")
-        .eq("user_id", user.id)
-        .eq("slug", slugToCheck)
-        .eq("domain", selectedDomain)
-        .limit(1);
+      // Use comprehensive slug validation
+      const validationResult = await validateSlug(
+        formData.slug,
+        selectedDomain,
+        user.id,
+        supabase,
+        true, // check availability
+        true  // check content moderation
+      );
 
-      if (error) {
-        console.error("Error checking slug:", error);
-        setSlugError("Error checking slug availability. Please try again.");
-        setIsSlugAvailable(null);
-        setCheckingSlug(false);
-        return;
-      }
-
-      if (existingLinks && existingLinks.length > 0) {
-        setSlugError(
-          `This slug "${slugToCheck}" is already taken for domain "${selectedDomain}". Please choose a different slug.`
-        );
+      if (!validationResult.isValid) {
+        setSlugError(validationResult.error || "Invalid slug");
         setIsSlugAvailable(false);
       } else {
-        // Slug is available - clear any previous error and mark as available
+        // Update form data with normalized slug (lowercase)
+        if (validationResult.normalizedSlug && validationResult.normalizedSlug !== formData.slug) {
+          updateFormData("slug", validationResult.normalizedSlug);
+        }
+        
+        // Slug is valid and available
+        // Note: If content moderation was rate-limited, it still passes (fail open)
         setSlugError(null);
         setIsSlugAvailable(true);
       }
@@ -597,13 +606,30 @@ const Step1FastTrack = ({
             type="text"
             value={formData.slug}
             onChange={(e) => {
-              updateFormData("slug", e.target.value);
-              // Clear error and reset availability when user types
+              let inputValue = e.target.value;
+              
+              // Auto-convert to lowercase
+              inputValue = inputValue.toLowerCase();
+              
+              // Always update the input (allow typing)
+              updateFormData("slug", inputValue);
+              
+              // Clear previous errors and reset availability when user types
               if (slugError) {
                 setSlugError(null);
               }
               if (isSlugAvailable !== null) {
                 setIsSlugAvailable(null); // Reset to blue/default when user changes slug
+              }
+              
+              // Optional: Show format validation in real-time (but don't block)
+              // Only show error if user has typed something and it's invalid
+              if (inputValue.length > 0) {
+                const formatCheck = validateSlugFormat(inputValue);
+                if (!formatCheck.isValid) {
+                  // Show error but don't block input
+                  setSlugError(formatCheck.error);
+                }
               }
             }}
             placeholder="e.g., iphone-deal"
