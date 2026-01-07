@@ -546,17 +546,20 @@ async function checkSlugWithNaturalLanguage(slug) {
     console.log('📤 Sending request to Google Natural Language API (Content Moderation)...');
     
     // Natural Language API endpoint for content moderation
-    // Note: moderateText is available in newer Natural Language API versions; using v1 endpoint path
+    // moderateText endpoint format
     const apiUrl = `https://language.googleapis.com/v1/documents:moderateText?key=${naturalLanguageApiKey}`;
     
     // Request body for Natural Language API Content Moderation
+    // Format according to Google Cloud Natural Language API documentation
+    // moderateText requires: { document: { type: "PLAIN_TEXT", content: "text" } }
     const requestBody = {
       document: {
         type: 'PLAIN_TEXT',
         content: slug, // slug already has hyphens converted to spaces
       },
-      encodingType: 'UTF8',
     };
+    
+    console.log('📋 Request body:', JSON.stringify(requestBody, null, 2));
     
     const response = await fetch(apiUrl, {
       method: 'POST',
@@ -570,16 +573,40 @@ async function checkSlugWithNaturalLanguage(slug) {
     
     if (!response.ok) {
       const errorData = await response.text();
+      let parsedError;
+      try {
+        parsedError = JSON.parse(errorData);
+      } catch (e) {
+        parsedError = { error: { message: errorData } };
+      }
+      
+      const errorMsg = parsedError?.error?.message || errorData;
       console.error('❌ Natural Language API (moderation) error:', {
         status: response.status,
         statusText: response.statusText,
         error: errorData,
+        parsedError: parsedError,
+        message: errorMsg,
       });
+      
+      // If it's a 400 error, log more details for debugging
+      if (response.status === 400) {
+        console.warn('⚠️ Bad Request (400) - Check API request format or API availability');
+        console.warn('💡 moderateText endpoint format: { document: { type: "PLAIN_TEXT", content: "text" } }');
+        console.warn('💡 Make sure Natural Language API is enabled and moderateText feature is available');
+        console.warn('💡 Note: moderateText might require specific API version or permissions');
+        
+        // Check if error mentions the endpoint or feature
+        if (errorMsg && (errorMsg.includes('moderateText') || errorMsg.includes('not found') || errorMsg.includes('not available'))) {
+          console.warn('⚠️ moderateText endpoint might not be available with this API key');
+          console.warn('💡 Try using analyzeSentiment instead, or check API permissions');
+        }
+      }
       
       // Fail open - don't block if Natural Language API fails
       return {
         isSafe: true,
-        error: 'Natural Language API moderation check unavailable.',
+        error: `Natural Language API moderation check unavailable: ${errorMsg}`,
       };
     }
     
