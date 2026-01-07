@@ -5,6 +5,7 @@
 You have **two separate things** to deploy:
 
 1. **Main Application (`goodlink`)** - This is your React app (already deployed ✅)
+
    - URL: `https://goodlink.fancy-sky-7888.workers.dev`
    - This is what you just deployed
 
@@ -37,6 +38,7 @@ npx wrangler secret put GOOGLE_SAFE_BROWSING_API_KEY
 ```
 
 When prompted, paste:
+
 ```
 AIzaSyC115jFfH72O_zbZ1Z0ac_QfzhJurSzXLU
 ```
@@ -50,6 +52,7 @@ npx wrangler deploy
 ### Step 5: Copy the Worker URL
 
 After deployment, you'll see output like:
+
 ```
 ✨  Successfully published your Worker to the following routes:
   - https://url-safety-check.YOUR-SUBDOMAIN.workers.dev
@@ -62,12 +65,14 @@ After deployment, you'll see output like:
 Update the `VITE_SAFETY_CHECK_WORKER_URL` environment variable with the new worker URL:
 
 **For local development:**
+
 - Update `.env.local`:
   ```
   VITE_SAFETY_CHECK_WORKER_URL=https://url-safety-check.YOUR-SUBDOMAIN.workers.dev
   ```
 
 **For production (if using Vercel/Cloudflare Pages):**
+
 - Go to your deployment platform settings
 - Update `VITE_SAFETY_CHECK_WORKER_URL` with the new worker URL
 - Redeploy your application
@@ -78,6 +83,6 @@ Update the `VITE_SAFETY_CHECK_WORKER_URL` environment variable with the new work
 - ⏳ **URL Safety Check Worker (`url-safety-check`)**: Needs to be deployed separately (follow steps above)
 
 Both workers will appear in your Cloudflare Dashboard under **Workers & Pages**, but they serve different purposes:
+
 - `goodlink` = Your main React application
 - `url-safety-check` = Service that checks URLs for safety
-
