@@ -294,8 +294,12 @@ export async function checkSlugContent(slug) {
     return cached.result;
   }
   
+  // Convert hyphens to spaces for analysis (before sending to API)
+  const slugForAnalysis = slug.replace(/-/g, ' ');
+  
   console.log('🔍 Checking slug content with Google Perspective API:', {
     slug,
+    slugForAnalysis, // Show the converted version (hyphens → spaces)
     hasApiKey: !!perspectiveApiKey,
     apiKeyLength: perspectiveApiKey ? perspectiveApiKey.length : 0,
     isLocalhost,
@@ -337,7 +341,7 @@ export async function checkSlugContent(slug) {
     // Request body for Perspective API
     const requestBody = {
       comment: {
-        text: slug,
+        text: slugForAnalysis,
       },
       requestedAttributes: {
         TOXICITY: {},
@@ -433,8 +437,8 @@ export async function checkSlugContent(slug) {
     console.log('✅ Perspective API response:', data);
     
     // Perspective API returns attribute scores (0-1, where higher = more toxic)
-    // Threshold: 0.7 (70%) - if any attribute exceeds this, flag as unsafe
-    const TOXICITY_THRESHOLD = 0.7;
+    // Threshold: 0.3 (30%) - if any attribute exceeds this, flag as unsafe
+    const TOXICITY_THRESHOLD = 0.3;
     
     let result;
     const flaggedCategories = [];
