@@ -512,11 +512,11 @@ export async function checkSlugContent(slug) {
 }
 
 /**
- * Check slug content with Google Natural Language API (Sentiment Analysis)
- * This is called after Perspective API check
+ * Check slug content with Google Natural Language API (Content Moderation)
+ * This is called after Perspective API check (adds a second gate)
  * 
  * @param {string} slug - The slug to check (with hyphens converted to spaces)
- * @returns {Promise<{isSafe: boolean, error?: string, sentiment?: object}>}
+ * @returns {Promise<{isSafe: boolean, error?: string, moderation?: object}>}
  */
 async function checkSlugWithNaturalLanguage(slug) {
   const naturalLanguageApiKey = import.meta.env.VITE_GOOGLE_NATURAL_LANGUAGE_API_KEY || import.meta.env.VITE_PERSPECTIVE_API_KEY;
@@ -543,12 +543,13 @@ async function checkSlugWithNaturalLanguage(slug) {
   }
   
   try {
-    console.log('📤 Sending request to Google Natural Language API...');
+    console.log('📤 Sending request to Google Natural Language API (Content Moderation)...');
     
-    // Natural Language API endpoint for sentiment analysis
-    const apiUrl = `https://language.googleapis.com/v1/documents:analyzeSentiment?key=${naturalLanguageApiKey}`;
+    // Natural Language API endpoint for content moderation
+    // Note: moderateText is available in newer Natural Language API versions; using v1 endpoint path
+    const apiUrl = `https://language.googleapis.com/v1/documents:moderateText?key=${naturalLanguageApiKey}`;
     
-    // Request body for Natural Language API
+    // Request body for Natural Language API Content Moderation
     const requestBody = {
       document: {
         type: 'PLAIN_TEXT',
@@ -565,11 +566,11 @@ async function checkSlugWithNaturalLanguage(slug) {
       body: JSON.stringify(requestBody),
     });
     
-    console.log('📥 Natural Language API response status:', response.status, response.statusText);
+    console.log('📥 Natural Language API (moderation) response status:', response.status, response.statusText);
     
     if (!response.ok) {
       const errorData = await response.text();
-      console.error('❌ Natural Language API error:', {
+      console.error('❌ Natural Language API (moderation) error:', {
         status: response.status,
         statusText: response.statusText,
         error: errorData,
@@ -578,60 +579,62 @@ async function checkSlugWithNaturalLanguage(slug) {
       // Fail open - don't block if Natural Language API fails
       return {
         isSafe: true,
-        error: 'Natural Language API check unavailable.',
+        error: 'Natural Language API moderation check unavailable.',
       };
     }
     
     // Parse the successful response
     const data = await response.json();
-    console.log('✅ Natural Language API response:', data);
+    console.log('✅ Natural Language API (moderation) response:', data);
     
-    // Sentiment score ranges from -1.0 (negative) to 1.0 (positive)
-    // Sentiment magnitude indicates the overall strength of emotion (0.0 to infinity)
-    // For moderation: negative sentiment with high magnitude might indicate harmful content
-    const sentiment = data.documentSentiment;
-    const sentimentScore = sentiment?.score || 0;
-    const sentimentMagnitude = sentiment?.magnitude || 0;
+    // Natural Language API moderation returns moderationCategories with confidence scores (0..1)
+    // Block if ANY category confidence >= 0.5 per your requirement
+    const BLOCK_THRESHOLD = 0.5;
+    const categories = Array.isArray(data.moderationCategories) ? data.moderationCategories : [];
     
-    // Threshold: if sentiment is very negative (-0.5 or lower) with high magnitude (0.5+), flag as unsafe
-    const NEGATIVE_SENTIMENT_THRESHOLD = -0.5;
-    const MAGNITUDE_THRESHOLD = 0.5;
+    // Normalize category objects and extract confidence fields
+    const normalized = categories.map((c) => {
+      const name = c.name || c.category || c.label || 'unknown';
+      // confidence field may be named differently; try common options
+      const confidence = typeof c.confidence === 'number'
+        ? c.confidence
+        : (typeof c.score === 'number' ? c.score
+        : (typeof c.probability === 'number' ? c.probability : 0));
+      return { name, confidence };
+    });
     
-    if (sentimentScore <= NEGATIVE_SENTIMENT_THRESHOLD && sentimentMagnitude >= MAGNITUDE_THRESHOLD) {
-      console.warn('🚫 Slug flagged by Natural Language API:', {
+    const blocked = normalized.filter((c) => c.confidence >= BLOCK_THRESHOLD).map((c) => c.name);
+    
+    if (blocked.length > 0) {
+      console.warn('🚫 Slug flagged by Natural Language API (moderation):', {
         slug,
-        sentimentScore,
-        sentimentMagnitude,
+        blockedCategories: blocked,
+        categories: normalized,
       });
-      
       return {
         isSafe: false,
-        sentiment: {
-          score: sentimentScore,
-          magnitude: sentimentMagnitude,
+        moderation: {
+          blockedCategories: blocked,
+          categories: normalized,
         },
-        error: `This slug contains negative/inappropriate content and cannot be used.`,
-      };
-    } else {
-      console.log('✅ Slug passed Natural Language API check:', {
-        sentimentScore,
-        sentimentMagnitude,
-      });
-      
-      return {
-        isSafe: true,
-        sentiment: {
-          score: sentimentScore,
-          magnitude: sentimentMagnitude,
-        },
+        error: `This slug contains inappropriate content and cannot be used.`,
       };
     }
+    
+    console.log('✅ Slug passed Natural Language API moderation check:', normalized);
+    return {
+      isSafe: true,
+      moderation: {
+        blockedCategories: [],
+        categories: normalized,
+      },
+    };
   } catch (error) {
-    console.error('❌ Error checking slug with Natural Language API:', error);
+    console.error('❌ Error checking slug with Natural Language API (moderation):', error);
     // Fail open - if check fails, allow the slug
     return {
       isSafe: true,
-      error: 'Natural Language API check failed. Please try again.',
+      error: 'Natural Language API moderation check failed. Please try again.',
     };
   }
 }
