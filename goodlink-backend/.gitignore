@@ -1,0 +1,12 @@
+# Cloudflare Worker build artifacts
+.wrangler/
+
+# Environment variables (contains sensitive keys)
+.dev.vars
+
+# Node modules
+node_modules/
+
+# Logs
+*.log
+

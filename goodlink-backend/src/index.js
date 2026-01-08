@@ -126,7 +126,8 @@ async function getLinkFromSupabase(slug, domain, supabaseUrl, supabaseKey) {
         if (!data || data.length === 0) {
             console.log(`No link found with slug="${slug}" and domain="${domain}"`);
             // Try to find if there's a link with this slug (for debugging)
-            const debugUrl = `${supabaseUrl}/rest/v1/links?slug=eq.${encodeURIComponent(slug)}&select=id,slug,domain,status,target_url`;
+            // IMPORTANT: Include id and user_id for click tracking!
+            const debugUrl = `${supabaseUrl}/rest/v1/links?slug=eq.${encodeURIComponent(slug)}&select=id,user_id,slug,domain,status,target_url,parameter_pass_through,utm_source,utm_medium,utm_campaign,utm_content`;
             const debugResponse = await fetch(debugUrl, {
                 method: 'GET',
                 headers: {
@@ -140,23 +141,26 @@ async function getLinkFromSupabase(slug, domain, supabaseUrl, supabaseKey) {
                 if (debugData && debugData.length > 0) {
                     console.log(`Debug: Found ${debugData.length} link(s) with slug "${slug}" but different domain:`);
                     debugData.forEach(link => {
-                        console.log(`  - id: ${link.id}, domain: "${link.domain}", slug: "${link.slug}", status: ${link.status !== undefined ? link.status : 'N/A'}`);
+                        console.log(`  - id: ${link.id}, user_id: ${link.user_id}, domain: "${link.domain}", slug: "${link.slug}", status: ${link.status !== undefined ? link.status : 'N/A'}`);
                     });
                     // If we found a link with the slug but different domain, try the first one
-                    // This handles cases where domain might be stored incorrectly
+                    // This handles cases where domain might be stored incorrectly (e.g., localhost in dev)
                     const foundLink = debugData.find(l =>
                         (l.status === undefined || l.status === true) &&
                         l.target_url
                     );
                     if (foundLink) {
                         console.log(`Warning: Using link with domain "${foundLink.domain}" instead of requested "${domain}"`);
+                        // IMPORTANT: Return all fields including id and user_id for tracking!
                         return {
+                            id: foundLink.id,
+                            user_id: foundLink.user_id,
                             target_url: foundLink.target_url,
-                            parameter_pass_through: true, // Default if not found
-                            utm_source: null,
-                            utm_medium: null,
-                            utm_campaign: null,
-                            utm_content: null,
+                            parameter_pass_through: foundLink.parameter_pass_through !== undefined ? foundLink.parameter_pass_through : true,
+                            utm_source: foundLink.utm_source || null,
+                            utm_medium: foundLink.utm_medium || null,
+                            utm_campaign: foundLink.utm_campaign || null,
+                            utm_content: foundLink.utm_content || null,
                             status: foundLink.status,
                         };
                     }
@@ -308,12 +312,24 @@ async function trackClick(clickData, supabaseUrl, supabaseKey) {
  */
 export default {
     async fetch(request, env, ctx) {
+        console.log('🔵 Worker started - Request received');
+        console.log('🔵 Request URL:', request.url);
+        console.log('🔵 Request method:', request.method);
+
         try {
             // Check for required environment variables
+            console.log('🔵 Checking environment variables...');
+            console.log('🔵 SUPABASE_URL exists:', !!env.SUPABASE_URL);
+            console.log('🔵 SUPABASE_SERVICE_ROLE_KEY exists:', !!env.SUPABASE_SERVICE_ROLE_KEY);
+
             if (!env.SUPABASE_URL || !env.SUPABASE_SERVICE_ROLE_KEY) {
-                console.error('Missing Supabase configuration');
+                console.error('❌ Missing Supabase configuration');
+                console.error('❌ SUPABASE_URL:', env.SUPABASE_URL || 'MISSING');
+                console.error('❌ SUPABASE_SERVICE_ROLE_KEY:', env.SUPABASE_SERVICE_ROLE_KEY ? 'EXISTS' : 'MISSING');
                 return new Response('Service configuration error', { status: 500 });
             }
+
+            console.log('✅ Environment variables OK');
 
             const url = new URL(request.url);
             const hostname = url.hostname;
@@ -352,8 +368,11 @@ export default {
                 env.SUPABASE_SERVICE_ROLE_KEY
             );
 
+            console.log('📋 Link data from Supabase:', JSON.stringify(linkData, null, 2));
+
             if (!linkData || !linkData.target_url) {
                 // Link not found or inactive
+                console.log('❌ Link not found in database');
                 return new Response('Link not found', {
                     status: 404,
                     headers: {
@@ -361,6 +380,8 @@ export default {
                     }
                 });
             }
+
+            console.log('✅ Link found! ID:', linkData.id, 'User ID:', linkData.user_id);
 
             // Extract user information from request
             const userAgent = request.headers.get('user-agent') || '';
@@ -411,22 +432,31 @@ export default {
                     clicked_at: new Date().toISOString(),
                 };
 
-                // Track the click (don't wait for it - fire and forget for better performance)
-                // Use ctx.waitUntil to ensure it completes but don't block the redirect
+                // Track the click
+                // IMPORTANT: Use ctx.waitUntil to ensure tracking completes but don't block redirect
                 console.log('🚀 Preparing to track click...');
+                console.log('🚀 Click data:', JSON.stringify(clickData, null, 2));
                 console.log('🚀 Context available:', !!ctx);
                 console.log('🚀 waitUntil available:', !!(ctx && ctx.waitUntil));
+                console.log('🚀 Supabase URL:', env.SUPABASE_URL);
+                console.log('🚀 Supabase Key exists:', !!env.SUPABASE_SERVICE_ROLE_KEY);
+
+                // Always track, but don't wait for it to complete before redirecting
+                const trackPromise = trackClick(clickData, env.SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY);
 
                 if (ctx && ctx.waitUntil) {
                     console.log('🚀 Using ctx.waitUntil for async tracking');
-                    ctx.waitUntil(trackClick(clickData, env.SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY));
+                    ctx.waitUntil(trackPromise);
                 } else {
-                    console.log('🚀 Using fallback async tracking (no waitUntil)');
-                    // Fallback if waitUntil not available
-                    trackClick(clickData, env.SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY).catch(err => {
+                    console.log('⚠️ No ctx.waitUntil available, using promise catch');
+                    // Fallback if waitUntil not available - still track but log errors
+                    trackPromise.catch(err => {
                         console.error('❌ Failed to track click (fallback):', err);
+                        console.error('❌ Error stack:', err.stack);
                     });
                 }
+
+                console.log('✅ Tracking initiated (not waiting for completion)');
             }
 
 
