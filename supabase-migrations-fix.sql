@@ -73,7 +73,7 @@ BEGIN
       user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
       name TEXT NOT NULL,
       target_url TEXT NOT NULL,
-      domain TEXT NOT NULL DEFAULT 'goodlink.ai',
+      domain TEXT NOT NULL DEFAULT 'glynk.to',
       slug TEXT NOT NULL,
       short_url TEXT NOT NULL,
       utm_source TEXT,

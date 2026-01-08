@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { supabase } from '../../../lib/supabase';
 
 const Step1CoreDetails = ({ formData, updateFormData, generateRandomSlug }) => {
-  const [domains, setDomains] = useState(['goodlink.ai']); // Default domain
+  const [domains, setDomains] = useState(['glynk.to']); // Default domain
   const [loadingDomains, setLoadingDomains] = useState(false);
 
   useEffect(() => {
@@ -15,7 +15,7 @@ const Step1CoreDetails = ({ formData, updateFormData, generateRandomSlug }) => {
         if (user) {
           // TODO: Fetch from domains table when implemented
           // For now, just use default
-          setDomains(['goodlink.ai']);
+          setDomains(['glynk.to']);
         }
       } catch (error) {
         console.error('Error fetching domains:', error);

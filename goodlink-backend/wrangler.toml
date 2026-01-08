@@ -4,7 +4,12 @@ compatibility_date = "2024-01-01"
 
 [env.production]
 routes = [
-  { pattern = "goodlink.ai/*", zone_name = "goodlink.ai" },
-  { pattern = "glynk.io/*", zone_name = "glynk.io" }
+  { pattern = "glynk.to/*", zone_name = "glynk.to" }
 ]
+
+# Note: Add additional domains as needed
+# routes = [
+#   { pattern = "glynk.to/*", zone_name = "glynk.to" },
+#   { pattern = "yourdomain.com/*", zone_name = "yourdomain.com" }
+# ]
 

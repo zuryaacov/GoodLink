@@ -17,7 +17,7 @@ const NewLinkWizard = ({ isOpen, onClose }) => {
     // Step 1
     name: '',
     targetUrl: '',
-    domain: '',
+    domain: 'glynk.to',
     slug: '',
     urlSafety: { isSafe: null, threatType: null }, // Safety check result
     // Step 2
@@ -92,7 +92,7 @@ const NewLinkWizard = ({ isOpen, onClose }) => {
       if (formData.utmCampaign) utmParams.append('utm_campaign', formData.utmCampaign);
       if (formData.utmContent) utmParams.append('utm_content', formData.utmContent);
 
-      const baseUrl = formData.domain || 'goodlink.ai';
+      const baseUrl = formData.domain || 'glynk.to';
       const shortUrl = `https://${baseUrl}/${finalSlug}`;
       const fullUtmString = utmParams.toString() ? `${shortUrl}?${utmParams.toString()}` : shortUrl;
 
@@ -139,7 +139,7 @@ const NewLinkWizard = ({ isOpen, onClose }) => {
       setFormData({
         name: '',
         targetUrl: '',
-        domain: '',
+        domain: 'glynk.to',
         slug: '',
         urlSafety: { isSafe: null, threatType: null },
         utmSource: '',

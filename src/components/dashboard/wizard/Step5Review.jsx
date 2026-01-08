@@ -2,7 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 
 const Step5Review = ({ formData, generateRandomSlug }) => {
-  const baseUrl = formData.domain || 'goodlink.ai';
+  const baseUrl = formData.domain || 'glynk.to';
   const finalSlug = formData.slug || generateRandomSlug();
   const shortUrl = `https://${baseUrl}/${finalSlug}`;
 

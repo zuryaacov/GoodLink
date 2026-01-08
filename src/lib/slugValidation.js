@@ -196,12 +196,10 @@ export async function checkSlugAvailability(slug, domain, userId, supabase) {
         const normalizedSlug = formatCheck.normalizedSlug;
 
         // Check availability based on domain type
-        // If domain is "glynk.io" or "goodlink.ai" (default domains), check system-wide
+        // If domain is "glynk.to" (default domain), check system-wide
         // If domain is custom, check only for that user
         const normalizedDomain = domain?.toLowerCase() || '';
-        const isDefaultDomain =
-            normalizedDomain === 'glynk.io' ||
-            normalizedDomain === 'goodlink.ai';
+        const isDefaultDomain = normalizedDomain === 'glynk.to';
 
         let query = supabase
             .from('links')

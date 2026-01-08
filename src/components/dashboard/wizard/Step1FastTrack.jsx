@@ -49,7 +49,7 @@ const Step1FastTrack = ({
   onQuickCreate,
   onSafetyCheckUpdate,
 }) => {
-  const [domains, setDomains] = useState(["goodlink.ai"]);
+  const [domains, setDomains] = useState(["glynk.to"]);
   const [hasCustomDomains, setHasCustomDomains] = useState(false);
   const [fetchingTitle, setFetchingTitle] = useState(false);
   const [checkingSlug, setCheckingSlug] = useState(false);
@@ -76,12 +76,12 @@ const Step1FastTrack = ({
             .from("domains")
             .select("domain")
             .eq("user_id", user.id)
-            .neq("domain", "goodlink.ai");
+            .neq("domain", "glynk.to");
 
           if (!domainsError && customDomains && customDomains.length > 0) {
             // User has custom domains - show all options including default
             const customDomainList = customDomains.map((d) => d.domain);
-            setDomains(["goodlink.ai", ...customDomainList]);
+            setDomains(["glynk.to", ...customDomainList]);
             setHasCustomDomains(true);
           } else {
             // No custom domains table or no custom domains found
@@ -91,7 +91,7 @@ const Step1FastTrack = ({
                 .from("links")
                 .select("domain")
                 .eq("user_id", user.id)
-                .neq("domain", "goodlink.ai")
+                .neq("domain", "glynk.to")
                 .limit(1);
 
             if (
@@ -113,12 +113,12 @@ const Step1FastTrack = ({
                 setHasCustomDomains(true);
               } else {
                 // No custom domains - hide the section
-                setDomains(["goodlink.ai"]);
+                setDomains(["glynk.to"]);
                 setHasCustomDomains(false);
               }
             } else {
               // No custom domains - hide the section
-              setDomains(["goodlink.ai"]);
+              setDomains(["glynk.to"]);
               setHasCustomDomains(false);
             }
           }
@@ -126,7 +126,7 @@ const Step1FastTrack = ({
       } catch (error) {
         console.error("Error fetching domains:", error);
         // On error, default to hiding custom domain selection
-        setDomains(["goodlink.ai"]);
+        setDomains(["glynk.to"]);
         setHasCustomDomains(false);
       }
     };
@@ -170,18 +170,17 @@ const Step1FastTrack = ({
     // Use normalized URL from validation
     const normalizedUrl = validation.normalizedUrl;
 
-    // Check if URL is pointing to goodlink.ai (not allowed - cannot redirect to own domain)
+    // Check if URL is pointing to glynk.to (not allowed - cannot redirect to own domain)
     try {
       const urlObj = new URL(normalizedUrl);
       const hostname = urlObj.hostname.toLowerCase().replace(/^www\./, "");
 
-      if (hostname === "goodlink.ai") {
+      if (hostname === "glynk.to") {
         setSafetyCheck({
           loading: false,
           isSafe: false,
           threatType: null,
-          error:
-            "Redirect cannot be to goodlink.ai. Please use a different URL.",
+          error: "Redirect cannot be to glynk.to. Please use a different URL.",
           urlExists: false,
         });
         if (onSafetyCheckUpdate) {
@@ -191,7 +190,7 @@ const Step1FastTrack = ({
       }
     } catch (error) {
       // If URL parsing fails, continue with normal validation
-      console.error("Error checking goodlink.ai domain:", error);
+      console.error("Error checking glynk.to domain:", error);
     }
 
     // Perform safety check with normalized URL (only if validation passed)
@@ -366,10 +365,12 @@ const Step1FastTrack = ({
     // Debouncing: Don't check the same slug too frequently (wait at least 2 seconds)
     const now = Date.now();
     const slugToCheck = formData.slug.trim().toLowerCase();
-    if (lastSlugCheck && 
-        lastSlugCheck.slug === slugToCheck && 
-        now - lastSlugCheck.timestamp < 2000) {
-      console.log('⏸️ Debouncing: Skipping check (too soon after last check)');
+    if (
+      lastSlugCheck &&
+      lastSlugCheck.slug === slugToCheck &&
+      now - lastSlugCheck.timestamp < 2000
+    ) {
+      console.log("⏸️ Debouncing: Skipping check (too soon after last check)");
       return;
     }
 
@@ -397,7 +398,7 @@ const Step1FastTrack = ({
         user.id,
         supabase,
         true, // check availability
-        true  // check content moderation
+        true // check content moderation
       );
 
       if (!validationResult.isValid) {
@@ -405,10 +406,13 @@ const Step1FastTrack = ({
         setIsSlugAvailable(false);
       } else {
         // Update form data with normalized slug (lowercase)
-        if (validationResult.normalizedSlug && validationResult.normalizedSlug !== formData.slug) {
+        if (
+          validationResult.normalizedSlug &&
+          validationResult.normalizedSlug !== formData.slug
+        ) {
           updateFormData("slug", validationResult.normalizedSlug);
         }
-        
+
         // Slug is valid and available
         // Note: If content moderation was rate-limited, it still passes (fail open)
         setSlugError(null);
@@ -546,7 +550,7 @@ const Step1FastTrack = ({
                   {safetyCheck.urlExists
                     ? "link_off"
                     : safetyCheck.error &&
-                      safetyCheck.error.includes("goodlink.ai")
+                      safetyCheck.error.includes("glynk.to")
                     ? "block"
                     : "warning"}
                 </span>
@@ -555,7 +559,7 @@ const Step1FastTrack = ({
                     {safetyCheck.urlExists
                       ? "URL Already Exists"
                       : safetyCheck.error &&
-                        safetyCheck.error.includes("goodlink.ai")
+                        safetyCheck.error.includes("glynk.to")
                       ? "Invalid Redirect Target"
                       : "Unsafe Link Detected"}
                   </h4>
@@ -564,7 +568,7 @@ const Step1FastTrack = ({
                       ? safetyCheck.error ||
                         "This URL already exists in your links. Please use a different URL."
                       : safetyCheck.error &&
-                        safetyCheck.error.includes("goodlink.ai")
+                        safetyCheck.error.includes("glynk.to")
                       ? safetyCheck.error
                       : `This URL has been flagged as ${
                           safetyCheck.threatType || "potentially unsafe"
@@ -607,13 +611,13 @@ const Step1FastTrack = ({
             value={formData.slug}
             onChange={(e) => {
               let inputValue = e.target.value;
-              
+
               // Auto-convert to lowercase
               inputValue = inputValue.toLowerCase();
-              
+
               // Always update the input (allow typing)
               updateFormData("slug", inputValue);
-              
+
               // Clear previous errors and reset availability when user types
               if (slugError) {
                 setSlugError(null);
@@ -621,7 +625,7 @@ const Step1FastTrack = ({
               if (isSlugAvailable !== null) {
                 setIsSlugAvailable(null); // Reset to blue/default when user changes slug
               }
-              
+
               // Optional: Show format validation in real-time (but don't block)
               // Only show error if user has typed something and it's invalid
               if (inputValue.length > 0) {

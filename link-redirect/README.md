@@ -80,14 +80,16 @@ Then use `supabase-public-link-policy.sql` which checks the status column.
 ## Route Configuration
 
 The worker is configured to handle requests for:
-- `glynk.to/*`
+- `goodlink.ai/*`
+- `glynk.io/*`
 
 To add more domains, update `wrangler.toml`:
 
 ```toml
 [env.production]
 routes = [
-  { pattern = "glynk.to/*", zone_name = "glynk.to" },
+  { pattern = "goodlink.ai/*", zone_name = "goodlink.ai" },
+  { pattern = "glynk.io/*", zone_name = "glynk.io" },
   { pattern = "yourdomain.com/*", zone_name = "yourdomain.com" }
 ]
 ```
@@ -103,8 +105,9 @@ routes = [
 
 ## URL Examples
 
-- `https://glynk.to/abc123` → redirects to target_url
-- `https://glynk.to/abc123?ref=twitter` → redirects with query params (if pass-through enabled)
+- `https://goodlink.ai/abc123` → redirects to target_url
+- `https://goodlink.ai/abc123?ref=twitter` → redirects with query params (if pass-through enabled)
+- `https://glynk.io/xyz789` → redirects to target_url
 
 ## Development
 
