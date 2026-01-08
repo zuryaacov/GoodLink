@@ -4,12 +4,16 @@ compatibility_date = "2024-01-01"
 
 [env.production]
 routes = [
-  { pattern = "glynk.to/*", zone_name = "glynk.to" }
+  { 
+    pattern = "glynk.to/*", 
+    zone_name = "glynk.to",
+    custom_domain = true
+  }
 ]
 
 # Note: Add additional domains as needed
 # routes = [
-#   { pattern = "glynk.to/*", zone_name = "glynk.to" },
-#   { pattern = "yourdomain.com/*", zone_name = "yourdomain.com" }
+#   { pattern = "glynk.to/*", zone_name = "glynk.to", custom_domain = true },
+#   { pattern = "yourdomain.com/*", zone_name = "yourdomain.com", custom_domain = true }
 # ]
 

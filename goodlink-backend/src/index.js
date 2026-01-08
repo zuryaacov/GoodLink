@@ -93,8 +93,8 @@ function buildTargetUrl(targetUrl, linkData, requestUrl) {
 async function getLinkFromSupabase(slug, domain, supabaseUrl, supabaseKey) {
     try {
         // Use Supabase REST API directly (no client library in Workers)
-        // Build query URL with proper encoding
-        const queryUrl = `${supabaseUrl}/rest/v1/links?slug=eq.${encodeURIComponent(slug)}&domain=eq.${encodeURIComponent(domain)}&select=target_url,parameter_pass_through,utm_source,utm_medium,utm_campaign,utm_content,status`;
+        // Build query URL with proper encoding - include id and user_id for tracking
+        const queryUrl = `${supabaseUrl}/rest/v1/links?slug=eq.${encodeURIComponent(slug)}&domain=eq.${encodeURIComponent(domain)}&select=id,user_id,target_url,parameter_pass_through,utm_source,utm_medium,utm_campaign,utm_content,status`;
 
         console.log(`Querying Supabase: ${queryUrl}`);
         console.log(`Search params: slug="${slug}", domain="${domain}"`);
@@ -186,10 +186,118 @@ async function getLinkFromSupabase(slug, domain, supabaseUrl, supabaseKey) {
 }
 
 /**
+ * Detect if request is from a bot
+ * @param {string} userAgent - User-Agent header
+ * @returns {boolean}
+ */
+function isBot(userAgent) {
+    if (!userAgent) return true;
+
+    const botPatterns = [
+        'bot', 'crawler', 'spider', 'scraper', 'curl', 'wget',
+        'python', 'go-http', 'java', 'apache', 'httpclient',
+        'bingbot', 'googlebot', 'slurp', 'duckduckbot', 'baiduspider',
+        'yandexbot', 'sogou', 'exabot', 'facebot', 'ia_archiver'
+    ];
+
+    const ua = userAgent.toLowerCase();
+    return botPatterns.some(pattern => ua.includes(pattern));
+}
+
+/**
+ * Parse User-Agent to extract device and browser info
+ * @param {string} userAgent - User-Agent header
+ * @returns {{deviceType: string, browser: string, os: string}}
+ */
+function parseUserAgent(userAgent) {
+    if (!userAgent) {
+        return { deviceType: 'unknown', browser: 'unknown', os: 'unknown' };
+    }
+
+    const ua = userAgent.toLowerCase();
+
+    // Detect device type
+    let deviceType = 'desktop';
+    if (ua.includes('mobile') || ua.includes('android') || ua.includes('iphone') || ua.includes('ipod')) {
+        deviceType = 'mobile';
+    } else if (ua.includes('tablet') || ua.includes('ipad')) {
+        deviceType = 'tablet';
+    }
+
+    // Detect browser
+    let browser = 'unknown';
+    if (ua.includes('chrome') && !ua.includes('edg')) {
+        browser = 'chrome';
+    } else if (ua.includes('firefox')) {
+        browser = 'firefox';
+    } else if (ua.includes('safari') && !ua.includes('chrome')) {
+        browser = 'safari';
+    } else if (ua.includes('edg')) {
+        browser = 'edge';
+    } else if (ua.includes('opera') || ua.includes('opr')) {
+        browser = 'opera';
+    }
+
+    // Detect OS
+    let os = 'unknown';
+    if (ua.includes('windows')) {
+        os = 'windows';
+    } else if (ua.includes('mac os') || ua.includes('macos')) {
+        os = 'macos';
+    } else if (ua.includes('linux')) {
+        os = 'linux';
+    } else if (ua.includes('android')) {
+        os = 'android';
+    } else if (ua.includes('ios') || ua.includes('iphone') || ua.includes('ipad')) {
+        os = 'ios';
+    }
+
+    return { deviceType, browser, os };
+}
+
+/**
+ * Track click in Supabase
+ * @param {object} clickData - Click tracking data
+ * @param {string} supabaseUrl - Supabase project URL
+ * @param {string} supabaseKey - Supabase service role key
+ * @returns {Promise<void>}
+ */
+async function trackClick(clickData, supabaseUrl, supabaseKey) {
+    try {
+        // Don't block redirect on tracking failure - log and continue
+        const insertUrl = `${supabaseUrl}/rest/v1/clicks`;
+
+        const response = await fetch(insertUrl, {
+            method: 'POST',
+            headers: {
+                'apikey': supabaseKey,
+                'Authorization': `Bearer ${supabaseKey}`,
+                'Content-Type': 'application/json',
+                'Prefer': 'return=representation',
+            },
+            body: JSON.stringify(clickData),
+        });
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error(`Failed to track click: ${response.status} ${response.statusText}`);
+            console.error(`Error details: ${errorText}`);
+            // Don't throw - we don't want to block redirects if tracking fails
+        } else {
+            const data = await response.json();
+            console.log(`✅ Click tracked successfully: ${data[0]?.id || 'unknown'}`);
+        }
+    } catch (error) {
+        console.error('Error tracking click:', error);
+        // Don't throw - we don't want to block redirects if tracking fails
+    }
+}
+
+/**
  * Main worker handler
  */
 export default {
-    async fetch(request, env) {
+    async fetch(request, env, ctx) {
         try {
             // Check for required environment variables
             if (!env.SUPABASE_URL || !env.SUPABASE_SERVICE_ROLE_KEY) {
@@ -241,6 +349,60 @@ export default {
                     headers: {
                         'Content-Type': 'text/plain',
                     }
+                });
+            }
+
+            // Extract user information from request
+            const userAgent = request.headers.get('user-agent') || '';
+            const referer = request.headers.get('referer') || request.headers.get('referrer') || '';
+            const ipAddress = request.headers.get('cf-connecting-ip') ||
+                request.headers.get('x-forwarded-for')?.split(',')[0] ||
+                request.headers.get('x-real-ip') ||
+                'unknown';
+
+            // Get location from Cloudflare headers (if available)
+            const country = request.headers.get('cf-ipcountry') || request.cf?.country || null;
+            const city = request.headers.get('cf-ipcity') || request.cf?.city || null;
+
+            // Parse user agent
+            const uaInfo = parseUserAgent(userAgent);
+            const bot = isBot(userAgent);
+
+            // Get query parameters as JSON string
+            const queryParams = url.search ? JSON.stringify(Object.fromEntries(url.searchParams)) : null;
+
+            // Generate session ID (simple hash of IP + User-Agent + timestamp)
+            const sessionId = `${ipAddress}-${userAgent.substring(0, 50)}-${Date.now()}`.substring(0, 100);
+
+            // Prepare click tracking data
+            const clickData = {
+                link_id: linkData.id,
+                user_id: linkData.user_id,
+                slug: slug,
+                domain: domain,
+                target_url: linkData.target_url,
+                ip_address: ipAddress,
+                user_agent: userAgent,
+                referer: referer || null,
+                country: country,
+                city: city,
+                device_type: uaInfo.deviceType,
+                browser: uaInfo.browser,
+                os: uaInfo.os,
+                query_params: queryParams,
+                is_bot: bot,
+                session_id: sessionId,
+                clicked_at: new Date().toISOString(),
+            };
+
+            // Track the click (don't wait for it - fire and forget for better performance)
+            // Use ctx.waitUntil to ensure it completes but don't block the redirect
+            if (ctx && ctx.waitUntil) {
+                ctx.waitUntil(trackClick(clickData, env.SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY));
+            } else {
+                // Fallback if waitUntil not available
+                trackClick(clickData, env.SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY).catch(err => {
+                    console.error('Failed to track click:', err);
                 });
             }
 
