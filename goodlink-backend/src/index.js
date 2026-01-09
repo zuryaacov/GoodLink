@@ -477,55 +477,8 @@ export default {
 
             console.log(`Redirecting to: ${finalUrl}`);
 
-            // DEBUG MODE: Return JSON response instead of redirect to see what's happening
-            // TODO: Remove this and restore redirect after debugging
-            const debugResponse = {
-                success: true,
-                message: "Link found - DEBUG MODE (no redirect)",
-                linkData: {
-                    id: linkData.id,
-                    user_id: linkData.user_id,
-                    slug: slug,
-                    domain: domain,
-                    target_url: linkData.target_url,
-                    final_url: finalUrl,
-                    parameter_pass_through: linkData.parameter_pass_through,
-                    utm_source: linkData.utm_source,
-                    utm_medium: linkData.utm_medium,
-                    utm_campaign: linkData.utm_campaign,
-                    utm_content: linkData.utm_content,
-                    status: linkData.status,
-                },
-                clickTracking: {
-                    initiated: !!(linkData.id && linkData.user_id),
-                    clickData: linkData.id && linkData.user_id ? {
-                        link_id: linkData.id,
-                        user_id: linkData.user_id,
-                        slug: slug,
-                        domain: domain,
-                        target_url: linkData.target_url,
-                    } : null,
-                },
-                requestInfo: {
-                    url: request.url,
-                    hostname: hostname,
-                    pathname: pathname,
-                    method: request.method,
-                },
-            };
-
-            console.log('📊 DEBUG RESPONSE:', JSON.stringify(debugResponse, null, 2));
-
-            // Return JSON response for debugging
-            return new Response(JSON.stringify(debugResponse, null, 2), {
-                status: 200,
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-            });
-
-            // TODO: Restore redirect after debugging:
-            // return Response.redirect(finalUrl, 301);
+            // Perform redirect (301 permanent redirect)
+            return Response.redirect(finalUrl, 301);
 
         } catch (error) {
             console.error('Worker error:', error);
