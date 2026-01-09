@@ -118,9 +118,18 @@ async function getLinkFromSupabase(slug, domain, supabaseUrl, supabaseKey) {
 
         const data = await response.json();
 
-        console.log(`Supabase returned ${data?.length || 0} result(s)`);
+        console.log(`📥 Supabase returned ${data?.length || 0} result(s)`);
+        console.log(`📥 Supabase response status: ${response.status}`);
+        console.log(`📥 Supabase response headers:`, JSON.stringify(Object.fromEntries(response.headers.entries()), null, 2));
+        console.log(`📥 Supabase raw response:`, JSON.stringify(data, null, 2));
+
         if (data && data.length > 0) {
-            console.log(`Found link:`, JSON.stringify(data[0], null, 2));
+            console.log(`✅ Found link:`, JSON.stringify(data[0], null, 2));
+            console.log(`✅ Link ID: ${data[0].id}`);
+            console.log(`✅ User ID: ${data[0].user_id}`);
+            console.log(`✅ Target URL: ${data[0].target_url}`);
+        } else {
+            console.log(`❌ No links found in Supabase response`);
         }
 
         if (!data || data.length === 0) {
@@ -287,17 +296,20 @@ async function trackClick(clickData, supabaseUrl, supabaseKey) {
         });
 
         console.log(`📥 Click tracking response status: ${response.status} ${response.statusText}`);
+        console.log(`📥 Click tracking response headers:`, JSON.stringify(Object.fromEntries(response.headers.entries()), null, 2));
 
         if (!response.ok) {
             const errorText = await response.text();
             console.error(`❌ Failed to track click: ${response.status} ${response.statusText}`);
             console.error(`❌ Error details: ${errorText}`);
             console.error(`❌ Request body was:`, JSON.stringify(clickData, null, 2));
+            console.error(`❌ Full error response:`, errorText);
             // Don't throw - we don't want to block redirects if tracking fails
         } else {
             const data = await response.json();
             console.log(`✅ Click tracked successfully! ID: ${data[0]?.id || 'unknown'}`);
             console.log(`✅ Click data saved:`, JSON.stringify(data[0], null, 2));
+            console.log(`✅ Full Supabase response:`, JSON.stringify(data, null, 2));
         }
     } catch (error) {
         console.error('❌ Error tracking click:', error);
@@ -465,8 +477,55 @@ export default {
 
             console.log(`Redirecting to: ${finalUrl}`);
 
-            // Perform redirect (301 permanent redirect)
-            return Response.redirect(finalUrl, 301);
+            // DEBUG MODE: Return JSON response instead of redirect to see what's happening
+            // TODO: Remove this and restore redirect after debugging
+            const debugResponse = {
+                success: true,
+                message: "Link found - DEBUG MODE (no redirect)",
+                linkData: {
+                    id: linkData.id,
+                    user_id: linkData.user_id,
+                    slug: slug,
+                    domain: domain,
+                    target_url: linkData.target_url,
+                    final_url: finalUrl,
+                    parameter_pass_through: linkData.parameter_pass_through,
+                    utm_source: linkData.utm_source,
+                    utm_medium: linkData.utm_medium,
+                    utm_campaign: linkData.utm_campaign,
+                    utm_content: linkData.utm_content,
+                    status: linkData.status,
+                },
+                clickTracking: {
+                    initiated: !!(linkData.id && linkData.user_id),
+                    clickData: linkData.id && linkData.user_id ? {
+                        link_id: linkData.id,
+                        user_id: linkData.user_id,
+                        slug: slug,
+                        domain: domain,
+                        target_url: linkData.target_url,
+                    } : null,
+                },
+                requestInfo: {
+                    url: request.url,
+                    hostname: hostname,
+                    pathname: pathname,
+                    method: request.method,
+                },
+            };
+
+            console.log('📊 DEBUG RESPONSE:', JSON.stringify(debugResponse, null, 2));
+
+            // Return JSON response for debugging
+            return new Response(JSON.stringify(debugResponse, null, 2), {
+                status: 200,
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            });
+
+            // TODO: Restore redirect after debugging:
+            // return Response.redirect(finalUrl, 301);
 
         } catch (error) {
             console.error('Worker error:', error);
