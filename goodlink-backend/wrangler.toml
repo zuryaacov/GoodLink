@@ -2,17 +2,6 @@ name = "goodlink-backend"
 main = "src/index.js"
 compatibility_date = "2024-01-01"
 
-# Routes for production environment
-# IMPORTANT: This requires that 'glynk.to' is in your Cloudflare account
-[env.production]
-routes = [
-  { pattern = "glynk.to/*", zone_name = "glynk.to" }
-]
-
-# Note: If the domain is not in your Cloudflare account, you need to:
-# 1. Add the domain to Cloudflare: Dashboard → Websites → Add a site
-# 2. Or use Custom Domain in Cloudflare Dashboard → Workers & Pages → goodlink-backend → Settings
-#
-# IMPORTANT: When deploying, use:
-#   npx wrangler deploy --env production
+# Routes - configure in Cloudflare Dashboard if needed
+# Routes are configured in Cloudflare Dashboard → Workers & Pages → goodlink-backend → Settings → Triggers
 

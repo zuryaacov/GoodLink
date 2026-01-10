@@ -118,10 +118,10 @@ async function getLinkFromSupabase(slug, domain, supabaseUrl, supabaseKey) {
 
         const data = await response.json();
 
-        console.log(`📥 Supabase returned ${data?.length || 0} result(s)`);
-        console.log(`📥 Supabase response status: ${response.status}`);
-        console.log(`📥 Supabase response headers:`, JSON.stringify(Object.fromEntries(response.headers.entries()), null, 2));
-        console.log(`📥 Supabase raw response:`, JSON.stringify(data, null, 2));
+        console.log(`🔥 Supabase returned ${data?.length || 0} result(s)`);
+        console.log(`🔥 Supabase response status: ${response.status}`);
+        console.log(`🔥 Supabase response headers:`, JSON.stringify(Object.fromEntries(response.headers.entries()), null, 2));
+        console.log(`🔥 Supabase raw response:`, JSON.stringify(data, null, 2));
 
         if (data && data.length > 0) {
             console.log(`✅ Found link:`, JSON.stringify(data[0], null, 2));
@@ -276,14 +276,16 @@ function parseUserAgent(userAgent) {
  * @returns {Promise<void>}
  */
 async function trackClick(clickData, supabaseUrl, supabaseKey) {
+    console.log('📊 [trackClick] Function called');
+    console.log('📊 [trackClick] Supabase URL:', supabaseUrl);
+    console.log('📊 [trackClick] Supabase Key exists:', !!supabaseKey);
+
+    const insertUrl = `${supabaseUrl}/rest/v1/clicks`;
+    console.log('📊 [trackClick] Insert URL:', insertUrl);
+    console.log('📊 [trackClick] Click data:', JSON.stringify(clickData, null, 2));
+
     try {
-        // Don't block redirect on tracking failure - log and continue
-        const insertUrl = `${supabaseUrl}/rest/v1/clicks`;
-
-        console.log('📝 Starting click tracking...');
-        console.log('📝 Click data:', JSON.stringify(clickData, null, 2));
-        console.log('📝 Insert URL:', insertUrl);
-
+        console.log('📊 [trackClick] About to call fetch...');
         const response = await fetch(insertUrl, {
             method: 'POST',
             headers: {
@@ -295,27 +297,25 @@ async function trackClick(clickData, supabaseUrl, supabaseKey) {
             body: JSON.stringify(clickData),
         });
 
-        console.log(`📥 Click tracking response status: ${response.status} ${response.statusText}`);
-        console.log(`📥 Click tracking response headers:`, JSON.stringify(Object.fromEntries(response.headers.entries()), null, 2));
+        console.log(`🔥 [trackClick] Response received: ${response.status} ${response.statusText}`);
 
         if (!response.ok) {
             const errorText = await response.text();
-            console.error(`❌ Failed to track click: ${response.status} ${response.statusText}`);
-            console.error(`❌ Error details: ${errorText}`);
-            console.error(`❌ Request body was:`, JSON.stringify(clickData, null, 2));
-            console.error(`❌ Full error response:`, errorText);
-            // Don't throw - we don't want to block redirects if tracking fails
-        } else {
-            const data = await response.json();
-            console.log(`✅ Click tracked successfully! ID: ${data[0]?.id || 'unknown'}`);
-            console.log(`✅ Click data saved:`, JSON.stringify(data[0], null, 2));
-            console.log(`✅ Full Supabase response:`, JSON.stringify(data, null, 2));
+            console.error(`❌ [trackClick] Failed: ${response.status} ${response.statusText}`);
+            console.error(`❌ [trackClick] Error: ${errorText}`);
+            throw new Error(`Click tracking failed: ${response.status} ${response.statusText} - ${errorText}`);
         }
+
+        const data = await response.json();
+        console.log(`✅ [trackClick] Success! ID: ${data[0]?.id || 'unknown'}`);
+        console.log(`✅ [trackClick] Data:`, JSON.stringify(data[0], null, 2));
+        console.log(`✅ [trackClick] About to return data`);
+        return data;
     } catch (error) {
-        console.error('❌ Error tracking click:', error);
-        console.error('❌ Error stack:', error.stack);
-        console.error('❌ Click data that failed:', JSON.stringify(clickData, null, 2));
-        // Don't throw - we don't want to block redirects if tracking fails
+        console.error('❌ [trackClick] Exception caught:', error);
+        console.error('❌ [trackClick] Error message:', error.message);
+        console.error('❌ [trackClick] Error stack:', error.stack);
+        throw error;
     }
 }
 
@@ -417,12 +417,18 @@ export default {
             // Generate session ID (simple hash of IP + User-Agent + timestamp)
             const sessionId = `${ipAddress}-${userAgent.substring(0, 50)}-${Date.now()}`.substring(0, 100);
 
+            // Build final URL with UTM parameters and query string pass-through
+            const finalUrl = buildTargetUrl(linkData.target_url, linkData, url);
+            console.log(`🔄 Final URL built: ${finalUrl}`);
+
             // Validate that we have required fields for tracking
-            if (!linkData.id || !linkData.user_id) {
-                console.error('❌ Cannot track click: Missing link ID or user ID');
-                console.error('❌ linkData:', JSON.stringify(linkData, null, 2));
-                // Still redirect even if tracking fails
-            } else {
+            console.log('📊 Checking if we can track click...');
+            console.log('📊 linkData.id:', linkData.id);
+            console.log('📊 linkData.user_id:', linkData.user_id);
+
+            if (linkData.id && linkData.user_id) {
+                console.log('✅ Link has ID and User ID - will track click asynchronously');
+
                 // Prepare click tracking data
                 const clickData = {
                     link_id: linkData.id,
@@ -444,40 +450,27 @@ export default {
                     clicked_at: new Date().toISOString(),
                 };
 
-                // Track the click
-                // IMPORTANT: Use ctx.waitUntil to ensure tracking completes but don't block redirect
-                console.log('🚀 Preparing to track click...');
-                console.log('🚀 Click data:', JSON.stringify(clickData, null, 2));
-                console.log('🚀 Context available:', !!ctx);
-                console.log('🚀 waitUntil available:', !!(ctx && ctx.waitUntil));
-                console.log('🚀 Supabase URL:', env.SUPABASE_URL);
-                console.log('🚀 Supabase Key exists:', !!env.SUPABASE_SERVICE_ROLE_KEY);
+                console.log('🚀 Using ctx.waitUntil() for async tracking');
 
-                // Always track, but don't wait for it to complete before redirecting
-                const trackPromise = trackClick(clickData, env.SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY);
-
-                if (ctx && ctx.waitUntil) {
-                    console.log('🚀 Using ctx.waitUntil for async tracking');
-                    ctx.waitUntil(trackPromise);
-                } else {
-                    console.log('⚠️ No ctx.waitUntil available, using promise catch');
-                    // Fallback if waitUntil not available - still track but log errors
-                    trackPromise.catch(err => {
-                        console.error('❌ Failed to track click (fallback):', err);
-                        console.error('❌ Error stack:', err.stack);
-                    });
-                }
-
-                console.log('✅ Tracking initiated (not waiting for completion)');
+                // Use ctx.waitUntil() to track click without blocking the redirect
+                // This allows the response to be sent immediately while tracking continues
+                ctx.waitUntil(
+                    trackClick(clickData, env.SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY)
+                        .then(() => {
+                            console.log('✅ Click tracking completed successfully');
+                        })
+                        .catch(error => {
+                            console.error('❌ Click tracking failed:', error);
+                            console.error('❌ Error details:', error.message);
+                        })
+                );
+            } else {
+                console.error('❌ Cannot track click: Missing link ID or user ID');
+                console.error('❌ linkData:', JSON.stringify(linkData, null, 2));
             }
 
-
-            // Build final URL with UTM parameters and query string pass-through
-            const finalUrl = buildTargetUrl(linkData.target_url, linkData, url);
-
-            console.log(`Redirecting to: ${finalUrl}`);
-
-            // Perform redirect (301 permanent redirect)
+            // Return redirect response immediately (tracking continues in background)
+            console.log(`🔄 Performing redirect to: ${finalUrl}`);
             return Response.redirect(finalUrl, 301);
 
         } catch (error) {
@@ -491,4 +484,3 @@ export default {
         }
     },
 };
-
