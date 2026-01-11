@@ -746,7 +746,7 @@ const Step1FastTrack = ({
         </motion.div>
       )}
 
-      {/* Quick Create Button - Only on Step 1 */}
+      {/* Quick Create/Update Button - Only on Step 1 */}
       {canCreate && (
         <motion.div
           initial={{ opacity: 0, y: 10 }}
@@ -777,17 +777,21 @@ const Step1FastTrack = ({
             }}
             title={
               safetyCheck.isSafe === false
-                ? "Cannot create link with unsafe URL"
+                ? formData.linkId 
+                  ? "Cannot update link with unsafe URL"
+                  : "Cannot create link with unsafe URL"
                 : ""
             }
           >
-            <span className="material-symbols-outlined">bolt</span>
-            Create Quick Link (Skip Advanced Settings)
+            <span className="material-symbols-outlined">{formData.linkId ? "save" : "bolt"}</span>
+            {formData.linkId ? "Update Link" : "Create Quick Link (Skip Advanced Settings)"}
           </button>
-          <p className="text-xs text-slate-500 text-center mt-2">
-            You can create the link now with default settings, or continue to
-            customize UTM, pixels, and security
-          </p>
+          {!formData.linkId && (
+            <p className="text-xs text-slate-500 text-center mt-2">
+              You can create the link now with default settings, or continue to
+              customize UTM, pixels, and security
+            </p>
+          )}
         </motion.div>
       )}
     </motion.div>
