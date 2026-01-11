@@ -46,31 +46,6 @@ const LinkManager = () => {
     return text.substring(0, maxLength) + '...';
   };
 
-  const getTrafficQualityColor = (link) => {
-    // TODO: Implement actual traffic quality logic based on IPQS/Turnstile
-    // For now, return a default color
-    return 'green';
-  };
-
-  const getPixelIcons = (pixels) => {
-    if (!pixels || pixels.length === 0) return null;
-    
-    // For now, show a generic pixel icon for each pixel ID
-    // TODO: Map pixel IDs to actual pixel types/icons when pixel data is available
-    return (
-      <div className="flex gap-1.5">
-        {pixels.map((pixelId, index) => (
-          <span 
-            key={index} 
-            className="material-symbols-outlined text-lg md:text-base text-slate-400" 
-            title={`Pixel ${pixelId}`}
-          >
-            ads_click
-          </span>
-        ))}
-      </div>
-    );
-  };
 
   const handleToggleStatus = async (linkId, currentStatus) => {
     try {
@@ -131,115 +106,60 @@ const LinkManager = () => {
           </div>
         </div>
       ) : (
-        <div className="flex flex-col gap-4 lg:gap-0 w-full">
-          <div className="overflow-x-auto -mx-4 md:-mx-6 px-4 md:px-6 lg:mx-0 lg:px-0 w-full">
-            {/* Desktop Header - Grid (hidden on mobile/tablet, shown on large screens) */}
-            <div className="hidden lg:grid lg:grid-cols-12 gap-3 xl:gap-4 bg-[#0b0f19] border border-[#232f48] rounded-t-xl px-4 py-3 font-bold text-slate-400 text-xs uppercase tracking-wider min-w-full">
-            <div className="col-span-3">Name & Destination</div>
-            <div className="col-span-2">Short URL</div>
-            <div className="col-span-1 text-right">Clicks</div>
-            <div className="col-span-1 text-center">Quality</div>
-            <div className="col-span-1 text-center">Pixels</div>
-            <div className="col-span-2 text-center">Status</div>
-            <div className="col-span-2 text-center">Actions</div>
-          </div>
-
-          {/* Links List */}
-          {links.map((link, index) => (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 w-full">
+          {links.map((link) => (
             <div
               key={link.id}
-              className={`bg-[#101622] border border-[#232f48] lg:border-b lg:border-x-0 lg:border-t-0 p-4 sm:p-5 lg:p-4 rounded-xl lg:rounded-none transition-all hover:bg-white/5 lg:grid lg:grid-cols-12 lg:gap-3 xl:gap-4 lg:items-center ${
-                index === links.length - 1 ? 'lg:rounded-b-xl' : ''
-              }`}
+              className="bg-[#101622] border border-[#232f48] rounded-xl p-5 transition-all hover:bg-white/5 hover:border-primary/30 flex flex-col gap-4"
             >
               {/* Name & Destination */}
-              <div className="flex flex-col gap-2 mb-4 lg:mb-0 lg:col-span-3 min-w-0">
-                <span className="text-xs uppercase text-slate-500 font-bold lg:hidden">Name & Destination</span>
-                <div className="flex flex-col gap-1.5 min-w-0">
-                  <span className="text-lg sm:text-xl lg:text-base font-bold text-white break-words overflow-hidden text-ellipsis line-clamp-2" title={link.name || 'Untitled'}>
-                    {link.name || 'Untitled'}
-                  </span>
-                  <span className="text-slate-500 text-xs sm:text-sm lg:text-xs truncate" title={link.target_url}>
-                    {truncateText(link.target_url, 50)}
-                  </span>
-                </div>
+              <div className="flex flex-col gap-2 min-w-0 flex-1">
+                <span className="text-lg font-bold text-white break-words line-clamp-2" title={link.name || 'Untitled'}>
+                  {link.name || 'Untitled'}
+                </span>
+                <span className="text-slate-500 text-sm truncate" title={link.target_url}>
+                  {truncateText(link.target_url, 60)}
+                </span>
               </div>
 
               {/* Short URL */}
-              <div className="flex flex-col gap-2 mb-4 lg:mb-0 lg:col-span-2">
-                <span className="text-xs uppercase text-slate-500 font-bold lg:hidden">Short URL</span>
-                <div className="flex items-center gap-2 min-w-0">
-                  <span className="text-primary font-mono text-base sm:text-lg lg:text-sm truncate flex-1 min-w-0" title={link.short_url}>
-                    {link.short_url}
-                  </span>
-                  <button
-                    onClick={() => handleCopy(link.short_url)}
-                    className="text-slate-400 hover:text-primary transition-colors p-2 lg:p-1 bg-[#0b0f19] lg:bg-transparent rounded-lg lg:rounded flex-shrink-0"
-                    title="Copy URL"
-                  >
-                    <span className="material-symbols-outlined text-base sm:text-lg lg:text-base">content_copy</span>
-                  </button>
-                </div>
+              <div className="flex items-center gap-2 min-w-0 p-3 bg-[#0b0f19] rounded-lg border border-[#232f48]">
+                <span className="text-primary font-mono text-sm truncate flex-1 min-w-0" title={link.short_url}>
+                  {link.short_url}
+                </span>
+                <button
+                  onClick={() => handleCopy(link.short_url)}
+                  className="text-slate-400 hover:text-primary transition-colors p-1.5 rounded flex-shrink-0"
+                  title="Copy URL"
+                >
+                  <span className="material-symbols-outlined text-base">content_copy</span>
+                </button>
               </div>
 
-              {/* Clicks */}
-              <div className="flex flex-col gap-2 mb-4 lg:mb-0 lg:col-span-1 lg:text-right">
-                <span className="text-xs uppercase text-slate-500 font-bold lg:hidden">Clicks</span>
-                <div className="flex flex-col lg:items-end">
-                  <span className="text-xl sm:text-2xl lg:text-base font-bold text-white">0 / 0</span>
-                  <span className="text-xs text-slate-500">24h / Total</span>
-                </div>
-              </div>
-
-              {/* Traffic Quality */}
-              <div className="flex flex-col gap-2 mb-4 lg:mb-0 lg:col-span-1 lg:text-center">
-                <span className="text-xs uppercase text-slate-500 font-bold lg:hidden">Quality</span>
-                <div className="flex items-center lg:justify-center">
-                  <span className="material-symbols-outlined text-green-400 text-lg sm:text-xl lg:text-base" title="Traffic Quality: Good">
-                    speed
-                  </span>
-                </div>
-              </div>
-
-              {/* Pixels */}
-              <div className="flex flex-col gap-2 mb-4 lg:mb-0 lg:col-span-1 lg:text-center">
-                <span className="text-xs uppercase text-slate-500 font-bold lg:hidden">Pixels</span>
-                <div className="flex items-center lg:justify-center flex-wrap gap-1">
-                  {getPixelIcons(link.pixels)}
-                  {(!link.pixels || link.pixels.length === 0) && (
-                    <span className="text-slate-600">—</span>
-                  )}
-                </div>
-              </div>
-
-              {/* Status */}
-              <div className="flex items-center justify-between lg:justify-center gap-4 mb-4 lg:mb-0 lg:col-span-2">
-                <span className="text-xs uppercase text-slate-500 font-bold lg:hidden">Status</span>
+              {/* Status & Actions */}
+              <div className="flex items-center justify-between gap-3 pt-2 border-t border-[#232f48]">
+                {/* Status */}
                 <button
                   onClick={() => handleToggleStatus(link.id, link.status !== false)}
-                  className={`relative w-14 h-7 lg:w-12 lg:h-6 rounded-full transition-colors flex-shrink-0 ${
+                  className={`relative w-12 h-6 rounded-full transition-colors flex-shrink-0 ${
                     (link.status === undefined || link.status !== false) ? 'bg-primary' : 'bg-[#232f48]'
                   }`}
                   aria-label="Toggle link status"
                 >
                   <span
-                    className={`absolute top-0.5 left-0.5 lg:top-1 lg:left-1 w-6 h-6 lg:w-4 lg:h-4 bg-white rounded-full transition-transform ${
-                      (link.status === undefined || link.status !== false) ? 'translate-x-7 lg:translate-x-6' : 'translate-x-0'
+                    className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform ${
+                      (link.status === undefined || link.status !== false) ? 'translate-x-6' : 'translate-x-0'
                     }`}
                   />
                 </button>
-              </div>
 
-              {/* Actions */}
-              <div className="flex items-center justify-between lg:justify-center gap-4 lg:col-span-2">
-                <span className="text-xs uppercase text-slate-500 font-bold lg:hidden">Actions</span>
-                <div className="ml-auto lg:ml-0">
+                {/* Actions */}
+                <div className="ml-auto">
                   <LinkActionsMenu link={link} onRefresh={fetchLinks} />
                 </div>
               </div>
             </div>
           ))}
-          </div>
         </div>
       )}
 
