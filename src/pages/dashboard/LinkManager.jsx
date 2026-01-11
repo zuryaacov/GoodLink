@@ -188,7 +188,7 @@ const LinkManager = () => {
 };
 
 // Actions Menu Component
-const LinkActionsMenu = ({ link, onRefresh }) => {
+const LinkActionsMenu = ({ link, onRefresh, onEdit }) => {
   const [isOpen, setIsOpen] = useState(false);
 
   const handleDelete = async () => {
