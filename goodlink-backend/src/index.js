@@ -148,65 +148,587 @@ function parseUserAgent(userAgent) {
 }
 
 /**
- * Track click in Supabase
+ * Check if we should track this click (deduplication)
+ * Returns false if a similar click was recorded very recently (within last 2 seconds)
+ * More aggressive deduplication to prevent rapid double-clicks
  */
-async function trackClick(clickData, supabaseUrl, supabaseKey) {
-    console.log('📊 [trackClick] ========== STARTING ==========');
-    console.log('📊 [trackClick] Supabase URL:', supabaseUrl);
-    console.log('📊 [trackClick] Supabase Key exists:', !!supabaseKey);
-    console.log('📊 [trackClick] Supabase Key length:', supabaseKey ? supabaseKey.length : 0);
-
-    const insertUrl = `${supabaseUrl}/rest/v1/clicks`;
-    console.log('📊 [trackClick] Insert URL:', insertUrl);
-    console.log('📊 [trackClick] Click data:', JSON.stringify(clickData, null, 2));
-
+async function shouldTrackClick(clickData, supabaseUrl, supabaseKey) {
     try {
-        // Add a timeout controller to prevent the worker from hanging if Supabase is slow
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => {
-            console.error('⏱️ [trackClick] Timeout! Aborting request...');
-            controller.abort();
-        }, 1500); // 1.5 second timeout
+        // Check for recent clicks with same link_id, IP, and user_agent (within last 2 seconds)
+        // Using IP + user_agent is more reliable than session_id (which includes timestamp)
+        const twoSecondsAgo = new Date(Date.now() - 2000).toISOString();
+        const checkUrl = `${supabaseUrl}/rest/v1/clicks?link_id=eq.${clickData.link_id}&ip_address=eq.${encodeURIComponent(clickData.ip_address)}&clicked_at=gte.${twoSecondsAgo}&select=id&limit=1`;
 
-        console.log('📊 [trackClick] About to call fetch...');
-        const response = await fetch(insertUrl, {
-            method: 'POST',
+        console.log('🔍 Checking for duplicate clicks (last 2 seconds)...');
+
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 500); // Fast timeout for check
+
+        const response = await fetch(checkUrl, {
+            method: 'GET',
             headers: {
                 'apikey': supabaseKey,
                 'Authorization': `Bearer ${supabaseKey}`,
                 'Content-Type': 'application/json',
-                'Prefer': 'return=representation', // Changed to representation to get the inserted row back
             },
-            body: JSON.stringify(clickData),
             signal: controller.signal
         });
 
         clearTimeout(timeoutId);
 
-        console.log(`📊 [trackClick] Response received: ${response.status} ${response.statusText}`);
-        console.log(`📊 [trackClick] Response headers:`, JSON.stringify(Object.fromEntries(response.headers.entries()), null, 2));
-
-        if (!response.ok) {
-            const errorText = await response.text();
-            console.error(`❌ [trackClick] Failed: ${response.status} ${response.statusText}`);
-            console.error(`❌ [trackClick] Error response: ${errorText}`);
-            throw new Error(`Click tracking failed: ${response.status} ${response.statusText} - ${errorText}`);
-        } else {
+        if (response.ok) {
             const data = await response.json();
-            console.log(`✅ [trackClick] Success! Response data:`, JSON.stringify(data, null, 2));
-            console.log(`✅ [trackClick] Inserted click ID:`, data[0]?.id || 'unknown');
-            console.log(`✅ [trackClick] ========== COMPLETED ==========`);
-            return data;
+            if (data && data.length > 0) {
+                console.log('🔍 Duplicate click detected (within 2 seconds) - skipping tracking');
+                return false;
+            }
+            console.log('🔍 No duplicate found - will track click');
+        } else {
+            console.log('⚠️ Error checking for duplicates:', response.status, '- allowing tracking');
         }
+        return true;
     } catch (error) {
-        console.error('❌ [trackClick] Exception caught!');
-        console.error('❌ [trackClick] Error name:', error.name);
-        console.error('❌ [trackClick] Error message:', error.message);
-        console.error('❌ [trackClick] Error stack:', error.stack);
-        console.error('❌ [trackClick] ========== FAILED ==========');
-        // Re-throw the error so the caller knows it failed
-        throw error;
+        if (error.name === 'AbortError') {
+            console.log('⏱️ Deduplication check timeout - allowing tracking');
+        } else {
+            console.error('⚠️ Error checking for duplicates:', error.message, '- allowing tracking');
+        }
+        // If check fails, allow tracking (fail open - better to have duplicates than miss clicks)
+        return true;
     }
+}
+
+/**
+ * Track click in Supabase with retry logic
+ * @deprecated Currently unused - tracking is handled via Stytch in /verify endpoint
+ */
+// eslint-disable-next-line no-unused-vars
+async function trackClick(clickData, supabaseUrl, supabaseKey, maxRetries = 2) {
+    const insertUrl = `${supabaseUrl}/rest/v1/clicks`;
+
+    for (let attempt = 1; attempt <= maxRetries + 1; attempt++) {
+        console.log(`📊 [trackClick] Attempt ${attempt}/${maxRetries + 1} - Starting...`);
+
+        try {
+            // Timeout controller - 3 seconds per attempt
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => {
+                console.error(`⏱️ [trackClick] Attempt ${attempt} - Timeout!`);
+                controller.abort();
+            }, 3000);
+
+            const response = await fetch(insertUrl, {
+                method: 'POST',
+                headers: {
+                    'apikey': supabaseKey,
+                    'Authorization': `Bearer ${supabaseKey}`,
+                    'Content-Type': 'application/json',
+                    'Prefer': 'return=minimal', // Don't need response body (faster)
+                },
+                body: JSON.stringify(clickData),
+                signal: controller.signal
+            });
+
+            clearTimeout(timeoutId);
+
+            console.log(`📊 [trackClick] Attempt ${attempt} - Response: ${response.status}`);
+
+            if (response.ok) {
+                console.log(`✅ [trackClick] Success on attempt ${attempt}!`);
+                return true;
+            } else {
+                console.error(`❌ [trackClick] Attempt ${attempt} - Failed: ${response.status}`);
+
+                // Don't retry on client errors (4xx) - these won't succeed on retry
+                if (response.status >= 400 && response.status < 500) {
+                    throw new Error(`Client error: ${response.status}`);
+                }
+
+                // Retry on server errors (5xx) or network issues
+                if (attempt <= maxRetries) {
+                    const delay = attempt * 200; // 200ms, 400ms
+                    console.log(`🔄 [trackClick] Retrying in ${delay}ms...`);
+                    await new Promise(resolve => setTimeout(resolve, delay));
+                    continue;
+                }
+
+                throw new Error(`Failed after ${maxRetries + 1} attempts: ${response.status}`);
+            }
+        } catch (error) {
+            if (error.name === 'AbortError') {
+                console.error(`⏱️ [trackClick] Attempt ${attempt} - Timeout`);
+            } else {
+                console.error(`❌ [trackClick] Attempt ${attempt} - Error:`, error.message);
+            }
+
+            // Retry on network errors or timeouts
+            if (attempt <= maxRetries && (error.name === 'AbortError' || error.message.includes('fetch'))) {
+                const delay = attempt * 200;
+                console.log(`🔄 [trackClick] Retrying after error in ${delay}ms...`);
+                await new Promise(resolve => setTimeout(resolve, delay));
+                continue;
+            }
+
+            // Final attempt failed
+            console.error(`❌ [trackClick] All ${maxRetries + 1} attempts failed`);
+            throw error;
+        }
+    }
+
+    return false;
+}
+
+/**
+ * Save telemetry ID only (fallback when Stytch API is not available)
+ */
+async function saveTelemetryOnly(telemetryId, linkId, userId, slug, domain, targetUrl, cloudflareData, turnstileVerified, env) {
+    console.log("🔵 [Stytch] Saving telemetry_id only (fallback mode)");
+
+    const logData = {
+        telemetry_id: telemetryId,
+        link_id: linkId,
+        user_id: userId,
+        slug: slug,
+        domain: domain,
+        target_url: targetUrl,
+        ip_address: cloudflareData.ipAddress || null,
+        user_agent: cloudflareData.userAgent || null,
+        referer: cloudflareData.referer || null,
+        country: cloudflareData.country || null,
+        city: cloudflareData.city || null,
+        device_type: cloudflareData.deviceType || null,
+        browser: cloudflareData.browser || null,
+        os: cloudflareData.os || null,
+        turnstile_verified: turnstileVerified || false,
+        clicked_at: new Date().toISOString()
+    };
+
+    await saveToSupabase(logData, env);
+    console.log("✅ [Stytch] Telemetry ID saved (fallback mode)");
+}
+
+/**
+ * Save data to Supabase
+ */
+async function saveToSupabase(logData, env) {
+    const supabaseResponse = await fetch(`${env.SUPABASE_URL}/rest/v1/clicks`, {
+        method: "POST",
+        headers: {
+            "apikey": env.SUPABASE_SERVICE_ROLE_KEY,
+            "Authorization": `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}`,
+            "Content-Type": "application/json",
+            "Prefer": "return=minimal"
+        },
+        body: JSON.stringify(logData)
+    });
+
+    if (!supabaseResponse.ok) {
+        const errorText = await supabaseResponse.text();
+        console.error("❌ [Supabase] Error:", supabaseResponse.status, errorText);
+        throw new Error(`Supabase error: ${errorText}`);
+    }
+}
+
+/**
+ * Verify Cloudflare Turnstile token
+ */
+async function verifyTurnstile(token, ipAddress, secretKey) {
+    try {
+        console.log('🔵 [Turnstile] Starting verification...');
+        console.log('🔵 [Turnstile] Token length:', token ? token.length : 0);
+        console.log('🔵 [Turnstile] IP Address:', ipAddress);
+        console.log('🔵 [Turnstile] Secret Key exists:', !!secretKey);
+
+        const verifyUrl = 'https://challenges.cloudflare.com/turnstile/v0/siteverify';
+        console.log('🔵 [Turnstile] Verification URL:', verifyUrl);
+
+        const verifyResponse = await fetch(verifyUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                secret: secretKey,
+                response: token,
+                remoteip: ipAddress
+            })
+        });
+
+        console.log('🔵 [Turnstile] Response status:', verifyResponse.status);
+
+        const result = await verifyResponse.json();
+        console.log('🔵 [Turnstile] Response result:', JSON.stringify(result));
+
+        if (result.success === true) {
+            console.log('✅ [Turnstile] Verification successful!');
+            return true;
+        } else {
+            console.error('❌ [Turnstile] Verification failed:', result['error-codes'] || 'Unknown error');
+            return false;
+        }
+    } catch (err) {
+        console.error('❌ [Turnstile] Verification error:', err);
+        console.error('❌ [Turnstile] Error message:', err.message);
+        console.error('❌ [Turnstile] Error stack:', err.stack);
+        return false;
+    }
+}
+
+/**
+ * Check if request is from a bot based on various signals
+ */
+function isBotDetected(userAgent, stytchVerdict, stytchFraudScore) {
+    console.log('🔍 [Bot Detection] Checking for bot signals...');
+    console.log('🔍 [Bot Detection] User-Agent:', userAgent || 'none');
+    console.log('🔍 [Bot Detection] Stytch Verdict:', stytchVerdict || 'none');
+    console.log('🔍 [Bot Detection] Stytch Fraud Score:', stytchFraudScore || 'none');
+
+    // Check User-Agent patterns
+    if (userAgent && isBot(userAgent)) {
+        console.log('🚫 [Bot Detection] Bot detected via User-Agent pattern');
+        return true;
+    }
+
+    // Check Stytch verdict (if it indicates bot/fraud)
+    if (stytchVerdict && (stytchVerdict.toLowerCase().includes('bad') || stytchVerdict.toLowerCase().includes('bot') || stytchVerdict.toLowerCase().includes('fraud'))) {
+        console.log('🚫 [Bot Detection] Bot detected via Stytch verdict:', stytchVerdict);
+        return true;
+    }
+
+    // Check Stytch fraud score (if very high, likely bot)
+    if (stytchFraudScore && stytchFraudScore > 80) {
+        console.log('🚫 [Bot Detection] Bot detected via Stytch fraud score:', stytchFraudScore);
+        return true;
+    }
+
+    // Note: Turnstile verification failure is already handled by 403 response
+    // So we don't need to check it here
+
+    console.log('✅ [Bot Detection] No bot detected - allowing request');
+    return false;
+}
+
+/**
+ * Handle Stytch tracking - Updated Endpoint for 2026
+ * Returns Stytch data for bot detection, or null if API failed
+ */
+async function handleTracking(telemetryId, linkId, userId, slug, domain, targetUrl, cloudflareData, turnstileVerified, env) {
+    try {
+        console.log("🔵 [Stytch] Fetching data for Project:", env.STYTCH_PROJECT_ID);
+
+        // נסה קודם Consumer endpoint
+        let stytchUrl = `https://api.stytch.com/v1/fingerprint/lookup`;
+        console.log("🔵 [Stytch] Trying Consumer endpoint:", stytchUrl);
+
+        let stytchResponse = await fetch(stytchUrl, {
+            method: "POST", // זה חייב להיות POST (לא GET!) - GET יחזיר 404
+            headers: {
+                "Authorization": "Basic " + btoa(`${env.STYTCH_PROJECT_ID}:${env.STYTCH_SECRET}`),
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                telemetry_id: telemetryId
+            })
+        });
+
+        // אם קיבלנו 404, נסה B2B endpoint
+        if (stytchResponse.status === 404) {
+            console.log("⚠️ [Stytch] Consumer endpoint returned 404, trying B2B endpoint...");
+            stytchUrl = `https://api.stytch.com/v1/b2b/fingerprint/lookup`;
+            console.log("🔵 [Stytch] Trying B2B endpoint:", stytchUrl);
+
+            stytchResponse = await fetch(stytchUrl, {
+                method: "POST",
+                headers: {
+                    "Authorization": "Basic " + btoa(`${env.STYTCH_PROJECT_ID}:${env.STYTCH_SECRET}`),
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    telemetry_id: telemetryId
+                })
+            });
+        }
+
+        if (!stytchResponse.ok) {
+            const errorText = await stytchResponse.text();
+            console.error("❌ [Stytch] API error details:", errorText);
+            console.error("❌ [Stytch] Tried endpoint:", stytchUrl);
+            await saveTelemetryOnly(telemetryId, linkId, userId, slug, domain, targetUrl, cloudflareData, turnstileVerified, env);
+            return null; // Return null if Stytch API failed
+        }
+
+        const res = await stytchResponse.json();
+
+        // חילוץ המידע המלא (ווידוא קיום אובייקטים)
+        // שימוש בנתוני Stytch אם קיימים, אחרת בנתוני Cloudflare
+        const logData = {
+            link_id: linkId,
+            user_id: userId,
+            slug: slug,
+            domain: domain,
+            target_url: targetUrl,
+            telemetry_id: telemetryId,
+            visitor_id: res.visitor_id || null,
+            verdict: res.verdict || null,
+            fraud_score: res.fraud_score || 0,
+            // נתוני רשת - Stytch אם קיים, אחרת Cloudflare
+            ip_address: res.ip_address || cloudflareData.ipAddress || null,
+            country: cloudflareData.country || null,
+            city: cloudflareData.city || null,
+            // נתוני רשת עמוקים מ-Stytch
+            is_vpn: res.network_info?.is_vpn || false,
+            is_proxy: res.network_info?.is_proxy || false,
+            isp: res.network_info?.asn_org || null,
+            // נתוני מכשיר - Stytch אם קיים, אחרת Cloudflare
+            browser: res.telemetry?.browser_name || cloudflareData.browser || null,
+            os: res.telemetry?.os_name || cloudflareData.os || null,
+            device_type: res.telemetry?.device_type || cloudflareData.deviceType || null,
+            battery_level: res.telemetry?.battery_level || null,
+            screen_resolution: res.telemetry?.screen_width ? `${res.telemetry.screen_width}x${res.telemetry.screen_height}` : null,
+            is_incognito: res.telemetry?.is_incognito || false,
+            user_agent: cloudflareData.userAgent || null,
+            referer: cloudflareData.referer || null,
+            turnstile_verified: turnstileVerified || false,
+            clicked_at: new Date().toISOString()
+        };
+
+        await saveToSupabase(logData, env);
+        console.log("✅ [Stytch] Full data saved successfully");
+
+        // Return Stytch data for bot detection
+        return {
+            verdict: res.verdict || null,
+            fraud_score: res.fraud_score || 0
+        };
+
+    } catch (err) {
+        console.error("❌ [Stytch] Critical Error:", err);
+        await saveTelemetryOnly(telemetryId, linkId, userId, slug, domain, targetUrl, cloudflareData, turnstileVerified, env);
+        return null;
+    }
+}
+
+/**
+ * Generate bridging HTML page
+ */
+function getBridgingPage(destUrl, linkId, slug, domain) {
+    const encodedDest = btoa(destUrl);
+    const encodedLinkId = btoa(linkId);
+    const encodedSlug = btoa(slug);
+    const encodedDomain = btoa(domain);
+    return `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Redirect | GoodLink</title>
+    <script src="https://elements.stytch.com/telemetry.js"></script>
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+    <style>
+        :root {
+            --bg: #0f172a;
+            --primary: #38bdf8;
+            --text: #f1f5f9;
+            --card: #1e293b;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: var(--bg);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            color: var(--text);
+        }
+
+        .container {
+            text-align: center;
+            background: var(--card);
+            padding: 3rem;
+            border-radius: 24px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+            max-width: 400px;
+            width: 90%;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: 800;
+            letter-spacing: -1px;
+            margin-bottom: 2rem;
+            color: var(--primary);
+        }
+
+        .logo span { color: #fff; }
+
+        /* אנימציית הטעינה המקצועית */
+        .loader-wrapper {
+            position: relative;
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 2rem;
+        }
+
+        .loader {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border: 3px solid rgba(56, 189, 248, 0.1);
+            border-top: 3px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 1s cubic-bezier(0.76, 0, 0.24, 1) infinite;
+        }
+
+        .shield-icon {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 30px;
+            fill: var(--primary);
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        h1 { font-size: 1.25rem; margin-bottom: 0.5rem; font-weight: 600; }
+        p { color: #94a3b8; font-size: 0.9rem; line-height: 1.5; }
+
+        .status-bar {
+            margin-top: 2rem;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #64748b;
+        }
+
+        /* פס התקדמות קטן בתחתית */
+        .progress-container {
+            width: 100%;
+            height: 4px;
+            background: rgba(255,255,255,0.05);
+            margin-top: 10px;
+            border-radius: 2px;
+            overflow: hidden;
+        }
+        .progress-bar {
+            width: 30%;
+            height: 100%;
+            background: var(--primary);
+            animation: progress 2s ease-in-out infinite;
+        }
+
+        @keyframes progress {
+            0% { width: 0%; transform: translateX(-100%); }
+            50% { width: 50%; }
+            100% { width: 100%; transform: translateX(200%); }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="logo">Good<span>Link</span></div>
+    
+    <div class="loader-wrapper">
+        <div class="loader"></div>
+        <svg class="shield-icon" viewBox="0 0 24 24">
+            <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/>
+        </svg>
+    </div>
+
+    <h1>Security Check</h1>
+    <p>Verifying a secure connection. This helps us protect our affiliates and ensure traffic quality.</p>
+
+    <div class="status-bar">
+        Initializing Intelligence...
+        <div class="progress-container">
+            <div class="progress-bar"></div>
+        </div>
+    </div>
+    
+    <!-- Cloudflare Turnstile Widget (invisible mode) -->
+    <div class="cf-turnstile" data-sitekey="0x4AAAAAACL1UvTFIr6R2-Xe" data-callback="onTurnstileSuccess" data-size="invisible"></div>
+</div>
+
+<script>
+    let turnstileToken = null;
+    let telemetryId = null;
+    let redirectReady = false;
+    
+    // Callback כאשר Turnstile מסתיים
+    function onTurnstileSuccess(token) {
+        console.log('✅ [Turnstile] Token received:', token ? 'Present (length: ' + token.length + ')' : 'Missing');
+        turnstileToken = token;
+        checkAndRedirect();
+    }
+    
+    // בדוק אם אפשר לעשות redirect (צריך גם telemetry ID וגם Turnstile token)
+    function checkAndRedirect() {
+        if (redirectReady && telemetryId) {
+            const dest = '${encodedDest}';
+            const linkId = '${encodedLinkId}';
+            const slug = '${encodedSlug}';
+            const domain = '${encodedDomain}';
+            
+            let verifyUrl = '/verify?id=' + telemetryId + '&dest=' + dest + '&link_id=' + linkId + '&slug=' + slug + '&domain=' + domain;
+            
+            // הוסף Turnstile token אם קיים
+            if (turnstileToken) {
+                verifyUrl += '&cf-turnstile-response=' + encodeURIComponent(turnstileToken);
+                console.log('🔵 [Turnstile] Adding token to URL (length: ' + turnstileToken.length + ')');
+            } else {
+                console.log('⚠️ [Turnstile] No token available - continuing without it');
+            }
+            
+            window.location.href = verifyUrl;
+        }
+    }
+    
+    async function redirect() {
+        try {
+            // קריאה לסטיץ'
+            telemetryId = await GetTelemetryID();
+            console.log('✅ [Stytch] Telemetry ID received:', telemetryId ? 'Present' : 'Missing');
+            
+            // המתנה של 1 שנייה + המתנה ל-Turnstile (מקסימום 3 שניות)
+            setTimeout(() => {
+                redirectReady = true;
+                console.log('🔵 [Redirect] Ready to redirect, waiting for Turnstile...');
+                checkAndRedirect();
+            }, 1000);
+            
+            // Timeout - אם Turnstile לא מסתיים תוך 3 שניות, ממשיכים בלי token
+            setTimeout(() => {
+                if (!turnstileToken) {
+                    console.log('⏱️ [Turnstile] Timeout - continuing without token');
+                    redirectReady = true;
+                    checkAndRedirect();
+                }
+            }, 3000);
+            
+        } catch (e) {
+            console.error("Verification failed", e);
+            // במקרה של שגיאה - עדיין מעבירים כדי לא לאבד את המשתמש
+            const dest = '${encodedDest}';
+            try {
+                const decoded = atob(dest);
+                window.location.href = decoded;
+            } catch {
+                window.location.href = "https://goodlink.ai"; 
+            }
+        }
+    }
+
+    window.onload = redirect;
+</script>
+
+</body>
+</html>`;
 }
 
 /**
@@ -218,6 +740,25 @@ export default {
         console.log('🔵 Request URL:', request.url);
         console.log('🔵 Request Method:', request.method);
         console.log('🔵 Request Headers:', JSON.stringify(Object.fromEntries(request.headers.entries()), null, 2));
+
+        // Skip OPTIONS requests (CORS preflight) - don't track these
+        if (request.method === 'OPTIONS') {
+            console.log('🔵 Skipping OPTIONS request (CORS preflight)');
+            return new Response(null, {
+                status: 204,
+                headers: {
+                    'Access-Control-Allow-Origin': '*',
+                    'Access-Control-Allow-Methods': 'GET, OPTIONS',
+                    'Access-Control-Allow-Headers': '*'
+                }
+            });
+        }
+
+        // Only process GET requests
+        if (request.method !== 'GET') {
+            console.log(`🔵 Skipping ${request.method} request (only GET supported)`);
+            return new Response('Method not allowed', { status: 405 });
+        }
 
         try {
             // Check environment variables
@@ -249,6 +790,209 @@ export default {
 
             console.log('🔵 Hostname:', hostname);
             console.log('🔵 Pathname:', pathname);
+
+            // Handle /verify endpoint
+            if (pathname === '/verify') {
+                console.log('🔵 Handling /verify endpoint');
+                const verifyId = url.searchParams.get('id');
+                const dest = url.searchParams.get('dest');
+                const linkIdParam = url.searchParams.get('link_id');
+                const slugParam = url.searchParams.get('slug');
+                const domainParam = url.searchParams.get('domain');
+
+                if (!dest) {
+                    console.log('❌ No destination provided in /verify');
+                    return new Response(JSON.stringify({
+                        error: 'Missing destination parameter'
+                    }), {
+                        status: 400,
+                        headers: { 'Content-Type': 'application/json' }
+                    });
+                }
+
+                try {
+                    // Decode parameters
+                    const decodedDest = atob(dest);
+                    const linkId = linkIdParam ? atob(linkIdParam) : null;
+                    const slug = slugParam ? atob(slugParam) : null;
+                    const domain = domainParam ? atob(domainParam) : null;
+
+                    console.log('🔵 Decoded destination:', decodedDest);
+                    console.log('🔵 Telemetry ID:', verifyId || 'not provided');
+                    console.log('🔵 Link ID:', linkId || 'not provided');
+                    console.log('🔵 Slug:', slug || 'not provided');
+                    console.log('🔵 Domain:', domain || 'not provided');
+
+                    // Extract Cloudflare data from request headers
+                    const userAgent = request.headers.get('user-agent') || '';
+                    const ipAddress = request.headers.get('cf-connecting-ip') || 'unknown';
+                    const country = request.headers.get('cf-ipcountry') || request.cf?.country || null;
+                    const city = request.headers.get('cf-ipcity') || request.cf?.city || null;
+                    const uaInfo = parseUserAgent(userAgent);
+
+                    const cloudflareData = {
+                        ipAddress: ipAddress,
+                        userAgent: userAgent,
+                        referer: request.headers.get('referer') || null,
+                        country: country,
+                        city: city,
+                        deviceType: uaInfo.deviceType,
+                        browser: uaInfo.browser,
+                        os: uaInfo.os
+                    };
+
+                    // Fetch link data for tracking
+                    let linkData = null;
+                    if (linkId && env.SUPABASE_URL && env.SUPABASE_SERVICE_ROLE_KEY) {
+                        try {
+                            const linkQueryUrl = `${env.SUPABASE_URL}/rest/v1/links?id=eq.${encodeURIComponent(linkId)}&select=id,user_id,target_url,parameter_pass_through,utm_source,utm_medium,utm_campaign,utm_content,status`;
+                            const linkResponse = await fetch(linkQueryUrl, {
+                                method: 'GET',
+                                headers: {
+                                    'apikey': env.SUPABASE_SERVICE_ROLE_KEY,
+                                    'Authorization': `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}`,
+                                    'Content-Type': 'application/json',
+                                },
+                            });
+                            if (linkResponse.ok) {
+                                const linkDataArray = await linkResponse.json();
+                                if (linkDataArray && linkDataArray.length > 0) {
+                                    linkData = linkDataArray[0];
+                                }
+                            }
+                        } catch (err) {
+                            console.error('❌ Error fetching link data:', err);
+                        }
+                    }
+
+                    // Handle Stytch tracking if telemetry ID is provided
+                    if (verifyId && linkData && slug && domain) {
+                        console.log('🔵 ========== STARTING STYTCH TRACKING ==========');
+                        console.log('🔵 Verify ID provided:', !!verifyId);
+                        console.log('🔵 Link data exists:', !!linkData);
+                        console.log('🔵 Slug:', slug);
+                        console.log('🔵 Domain:', domain);
+
+                        // Verify Cloudflare Turnstile before Stytch tracking
+                        console.log('🔵 ========== STARTING TURNSTILE VERIFICATION ==========');
+                        const turnstileToken = url.searchParams.get('cf-turnstile-response');
+                        const TURNSTILE_SITE_KEY = '0x4AAAAAACL1UvTFIr6R2-Xe';
+                        const TURNSTILE_SECRET_KEY = env.TURNSTILE_SECRET_KEY; // צריך להוסיף כ-secret
+
+                        console.log('🔵 [Turnstile] Site Key:', TURNSTILE_SITE_KEY);
+                        console.log('🔵 [Turnstile] Token from URL:', turnstileToken ? 'Present (length: ' + turnstileToken.length + ')' : 'Not provided');
+                        console.log('🔵 [Turnstile] Secret Key exists:', !!TURNSTILE_SECRET_KEY);
+
+                        let turnstileVerified = false;
+
+                        if (turnstileToken) {
+                            console.log('🔵 [Turnstile] Token found, starting verification...');
+                            const isTurnstileValid = await verifyTurnstile(turnstileToken, cloudflareData.ipAddress, TURNSTILE_SECRET_KEY);
+
+                            if (!isTurnstileValid) {
+                                console.error('❌ [Turnstile] Verification failed - blocking request');
+                                return new Response(JSON.stringify({
+                                    error: 'Turnstile verification failed',
+                                    details: 'The security check failed. Please try again.'
+                                }), {
+                                    status: 403,
+                                    headers: { 'Content-Type': 'application/json' }
+                                });
+                            }
+                            turnstileVerified = true;
+                            console.log('✅ [Turnstile] Verification passed - continuing to Stytch tracking');
+                        } else {
+                            console.log('⚠️ [Turnstile] No token provided in URL');
+                            console.log('⚠️ [Turnstile] Available query params:', Array.from(url.searchParams.keys()));
+                            console.log('⚠️ [Turnstile] Continuing without verification (allow mode)');
+                            turnstileVerified = false;
+                        }
+                        console.log('🔵 [Turnstile] Verified status:', turnstileVerified);
+                        console.log('🔵 ========== TURNSTILE VERIFICATION COMPLETE ==========');
+
+                        // Run tracking - use await to ensure it completes (with timeout)
+                        const trackingPromise = handleTracking(verifyId, linkData.id, linkData.user_id, slug, domain, decodedDest, cloudflareData, turnstileVerified, env);
+
+                        // Set a timeout to not block redirect too long (max 3 seconds)
+                        const timeoutPromise = new Promise((resolve) => {
+                            setTimeout(() => {
+                                console.log('⏱️ [Stytch] Tracking timeout - continuing with redirect');
+                                resolve(null);
+                            }, 3000);
+                        });
+
+                        // Wait for either tracking to complete or timeout
+                        const stytchData = await Promise.race([trackingPromise, timeoutPromise]);
+
+                        // Check if this is a bot (from any source)
+                        const isBot = isBotDetected(
+                            cloudflareData.userAgent,
+                            stytchData?.verdict || null,
+                            stytchData?.fraud_score || null
+                        );
+
+                        if (isBot) {
+                            console.log('🚫 [Bot Detection] Bot detected - redirecting to www.google.com');
+                            console.log('🔵 ========== WORKER FINISHED ==========');
+
+                            return new Response(null, {
+                                status: 302,
+                                headers: {
+                                    'Location': 'https://www.google.com',
+                                    'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+                                    'Pragma': 'no-cache',
+                                    'Expires': '0'
+                                }
+                            });
+                        }
+                    } else {
+                        console.log('⚠️ [Stytch] Skipping tracking - missing data:', {
+                            verifyId: !!verifyId,
+                            linkData: !!linkData,
+                            slug: !!slug,
+                            domain: !!domain
+                        });
+
+                        // Even without Stytch data, check User-Agent for bot detection
+                        const isBot = isBotDetected(cloudflareData.userAgent, null, null);
+                        if (isBot) {
+                            console.log('🚫 [Bot Detection] Bot detected (User-Agent only) - redirecting to www.google.com');
+                            console.log('🔵 ========== WORKER FINISHED ==========');
+
+                            return new Response(null, {
+                                status: 302,
+                                headers: {
+                                    'Location': 'https://www.google.com',
+                                    'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+                                    'Pragma': 'no-cache',
+                                    'Expires': '0'
+                                }
+                            });
+                        }
+                    }
+
+                    console.log('🔵 Redirecting to final destination');
+                    console.log('🔵 ========== WORKER FINISHED ==========');
+
+                    return new Response(null, {
+                        status: 302,
+                        headers: {
+                            'Location': decodedDest,
+                            'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+                            'Pragma': 'no-cache',
+                            'Expires': '0'
+                        }
+                    });
+                } catch (error) {
+                    console.error('❌ Error in /verify endpoint:', error);
+                    return new Response(JSON.stringify({
+                        error: 'Invalid parameters'
+                    }), {
+                        status: 400,
+                        headers: { 'Content-Type': 'application/json' }
+                    });
+                }
+            }
 
             const slug = extractSlug(pathname);
             console.log('🔵 Extracted slug:', slug);
@@ -284,111 +1028,44 @@ export default {
 
             console.log('✅ Link found! ID:', linkData.id, 'User ID:', linkData.user_id);
 
-            // --- Tracking Logic ---
+            // Note: Click tracking is now handled via Stytch tracking in /verify endpoint
+            // We don't track here to avoid duplicate entries - Stytch tracking handles all click tracking
+
+            // Build final URL
+            const finalUrl = buildTargetUrl(linkData.target_url, linkData, url);
+            console.log('🔵 Final URL:', finalUrl);
+
+            // Check for bot before serving bridging page (bots can't execute JavaScript)
             const userAgent = request.headers.get('user-agent') || '';
-            const ipAddress = request.headers.get('cf-connecting-ip') || 'unknown';
-            const country = request.headers.get('cf-ipcountry') || request.cf?.country || null;
-            const city = request.headers.get('cf-ipcity') || request.cf?.city || null;
-            const uaInfo = parseUserAgent(userAgent);
-            const bot = isBot(userAgent);
-            const queryParams = url.search ? JSON.stringify(Object.fromEntries(url.searchParams)) : null;
-            const sessionId = `${ipAddress}-${userAgent.substring(0, 50)}-${Date.now()}`.substring(0, 100);
+            console.log('🔍 [Bot Detection] Pre-check User-Agent:', userAgent);
 
-            const clickData = {
-                link_id: linkData.id,
-                user_id: linkData.user_id,
-                slug: slug,
-                domain: domain,
-                target_url: linkData.target_url,
-                ip_address: ipAddress,
-                user_agent: userAgent,
-                referer: request.headers.get('referer') || null,
-                country: country,
-                city: city,
-                device_type: uaInfo.deviceType,
-                browser: uaInfo.browser,
-                os: uaInfo.os,
-                query_params: queryParams,
-                is_bot: bot,
-                session_id: sessionId,
-                clicked_at: new Date().toISOString(),
-            };
+            if (isBot(userAgent)) {
+                console.log('🚫 [Bot Detection] Bot detected before bridging page - redirecting to www.google.com');
+                console.log('🔵 ========== WORKER FINISHED ==========');
 
-            console.log('🔵 Click data prepared:', JSON.stringify(clickData, null, 2));
-
-            // Track click and capture result
-            let trackingResult = null;
-            let trackingError = null;
-
-            if (linkData.id && linkData.user_id) {
-                console.log('🔵 Starting click tracking...');
-                try {
-                    await trackClick(clickData, env.SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY);
-                    trackingResult = { success: true, message: 'Click tracked successfully' };
-                    console.log('✅ Click tracking completed');
-                } catch (error) {
-                    trackingError = {
-                        message: error.message,
-                        stack: error.stack,
-                        name: error.name
-                    };
-                    console.error('❌ Click tracking failed:', error);
-                }
-            } else {
-                console.log('❌ Cannot track click: Missing link ID or user ID');
-                trackingError = {
-                    message: 'Missing link ID or user ID',
-                    linkId: linkData.id,
-                    userId: linkData.user_id
-                };
+                return new Response(null, {
+                    status: 302,
+                    headers: {
+                        'Location': 'https://www.google.com',
+                        'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+                        'Pragma': 'no-cache',
+                        'Expires': '0'
+                    }
+                });
             }
 
-            // Build final URL (but don't redirect - return JSON instead)
-            const finalUrl = buildTargetUrl(linkData.target_url, linkData, url);
-            console.log('🔵 Final URL would be:', finalUrl);
-
-            // Return JSON response instead of redirect (for debugging)
-            console.log('🔵 Returning JSON response (DEBUG MODE - NO REDIRECT)');
+            // Serve bridging page instead of direct redirect
+            console.log('🔵 Serving bridging page...');
             console.log('🔵 ========== WORKER FINISHED ==========');
 
-            return new Response(JSON.stringify({
-                success: true,
-                message: 'Link found - DEBUG MODE (no redirect)',
-                linkData: {
-                    id: linkData.id,
-                    user_id: linkData.user_id,
-                    slug: slug,
-                    domain: domain,
-                    target_url: linkData.target_url,
-                    final_url: finalUrl,
-                    parameter_pass_through: linkData.parameter_pass_through,
-                    utm_source: linkData.utm_source,
-                    utm_medium: linkData.utm_medium,
-                    utm_campaign: linkData.utm_campaign,
-                    utm_content: linkData.utm_content,
-                    status: linkData.status
-                },
-                clickTracking: {
-                    initiated: !!(linkData.id && linkData.user_id),
-                    success: !!trackingResult,
-                    error: trackingError,
-                    clickData: clickData
-                },
-                requestInfo: {
-                    url: request.url,
-                    hostname: hostname,
-                    pathname: pathname,
-                    method: request.method,
-                    userAgent: userAgent,
-                    ipAddress: ipAddress,
-                    country: country,
-                    city: city
-                }
-            }, null, 2), {
+            const bridgingHtml = getBridgingPage(finalUrl, linkData.id, slug, domain);
+            return new Response(bridgingHtml, {
                 status: 200,
                 headers: {
-                    'Content-Type': 'application/json',
-                    'Access-Control-Allow-Origin': '*'
+                    'Content-Type': 'text/html; charset=UTF-8',
+                    'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+                    'Pragma': 'no-cache',
+                    'Expires': '0'
                 }
             });
 
