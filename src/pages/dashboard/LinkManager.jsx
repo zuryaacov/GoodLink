@@ -97,13 +97,13 @@ const LinkManager = () => {
           }}
           className="flex items-center justify-center gap-2 w-full sm:w-auto px-6 py-3 md:py-2.5 text-white font-bold rounded-xl transition-colors shadow-lg text-base md:text-sm"
           style={{
-            backgroundColor: "#de4aa8",
+            backgroundColor: "#FF10F0",
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = "#d0399a";
+            e.currentTarget.style.backgroundColor = "#e00ed0";
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = "#de4aa8";
+            e.currentTarget.style.backgroundColor = "#FF10F0";
           }}
         >
           <span className="material-symbols-outlined text-xl md:text-base">add</span>

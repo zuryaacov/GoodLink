@@ -763,16 +763,16 @@ const Step1FastTrack = ({
             }`}
             style={{
               backgroundColor:
-                safetyCheck.isSafe === false ? undefined : "#de4aa8",
+                safetyCheck.isSafe === false ? undefined : "#FF10F0",
             }}
             onMouseEnter={(e) => {
               if (safetyCheck.isSafe !== false) {
-                e.currentTarget.style.backgroundColor = "#d0399a";
+                e.currentTarget.style.backgroundColor = "#e00ed0";
               }
             }}
             onMouseLeave={(e) => {
               if (safetyCheck.isSafe !== false) {
-                e.currentTarget.style.backgroundColor = "#de4aa8";
+                e.currentTarget.style.backgroundColor = "#FF10F0";
               }
             }}
             title={
