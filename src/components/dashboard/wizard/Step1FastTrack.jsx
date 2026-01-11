@@ -5,37 +5,52 @@ import { checkUrlSafety } from "../../../lib/urlSafetyCheck";
 import { validateUrl } from "../../../lib/urlValidation";
 import { validateSlug, validateSlugFormat } from "../../../lib/slugValidation";
 
-// Utility function to fetch page title from URL
-const fetchPageTitle = async (url) => {
+// Utility function to fetch page title from URL with timeout
+const fetchPageTitle = async (url, timeoutMs = 3000) => {
   try {
     // Validate URL first
     new URL(url);
 
-    // Use a CORS proxy to fetch the page
+    // Use a CORS proxy to fetch the page with timeout
     const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(
       url
     )}`;
-    const response = await fetch(proxyUrl, {
-      method: "GET",
-      headers: {
-        Accept: "application/json",
-      },
-    });
+    
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
-    if (!response.ok) {
-      throw new Error("Failed to fetch page");
+    try {
+      const response = await fetch(proxyUrl, {
+        method: "GET",
+        headers: {
+          Accept: "application/json",
+        },
+        signal: controller.signal,
+      });
+
+      clearTimeout(timeoutId);
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch page");
+      }
+
+      const data = await response.json();
+
+      if (data.contents) {
+        // Parse HTML to extract title
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(data.contents, "text/html");
+        const title = doc.querySelector("title")?.textContent || "";
+        return title.trim();
+      }
+      return "";
+    } catch (fetchError) {
+      clearTimeout(timeoutId);
+      if (fetchError.name === "AbortError") {
+        throw new Error("Timeout");
+      }
+      throw fetchError;
     }
-
-    const data = await response.json();
-
-    if (data.contents) {
-      // Parse HTML to extract title
-      const parser = new DOMParser();
-      const doc = parser.parseFromString(data.contents, "text/html");
-      const title = doc.querySelector("title")?.textContent || "";
-      return title.trim();
-    }
-    return "";
   } catch (error) {
     console.error("Error fetching page title:", error);
     // Return empty string on error - user can manually enter name
@@ -321,22 +336,17 @@ const Step1FastTrack = ({
     // Fetch title only if validation passed
     try {
       setFetchingTitle(true);
-      const title = await fetchPageTitle(normalizedUrl);
+      const title = await fetchPageTitle(normalizedUrl, 3000);
       if (title && title.trim()) {
         updateFormData("name", title.trim());
       } else {
-        // If no title found, use domain name as fallback
-        try {
-          const urlObj = new URL(normalizedUrl);
-          const domainName = urlObj.hostname.replace("www.", "");
-          updateFormData("name", domainName);
-        } catch {
-          // If still fails, leave empty
-        }
+        // If no title found, leave empty - user can manually enter name
+        // The name input field will be shown automatically when fetchingTitle is true
       }
     } catch (error) {
-      // Invalid URL, skip fetching
+      // Invalid URL or timeout, skip fetching
       console.log("Error fetching title:", error);
+      // Leave name empty - user can manually enter name
     } finally {
       setFetchingTitle(false);
     }
@@ -587,22 +597,33 @@ const Step1FastTrack = ({
             </motion.div>
           )}
 
-          {/* Auto-filled Name (appears below URL input) */}
-          {formData.name && (
+          {/* Name input (appears when URL is entered, shows during fetch and after) */}
+          {(fetchingTitle || formData.name || (formData.targetUrl && formData.targetUrl.trim())) && (
             <motion.div
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               className="mt-4 p-4 bg-[#0b0f19] border border-[#232f48] rounded-xl"
             >
               <label className="block text-xs text-slate-500 mb-1">
-                Internal Name (Auto-filled)
+                {formData.name ? "Internal Name (Auto-filled)" : "Internal Name"}
               </label>
-              <input
-                type="text"
-                value={formData.name}
-                onChange={(e) => updateFormData("name", e.target.value)}
-                className="w-full px-3 py-2 bg-[#101622] border border-[#232f48] rounded-lg text-white text-sm focus:outline-none focus:border-primary transition-colors"
-              />
+              <div className="relative">
+                <input
+                  type="text"
+                  value={formData.name || ""}
+                  onChange={(e) => updateFormData("name", e.target.value)}
+                  placeholder={fetchingTitle ? "Fetching title..." : "Enter name manually"}
+                  disabled={fetchingTitle}
+                  className="w-full px-3 py-2 bg-[#101622] border border-[#232f48] rounded-lg text-white text-sm focus:outline-none focus:border-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                />
+                {fetchingTitle && (
+                  <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                    <span className="material-symbols-outlined animate-spin text-primary text-sm">
+                      refresh
+                    </span>
+                  </div>
+                )}
+              </div>
             </motion.div>
           )}
         </div>
