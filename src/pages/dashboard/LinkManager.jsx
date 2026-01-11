@@ -22,6 +22,7 @@ const LinkManager = () => {
         .from('links')
         .select('*')
         .eq('user_id', user.id)
+        .neq('status', 'deleted') // Don't fetch deleted links
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -219,7 +220,7 @@ const LinkActionsMenu = ({ link, onRefresh, onEdit, onDuplicate }) => {
     try {
       const { error } = await supabase
         .from('links')
-        .delete()
+        .update({ status: 'deleted' })
         .eq('id', link.id);
 
       if (error) throw error;
