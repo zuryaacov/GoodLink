@@ -139,20 +139,25 @@ const LinkManager = () => {
               {/* Status & Actions */}
               <div className="flex items-center justify-between gap-3 pt-2 border-t border-[#232f48]">
                 {/* Status */}
-                <button
-                  onClick={() => handleToggleStatus(link.id, link.status || 'active')}
-                  className={`relative w-12 h-6 rounded-full transition-colors flex-shrink-0 ${
-                    (link.status === 'active') ? 'bg-primary' : 'bg-[#232f48]'
-                  }`}
-                  aria-label="Toggle link status"
-                  title={link.status === 'active' ? 'Active - Click to pause' : 'Paused - Click to activate'}
-                >
-                  <span
-                    className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform ${
-                      (link.status === 'active') ? 'translate-x-6' : 'translate-x-0'
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => handleToggleStatus(link.id, link.status || 'active')}
+                    className={`relative w-12 h-6 rounded-full transition-colors flex-shrink-0 ${
+                      (link.status === 'active') ? 'bg-primary' : 'bg-[#232f48]'
                     }`}
-                  />
-                </button>
+                    aria-label="Toggle link status"
+                    title={link.status === 'active' ? 'Active - Click to pause' : 'Paused - Click to activate'}
+                  >
+                    <span
+                      className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform ${
+                        (link.status === 'active') ? 'translate-x-6' : 'translate-x-0'
+                      }`}
+                    />
+                  </button>
+                  <span className="text-sm text-slate-400 font-medium">
+                    {link.status === 'active' ? 'ACTIVE' : 'PAUSED'}
+                  </span>
+                </div>
 
                 {/* Actions */}
                 <div className="ml-auto">
