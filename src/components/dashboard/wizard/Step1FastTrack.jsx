@@ -256,7 +256,12 @@ const Step1FastTrack = ({
           const normalizedInputUrl = normalizeForComparison(normalizedUrl);
 
           // Check if any existing link matches the normalized URL
+          // Exclude the current link if in edit mode (formData.linkId)
           urlExists = existingLinks.some((link) => {
+            // Skip if this is the link we're editing
+            if (formData.linkId && link.id === formData.linkId) {
+              return false;
+            }
             if (!link.target_url) return false;
             const normalizedExistingUrl = normalizeForComparison(
               link.target_url
@@ -392,13 +397,15 @@ const Step1FastTrack = ({
       }
 
       // Use comprehensive slug validation
+      // Pass linkId to exclude current link from availability check (for edit mode)
       const validationResult = await validateSlug(
         formData.slug,
         selectedDomain,
         user.id,
         supabase,
         true, // check availability
-        true // check content moderation
+        true, // check content moderation
+        formData.linkId || null // exclude current link ID if in edit mode
       );
 
       if (!validationResult.isValid) {

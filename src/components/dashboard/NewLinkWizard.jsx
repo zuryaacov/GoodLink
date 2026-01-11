@@ -20,6 +20,7 @@ const NewLinkWizard = ({ isOpen, onClose, initialData = null }) => {
     if (initialData) {
       return {
         // Step 1
+        linkId: initialData.id || null, // Store link ID for edit mode validation
         name: initialData.name || '',
         targetUrl: initialData.target_url || '',
         domain: initialData.domain || 'glynk.to',

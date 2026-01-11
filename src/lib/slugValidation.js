@@ -173,9 +173,10 @@ export function validateSlugFormat(slug) {
  * @param {string} domain - The domain to check against
  * @param {string} userId - The user ID (for custom domain checks)
  * @param {object} supabase - Supabase client instance
+ * @param {string} excludeLinkId - Optional: Link ID to exclude from the check (for edit mode)
  * @returns {Promise<{isAvailable: boolean, error?: string}>}
  */
-export async function checkSlugAvailability(slug, domain, userId, supabase) {
+export async function checkSlugAvailability(slug, domain, userId, supabase, excludeLinkId = null) {
     if (!supabase) {
         return {
             isAvailable: false,
@@ -211,6 +212,11 @@ export async function checkSlugAvailability(slug, domain, userId, supabase) {
         // For custom domain, check only this user's links
         if (!isDefaultDomain) {
             query = query.eq('user_id', userId);
+        }
+
+        // Exclude the current link ID if provided (for edit mode)
+        if (excludeLinkId) {
+            query = query.neq('id', excludeLinkId);
         }
 
         const { data: existingLinks, error } = await query.limit(1);
@@ -872,6 +878,7 @@ async function checkSlugWithNaturalLanguage(slug) {
  * @param {object} supabase - Supabase client instance
  * @param {boolean} checkAvailability - Whether to check availability (default: true)
  * @param {boolean} checkContent - Whether to check content moderation (default: true)
+ * @param {string} excludeLinkId - Optional: Link ID to exclude from availability check (for edit mode)
  * @returns {Promise<{isValid: boolean, error?: string, normalizedSlug?: string, isAvailable?: boolean, isContentSafe?: boolean}>}
  */
 export async function validateSlug(
@@ -880,7 +887,8 @@ export async function validateSlug(
     userId,
     supabase,
     checkAvailability = true,
-    checkContent = true
+    checkContent = true,
+    excludeLinkId = null
 ) {
     // 1. Format validation
     const formatCheck = validateSlugFormat(slug);
@@ -931,7 +939,7 @@ export async function validateSlug(
     // 3. Availability check (if enabled)
     let availabilityCheck = { isAvailable: true };
     if (checkAvailability) {
-        availabilityCheck = await checkSlugAvailability(normalizedSlug, domain, userId, supabase);
+        availabilityCheck = await checkSlugAvailability(normalizedSlug, domain, userId, supabase, excludeLinkId);
         if (!availabilityCheck.isAvailable) {
             return {
                 isValid: false,
