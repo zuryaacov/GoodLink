@@ -205,11 +205,12 @@ const Step1FastTrack = ({
       } = await supabase.auth.getUser();
 
       if (user) {
-        // Get all links for this user to check for URL matches
+        // Get all links for this user to check for URL matches (exclude deleted links)
         const { data: existingLinks, error: linksError } = await supabase
           .from("links")
           .select("id, target_url")
-          .eq("user_id", user.id);
+          .eq("user_id", user.id)
+          .neq("status", "deleted");
 
         if (!linksError && existingLinks && existingLinks.length > 0) {
           // Normalize URLs for comparison (remove trailing slashes, lowercase, etc.)
@@ -258,8 +259,8 @@ const Step1FastTrack = ({
           // Check if any existing link matches the normalized URL
           // Exclude the current link if in edit mode (formData.linkId)
           urlExists = existingLinks.some((link) => {
-            // Skip if this is the link we're editing
-            if (formData.linkId && link.id === formData.linkId) {
+            // Skip if this is the link we're editing (compare as strings to handle UUID comparison)
+            if (formData.linkId && String(link.id) === String(formData.linkId)) {
               return false;
             }
             if (!link.target_url) return false;
