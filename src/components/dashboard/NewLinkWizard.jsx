@@ -12,7 +12,8 @@ const steps = [
 ];
 
 const NewLinkWizard = ({ isOpen, onClose, initialData = null }) => {
-  const isEditMode = !!initialData;
+  // Edit mode only if initialData exists AND has an ID (for duplication, we pass data without ID)
+  const isEditMode = !!(initialData && initialData.id);
   const [currentStep, setCurrentStep] = useState(1);
   
   // Initialize formData with initialData if in edit mode, otherwise use defaults

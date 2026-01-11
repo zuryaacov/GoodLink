@@ -5,6 +5,7 @@ import NewLinkWizard from '../../components/dashboard/NewLinkWizard';
 const LinkManager = () => {
   const [isWizardOpen, setIsWizardOpen] = useState(false);
   const [editingLink, setEditingLink] = useState(null);
+  const [duplicatingLink, setDuplicatingLink] = useState(null);
   const [links, setLinks] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -166,6 +167,21 @@ const LinkManager = () => {
                     onRefresh={fetchLinks}
                     onEdit={(linkToEdit) => {
                       setEditingLink(linkToEdit);
+                      setDuplicatingLink(null);
+                      setIsWizardOpen(true);
+                    }}
+                    onDuplicate={(linkToDuplicate) => {
+                      // Create a copy of the link data without the ID for duplication
+                      // This ensures it's treated as a new link (create mode)
+                      const duplicateData = {
+                        ...linkToDuplicate,
+                        id: undefined, // Remove ID so it's treated as a new link
+                        name: linkToDuplicate.name ? `${linkToDuplicate.name} (Copy)` : 'Untitled Link (Copy)',
+                        slug: linkToDuplicate.slug ? `${linkToDuplicate.slug}-copy` : '',
+                        short_url: '', // Will be regenerated
+                      };
+                      setEditingLink(null); // Clear editing link to ensure create mode
+                      setDuplicatingLink(duplicateData);
                       setIsWizardOpen(true);
                     }}
                   />
@@ -183,9 +199,10 @@ const LinkManager = () => {
           onClose={() => {
             setIsWizardOpen(false);
             setEditingLink(null);
+            setDuplicatingLink(null);
             fetchLinks(); // Refresh links after closing wizard
           }}
-          initialData={editingLink}
+          initialData={editingLink || duplicatingLink}
         />
       )}
     </div>
@@ -193,7 +210,7 @@ const LinkManager = () => {
 };
 
 // Actions Menu Component
-const LinkActionsMenu = ({ link, onRefresh, onEdit }) => {
+const LinkActionsMenu = ({ link, onRefresh, onEdit, onDuplicate }) => {
   const [isOpen, setIsOpen] = useState(false);
 
   const handleDelete = async () => {
@@ -213,38 +230,11 @@ const LinkActionsMenu = ({ link, onRefresh, onEdit }) => {
     }
   };
 
-  const handleDuplicate = async () => {
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
-      const { error } = await supabase
-        .from('links')
-        .insert({
-          user_id: user.id,
-          name: `${link.name} (Copy)`,
-          target_url: link.target_url,
-          domain: link.domain,
-          slug: `${link.slug}-copy-${Date.now()}`,
-          short_url: `https://${link.domain}/${link.slug}-copy-${Date.now()}`,
-          utm_source: link.utm_source,
-          utm_medium: link.utm_medium,
-          utm_campaign: link.utm_campaign,
-          utm_content: link.utm_content,
-          parameter_pass_through: link.parameter_pass_through,
-          pixels: link.pixels,
-          server_side_tracking: link.server_side_tracking,
-          custom_script: link.custom_script,
-          fraud_shield: link.fraud_shield,
-          bot_action: link.bot_action,
-          geo_rules: link.geo_rules,
-        });
-
-      if (error) throw error;
-      onRefresh();
-    } catch (error) {
-      console.error('Error duplicating link:', error);
-      alert('Error duplicating link. Please try again.');
+  const handleDuplicate = () => {
+    setIsOpen(false);
+    // Call the parent's onDuplicate handler to open the wizard
+    if (onDuplicate) {
+      onDuplicate(link);
     }
   };
 
