@@ -8,12 +8,13 @@
 
 ```sql
 -- בדוק את כל ה-links עם slug "leumit"
-SELECT id, user_id, slug, domain, target_url, status 
-FROM links 
+SELECT id, user_id, slug, domain, target_url, status
+FROM links
 WHERE slug = 'leumit';
 ```
 
 **צריך לראות:**
+
 - `slug` = 'leumit'
 - `domain` = 'glynk.to' (או 'localhost' או משהו אחר)
 - `target_url` = 'https://www.leumit.co.il/'
@@ -25,8 +26,8 @@ WHERE slug = 'leumit';
 
 ```sql
 -- עדכן את ה-domain ל-glynk.to
-UPDATE links 
-SET domain = 'glynk.to' 
+UPDATE links
+SET domain = 'glynk.to'
 WHERE slug = 'leumit';
 ```
 
@@ -34,15 +35,17 @@ WHERE slug = 'leumit';
 
 ```sql
 -- בדוק אם יש link עם slug ו-domain
-SELECT id, user_id, slug, domain, target_url, status 
-FROM links 
+SELECT id, user_id, slug, domain, target_url, status
+FROM links
 WHERE slug = 'leumit' AND domain = 'glynk.to';
 ```
 
 **אם אין שורה:**
+
 - צריך לעדכן את ה-domain (Step 2)
 
 **אם יש שורה:**
+
 - הבעיה היא בזה שה-worker לא מוצא את זה
 - צריך לבדוק את הלוגים
 
@@ -57,11 +60,13 @@ Supabase returned 0 result(s)
 ```
 
 **אם אתה רואה `Supabase returned 0 result(s)`:**
+
 - ה-query לא מוצא את ה-link
 - יכול להיות שה-domain לא נכון
 - יכול להיות שיש בעיה עם ה-query
 
 **אם אתה רואה שגיאה אחרת:**
+
 - יכול להיות שה-secrets לא מוגדרים
 - יכול להיות שיש בעיה עם ה-Supabase API
 
@@ -71,23 +76,23 @@ Supabase returned 0 result(s)
 
 ```sql
 -- עדכן את כל ה-links עם domain לא נכון
-UPDATE links 
-SET domain = 'glynk.to' 
+UPDATE links
+SET domain = 'glynk.to'
 WHERE domain = 'localhost' OR domain = 'goodlink.ai' OR domain = 'glynk.io';
 ```
 
 **או עדכן רק את ה-link הספציפי:**
 
 ```sql
-UPDATE links 
-SET domain = 'glynk.to' 
+UPDATE links
+SET domain = 'glynk.to'
 WHERE slug = 'leumit';
 ```
 
 ## מה לשלוח
 
 שלח:
+
 1. מה אתה רואה ב-SQL query (Step 1) - מה ה-domain של ה-link?
 2. מה אתה רואה ב-tail logs (Step 4) - מה ה-query ואיך ה-response?
 3. האם אתה רואה `Supabase returned 0 result(s)` או שגיאה אחרת?
-

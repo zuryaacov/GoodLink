@@ -4,6 +4,7 @@ import NewLinkWizard from '../../components/dashboard/NewLinkWizard';
 
 const LinkManager = () => {
   const [isWizardOpen, setIsWizardOpen] = useState(false);
+  const [editingLink, setEditingLink] = useState(null);
   const [links, setLinks] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -155,7 +156,14 @@ const LinkManager = () => {
 
                 {/* Actions */}
                 <div className="ml-auto">
-                  <LinkActionsMenu link={link} onRefresh={fetchLinks} />
+                  <LinkActionsMenu 
+                    link={link} 
+                    onRefresh={fetchLinks}
+                    onEdit={(linkToEdit) => {
+                      setEditingLink(linkToEdit);
+                      setIsWizardOpen(true);
+                    }}
+                  />
                 </div>
               </div>
             </div>
@@ -169,8 +177,10 @@ const LinkManager = () => {
           isOpen={isWizardOpen}
           onClose={() => {
             setIsWizardOpen(false);
+            setEditingLink(null);
             fetchLinks(); // Refresh links after closing wizard
           }}
+          initialData={editingLink}
         />
       )}
     </div>
@@ -253,8 +263,7 @@ const LinkActionsMenu = ({ link, onRefresh }) => {
             <button
               onClick={() => {
                 setIsOpen(false);
-                // TODO: Implement edit functionality
-                alert('Edit functionality coming soon');
+                onEdit(link);
               }}
               className="w-full px-4 py-3 text-left text-white hover:bg-white/5 transition-colors flex items-center gap-3 text-sm"
             >

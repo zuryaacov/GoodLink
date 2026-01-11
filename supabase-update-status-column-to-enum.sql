@@ -2,7 +2,10 @@
 -- This migration changes the status field to support: active, PAUSED, deleted, PENDING, etc.
 -- Run this SQL in your Supabase SQL Editor
 
--- Step 1: Check if status column exists as BOOLEAN and migrate
+-- Step 1: Drop policies that depend on status column
+DROP POLICY IF EXISTS "Public can read active links" ON links;
+
+-- Step 2: Check if status column exists as BOOLEAN and migrate
 DO $$
 BEGIN
   -- Check if status column exists and is BOOLEAN type
@@ -23,7 +26,7 @@ BEGIN
       ELSE 'active'
     END;
 
-    -- Drop the old status column
+    -- Drop the old status column (now safe because policy was dropped)
     ALTER TABLE links DROP COLUMN status;
 
     -- Rename the new column to status
@@ -61,3 +64,12 @@ UPDATE links SET status = 'active' WHERE status IS NULL;
 
 -- Step 6: Add a comment to document the status values
 COMMENT ON COLUMN links.status IS 'Link status: active (active link), PAUSED (temporarily paused), deleted (soft deleted), PENDING (pending activation)';
+
+-- Step 7: Recreate the public policy with the new status column (if needed)
+-- This policy allows public read access to active links only
+CREATE POLICY "Public can read active links"
+  ON links FOR SELECT
+  USING (
+    -- Only allow links with status = 'active'
+    COALESCE(status, 'active') = 'active'
+  );
