@@ -756,7 +756,7 @@ const Step1FastTrack = ({
           <button
             onClick={onQuickCreate}
             disabled={safetyCheck.isSafe === false}
-            className={`w-full px-6 py-3 font-bold rounded-xl transition-colors flex items-center justify-center gap-2 ${
+            className={`w-full px-6 py-3 text-white font-bold rounded-xl transition-colors flex items-center justify-center gap-2 ${
               safetyCheck.isSafe === false
                 ? "opacity-50 cursor-not-allowed"
                 : ""
@@ -764,7 +764,6 @@ const Step1FastTrack = ({
             style={{
               backgroundColor:
                 safetyCheck.isSafe === false ? undefined : "#FF10F0",
-              color: "#0A1128",
             }}
             onMouseEnter={(e) => {
               if (safetyCheck.isSafe !== false) {

@@ -95,10 +95,9 @@ const LinkManager = () => {
             setDuplicatingLink(null);
             setIsWizardOpen(true);
           }}
-          className="flex items-center justify-center gap-2 w-full sm:w-auto px-6 py-3 md:py-2.5 font-bold rounded-xl transition-colors shadow-lg text-base md:text-sm"
+          className="flex items-center justify-center gap-2 w-full sm:w-auto px-6 py-3 md:py-2.5 text-white font-bold rounded-xl transition-colors shadow-lg text-base md:text-sm"
           style={{
             backgroundColor: "#FF10F0",
-            color: "#0A1128",
           }}
           onMouseEnter={(e) => {
             e.currentTarget.style.backgroundColor = "#e00ed0";
