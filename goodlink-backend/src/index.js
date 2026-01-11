@@ -79,7 +79,7 @@ async function getLinkFromSupabase(slug, domain, supabaseUrl, supabaseKey) {
                 const debugData = await debugResponse.json();
                 if (debugData && debugData.length > 0) {
                     const foundLink = debugData.find(l =>
-                        (l.status === undefined || l.status === true) &&
+                        (l.status === undefined || l.status === 'active') &&
                         l.target_url
                     );
                     if (foundLink) {
@@ -101,7 +101,11 @@ async function getLinkFromSupabase(slug, domain, supabaseUrl, supabaseKey) {
         }
 
         const link = data[0];
-        if (link.status !== undefined && link.status === false) return null;
+        // Only allow 'active' status links
+        if (link.status !== undefined && link.status !== 'active') {
+            console.log(`Link found but status is "${link.status}" (not active)`);
+            return null;
+        }
 
         return link;
     } catch (error) {

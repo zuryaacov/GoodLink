@@ -49,8 +49,9 @@ const LinkManager = () => {
 
   const handleToggleStatus = async (linkId, currentStatus) => {
     try {
-      // Default to true (active) if status is undefined/null
-      const newStatus = currentStatus === false ? true : false;
+      // Toggle between 'active' and 'PAUSED'
+      // If status is 'active' -> change to 'PAUSED', otherwise change to 'active'
+      const newStatus = (currentStatus === 'active') ? 'PAUSED' : 'active';
       
       const { error } = await supabase
         .from('links')
@@ -58,14 +59,12 @@ const LinkManager = () => {
         .eq('id', linkId);
 
       if (error) {
-        // If status column doesn't exist, ignore the error for now
-        if (!error.message.includes('column "status"')) {
-          throw error;
-        }
+        throw error;
       }
       fetchLinks(); // Refresh the list
     } catch (error) {
       console.error('Error updating link status:', error);
+      alert('Error updating link status. Please try again.');
     }
   };
 
@@ -140,15 +139,16 @@ const LinkManager = () => {
               <div className="flex items-center justify-between gap-3 pt-2 border-t border-[#232f48]">
                 {/* Status */}
                 <button
-                  onClick={() => handleToggleStatus(link.id, link.status !== false)}
+                  onClick={() => handleToggleStatus(link.id, link.status || 'active')}
                   className={`relative w-12 h-6 rounded-full transition-colors flex-shrink-0 ${
-                    (link.status === undefined || link.status !== false) ? 'bg-primary' : 'bg-[#232f48]'
+                    (link.status === 'active') ? 'bg-primary' : 'bg-[#232f48]'
                   }`}
                   aria-label="Toggle link status"
+                  title={link.status === 'active' ? 'Active - Click to pause' : 'Paused - Click to activate'}
                 >
                   <span
                     className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform ${
-                      (link.status === undefined || link.status !== false) ? 'translate-x-6' : 'translate-x-0'
+                      (link.status === 'active') ? 'translate-x-6' : 'translate-x-0'
                     }`}
                   />
                 </button>
