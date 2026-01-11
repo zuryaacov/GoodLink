@@ -90,8 +90,21 @@ const LinkManager = () => {
           <p className="text-sm md:text-base text-slate-400">Create and manage your smart links</p>
         </div>
         <button
-          onClick={() => setIsWizardOpen(true)}
-          className="flex items-center justify-center gap-2 w-full sm:w-auto px-6 py-3 md:py-2.5 bg-primary hover:bg-primary/90 active:bg-primary/80 text-white font-bold rounded-xl transition-colors shadow-lg shadow-primary/30 text-base md:text-sm"
+          onClick={() => {
+            setEditingLink(null);
+            setDuplicatingLink(null);
+            setIsWizardOpen(true);
+          }}
+          className="flex items-center justify-center gap-2 w-full sm:w-auto px-6 py-3 md:py-2.5 text-white font-bold rounded-xl transition-colors shadow-lg text-base md:text-sm"
+          style={{
+            backgroundColor: "#de4aa8",
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = "#d0399a";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = "#de4aa8";
+          }}
         >
           <span className="material-symbols-outlined text-xl md:text-base">add</span>
           New Link
