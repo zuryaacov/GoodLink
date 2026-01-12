@@ -71,6 +71,8 @@ const Step1FastTrack = ({
   const [slugError, setSlugError] = useState(null);
   const [isSlugAvailable, setIsSlugAvailable] = useState(null); // null = not checked, true = available, false = taken
   const [lastSlugCheck, setLastSlugCheck] = useState(null); // Track last check time for debouncing
+  const [nameError, setNameError] = useState(null); // Error for name validation
+  const [isNameAvailable, setIsNameAvailable] = useState(null); // null = not checked, true = available, false = taken
   const [safetyCheck, setSafetyCheck] = useState({
     loading: false,
     isSafe: null,
@@ -148,9 +150,14 @@ const Step1FastTrack = ({
     fetchDomains();
   }, []);
 
-  // Safety check function - called when user leaves the field
-  const performSafetyCheck = async () => {
+  // Safety check function that returns the result (for use in handleCheckSlug)
+  const performSafetyCheckAndGetResult = async () => {
     if (!formData.targetUrl || !formData.targetUrl.trim()) {
+      const result = {
+        isSafe: false,
+        urlExists: false,
+        error: "URL is required",
+      };
       setSafetyCheck({
         loading: false,
         isSafe: null,
@@ -158,17 +165,18 @@ const Step1FastTrack = ({
         error: null,
         urlExists: false,
       });
-      // Reset safety in parent
-      if (onSafetyCheckUpdate) {
-        onSafetyCheckUpdate({ isSafe: null, threatType: null });
-      }
-      return;
+      return result;
     }
 
     // Comprehensive URL validation BEFORE making API calls
     const validation = validateUrl(formData.targetUrl);
 
     if (!validation.isValid) {
+      const result = {
+        isSafe: false,
+        urlExists: false,
+        error: validation.error || "Invalid URL format",
+      };
       setSafetyCheck({
         loading: false,
         isSafe: null,
@@ -176,10 +184,7 @@ const Step1FastTrack = ({
         error: validation.error || "Invalid URL format",
         urlExists: false,
       });
-      if (onSafetyCheckUpdate) {
-        onSafetyCheckUpdate({ isSafe: null, threatType: null });
-      }
-      return;
+      return result;
     }
 
     // Use normalized URL from validation
@@ -191,6 +196,11 @@ const Step1FastTrack = ({
       const hostname = urlObj.hostname.toLowerCase().replace(/^www\./, "");
 
       if (hostname === "glynk.to") {
+        const result = {
+          isSafe: false,
+          urlExists: false,
+          error: "Redirect cannot be to glynk.to. Please use a different URL.",
+        };
         setSafetyCheck({
           loading: false,
           isSafe: false,
@@ -198,10 +208,7 @@ const Step1FastTrack = ({
           error: "Redirect cannot be to glynk.to. Please use a different URL.",
           urlExists: false,
         });
-        if (onSafetyCheckUpdate) {
-          onSafetyCheckUpdate({ isSafe: false, threatType: null });
-        }
-        return;
+        return result;
       }
     } catch (error) {
       // If URL parsing fails, continue with normal validation
@@ -309,6 +316,19 @@ const Step1FastTrack = ({
         threatType: result.threatType,
       });
     }
+
+    return {
+      isSafe: result.isSafe && !urlExists,
+      urlExists: urlExists,
+      error: urlExists
+        ? "This URL already exists in your links. Please use a different URL."
+        : result.error || null,
+    };
+  };
+
+  // Safety check function - called when user leaves the field (for UI updates only)
+  const performSafetyCheck = async () => {
+    await performSafetyCheckAndGetResult();
   };
 
   // Auto-fetch title function - called when user leaves the field
@@ -383,14 +403,66 @@ const Step1FastTrack = ({
     // The useEffect will automatically fetch the title
   };
 
-  const handleCheckSlug = async () => {
-    // Clear previous error
-    setSlugError(null);
+  // Check if name already exists for this user
+  const checkNameAvailability = async (name, userId, excludeLinkId = null) => {
+    try {
+      if (!name || !name.trim()) {
+        return { isAvailable: false, error: "Name is required" };
+      }
 
-    // Check if user has entered a slug
+      let query = supabase
+        .from("links")
+        .select("id, name")
+        .eq("user_id", userId)
+        .eq("name", name.trim())
+        .neq("status", "deleted");
+
+      // Exclude the current link if in edit mode
+      if (excludeLinkId) {
+        query = query.neq("id", excludeLinkId);
+      }
+
+      const { data: existingLinks, error } = await query.limit(1);
+
+      if (error) {
+        console.error("Error checking name availability:", error);
+        return { isAvailable: false, error: "Error checking name availability" };
+      }
+
+      if (existingLinks && existingLinks.length > 0) {
+        return {
+          isAvailable: false,
+          error: "This name already exists in your links. Please use a different name.",
+        };
+      }
+
+      return { isAvailable: true };
+    } catch (error) {
+      console.error("Error checking name availability:", error);
+      return { isAvailable: false, error: "Error checking name availability" };
+    }
+  };
+
+  const handleCheckSlug = async () => {
+    // Clear previous errors
+    setSlugError(null);
+    setNameError(null);
+    setIsSlugAvailable(null);
+    setIsNameAvailable(null);
+
+    // Validate required fields before starting checks
+    if (!formData.targetUrl || !formData.targetUrl.trim()) {
+      setSlugError("Please enter a URL before checking");
+      return;
+    }
+
+    if (!formData.name || !formData.name.trim()) {
+      setNameError("Please enter a name before checking");
+      return;
+    }
+
     if (!formData.slug || !formData.slug.trim()) {
       setSlugError("Please enter a slug before checking");
-      setIsSlugAvailable(null);
       return;
     }
 
@@ -417,14 +489,48 @@ const Step1FastTrack = ({
       } = await supabase.auth.getUser();
 
       if (!user) {
-        setSlugError("You must be logged in to check slug availability");
+        setSlugError("You must be logged in to check availability");
         setIsSlugAvailable(null);
         setCheckingSlug(false);
         return;
       }
 
-      // Use comprehensive slug validation
-      // Pass linkId to exclude current link from availability check (for edit mode)
+      // Step 1: Check URL safety and existence
+      console.log("🔵 [Check] Step 1: Checking URL...");
+      
+      // Perform safety check and get the result
+      const safetyCheckResult = await performSafetyCheckAndGetResult();
+      
+      if (!safetyCheckResult.isSafe || safetyCheckResult.urlExists) {
+        setSlugError(
+          safetyCheckResult.urlExists 
+            ? "This URL already exists in your links. Please use a different URL."
+            : safetyCheckResult.error || "URL validation failed. Please fix the URL before continuing."
+        );
+        setCheckingSlug(false);
+        return;
+      }
+
+      // Step 2: Check name availability
+      console.log("🔵 [Check] Step 2: Checking name availability...");
+      const nameCheck = await checkNameAvailability(
+        formData.name,
+        user.id,
+        formData.linkId || null
+      );
+
+      if (!nameCheck.isAvailable) {
+        setNameError(nameCheck.error || "Name is not available");
+        setIsNameAvailable(false);
+        setCheckingSlug(false);
+        return;
+      }
+
+      setIsNameAvailable(true);
+      setNameError(null);
+
+      // Step 3: Check slug availability
+      console.log("🔵 [Check] Step 3: Checking slug availability...");
       const validationResult = await validateSlug(
         formData.slug,
         selectedDomain,
@@ -448,13 +554,12 @@ const Step1FastTrack = ({
         }
 
         // Slug is valid and available
-        // Note: If content moderation was rate-limited, it still passes (fail open)
         setSlugError(null);
         setIsSlugAvailable(true);
       }
     } catch (error) {
-      console.error("Error checking slug:", error);
-      setSlugError("Error checking slug availability. Please try again.");
+      console.error("Error during validation:", error);
+      setSlugError("Error during validation. Please try again.");
       setIsSlugAvailable(null);
     } finally {
       setCheckingSlug(false);
@@ -467,17 +572,18 @@ const Step1FastTrack = ({
 
   // Show "Create Quick Link" button only when:
   // 1. URL is verified (safety check passed)
-  // 2. Slug is provided and verified (slug check passed)
-  // 3. Name is provided (required)
+  // 2. Name is provided and verified (name check passed)
+  // 3. Slug is provided and verified (slug check passed)
   const canCreate =
     formData.targetUrl &&
     formData.targetUrl.trim() &&
     safetyCheck.isSafe === true &&
+    formData.name &&
+    formData.name.trim() &&
+    isNameAvailable === true &&
     formData.slug &&
     formData.slug.trim() &&
-    isSlugAvailable === true &&
-    formData.name &&
-    formData.name.trim();
+    isSlugAvailable === true;
 
   return (
     <motion.div
@@ -502,7 +608,7 @@ const Step1FastTrack = ({
               onChange={handleUrlChange}
               onPaste={handleUrlPaste}
               onBlur={() => {
-                performSafetyCheck();
+                // Only fetch title automatically, don't perform safety check
                 fetchTitle();
               }}
               placeholder="Paste your URL here..."
