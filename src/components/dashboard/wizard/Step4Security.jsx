@@ -1,7 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
+import Modal from '../../common/Modal';
 
 const Step4Security = ({ formData, updateFormData }) => {
+  const [modalOpen, setModalOpen] = useState(false);
+
   return (
     <motion.div
       initial={{ opacity: 0, x: 20 }}
@@ -120,8 +123,7 @@ const Step4Security = ({ formData, updateFormData }) => {
             )}
             <button
               onClick={() => {
-                // TODO: Open modal to add geo-rule
-                alert('Geo-targeting rule editor coming soon. For now, all visitors will use the default target URL.');
+                setModalOpen(true);
               }}
               className="w-full px-4 py-2 border border-dashed border-[#324467] text-slate-400 hover:text-white hover:border-primary rounded-lg transition-colors text-sm"
             >
@@ -133,6 +135,15 @@ const Step4Security = ({ formData, updateFormData }) => {
           Example: "If visitor is from USA, redirect to URL A, otherwise redirect to URL B"
         </p>
       </div>
+
+      {/* Info Modal */}
+      <Modal
+        isOpen={modalOpen}
+        onClose={() => setModalOpen(false)}
+        title="Coming Soon"
+        message="Geo-targeting rule editor coming soon. For now, all visitors will use the default target URL."
+        type="info"
+      />
     </motion.div>
   );
 };

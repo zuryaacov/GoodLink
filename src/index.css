@@ -58,3 +58,125 @@ html {
 .layout-content-container {
   @apply mx-auto max-w-[1200px];
 }
+
+/* Modal Styles */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(10, 17, 40, 0.6); /* #0A1128 with transparency */
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-box {
+  background: white;
+  padding: 32px;
+  border-radius: 16px;
+  max-width: 400px;
+  width: 90%;
+  text-align: center;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+.modal-box h2 {
+  color: #0A1128;
+  margin-top: 16px;
+  font-family: sans-serif;
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.modal-box p {
+  color: #4B5563;
+  line-height: 1.5;
+  margin-top: 8px;
+  font-size: 0.95rem;
+}
+
+.icon-circle {
+  width: 60px;
+  height: 60px;
+  background: #FF10F015; /* Pink with 15% opacity */
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.btn-secondary {
+  flex: 1;
+  padding: 12px;
+  border: 1px solid #E5E7EB;
+  background: white;
+  border-radius: 8px;
+  cursor: pointer;
+  color: #0A1128;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background: #F9FAFB;
+  border-color: #D1D5DB;
+}
+
+.btn-secondary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-danger {
+  flex: 1;
+  padding: 12px;
+  border: none;
+  background: #FF10F0; /* Pink */
+  color: white; /* White text on pink */
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+.btn-danger:hover:not(:disabled) {
+  background: #e00ed0; /* Darker pink on hover */
+}
+
+.btn-danger:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-primary {
+  flex: 1;
+  padding: 12px;
+  border: none;
+  background: #FF10F0; /* Pink */
+  color: white; /* White text on pink */
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: #e00ed0; /* Darker pink on hover */
+}
+
+.btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

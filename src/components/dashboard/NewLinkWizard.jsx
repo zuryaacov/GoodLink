@@ -4,6 +4,7 @@ import { supabase } from '../../lib/supabase';
 import Step1FastTrack from './wizard/Step1FastTrack';
 import Step2Optimization from './wizard/Step2Optimization';
 import Step3Security from './wizard/Step3Security';
+import Modal from '../common/Modal';
 
 const steps = [
   { number: 1, title: 'The Fast Track', subtitle: 'Destination & Identity' },
@@ -162,9 +163,21 @@ const NewLinkWizard = ({ isOpen, onClose, initialData = null }) => {
 
         if (error) throw error;
 
-        // Show success popup
-        const message = `Link updated successfully!\n\nShort URL: ${shortUrl}\n\nFull UTM String:\n${fullUtmString}`;
-        alert(message);
+        // Show success modal
+        setModalState({
+          isOpen: true,
+          type: 'success',
+          title: 'Link Updated Successfully!',
+          message: (
+            <>
+              <p><strong>Short URL:</strong> {shortUrl}</p>
+              <p style={{ marginTop: '12px' }}><strong>Full UTM String:</strong></p>
+              <p style={{ wordBreak: 'break-all', fontSize: '0.9rem', color: '#6B7280' }}>{fullUtmString}</p>
+            </>
+          ),
+          onConfirm: null,
+          isLoading: false,
+        });
       } else {
         // Create new link
         const { error } = await supabase
@@ -199,12 +212,26 @@ const NewLinkWizard = ({ isOpen, onClose, initialData = null }) => {
           console.error('Failed to copy to clipboard:', err);
         }
 
-        // Show success popup with link
-        const message = `Link created successfully!\n\nShort URL: ${shortUrl}\n\nFull UTM String (copied to clipboard):\n${fullUtmString}`;
-        alert(message);
+        // Show success modal
+        setModalState({
+          isOpen: true,
+          type: 'success',
+          title: 'Link Created Successfully!',
+          message: (
+            <>
+              <p><strong>Short URL:</strong> {shortUrl}</p>
+              <p style={{ marginTop: '12px' }}><strong>Full UTM String (copied to clipboard):</strong></p>
+              <p style={{ wordBreak: 'break-all', fontSize: '0.9rem', color: '#6B7280' }}>{fullUtmString}</p>
+            </>
+          ),
+          onConfirm: null,
+          isLoading: false,
+        });
+        // Don't close wizard yet - wait for user to close modal
+        return;
       }
       
-      // Close wizard and reset
+      // Close wizard and reset (only if no modal was shown)
       onClose();
       setCurrentStep(1);
       setFormData({
@@ -231,7 +258,19 @@ const NewLinkWizard = ({ isOpen, onClose, initialData = null }) => {
     } catch (error) {
       console.error('Error creating link:', error);
       const errorMessage = error?.message || 'Unknown error occurred';
-      alert(`Error creating link: ${errorMessage}\n\nPlease check the console for more details.`);
+      setModalState({
+        isOpen: true,
+        type: 'error',
+        title: 'Error Creating Link',
+        message: (
+          <>
+            <p>{errorMessage}</p>
+            <p style={{ marginTop: '8px', fontSize: '0.9rem', color: '#6B7280' }}>Please check the console for more details.</p>
+          </>
+        ),
+        onConfirm: null,
+        isLoading: false,
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -424,6 +463,23 @@ const NewLinkWizard = ({ isOpen, onClose, initialData = null }) => {
       </motion.div>
         </div>
       )}
+
+      {/* Success/Error Modal */}
+      <Modal
+        isOpen={modalState.isOpen}
+        onClose={() => {
+          setModalState({ ...modalState, isOpen: false });
+          // If it's a success modal, close the wizard after closing modal
+          if (modalState.type === 'success') {
+            onClose();
+          }
+        }}
+        title={modalState.title}
+        message={modalState.message}
+        type={modalState.type}
+        onConfirm={modalState.onConfirm}
+        isLoading={modalState.isLoading}
+      />
     </AnimatePresence>
   );
 };

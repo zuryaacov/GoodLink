@@ -8,6 +8,16 @@ const LinkManager = () => {
   const [duplicatingLink, setDuplicatingLink] = useState(null);
   const [links, setLinks] = useState([]);
   const [loading, setLoading] = useState(true);
+  
+  // Modal states
+  const [modalState, setModalState] = useState({
+    isOpen: false,
+    type: 'alert',
+    title: '',
+    message: '',
+    onConfirm: null,
+    isLoading: false,
+  });
 
   useEffect(() => {
     fetchLinks();
@@ -67,7 +77,14 @@ const LinkManager = () => {
       fetchLinks(); // Refresh the list
     } catch (error) {
       console.error('Error updating link status:', error);
-      alert('Error updating link status. Please try again.');
+      setModalState({
+        isOpen: true,
+        type: 'error',
+        title: 'Error',
+        message: 'Error updating link status. Please try again.',
+        onConfirm: null,
+        isLoading: false,
+      });
     }
   };
 
@@ -198,6 +215,9 @@ const LinkManager = () => {
                       setDuplicatingLink(duplicateData);
                       setIsWizardOpen(true);
                     }}
+                    onShowModal={(modalConfig) => {
+                      setModalState(modalConfig);
+                    }}
                   />
                 </div>
               </div>
@@ -219,17 +239,29 @@ const LinkManager = () => {
           initialData={editingLink || duplicatingLink}
         />
       )}
+
+      {/* Error/Alert Modal */}
+      <Modal
+        isOpen={modalState.isOpen}
+        onClose={() => setModalState({ ...modalState, isOpen: false })}
+        title={modalState.title}
+        message={modalState.message}
+        type={modalState.type}
+        onConfirm={modalState.onConfirm}
+        isLoading={modalState.isLoading}
+      />
     </div>
   );
 };
 
 // Actions Menu Component
-const LinkActionsMenu = ({ link, onRefresh, onEdit, onDuplicate }) => {
+const LinkActionsMenu = ({ link, onRefresh, onEdit, onDuplicate, onShowModal }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const handleDelete = async () => {
-    if (!confirm('Are you sure you want to delete this link?')) return;
-
+    setIsDeleting(true);
     try {
       const { error } = await supabase
         .from('links')
@@ -237,10 +269,19 @@ const LinkActionsMenu = ({ link, onRefresh, onEdit, onDuplicate }) => {
         .eq('id', link.id);
 
       if (error) throw error;
+      
+      setDeleteModalOpen(false);
+      setIsOpen(false);
       onRefresh();
     } catch (error) {
       console.error('Error deleting link:', error);
+      setDeleteModalOpen(false);
+      setIsDeleting(false);
+      // Show error modal - we'll need to pass a callback to show modal
+      // For now, we'll use a simple alert as fallback
       alert('Error deleting link. Please try again.');
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -282,8 +323,16 @@ const LinkActionsMenu = ({ link, onRefresh, onEdit, onDuplicate }) => {
             <button
               onClick={() => {
                 setIsOpen(false);
-                // TODO: Navigate to analytics page
-                alert('Analytics page coming soon');
+                if (onShowModal) {
+                  onShowModal({
+                    isOpen: true,
+                    type: 'info',
+                    title: 'Coming Soon',
+                    message: 'Analytics page is coming soon. Stay tuned!',
+                    onConfirm: null,
+                    isLoading: false,
+                  });
+                }
               }}
               className="w-full px-4 py-3 text-left text-white hover:bg-white/5 transition-colors flex items-center gap-3 text-sm"
             >
@@ -303,7 +352,7 @@ const LinkActionsMenu = ({ link, onRefresh, onEdit, onDuplicate }) => {
             <button
               onClick={() => {
                 setIsOpen(false);
-                handleDelete();
+                setDeleteModalOpen(true);
               }}
               className="w-full px-4 py-3 text-left text-red-400 hover:bg-red-400/10 transition-colors flex items-center gap-3 text-sm"
             >
@@ -313,6 +362,23 @@ const LinkActionsMenu = ({ link, onRefresh, onEdit, onDuplicate }) => {
           </div>
         </>
       )}
+
+      {/* Delete Confirmation Modal */}
+      <Modal
+        isOpen={deleteModalOpen}
+        onClose={() => !isDeleting && setDeleteModalOpen(false)}
+        title="Delete this link?"
+        message={
+          <>
+            Are you sure you want to delete <strong>{link.short_url}</strong>? This will stop all traffic to this destination.
+          </>
+        }
+        type="delete"
+        confirmText="Delete Link"
+        cancelText="Cancel"
+        onConfirm={handleDelete}
+        isLoading={isDeleting}
+      />
     </div>
   );
 };
