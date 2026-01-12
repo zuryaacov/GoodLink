@@ -217,10 +217,14 @@ const Step1FastTrack = ({
     }
 
     // Perform safety check with normalized URL (only if validation passed)
+    console.log("🔵 [performSafetyCheckAndGetResult] Starting safety check for:", normalizedUrl);
     setSafetyCheck((prev) => ({ ...prev, loading: true }));
+    
+    // Step 1: Check URL safety (Google Safe Browsing)
     const result = await checkUrlSafety(normalizedUrl);
+    console.log("🔵 [performSafetyCheckAndGetResult] Safety check result:", result);
 
-    // Check if URL already exists in links table (check always, not just if safe)
+    // Step 2: Check if URL already exists in links table (check always, not just if safe)
     let urlExists = false;
     try {
       const {
@@ -228,12 +232,19 @@ const Step1FastTrack = ({
       } = await supabase.auth.getUser();
 
       if (user) {
+        console.log("🔵 [performSafetyCheckAndGetResult] Checking if URL exists for user:", user.id);
         // Get all links for this user to check for URL matches (exclude deleted links)
         const { data: existingLinks, error: linksError } = await supabase
           .from("links")
           .select("id, target_url")
           .eq("user_id", user.id)
           .neq("status", "deleted");
+
+        if (linksError) {
+          console.error("❌ [performSafetyCheckAndGetResult] Error fetching links:", linksError);
+        } else {
+          console.log("🔵 [performSafetyCheckAndGetResult] Found", existingLinks?.length || 0, "existing links");
+        }
 
         if (!linksError && existingLinks && existingLinks.length > 0) {
           // Normalize URLs for comparison (remove trailing slashes, lowercase, etc.)
@@ -278,6 +289,7 @@ const Step1FastTrack = ({
           };
 
           const normalizedInputUrl = normalizeForComparison(normalizedUrl);
+          console.log("🔵 [performSafetyCheckAndGetResult] Normalized input URL:", normalizedInputUrl);
 
           // Check if any existing link matches the normalized URL
           // Exclude the current link if in edit mode (formData.linkId)
@@ -290,14 +302,24 @@ const Step1FastTrack = ({
             const normalizedExistingUrl = normalizeForComparison(
               link.target_url
             );
-            return normalizedExistingUrl === normalizedInputUrl;
+            const matches = normalizedExistingUrl === normalizedInputUrl;
+            if (matches) {
+              console.log("🔵 [performSafetyCheckAndGetResult] Found matching URL:", link.target_url);
+            }
+            return matches;
           });
         }
       }
     } catch (error) {
-      console.error("Error checking if URL exists:", error);
+      console.error("❌ [performSafetyCheckAndGetResult] Error checking if URL exists:", error);
       // Don't block user on error, just log it
     }
+
+    console.log("🔵 [performSafetyCheckAndGetResult] Final checks:", {
+      safetyCheckIsSafe: result.isSafe,
+      urlExists: urlExists,
+      finalIsSafe: result.isSafe && !urlExists
+    });
 
     const safetyState = {
       loading: false,
@@ -332,6 +354,7 @@ const Step1FastTrack = ({
       finalResult.error = result.error || "URL safety check failed. This URL may be unsafe.";
     }
 
+    console.log("🔵 [performSafetyCheckAndGetResult] Returning final result:", finalResult);
     return finalResult;
   };
 
