@@ -318,13 +318,21 @@ const Step1FastTrack = ({
       });
     }
 
-    return {
+    // Return comprehensive result with all validation info
+    const finalResult = {
       isSafe: result.isSafe && !urlExists,
       urlExists: urlExists,
-      error: urlExists
-        ? "This URL already exists in your links. Please use a different URL."
-        : result.error || null,
+      error: null,
     };
+
+    // Determine error message based on validation results
+    if (urlExists) {
+      finalResult.error = "This URL already exists in your links. Please use a different URL.";
+    } else if (!result.isSafe) {
+      finalResult.error = result.error || "URL safety check failed. This URL may be unsafe.";
+    }
+
+    return finalResult;
   };
 
   // Safety check function - called when user leaves the field (for UI updates only)
@@ -502,25 +510,34 @@ const Step1FastTrack = ({
         return;
       }
 
-      // Step 1: Check URL - ALL URL validations
+      // Step 1: Check URL - ALL URL validations must pass before proceeding
       console.log("🔵 [Check] Step 1: Checking URL (all validations)...");
       
-      // Perform safety check and get the result
+      // Perform ALL URL validations: format, safety, existence
       const safetyCheckResult = await performSafetyCheckAndGetResult();
       
-      // Check all URL validations before proceeding
-      if (!safetyCheckResult.isSafe || safetyCheckResult.urlExists) {
-        setUrlError(
-          safetyCheckResult.urlExists 
-            ? "This URL already exists in your links. Please use a different URL."
-            : safetyCheckResult.error || "URL validation failed. Please fix the URL before continuing."
-        );
+      // Check ALL URL validations - if ANY fails, stop and show error
+      if (safetyCheckResult.error || !safetyCheckResult.isSafe || safetyCheckResult.urlExists) {
+        // Determine the specific error message
+        let errorMessage = "URL validation failed. Please fix the URL before continuing.";
+        
+        if (safetyCheckResult.urlExists) {
+          errorMessage = "This URL already exists in your links. Please use a different URL.";
+        } else if (safetyCheckResult.error) {
+          errorMessage = safetyCheckResult.error;
+        } else if (!safetyCheckResult.isSafe) {
+          errorMessage = "URL safety check failed. Please use a different URL.";
+        }
+        
+        setUrlError(errorMessage);
         setCheckingSlug(false);
+        console.log("❌ [Check] URL validation failed:", errorMessage);
         return;
       }
 
-      // URL is valid - clear any previous errors
+      // ALL URL validations passed - clear any previous errors
       setUrlError(null);
+      console.log("✅ [Check] All URL validations passed");
 
       // Step 2: Check Name - ALL Name validations
       console.log("🔵 [Check] Step 2: Checking Name (all validations)...");
