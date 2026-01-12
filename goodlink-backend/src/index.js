@@ -737,6 +737,174 @@ async function handleAddCustomDomain(request, env) {
 }
 
 /**
+ * Handle verifying custom domain DNS records via Cloudflare API
+ */
+async function handleVerifyCustomDomain(request, env) {
+    try {
+        // Parse request body
+        const body = await request.json();
+        const { domain_id, cloudflare_hostname_id } = body;
+
+        if (!cloudflare_hostname_id && !domain_id) {
+            return new Response(JSON.stringify({
+                success: false,
+                error: 'Missing domain_id or cloudflare_hostname_id'
+            }), {
+                status: 400,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Access-Control-Allow-Origin': '*',
+                    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+                    'Access-Control-Allow-Headers': 'Content-Type, Authorization'
+                }
+            });
+        }
+
+        console.log('🔵 [VerifyDomain] Domain ID:', domain_id);
+        console.log('🔵 [VerifyDomain] Cloudflare Hostname ID:', cloudflare_hostname_id);
+
+        // Check Cloudflare environment variables
+        if (!env.CLOUDFLARE_ZONE_ID || !env.CLOUDFLARE_GLOBAL_KEY || !env.CLOUDFLARE_EMAIL) {
+            console.error('❌ [VerifyDomain] Missing Cloudflare configuration');
+            return new Response(JSON.stringify({
+                success: false,
+                error: 'Cloudflare configuration missing'
+            }), {
+                status: 500,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Access-Control-Allow-Origin': '*'
+                }
+            });
+        }
+
+        // Get cloudflare_hostname_id from Supabase if only domain_id provided
+        let hostnameId = cloudflare_hostname_id;
+        if (!hostnameId && domain_id && env.SUPABASE_URL && env.SUPABASE_SERVICE_ROLE_KEY) {
+            const getUrl = `${env.SUPABASE_URL}/rest/v1/custom_domains?id=eq.${encodeURIComponent(domain_id)}&select=cloudflare_hostname_id`;
+            const getResponse = await fetch(getUrl, {
+                method: 'GET',
+                headers: {
+                    'apikey': env.SUPABASE_SERVICE_ROLE_KEY,
+                    'Authorization': `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}`,
+                    'Content-Type': 'application/json',
+                },
+            });
+            if (getResponse.ok) {
+                const domainData = await getResponse.json();
+                if (domainData && domainData.length > 0 && domainData[0].cloudflare_hostname_id) {
+                    hostnameId = domainData[0].cloudflare_hostname_id;
+                }
+            }
+        }
+
+        if (!hostnameId) {
+            return new Response(JSON.stringify({
+                success: false,
+                error: 'Cloudflare hostname ID not found'
+            }), {
+                status: 400,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Access-Control-Allow-Origin': '*'
+                }
+            });
+        }
+
+        // Call Cloudflare API to check hostname status
+        console.log('🔵 [VerifyDomain] Checking Cloudflare hostname status...');
+        const cloudflareResponse = await fetch(
+            `https://api.cloudflare.com/client/v4/zones/${env.CLOUDFLARE_ZONE_ID}/custom_hostnames/${hostnameId}`,
+            {
+                method: 'GET',
+                headers: {
+                    'X-Auth-Email': env.CLOUDFLARE_EMAIL,
+                    'X-Auth-Key': env.CLOUDFLARE_GLOBAL_KEY,
+                    'Content-Type': 'application/json',
+                },
+            }
+        );
+
+        const cloudflareData = await cloudflareResponse.json();
+        console.log('🔵 [VerifyDomain] Cloudflare response:', JSON.stringify(cloudflareData, null, 2));
+
+        if (!cloudflareData.success) {
+            const errorMsg = cloudflareData.errors?.[0]?.message || 'Cloudflare API error';
+            console.error('❌ [VerifyDomain] Cloudflare API error:', errorMsg);
+            return new Response(JSON.stringify({
+                success: false,
+                error: errorMsg
+            }), {
+                status: 400,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Access-Control-Allow-Origin': '*'
+                }
+            });
+        }
+
+        const hostnameResult = cloudflareData.result;
+        const sslStatus = hostnameResult.ssl?.status || 'pending';
+        const isActive = sslStatus === 'active';
+
+        console.log('🔵 [VerifyDomain] SSL Status:', sslStatus);
+        console.log('🔵 [VerifyDomain] Is Active:', isActive);
+
+        // Update status in Supabase
+        if (domain_id && env.SUPABASE_URL && env.SUPABASE_SERVICE_ROLE_KEY) {
+            const updateUrl = `${env.SUPABASE_URL}/rest/v1/custom_domains?id=eq.${encodeURIComponent(domain_id)}`;
+            const updateResponse = await fetch(updateUrl, {
+                method: 'PATCH',
+                headers: {
+                    'apikey': env.SUPABASE_SERVICE_ROLE_KEY,
+                    'Authorization': `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}`,
+                    'Content-Type': 'application/json',
+                    'Prefer': 'return=representation',
+                },
+                body: JSON.stringify({
+                    status: isActive ? 'active' : 'pending',
+                    verified_at: isActive ? new Date().toISOString() : null,
+                }),
+            });
+            if (!updateResponse.ok) {
+                console.error('❌ [VerifyDomain] Failed to update domain in Supabase');
+            } else {
+                console.log('✅ [VerifyDomain] Domain status updated in Supabase');
+            }
+        }
+
+        // Return verification result
+        return new Response(JSON.stringify({
+            success: true,
+            is_active: isActive,
+            ssl_status: sslStatus,
+            status: isActive ? 'active' : 'pending'
+        }), {
+            status: 200,
+            headers: {
+                'Content-Type': 'application/json',
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Methods': 'POST, OPTIONS',
+                'Access-Control-Allow-Headers': 'Content-Type, Authorization'
+            }
+        });
+
+    } catch (error) {
+        console.error('❌ [VerifyDomain] Error:', error);
+        return new Response(JSON.stringify({
+            success: false,
+            error: error.message || 'Internal server error'
+        }), {
+            status: 500,
+            headers: {
+                'Content-Type': 'application/json',
+                'Access-Control-Allow-Origin': '*'
+            }
+        });
+    }
+}
+
+/**
  * Generate bridging HTML page
  */
 function getBridgingPage(destUrl, linkId, slug, domain) {
@@ -991,6 +1159,12 @@ export default {
         if (pathname === '/api/add-custom-domain' && request.method === 'POST') {
             console.log('🔵 Handling /api/add-custom-domain endpoint');
             return await handleAddCustomDomain(request, env);
+        }
+
+        // Handle /api/verify-custom-domain endpoint (POST)
+        if (pathname === '/api/verify-custom-domain' && request.method === 'POST') {
+            console.log('🔵 Handling /api/verify-custom-domain endpoint');
+            return await handleVerifyCustomDomain(request, env);
         }
 
         // Only process GET requests for other endpoints

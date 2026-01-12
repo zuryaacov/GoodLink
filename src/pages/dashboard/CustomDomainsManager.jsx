@@ -175,15 +175,14 @@ const CustomDomainsManager = () => {
               {/* DNS Records - Show if pending or error */}
               {(domain.status === 'pending' || domain.status === 'error') && domain.dns_records && (
                 <div className="pt-4 border-t border-[#232f48]">
-                  <p className="text-xs text-slate-500 mb-2">DNS Configuration Required</p>
                   <button
                     onClick={() => {
                       setEditingDomain(domain);
                       setIsModalOpen(true);
                     }}
-                    className="text-xs text-primary hover:text-primary/80 underline"
+                    className="w-full px-4 py-2.5 bg-[#FF10F0] hover:bg-[#e00ed0] text-white font-bold rounded-xl transition-colors"
                   >
-                    View DNS Records
+                    Verify My DNS
                   </button>
                 </div>
               )}

@@ -10,7 +10,9 @@ const AddDomainModal = ({ isOpen, onClose, domain = null }) => {
   const [dnsRecords, setDnsRecords] = useState(null);
   const [isVerifying, setIsVerifying] = useState(false);
   const [savedDomainId, setSavedDomainId] = useState(domain?.id || null);
+  const [cloudflareHostnameId, setCloudflareHostnameId] = useState(domain?.cloudflare_hostname_id || null);
   const [saveError, setSaveError] = useState(null);
+  const [verifyError, setVerifyError] = useState(null);
 
   const steps = [
     { number: 1, title: 'Domain', subtitle: 'Enter your domain' },
@@ -71,9 +73,12 @@ const AddDomainModal = ({ isOpen, onClose, domain = null }) => {
             setDnsRecords(result.dns_records);
           }
 
-          // Save domain ID
+          // Save domain ID and Cloudflare hostname ID
           if (result.domain_id) {
             setSavedDomainId(result.domain_id);
+          }
+          if (result.cloudflare_hostname_id) {
+            setCloudflareHostnameId(result.cloudflare_hostname_id);
           }
           
           setCurrentStep(2);
@@ -100,27 +105,52 @@ const AddDomainModal = ({ isOpen, onClose, domain = null }) => {
 
   const handleVerify = async () => {
     setIsVerifying(true);
+    setVerifyError(null);
     try {
-      // DNS verification logic would go here
-      // For now, just simulate
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
       const domainId = savedDomainId || domain?.id;
-      if (domainId) {
-        const { error } = await supabase
-          .from('custom_domains')
-          .update({ 
-            status: 'active',
-            verified_at: new Date().toISOString(),
-          })
-          .eq('id', domainId);
+      const hostnameId = cloudflareHostnameId || domain?.cloudflare_hostname_id;
 
-        if (error) throw error;
+      if (!domainId && !hostnameId) {
+        throw new Error('Domain ID or Cloudflare hostname ID is required');
       }
 
-      onClose();
+      // Get worker URL from environment variable (fallback to glynk.to)
+      const workerUrl = import.meta.env.VITE_WORKER_URL || 'https://glynk.to';
+      const apiUrl = `${workerUrl}/api/verify-custom-domain`;
+
+      console.log('🔵 [VerifyDomain] Calling worker API:', apiUrl);
+
+      // Call worker endpoint to verify domain
+      const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          domain_id: domainId,
+          cloudflare_hostname_id: hostnameId,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok || !result.success) {
+        throw new Error(result.error || 'Failed to verify domain');
+      }
+
+      console.log('✅ [VerifyDomain] Verification result:', result);
+
+      if (result.is_active) {
+        // Domain is verified and active
+        onClose();
+        // Refresh the domains list (parent component should handle this)
+      } else {
+        // DNS records not yet verified
+        setVerifyError(`DNS records are still pending. Status: ${result.ssl_status || 'pending'}. Please wait a few minutes and try again.`);
+      }
     } catch (error) {
-      console.error('Error verifying domain:', error);
+      console.error('❌ [VerifyDomain] Error:', error);
+      setVerifyError(error.message || 'Error verifying domain. Please try again.');
     } finally {
       setIsVerifying(false);
     }
@@ -131,7 +161,9 @@ const AddDomainModal = ({ isOpen, onClose, domain = null }) => {
     setDomainName(domain?.domain || '');
     setDnsRecords(null);
     setSavedDomainId(domain?.id || null);
+    setCloudflareHostnameId(domain?.cloudflare_hostname_id || null);
     setSaveError(null);
+    setVerifyError(null);
     onClose();
   };
 
@@ -266,8 +298,13 @@ const AddDomainModal = ({ isOpen, onClose, domain = null }) => {
                   <div className="text-center space-y-4">
                     <h3 className="text-lg font-bold text-white">Verify DNS Records</h3>
                     <p className="text-sm text-slate-400">
-                      Click below to verify that your DNS records are configured correctly
+                      Click below to verify that your DNS records are configured correctly. This may take a few minutes after adding the DNS records.
                     </p>
+                    {verifyError && (
+                      <div className="bg-red-500/20 border border-red-500/30 rounded-xl p-4 text-left">
+                        <p className="text-red-400 text-sm font-medium">{verifyError}</p>
+                      </div>
+                    )}
                     <button
                       onClick={handleVerify}
                       disabled={isVerifying}
