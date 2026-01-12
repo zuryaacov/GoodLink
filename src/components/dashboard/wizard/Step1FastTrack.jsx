@@ -502,12 +502,13 @@ const Step1FastTrack = ({
         return;
       }
 
-      // Step 1: Check URL safety and existence
-      console.log("🔵 [Check] Step 1: Checking URL...");
+      // Step 1: Check URL - ALL URL validations
+      console.log("🔵 [Check] Step 1: Checking URL (all validations)...");
       
       // Perform safety check and get the result
       const safetyCheckResult = await performSafetyCheckAndGetResult();
       
+      // Check all URL validations before proceeding
       if (!safetyCheckResult.isSafe || safetyCheckResult.urlExists) {
         setUrlError(
           safetyCheckResult.urlExists 
@@ -518,14 +519,20 @@ const Step1FastTrack = ({
         return;
       }
 
-      // Step 2: Check name availability
-      console.log("🔵 [Check] Step 2: Checking name availability...");
+      // URL is valid - clear any previous errors
+      setUrlError(null);
+
+      // Step 2: Check Name - ALL Name validations
+      console.log("🔵 [Check] Step 2: Checking Name (all validations)...");
+      
+      // Check name availability
       const nameCheck = await checkNameAvailability(
         formData.name,
         user.id,
         formData.linkId || null
       );
 
+      // Check all name validations before proceeding
       if (!nameCheck.isAvailable) {
         setNameError(nameCheck.error || "Name is not available");
         setIsNameAvailable(false);
@@ -533,11 +540,14 @@ const Step1FastTrack = ({
         return;
       }
 
+      // Name is valid - clear any previous errors and mark as available
       setIsNameAvailable(true);
       setNameError(null);
 
-      // Step 3: Check slug availability
-      console.log("🔵 [Check] Step 3: Checking slug availability...");
+      // Step 3: Check SLUG - ALL SLUG validations
+      console.log("🔵 [Check] Step 3: Checking SLUG (all validations)...");
+      
+      // Perform all slug validations: format, availability, content moderation
       const validationResult = await validateSlug(
         formData.slug,
         selectedDomain,
@@ -548,22 +558,27 @@ const Step1FastTrack = ({
         formData.linkId || null // exclude current link ID if in edit mode
       );
 
+      // Check all slug validations
       if (!validationResult.isValid) {
         setSlugError(validationResult.error || "Invalid slug");
         setIsSlugAvailable(false);
-      } else {
-        // Update form data with normalized slug (lowercase)
-        if (
-          validationResult.normalizedSlug &&
-          validationResult.normalizedSlug !== formData.slug
-        ) {
-          updateFormData("slug", validationResult.normalizedSlug);
-        }
-
-        // Slug is valid and available
-        setSlugError(null);
-        setIsSlugAvailable(true);
+        setCheckingSlug(false);
+        return;
       }
+
+      // All validations passed - update form data with normalized slug (lowercase)
+      if (
+        validationResult.normalizedSlug &&
+        validationResult.normalizedSlug !== formData.slug
+      ) {
+        updateFormData("slug", validationResult.normalizedSlug);
+      }
+
+      // Slug is valid and available - clear any previous errors
+      setSlugError(null);
+      setIsSlugAvailable(true);
+      
+      console.log("✅ [Check] All validations passed!");
     } catch (error) {
       console.error("Error during validation:", error);
       setSlugError("Error during validation. Please try again.");
