@@ -3,11 +3,60 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../../lib/supabase';
 import Modal from '../common/Modal';
 
+// Validation functions for each platform
+const validatePixelId = (pixelId, platform) => {
+  const trimmed = pixelId.trim();
+  
+  switch (platform) {
+    case 'meta':
+      // Meta: 15 or 16 digits only
+      return /^\d{15,16}$/.test(trimmed);
+    
+    case 'tiktok':
+      // TikTok: Exactly 16 characters, uppercase letters (A-Z) and numbers (0-9)
+      // Accept lowercase but convert to uppercase for validation
+      const upperTrimmed = trimmed.toUpperCase();
+      return /^[A-Z0-9]{16}$/.test(upperTrimmed);
+    
+    case 'snapchat':
+      // Snapchat: Exactly 36 characters, UUID format (8-4-4-4-12)
+      return /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(trimmed);
+    
+    case 'google':
+      // Google Ads: 11-13 characters total, starts with AW- followed by 9-10 digits
+      // AW- (3 chars) + 9-10 digits = 12-13 total
+      return /^AW-\d{9,10}$/i.test(trimmed);
+    
+    default:
+      return false;
+  }
+};
+
 const PLATFORMS = [
-  { value: 'meta', label: 'Meta (Facebook)', placeholder: 'Enter your 15-16 digit Pixel ID', pattern: /^\d{15,16}$/ },
-  { value: 'tiktok', label: 'TikTok', placeholder: 'Enter your alphanumeric Pixel ID', pattern: /^[A-Z0-9]+$/i },
-  { value: 'google', label: 'Google Ads', placeholder: 'Enter your Conversion ID (e.g., AW-123456789)', pattern: /^AW-\d+$/i },
-  { value: 'snapchat', label: 'Snapchat', placeholder: 'Enter your UUID Pixel ID', pattern: /^[a-f0-9-]+$/i },
+  { 
+    value: 'meta', 
+    label: 'Meta (Facebook)', 
+    placeholder: 'Enter your 15-16 digit Pixel ID (numbers only)',
+    validate: (id) => validatePixelId(id, 'meta')
+  },
+  { 
+    value: 'tiktok', 
+    label: 'TikTok', 
+    placeholder: 'Enter your 16-character Pixel ID (A-Z, 0-9)',
+    validate: (id) => validatePixelId(id, 'tiktok')
+  },
+  { 
+    value: 'google', 
+    label: 'Google Ads', 
+    placeholder: 'Enter your Conversion ID (e.g., AW-1234567890)',
+    validate: (id) => validatePixelId(id, 'google')
+  },
+  { 
+    value: 'snapchat', 
+    label: 'Snapchat', 
+    placeholder: 'Enter your UUID Pixel ID (36 characters)',
+    validate: (id) => validatePixelId(id, 'snapchat')
+  },
 ];
 
 const STANDARD_EVENTS = {
@@ -97,8 +146,26 @@ const PixelModal = ({ isOpen, onClose, initialData = null }) => {
       newErrors.pixelId = 'Pixel ID is required';
     } else {
       const platform = PLATFORMS.find(p => p.value === formData.platform);
-      if (platform && !platform.pattern.test(formData.pixelId.trim())) {
-        newErrors.pixelId = `Invalid ${platform.label} Pixel ID format`;
+      if (platform && !platform.validate(formData.pixelId)) {
+        // Provide specific error messages based on platform
+        let errorMsg = `Invalid ${platform.label} Pixel ID format. `;
+        switch (formData.platform) {
+          case 'meta':
+            errorMsg += 'Must be exactly 15 or 16 digits.';
+            break;
+          case 'tiktok':
+            errorMsg += 'Must be exactly 16 characters (uppercase letters A-Z and numbers 0-9).';
+            break;
+          case 'google':
+            errorMsg += 'Must start with AW- followed by 9-10 digits (e.g., AW-1234567890).';
+            break;
+          case 'snapchat':
+            errorMsg += 'Must be a valid UUID format (36 characters: 8-4-4-4-12).';
+            break;
+          default:
+            errorMsg += 'Please check the format.';
+        }
+        newErrors.pixelId = errorMsg;
       }
     }
 
@@ -127,11 +194,17 @@ const PixelModal = ({ isOpen, onClose, initialData = null }) => {
         throw new Error('You must be logged in to save pixels');
       }
 
+      // Normalize pixel ID before saving (uppercase for TikTok)
+      let normalizedPixelId = formData.pixelId.trim();
+      if (formData.platform === 'tiktok') {
+        normalizedPixelId = normalizedPixelId.toUpperCase();
+      }
+
       const pixelData = {
         user_id: user.id,
         name: formData.name.trim(),
         platform: formData.platform,
-        pixel_id: formData.pixelId.trim(),
+        pixel_id: normalizedPixelId,
         event_type: formData.enableAdvancedEvents 
           ? (formData.eventType === 'custom' ? 'custom' : formData.eventType)
           : 'PageView',
@@ -272,7 +345,12 @@ const PixelModal = ({ isOpen, onClose, initialData = null }) => {
                       type="text"
                       value={formData.pixelId}
                       onChange={(e) => {
-                        setFormData({ ...formData, pixelId: e.target.value });
+                        let value = e.target.value;
+                        // Auto-uppercase for TikTok
+                        if (formData.platform === 'tiktok') {
+                          value = value.toUpperCase();
+                        }
+                        setFormData({ ...formData, pixelId: value });
                         if (errors.pixelId) setErrors({ ...errors, pixelId: null });
                       }}
                       placeholder={currentPlatform?.placeholder || 'Enter Pixel ID'}
