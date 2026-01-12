@@ -20,29 +20,52 @@ const Step3Security = ({ formData, updateFormData }) => {
   const [showCountryPicker, setShowCountryPicker] = useState(false);
   const [editingRuleIndex, setEditingRuleIndex] = useState(null);
   const [newGeoRule, setNewGeoRule] = useState({ country: '', url: '' });
+  const [geoRuleErrors, setGeoRuleErrors] = useState({ country: null, url: null });
 
   const handleFraudShieldChange = (value) => {
     updateFormData('fraudShield', value);
   };
 
   const handleAddGeoRule = () => {
-    if (newGeoRule.country && newGeoRule.url) {
-      const currentRules = Array.isArray(formData.geoRules) ? formData.geoRules : [];
-      
-      if (editingRuleIndex !== null) {
-        // Edit existing rule
-        const updatedRules = [...currentRules];
-        updatedRules[editingRuleIndex] = { ...newGeoRule };
-        updateFormData('geoRules', updatedRules);
-        setEditingRuleIndex(null);
-      } else {
-        // Add new rule
-        updateFormData('geoRules', [...currentRules, { ...newGeoRule }]);
-      }
-      
-      setNewGeoRule({ country: '', url: '' });
-      setShowGeoRuleForm(false);
+    // Clear previous errors
+    setGeoRuleErrors({ country: null, url: null });
+
+    // Validate country
+    if (!newGeoRule.country || !newGeoRule.country.trim()) {
+      setGeoRuleErrors({ country: 'Please select a country', url: null });
+      return;
     }
+
+    // Validate URL
+    if (!newGeoRule.url || !newGeoRule.url.trim()) {
+      setGeoRuleErrors({ country: null, url: 'Please enter a URL' });
+      return;
+    }
+
+    // Validate URL format using the same validation as Step1
+    const urlValidation = validateUrl(newGeoRule.url);
+    if (!urlValidation.isValid) {
+      setGeoRuleErrors({ country: null, url: urlValidation.error || 'Invalid URL format' });
+      return;
+    }
+
+    // All validations passed
+    const currentRules = Array.isArray(formData.geoRules) ? formData.geoRules : [];
+    
+    if (editingRuleIndex !== null) {
+      // Edit existing rule
+      const updatedRules = [...currentRules];
+      updatedRules[editingRuleIndex] = { country: newGeoRule.country, url: urlValidation.normalizedUrl || newGeoRule.url };
+      updateFormData('geoRules', updatedRules);
+      setEditingRuleIndex(null);
+    } else {
+      // Add new rule
+      updateFormData('geoRules', [...currentRules, { country: newGeoRule.country, url: urlValidation.normalizedUrl || newGeoRule.url }]);
+    }
+    
+    setNewGeoRule({ country: '', url: '' });
+    setGeoRuleErrors({ country: null, url: null });
+    setShowGeoRuleForm(false);
   };
 
   const handleRemoveGeoRule = (index) => {
@@ -318,6 +341,9 @@ const Step3Security = ({ formData, updateFormData }) => {
                   )}
                   <span className="material-symbols-outlined text-slate-500">arrow_drop_down</span>
                 </button>
+                {geoRuleErrors.country && (
+                  <p className="text-red-400 text-xs mt-1">{geoRuleErrors.country}</p>
+                )}
               </div>
 
               <div>
@@ -327,10 +353,20 @@ const Step3Security = ({ formData, updateFormData }) => {
                 <input
                   type="url"
                   value={newGeoRule.url}
-                  onChange={(e) => setNewGeoRule({ ...newGeoRule, url: e.target.value })}
+                  onChange={(e) => {
+                    setNewGeoRule({ ...newGeoRule, url: e.target.value });
+                    if (geoRuleErrors.url) setGeoRuleErrors({ ...geoRuleErrors, url: null });
+                  }}
                   placeholder="https://example.com"
-                  className="w-full px-4 py-3 bg-[#101622] border border-[#232f48] rounded-xl text-white text-sm placeholder-slate-500 focus:outline-none focus:border-primary transition-colors"
+                  className={`w-full px-4 py-3 bg-[#101622] border rounded-xl text-white text-sm placeholder-slate-500 focus:outline-none transition-colors ${
+                    geoRuleErrors.url
+                      ? 'border-red-500 focus:border-red-500'
+                      : 'border-[#232f48] focus:border-primary'
+                  }`}
                 />
+                {geoRuleErrors.url && (
+                  <p className="text-red-400 text-xs mt-1">{geoRuleErrors.url}</p>
+                )}
               </div>
 
               <div className="flex gap-2 sm:gap-3">
@@ -346,6 +382,7 @@ const Step3Security = ({ formData, updateFormData }) => {
                     setShowGeoRuleForm(false);
                     setNewGeoRule({ country: '', url: '' });
                     setEditingRuleIndex(null);
+                    setGeoRuleErrors({ country: null, url: null });
                   }}
                   className="px-4 sm:px-6 py-2.5 sm:py-3 bg-[#232f48] hover:bg-[#324467] text-white font-medium rounded-xl transition-colors text-sm sm:text-base"
                 >

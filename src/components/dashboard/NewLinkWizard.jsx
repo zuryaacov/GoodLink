@@ -116,7 +116,16 @@ const NewLinkWizard = ({ isOpen, onClose, initialData = null }) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const nextStep = () => {
+  const nextStep = async () => {
+    // If we're on step 1, run validations before continuing
+    if (currentStep === 1 && step1ValidationRef.current) {
+      const validationResult = await step1ValidationRef.current();
+      if (!validationResult || !validationResult.isValid) {
+        // Validation failed - errors are already shown in Step1FastTrack
+        return;
+      }
+    }
+    
     if (currentStep < steps.length) {
       setCurrentStep(currentStep + 1);
     }
@@ -328,6 +337,7 @@ const NewLinkWizard = ({ isOpen, onClose, initialData = null }) => {
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
             className="relative bg-[#101622] border border-[#232f48] rounded-xl sm:rounded-2xl shadow-2xl w-full max-w-4xl max-h-[95vh] sm:max-h-[90vh] flex flex-col overflow-hidden m-2 sm:m-0"
+            style={{ overflowX: 'hidden' }}
             onClick={(e) => e.stopPropagation()}
           >
         {/* Header */}
@@ -389,7 +399,7 @@ const NewLinkWizard = ({ isOpen, onClose, initialData = null }) => {
         </div>
 
         {/* Content */}
-        <div className="flex-1 overflow-y-auto p-3 sm:p-6">
+        <div className="flex-1 overflow-y-auto overflow-x-hidden p-3 sm:p-6">
           <AnimatePresence mode="wait">
             {currentStep === 1 && (
               <Step1FastTrack
@@ -398,6 +408,7 @@ const NewLinkWizard = ({ isOpen, onClose, initialData = null }) => {
                 updateFormData={updateFormData}
                 onQuickCreate={handleSubmit}
                 onSafetyCheckUpdate={(safety) => updateFormData('urlSafety', safety)}
+                onValidationRequest={step1ValidationRef}
               />
             )}
             {currentStep === 2 && (
@@ -437,31 +448,7 @@ const NewLinkWizard = ({ isOpen, onClose, initialData = null }) => {
           {currentStep < steps.length ? (
             <button
               onClick={nextStep}
-              disabled={
-                currentStep === 1 && (
-                  formData.urlSafety?.isSafe === false || 
-                  formData.urlSafety?.isSafe === null ||
-                  !formData.targetUrl?.trim()
-                )
-              }
-              className={`px-4 sm:px-6 py-2 sm:py-2.5 text-xs sm:text-sm bg-primary hover:bg-primary/90 text-white font-bold rounded-lg sm:rounded-xl transition-colors flex-shrink-0 ${
-                currentStep === 1 && (
-                  formData.urlSafety?.isSafe === false || 
-                  formData.urlSafety?.isSafe === null ||
-                  !formData.targetUrl?.trim()
-                )
-                  ? 'opacity-50 cursor-not-allowed'
-                  : ''
-              }`}
-              title={
-                currentStep === 1 && formData.urlSafety?.isSafe === false
-                  ? 'Cannot proceed with unsafe URL'
-                  : currentStep === 1 && formData.urlSafety?.isSafe === null
-                  ? 'Please wait for URL safety verification...'
-                  : currentStep === 1 && !formData.targetUrl?.trim()
-                  ? 'Please enter a URL'
-                  : ''
-              }
+              className="px-4 sm:px-6 py-2 sm:py-2.5 text-xs sm:text-sm bg-primary hover:bg-primary/90 text-white font-bold rounded-lg sm:rounded-xl transition-colors flex-shrink-0"
             >
               Continue
             </button>

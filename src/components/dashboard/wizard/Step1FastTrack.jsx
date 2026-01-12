@@ -63,6 +63,7 @@ const Step1FastTrack = ({
   updateFormData,
   onQuickCreate,
   onSafetyCheckUpdate,
+  onValidationRequest,
 }) => {
   const [domains, setDomains] = useState(["glynk.to"]);
   const [hasCustomDomains, setHasCustomDomains] = useState(false);
@@ -544,21 +545,21 @@ const Step1FastTrack = ({
         setUrlError(safetyCheckResult.error);
         setCheckingSlug(false);
         console.log("❌ [Check] URL validation failed - Error:", safetyCheckResult.error);
-        return;
+        return { isValid: false, errors: { url: safetyCheckResult.error } };
       }
       
       if (safetyCheckResult.urlExists) {
         setUrlError("This URL already exists in your links. Please use a different URL.");
         setCheckingSlug(false);
         console.log("❌ [Check] URL validation failed - URL exists");
-        return;
+        return { isValid: false, errors: { url: "This URL already exists in your links. Please use a different URL." } };
       }
       
       if (!safetyCheckResult.isSafe) {
         setUrlError("URL safety check failed. This URL may be unsafe.");
         setCheckingSlug(false);
         console.log("❌ [Check] URL validation failed - Not safe");
-        return;
+        return { isValid: false, errors: { url: "URL safety check failed. This URL may be unsafe." } };
       }
 
       // ALL URL validations passed - clear any previous errors
@@ -574,7 +575,7 @@ const Step1FastTrack = ({
         setIsNameAvailable(false);
         setCheckingSlug(false);
         console.log("❌ [Check] Name validation failed - Name field is empty");
-        return;
+        return { isValid: false, errors: { name: "Please enter a name before checking" } };
       }
       
       // Name Check 2: Check name availability
@@ -596,7 +597,7 @@ const Step1FastTrack = ({
         setIsNameAvailable(false);
         setCheckingSlug(false);
         console.log("❌ [Check] Name validation failed:", nameCheck.error || "Name is not available");
-        return;
+        return { isValid: false, errors: { name: nameCheck.error || "Name is not available" } };
       }
 
       // Name is valid - clear any previous errors and mark as available
@@ -613,7 +614,7 @@ const Step1FastTrack = ({
         setIsSlugAvailable(false);
         setCheckingSlug(false);
         console.log("❌ [Check] SLUG validation failed - SLUG field is empty");
-        return;
+        return { isValid: false, errors: { slug: "Please enter a slug before checking" } };
       }
       
       // Perform all slug validations: format, availability, content moderation
@@ -638,7 +639,7 @@ const Step1FastTrack = ({
         setIsSlugAvailable(false);
         setCheckingSlug(false);
         console.log("❌ [Check] SLUG validation failed:", validationResult.error || "Invalid slug");
-        return;
+        return { isValid: false, errors: { slug: validationResult.error || "Invalid slug" } };
       }
 
       // All validations passed - update form data with normalized slug (lowercase)
@@ -654,14 +655,23 @@ const Step1FastTrack = ({
       setIsSlugAvailable(true);
       
       console.log("✅ [Check] All validations passed! URL, Name, and SLUG are all valid.");
+      return { isValid: true, errors: null };
     } catch (error) {
       console.error("Error during validation:", error);
       setSlugError("Error during validation. Please try again.");
       setIsSlugAvailable(null);
+      return { isValid: false, errors: { slug: "Error during validation. Please try again." } };
     } finally {
       setCheckingSlug(false);
     }
   };
+
+  // Expose validation function to parent component
+  useEffect(() => {
+    if (onValidationRequest) {
+      onValidationRequest.current = handleCheckSlug;
+    }
+  }, [onValidationRequest, formData.targetUrl, formData.name, formData.slug, formData.domain]);
 
   const handleDomainSelect = (domain) => {
     updateFormData("domain", domain);
