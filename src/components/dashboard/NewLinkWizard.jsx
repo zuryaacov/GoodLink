@@ -410,6 +410,7 @@ const NewLinkWizard = ({ isOpen, onClose, initialData = null }) => {
                 onQuickCreate={handleSubmit}
                 onSafetyCheckUpdate={(safety) => updateFormData('urlSafety', safety)}
                 onValidationRequest={step1ValidationRef}
+                onContinue={nextStep}
               />
             )}
             {currentStep === 2 && (
@@ -431,29 +432,34 @@ const NewLinkWizard = ({ isOpen, onClose, initialData = null }) => {
 
         {/* Footer */}
         <div className="flex items-center justify-between p-3 sm:p-6 border-t border-[#232f48] flex-shrink-0 gap-2">
-          <button
-            onClick={prevStep}
-            disabled={currentStep === 1}
-            className={`px-3 sm:px-4 py-2 text-xs sm:text-sm rounded-lg sm:rounded-xl font-bold transition-colors flex-shrink-0 ${
-              currentStep === 1
-                ? 'bg-[#232f48] text-slate-600 cursor-not-allowed'
-                : 'bg-[#232f48] text-white hover:bg-[#324467]'
-            }`}
-          >
-            <span className="hidden sm:inline">Previous</span>
-            <span className="sm:hidden">Prev</span>
-          </button>
-          <div className="text-slate-400 text-xs sm:text-sm whitespace-nowrap">
-            Step {currentStep} of {steps.length}
-          </div>
-          {currentStep < steps.length ? (
-            <button
-              onClick={nextStep}
-              className="px-4 sm:px-6 py-2 sm:py-2.5 text-xs sm:text-sm bg-primary hover:bg-primary/90 text-white font-bold rounded-lg sm:rounded-xl transition-colors flex-shrink-0"
-            >
-              Continue
-            </button>
+          {currentStep === 1 ? (
+            // Step 1: Hide Previous button and Continue button (moved to Step1FastTrack)
+            <div className="text-slate-400 text-xs sm:text-sm whitespace-nowrap">
+              Step {currentStep} of {steps.length}
+            </div>
           ) : (
+            <>
+              <button
+                onClick={prevStep}
+                className="px-3 sm:px-4 py-2 text-xs sm:text-sm rounded-lg sm:rounded-xl font-bold transition-colors flex-shrink-0 bg-[#232f48] text-white hover:bg-[#324467]"
+              >
+                <span className="hidden sm:inline">Previous</span>
+                <span className="sm:hidden">Prev</span>
+              </button>
+              <div className="text-slate-400 text-xs sm:text-sm whitespace-nowrap">
+                Step {currentStep} of {steps.length}
+              </div>
+              {currentStep < steps.length ? (
+                <button
+                  onClick={nextStep}
+                  className="px-4 sm:px-6 py-2 sm:py-2.5 text-xs sm:text-sm bg-primary hover:bg-primary/90 text-white font-bold rounded-lg sm:rounded-xl transition-colors flex-shrink-0"
+                >
+                  Continue
+                </button>
+              ) : null}
+            </>
+          )}
+          {currentStep >= steps.length && (
             <button
               onClick={handleSubmit}
               disabled={isSubmitting}
