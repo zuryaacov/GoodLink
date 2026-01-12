@@ -17,6 +17,16 @@ const PixelManager = () => {
     isLoading: false,
   });
 
+  // Modal states for errors/alerts
+  const [modalState, setModalState] = useState({
+    isOpen: false,
+    type: 'alert',
+    title: '',
+    message: '',
+    onConfirm: null,
+    isLoading: false,
+  });
+
   useEffect(() => {
     fetchPixels();
   }, []);
@@ -30,6 +40,7 @@ const PixelManager = () => {
         .from('pixels')
         .select('*')
         .eq('user_id', user.id)
+        .neq('status', 'deleted') // Don't fetch deleted pixels
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -49,7 +60,10 @@ const PixelManager = () => {
     try {
       const { error } = await supabase
         .from('pixels')
-        .delete()
+        .update({ 
+          status: 'deleted',
+          deleted_at: new Date().toISOString()
+        })
         .eq('id', deleteModalState.pixelId);
 
       if (error) throw error;
@@ -59,7 +73,41 @@ const PixelManager = () => {
     } catch (error) {
       console.error('Error deleting pixel:', error);
       setDeleteModalState(prev => ({ ...prev, isLoading: false }));
-      alert('Error deleting pixel. Please try again.');
+      setModalState({
+        isOpen: true,
+        type: 'error',
+        title: 'Error',
+        message: 'Error deleting pixel. Please try again.',
+        onConfirm: null,
+        isLoading: false,
+      });
+    }
+  };
+
+  const handleToggleStatus = async (pixelId, currentStatus) => {
+    try {
+      // Toggle between 'active' and 'PAUSED'
+      const newStatus = (currentStatus === 'active') ? 'PAUSED' : 'active';
+      
+      const { error } = await supabase
+        .from('pixels')
+        .update({ status: newStatus })
+        .eq('id', pixelId);
+
+      if (error) {
+        throw error;
+      }
+      fetchPixels(); // Refresh the list
+    } catch (error) {
+      console.error('Error updating pixel status:', error);
+      setModalState({
+        isOpen: true,
+        type: 'error',
+        title: 'Error',
+        message: 'Error updating pixel status. Please try again.',
+        onConfirm: null,
+        isLoading: false,
+      });
     }
   };
 
@@ -202,32 +250,56 @@ const PixelManager = () => {
                 </span>
               </div>
 
-              {/* Actions */}
-              <div className="flex items-center justify-end gap-2 pt-2 border-t border-[#232f48]">
-                <button
-                  onClick={() => {
-                    setEditingPixel(pixel);
-                    setIsModalOpen(true);
-                  }}
-                  className="text-slate-400 hover:text-primary transition-colors p-2"
-                  title="Edit pixel"
-                >
-                  <span className="material-symbols-outlined text-base">edit</span>
-                </button>
-                <button
-                  onClick={() => {
-                    setDeleteModalState({
-                      isOpen: true,
-                      pixelId: pixel.id,
-                      pixelName: pixel.name,
-                      isLoading: false,
-                    });
-                  }}
-                  className="text-slate-400 hover:text-red-400 transition-colors p-2"
-                  title="Delete pixel"
-                >
-                  <span className="material-symbols-outlined text-base">delete</span>
-                </button>
+              {/* Status & Actions */}
+              <div className="flex items-center justify-between gap-3 pt-2 border-t border-[#232f48]">
+                {/* Status */}
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => handleToggleStatus(pixel.id, pixel.status || 'active')}
+                    className={`relative w-12 h-6 rounded-full transition-colors flex-shrink-0 ${
+                      (pixel.status === 'active') ? 'bg-primary' : 'bg-[#232f48]'
+                    }`}
+                    aria-label="Toggle pixel status"
+                    title={pixel.status === 'active' ? 'Active - Click to pause' : 'Paused - Click to activate'}
+                  >
+                    <span
+                      className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform ${
+                        (pixel.status === 'active') ? 'translate-x-6' : 'translate-x-0'
+                      }`}
+                    />
+                  </button>
+                  <span className="text-sm text-slate-400 font-medium">
+                    {pixel.status === 'active' ? 'ACTIVE' : 'PAUSED'}
+                  </span>
+                </div>
+
+                {/* Actions */}
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => {
+                      setEditingPixel(pixel);
+                      setIsModalOpen(true);
+                    }}
+                    className="text-slate-400 hover:text-primary transition-colors p-2"
+                    title="Edit pixel"
+                  >
+                    <span className="material-symbols-outlined text-base">edit</span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      setDeleteModalState({
+                        isOpen: true,
+                        pixelId: pixel.id,
+                        pixelName: pixel.name,
+                        isLoading: false,
+                      });
+                    }}
+                    className="text-slate-400 hover:text-red-400 transition-colors p-2"
+                    title="Delete pixel"
+                  >
+                    <span className="material-symbols-outlined text-base">delete</span>
+                  </button>
+                </div>
               </div>
             </div>
           ))}
@@ -262,6 +334,17 @@ const PixelManager = () => {
         cancelText="Cancel"
         onConfirm={handleDelete}
         isLoading={deleteModalState.isLoading}
+      />
+
+      {/* Error/Alert Modal */}
+      <Modal
+        isOpen={modalState.isOpen}
+        onClose={() => setModalState({ ...modalState, isOpen: false })}
+        title={modalState.title}
+        message={modalState.message}
+        type={modalState.type}
+        onConfirm={modalState.onConfirm}
+        isLoading={modalState.isLoading}
       />
     </div>
   );

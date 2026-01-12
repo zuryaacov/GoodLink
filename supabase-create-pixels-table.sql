@@ -11,6 +11,7 @@ CREATE TABLE IF NOT EXISTS pixels (
   event_type TEXT DEFAULT 'PageView', -- Standard event or 'custom'
   custom_event_name TEXT, -- Custom event name if event_type is 'custom'
   is_active BOOLEAN DEFAULT true,
+  status TEXT DEFAULT 'active' CHECK (status IN ('active', 'PAUSED', 'deleted', 'PENDING')), -- Status: active, PAUSED, deleted, PENDING
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW(),
   UNIQUE(user_id, pixel_id, platform) -- Prevent duplicate pixels per user

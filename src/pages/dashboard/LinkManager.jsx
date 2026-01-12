@@ -266,7 +266,10 @@ const LinkActionsMenu = ({ link, onRefresh, onEdit, onDuplicate, onShowModal }) 
     try {
       const { error } = await supabase
         .from('links')
-        .update({ status: 'deleted' })
+        .update({ 
+          status: 'deleted',
+          deleted_at: new Date().toISOString()
+        })
         .eq('id', link.id);
 
       if (error) throw error;
