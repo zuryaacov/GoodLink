@@ -527,7 +527,7 @@ const Step1FastTrack = ({
         setUrlError("Please enter a URL before checking");
         setCheckingSlug(false);
         console.log("❌ [Check] URL validation failed - URL field is empty");
-        return;
+        return { isValid: false, errors: { url: "Please enter a URL before checking" } };
       }
       
       // URL Check 2-5: Perform ALL URL validations: format, safety, existence
@@ -833,80 +833,46 @@ const Step1FastTrack = ({
         <label className="block text-sm font-medium text-white mb-2">
           Slug (URL Path)
         </label>
-        <div className="flex flex-col sm:flex-row gap-3">
-          <input
-            type="text"
-            value={formData.slug}
-            onChange={(e) => {
-              let inputValue = e.target.value;
+        <input
+          type="text"
+          value={formData.slug}
+          onChange={(e) => {
+            let inputValue = e.target.value;
 
-              // Auto-convert to lowercase
-              inputValue = inputValue.toLowerCase();
+            // Auto-convert to lowercase
+            inputValue = inputValue.toLowerCase();
 
-              // Always update the input (allow typing)
-              updateFormData("slug", inputValue);
+            // Always update the input (allow typing)
+            updateFormData("slug", inputValue);
 
-              // Clear previous errors and reset availability when user types
-              if (slugError) {
-                setSlugError(null);
+            // Clear previous errors and reset availability when user types
+            if (slugError) {
+              setSlugError(null);
+            }
+            if (isSlugAvailable !== null) {
+              setIsSlugAvailable(null); // Reset to blue/default when user changes slug
+            }
+
+            // Optional: Show format validation in real-time (but don't block)
+            // Only show error if user has typed something and it's invalid
+            if (inputValue.length > 0) {
+              const formatCheck = validateSlugFormat(inputValue);
+              if (!formatCheck.isValid) {
+                // Show error but don't block input
+                setSlugError(formatCheck.error);
               }
-              if (isSlugAvailable !== null) {
-                setIsSlugAvailable(null); // Reset to blue/default when user changes slug
-              }
-
-              // Optional: Show format validation in real-time (but don't block)
-              // Only show error if user has typed something and it's invalid
-              if (inputValue.length > 0) {
-                const formatCheck = validateSlugFormat(inputValue);
-                if (!formatCheck.isValid) {
-                  // Show error but don't block input
-                  setSlugError(formatCheck.error);
-                }
-              }
-            }}
-            placeholder="e.g., iphone-deal"
-            className={`flex-1 w-full px-4 py-3 bg-[#0b0f19] border rounded-xl text-white placeholder-slate-500 focus:outline-none transition-colors text-sm sm:text-base ${
-              slugError
-                ? "border-red-500 focus:border-red-500"
-                : isSlugAvailable === true
-                ? "border-green-500 focus:border-green-500"
-                : "border-[#232f48] focus:border-primary"
-            }`}
-          />
-          <button
-            onClick={handleCheckSlug}
-            disabled={checkingSlug}
-            className={`px-4 sm:px-5 py-3 rounded-xl transition-colors flex items-center justify-center gap-2 font-medium disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap flex-shrink-0 ${
-              isSlugAvailable === true
-                ? "bg-green-500/10 hover:bg-green-500/20 border border-green-500/30 text-green-400"
-                : "bg-primary/10 hover:bg-primary/20 border border-primary/30 text-primary"
-            }`}
-            title="Check if slug is available"
-          >
-            {checkingSlug ? (
-              <>
-                <span className="material-symbols-outlined animate-spin text-base sm:text-lg">
-                  refresh
-                </span>
-                <span className="hidden sm:inline">Checking...</span>
-                <span className="sm:hidden">Check</span>
-              </>
-            ) : isSlugAvailable === true ? (
-              <>
-                <span className="material-symbols-outlined text-base sm:text-lg">check_circle</span>
-                <span className="hidden sm:inline">Available</span>
-                <span className="sm:hidden">OK</span>
-              </>
-            ) : (
-              <>
-                <span className="material-symbols-outlined text-base sm:text-lg">check_circle</span>
-                <span className="hidden sm:inline">Check</span>
-                <span className="sm:hidden">Check</span>
-              </>
-            )}
-          </button>
-        </div>
-        {slugError ? (
+            }
+          }}
+          placeholder="e.g., iphone-deal"
+          className={`w-full px-4 py-3 bg-[#0b0f19] border rounded-xl text-white placeholder-slate-500 focus:outline-none transition-colors text-sm sm:text-base ${
+            slugError
+              ? "border-red-500 focus:border-red-500"
+              : isSlugAvailable === true
+              ? "border-green-500 focus:border-green-500"
+              : "border-[#232f48] focus:border-primary"
+          }`}
+        />
+        {slugError && (
           <motion.p
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -914,7 +880,8 @@ const Step1FastTrack = ({
           >
             {slugError}
           </motion.p>
-        ) : isSlugAvailable === true ? (
+        )}
+        {!slugError && isSlugAvailable === true && (
           <motion.p
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -922,10 +889,6 @@ const Step1FastTrack = ({
           >
             ✓ Slug is available!
           </motion.p>
-        ) : (
-          <p className="text-xs text-slate-500 mt-2">
-            Enter a slug and click Check to verify availability
-          </p>
         )}
       </div>
 
@@ -970,49 +933,57 @@ const Step1FastTrack = ({
         </motion.div>
       )}
 
-      {/* Quick Create/Update Button - Only on Step 1 */}
-      {canCreate && (
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="max-w-2xl mx-auto w-full px-2 sm:px-0 pt-4"
-        >
-          <button
-            onClick={onQuickCreate}
-            disabled={safetyCheck.isSafe === false}
-            className={`w-full px-4 sm:px-6 py-3 text-sm sm:text-base text-white font-bold rounded-xl transition-colors flex items-center justify-center gap-2 ${
-              safetyCheck.isSafe === false
-                ? "opacity-50 cursor-not-allowed"
-                : ""
-            }`}
-            style={{
-              backgroundColor:
-                safetyCheck.isSafe === false ? undefined : "#FF10F0",
-            }}
-            onMouseEnter={(e) => {
-              if (safetyCheck.isSafe !== false) {
-                e.currentTarget.style.backgroundColor = "#e00ed0";
+      {/* Quick Create/Update Button - Always visible on Step 1 */}
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="max-w-2xl mx-auto w-full px-2 sm:px-0 pt-4"
+      >
+        <button
+          onClick={async () => {
+            // Run all validations first
+            const validationResult = await handleCheckSlug();
+            if (validationResult && validationResult.isValid) {
+              // All validations passed - create/update the link
+              if (onQuickCreate) {
+                onQuickCreate();
               }
-            }}
-            onMouseLeave={(e) => {
-              if (safetyCheck.isSafe !== false) {
-                e.currentTarget.style.backgroundColor = "#FF10F0";
-              }
-            }}
-            title={
-              safetyCheck.isSafe === false
-                ? formData.linkId 
-                  ? "Cannot update link with unsafe URL"
-                  : "Cannot create link with unsafe URL"
-                : ""
             }
-          >
-            <span className="material-symbols-outlined text-base sm:text-lg">{formData.linkId ? "save" : "bolt"}</span>
-            <span className="hidden sm:inline">{formData.linkId ? "Update Link" : "Create Quick Link (Skip Advanced Settings)"}</span>
-            <span className="sm:hidden">{formData.linkId ? "Update Link" : "Create Quick Link"}</span>
-          </button>
-        </motion.div>
-      )}
+            // If validation failed, errors are already shown by handleCheckSlug
+          }}
+          disabled={checkingSlug}
+          className={`w-full px-4 sm:px-6 py-3 text-sm sm:text-base text-white font-bold rounded-xl transition-colors flex items-center justify-center gap-2 ${
+            checkingSlug ? "opacity-50 cursor-not-allowed" : ""
+          }`}
+          style={{
+            backgroundColor: checkingSlug ? undefined : "#FF10F0",
+          }}
+          onMouseEnter={(e) => {
+            if (!checkingSlug) {
+              e.currentTarget.style.backgroundColor = "#e00ed0";
+            }
+          }}
+          onMouseLeave={(e) => {
+            if (!checkingSlug) {
+              e.currentTarget.style.backgroundColor = "#FF10F0";
+            }
+          }}
+        >
+          {checkingSlug ? (
+            <>
+              <span className="material-symbols-outlined animate-spin text-base sm:text-lg">refresh</span>
+              <span className="hidden sm:inline">Validating...</span>
+              <span className="sm:hidden">Validating...</span>
+            </>
+          ) : (
+            <>
+              <span className="material-symbols-outlined text-base sm:text-lg">{formData.linkId ? "save" : "bolt"}</span>
+              <span className="hidden sm:inline">{formData.linkId ? "Update Link" : "Create Quick Link (Skip Advanced Settings)"}</span>
+              <span className="sm:hidden">{formData.linkId ? "Update Link" : "Create Quick Link"}</span>
+            </>
+          )}
+        </button>
+      </motion.div>
 
       {/* Continue Button - Always visible on Step 1 */}
       <motion.div
