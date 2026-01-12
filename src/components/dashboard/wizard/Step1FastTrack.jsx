@@ -73,6 +73,7 @@ const Step1FastTrack = ({
   const [lastSlugCheck, setLastSlugCheck] = useState(null); // Track last check time for debouncing
   const [nameError, setNameError] = useState(null); // Error for name validation
   const [isNameAvailable, setIsNameAvailable] = useState(null); // null = not checked, true = available, false = taken
+  const [urlError, setUrlError] = useState(null); // Error for URL validation
   const [safetyCheck, setSafetyCheck] = useState({
     loading: false,
     isSafe: null,
@@ -392,6 +393,11 @@ const Step1FastTrack = ({
     const url = e.target.value;
     updateFormData("targetUrl", url);
 
+    // Clear URL error when user types
+    if (urlError) {
+      setUrlError(null);
+    }
+
     // Reset name when URL changes (will be auto-filled again by useEffect)
     if (url && url !== formData.targetUrl) {
       updateFormData("name", "");
@@ -445,6 +451,7 @@ const Step1FastTrack = ({
 
   const handleCheckSlug = async () => {
     // Clear previous errors
+    setUrlError(null);
     setSlugError(null);
     setNameError(null);
     setIsSlugAvailable(null);
@@ -452,7 +459,7 @@ const Step1FastTrack = ({
 
     // Validate required fields before starting checks
     if (!formData.targetUrl || !formData.targetUrl.trim()) {
-      setSlugError("Please enter a URL before checking");
+      setUrlError("Please enter a URL before checking");
       return;
     }
 
@@ -489,7 +496,7 @@ const Step1FastTrack = ({
       } = await supabase.auth.getUser();
 
       if (!user) {
-        setSlugError("You must be logged in to check availability");
+        setUrlError("You must be logged in to check availability");
         setIsSlugAvailable(null);
         setCheckingSlug(false);
         return;
@@ -502,7 +509,7 @@ const Step1FastTrack = ({
       const safetyCheckResult = await performSafetyCheckAndGetResult();
       
       if (!safetyCheckResult.isSafe || safetyCheckResult.urlExists) {
-        setSlugError(
+        setUrlError(
           safetyCheckResult.urlExists 
             ? "This URL already exists in your links. Please use a different URL."
             : safetyCheckResult.error || "URL validation failed. Please fix the URL before continuing."
@@ -656,10 +663,22 @@ const Step1FastTrack = ({
             </div>
           </div>
 
+          {/* URL Error Message */}
+          {urlError && (
+            <motion.p
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="text-red-400 text-xs mt-2 text-left"
+            >
+              {urlError}
+            </motion.p>
+          )}
+
           {/* Validation Error */}
           {!safetyCheck.loading &&
             safetyCheck.error &&
-            safetyCheck.isSafe === null && (
+            safetyCheck.isSafe === null &&
+            !urlError && (
               <motion.div
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -737,7 +756,13 @@ const Step1FastTrack = ({
                 <input
                   type="text"
                   value={formData.name || ""}
-                  onChange={(e) => updateFormData("name", e.target.value)}
+                  onChange={(e) => {
+                    updateFormData("name", e.target.value);
+                    // Clear name error when user types
+                    if (nameError) {
+                      setNameError(null);
+                    }
+                  }}
                   placeholder={fetchingTitle ? "Fetching title..." : "Enter name (required)"}
                   disabled={fetchingTitle}
                   required
@@ -755,8 +780,14 @@ const Step1FastTrack = ({
                   </div>
                 )}
               </div>
-              {!formData.name && formData.targetUrl && !fetchingTitle && (
+              {nameError && (
+                <p className="text-red-400 text-xs mt-1">{nameError}</p>
+              )}
+              {!formData.name && formData.targetUrl && !fetchingTitle && !nameError && (
                 <p className="text-red-400 text-xs mt-1">Name is required</p>
+              )}
+              {isNameAvailable === true && !nameError && (
+                <p className="text-green-400 text-xs mt-1">✓ Name is available</p>
               )}
             </motion.div>
           )}
