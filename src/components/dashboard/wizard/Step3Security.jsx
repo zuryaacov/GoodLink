@@ -1,7 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import countriesData from '../../../data/countries.json';
-import CountryPickerBottomSheet from '../../common/CountryPickerBottomSheet';
 import { validateUrl } from '../../../lib/urlValidation';
 import Modal from '../../common/Modal';
 
@@ -23,6 +22,8 @@ const Step3Security = ({ formData, updateFormData }) => {
   const [editingRuleIndex, setEditingRuleIndex] = useState(null);
   const [newGeoRule, setNewGeoRule] = useState({ country: '', url: '' });
   const [geoRuleErrors, setGeoRuleErrors] = useState({ country: null, url: null });
+  const [countrySearchQuery, setCountrySearchQuery] = useState('');
+  const countryPickerRef = useRef(null);
   const [modalState, setModalState] = useState({
     isOpen: false,
     type: 'error',
@@ -31,6 +32,30 @@ const Step3Security = ({ formData, updateFormData }) => {
     onConfirm: null,
     isLoading: false,
   });
+
+  // Filter countries based on search query
+  const filteredCountries = countriesData.filter(country =>
+    country.name.toLowerCase().includes(countrySearchQuery.toLowerCase()) ||
+    country.code.toLowerCase().includes(countrySearchQuery.toLowerCase())
+  );
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (countryPickerRef.current && !countryPickerRef.current.contains(event.target)) {
+        setShowCountryPicker(false);
+        setCountrySearchQuery('');
+      }
+    };
+
+    if (showCountryPicker) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showCountryPicker]);
 
   const handleFraudShieldChange = (value) => {
     updateFormData('fraudShield', value);
@@ -92,10 +117,6 @@ const Step3Security = ({ formData, updateFormData }) => {
     setShowGeoRuleForm(true);
   };
 
-  const handleSelectCountry = (countryCode) => {
-    setNewGeoRule({ ...newGeoRule, country: countryCode });
-    setShowCountryPicker(false);
-  };
 
   const getCountryName = (countryCode) => {
     const country = countriesData.find(c => c.code === countryCode);
@@ -328,12 +349,12 @@ const Step3Security = ({ formData, updateFormData }) => {
               animate={{ opacity: 1, height: 'auto' }}
               className="p-4 sm:p-5 bg-[#0b0f19] border-2 border-primary/50 rounded-xl space-y-4"
             >
-              <div>
+              <div className="relative" ref={countryPickerRef}>
                 <label className="block text-sm font-medium text-white mb-2">
                   If Country is
                 </label>
                 <button
-                  onClick={() => setShowCountryPicker(true)}
+                  onClick={() => setShowCountryPicker(!showCountryPicker)}
                   className={`w-full flex items-center gap-3 px-4 py-3 bg-[#101622] border rounded-xl transition-colors text-left ${
                     newGeoRule.country
                       ? 'border-primary'
@@ -352,10 +373,72 @@ const Step3Security = ({ formData, updateFormData }) => {
                       <span className="text-slate-400 flex-1">Select country...</span>
                     </>
                   )}
-                  <span className="material-symbols-outlined text-slate-500">arrow_drop_down</span>
+                  <span className={`material-symbols-outlined text-slate-500 transition-transform ${showCountryPicker ? 'rotate-180' : ''}`}>arrow_drop_down</span>
                 </button>
                 {geoRuleErrors.country && (
                   <p className="text-red-400 text-xs mt-1">{geoRuleErrors.country}</p>
+                )}
+                
+                {/* Dropdown Menu */}
+                {showCountryPicker && (
+                  <div className="absolute z-50 w-full mt-2 bg-[#101622] border border-[#232f48] rounded-xl shadow-2xl max-h-64 overflow-hidden flex flex-col">
+                    {/* Search Input */}
+                    <div className="p-3 border-b border-[#232f48]">
+                      <div className="relative">
+                        <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-lg">
+                          search
+                        </span>
+                        <input
+                          type="text"
+                          value={countrySearchQuery}
+                          onChange={(e) => setCountrySearchQuery(e.target.value)}
+                          placeholder="Search country..."
+                          className="w-full pl-10 pr-4 py-2 bg-[#0b0f19] border border-[#232f48] rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-primary transition-colors text-sm"
+                          autoFocus
+                        />
+                      </div>
+                    </div>
+                    
+                    {/* Countries List */}
+                    <div className="overflow-y-auto max-h-48">
+                      {filteredCountries.length === 0 ? (
+                        <div className="p-4 text-center text-slate-400 text-sm">No countries found</div>
+                      ) : (
+                        <div className="p-1">
+                          {filteredCountries.map((country) => (
+                            <button
+                              key={country.code}
+                              onClick={() => {
+                                setNewGeoRule({ ...newGeoRule, country: country.code });
+                                setShowCountryPicker(false);
+                                setCountrySearchQuery('');
+                              }}
+                              className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-left ${
+                                newGeoRule.country === country.code
+                                  ? 'bg-primary/20 border border-primary'
+                                  : 'hover:bg-[#0b0f19] border border-transparent'
+                              }`}
+                            >
+                              <span className="text-xl flex-shrink-0">{getCountryFlag(country.code)}</span>
+                              <span className={`flex-1 font-medium ${
+                                newGeoRule.country === country.code ? 'text-white' : 'text-slate-300'
+                              }`}>
+                                {country.name}
+                              </span>
+                              <span className={`text-xs font-mono ${
+                                newGeoRule.country === country.code ? 'text-primary' : 'text-slate-500'
+                              }`}>
+                                {country.code}
+                              </span>
+                              {newGeoRule.country === country.code && (
+                                <span className="material-symbols-outlined text-primary text-lg">check_circle</span>
+                              )}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 )}
               </div>
 
@@ -418,14 +501,6 @@ const Step3Security = ({ formData, updateFormData }) => {
           Example: "If visitor is from USA, redirect to URL A, otherwise redirect to default URL"
         </p>
       </div>
-
-      {/* Country Picker Bottom Sheet */}
-      <CountryPickerBottomSheet
-        isOpen={showCountryPicker}
-        onClose={() => setShowCountryPicker(false)}
-        onSelect={handleSelectCountry}
-        selectedCountry={newGeoRule.country}
-      />
 
       {/* Error Modal */}
       <Modal
