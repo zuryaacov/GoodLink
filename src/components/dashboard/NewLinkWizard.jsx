@@ -313,31 +313,31 @@ const NewLinkWizard = ({ isOpen, onClose, initialData = null }) => {
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
-            className="relative bg-[#101622] border border-[#232f48] rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden"
+            className="relative bg-[#101622] border border-[#232f48] rounded-xl sm:rounded-2xl shadow-2xl w-full max-w-4xl max-h-[95vh] sm:max-h-[90vh] flex flex-col overflow-hidden m-2 sm:m-0"
             onClick={(e) => e.stopPropagation()}
           >
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-[#232f48] flex-shrink-0">
-          <div>
-            <h2 className="text-2xl font-bold text-white">{isEditMode ? 'Edit Link' : 'The Smart Flow'}</h2>
-            <p className="text-slate-400 text-sm mt-1">{isEditMode ? 'Update your smart link' : 'Create your smart link in 3 simple steps'}</p>
+        <div className="flex items-center justify-between p-4 sm:p-6 border-b border-[#232f48] flex-shrink-0">
+          <div className="flex-1 min-w-0 pr-2">
+            <h2 className="text-xl sm:text-2xl font-bold text-white truncate">{isEditMode ? 'Edit Link' : 'The Smart Flow'}</h2>
+            <p className="text-slate-400 text-xs sm:text-sm mt-1">{isEditMode ? 'Update your smart link' : 'Create your smart link in 3 simple steps'}</p>
           </div>
           <button
             onClick={onClose}
-            className="text-slate-400 hover:text-white transition-colors p-2"
+            className="text-slate-400 hover:text-white transition-colors p-2 flex-shrink-0"
           >
-            <span className="material-symbols-outlined">close</span>
+            <span className="material-symbols-outlined text-xl sm:text-2xl">close</span>
           </button>
         </div>
 
         {/* Stepper */}
-        <div className="px-6 py-4 border-b border-[#232f48] flex-shrink-0 overflow-x-auto">
-          <div className="flex items-center gap-4 min-w-max">
+        <div className="px-3 sm:px-6 py-3 sm:py-4 border-b border-[#232f48] flex-shrink-0 overflow-x-auto">
+          <div className="flex items-center gap-2 sm:gap-4 min-w-max">
             {steps.map((step, index) => (
               <React.Fragment key={step.number}>
                 <div className="flex items-center gap-3">
                   <div
-                    className={`flex items-center justify-center w-10 h-10 rounded-full font-bold text-base transition-all ${
+                    className={`flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full font-bold text-sm sm:text-base transition-all flex-shrink-0 ${
                       currentStep === step.number
                         ? 'bg-primary text-white scale-110 shadow-lg shadow-primary/50'
                         : currentStep > step.number
@@ -347,16 +347,16 @@ const NewLinkWizard = ({ isOpen, onClose, initialData = null }) => {
                   >
                     {step.number}
                   </div>
-                  <div className="hidden md:block">
+                  <div className="hidden sm:block">
                     <div
-                      className={`text-sm font-bold ${
+                      className={`text-xs sm:text-sm font-bold ${
                         currentStep >= step.number ? 'text-white' : 'text-slate-400'
                       }`}
                     >
                       {step.title}
                     </div>
                     {step.subtitle && (
-                      <div className="text-xs text-slate-500 mt-0.5">
+                      <div className="text-xs text-slate-500 mt-0.5 hidden md:block">
                         {step.subtitle}
                       </div>
                     )}
@@ -364,7 +364,7 @@ const NewLinkWizard = ({ isOpen, onClose, initialData = null }) => {
                 </div>
                 {index < steps.length - 1 && (
                   <div
-                    className={`w-12 h-0.5 ${
+                    className={`w-6 sm:w-12 h-0.5 flex-shrink-0 ${
                       currentStep > step.number ? 'bg-primary' : 'bg-[#232f48]'
                     }`}
                   />
@@ -375,7 +375,7 @@ const NewLinkWizard = ({ isOpen, onClose, initialData = null }) => {
         </div>
 
         {/* Content */}
-        <div className="flex-1 overflow-y-auto p-6">
+        <div className="flex-1 overflow-y-auto p-3 sm:p-6">
           <AnimatePresence mode="wait">
             {currentStep === 1 && (
               <Step1FastTrack
@@ -404,19 +404,20 @@ const NewLinkWizard = ({ isOpen, onClose, initialData = null }) => {
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between p-6 border-t border-[#232f48] flex-shrink-0">
+        <div className="flex items-center justify-between p-3 sm:p-6 border-t border-[#232f48] flex-shrink-0 gap-2">
           <button
             onClick={prevStep}
             disabled={currentStep === 1}
-            className={`px-4 py-2 rounded-xl font-bold transition-colors ${
+            className={`px-3 sm:px-4 py-2 text-xs sm:text-sm rounded-lg sm:rounded-xl font-bold transition-colors flex-shrink-0 ${
               currentStep === 1
                 ? 'bg-[#232f48] text-slate-600 cursor-not-allowed'
                 : 'bg-[#232f48] text-white hover:bg-[#324467]'
             }`}
           >
-            Previous
+            <span className="hidden sm:inline">Previous</span>
+            <span className="sm:hidden">Prev</span>
           </button>
-          <div className="text-slate-400 text-sm">
+          <div className="text-slate-400 text-xs sm:text-sm whitespace-nowrap">
             Step {currentStep} of {steps.length}
           </div>
           {currentStep < steps.length ? (
@@ -429,7 +430,7 @@ const NewLinkWizard = ({ isOpen, onClose, initialData = null }) => {
                   !formData.targetUrl?.trim()
                 )
               }
-              className={`px-6 py-2.5 bg-primary hover:bg-primary/90 text-white font-bold rounded-xl transition-colors ${
+              className={`px-4 sm:px-6 py-2 sm:py-2.5 text-xs sm:text-sm bg-primary hover:bg-primary/90 text-white font-bold rounded-lg sm:rounded-xl transition-colors flex-shrink-0 ${
                 currentStep === 1 && (
                   formData.urlSafety?.isSafe === false || 
                   formData.urlSafety?.isSafe === null ||
@@ -454,17 +455,19 @@ const NewLinkWizard = ({ isOpen, onClose, initialData = null }) => {
             <button
               onClick={handleSubmit}
               disabled={isSubmitting}
-              className="px-6 py-2.5 bg-primary hover:bg-primary/90 text-white font-bold rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              className="px-4 sm:px-6 py-2 sm:py-2.5 text-xs sm:text-sm bg-primary hover:bg-primary/90 text-white font-bold rounded-lg sm:rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 flex-shrink-0"
             >
               {isSubmitting ? (
                 <>
-                  <span className="material-symbols-outlined animate-spin">refresh</span>
-                  {isEditMode ? 'Updating...' : 'Creating...'}
+                  <span className="material-symbols-outlined animate-spin text-base sm:text-lg">refresh</span>
+                  <span className="hidden sm:inline">{isEditMode ? 'Updating...' : 'Creating...'}</span>
+                  <span className="sm:hidden">{isEditMode ? 'Updating...' : 'Creating...'}</span>
                 </>
               ) : (
                 <>
-                  <span className="material-symbols-outlined">check</span>
-                  {isEditMode ? 'Update Link' : 'Create & Copy Link'}
+                  <span className="material-symbols-outlined text-base sm:text-lg">check</span>
+                  <span className="hidden sm:inline">{isEditMode ? 'Update Link' : 'Create & Copy Link'}</span>
+                  <span className="sm:hidden">{isEditMode ? 'Update' : 'Create'}</span>
                 </>
               )}
             </button>

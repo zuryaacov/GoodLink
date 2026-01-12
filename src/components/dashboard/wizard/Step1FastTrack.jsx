@@ -687,17 +687,17 @@ const Step1FastTrack = ({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
-      className="space-y-8"
+      className="space-y-4 sm:space-y-8"
     >
       {/* Header */}
       <div className="text-center">
-        <h3 className="text-2xl font-bold text-white mb-2">The Fast Track</h3>
-        <p className="text-slate-400 text-sm">Destination & Identity</p>
+        <h3 className="text-xl sm:text-2xl font-bold text-white mb-2">The Fast Track</h3>
+        <p className="text-slate-400 text-xs sm:text-sm">Destination & Identity</p>
       </div>
 
       {/* Large URL Input - Google Search Style */}
-      <div className="flex flex-col items-center justify-center min-h-[200px]">
-        <div className="w-full max-w-2xl">
+      <div className="flex flex-col items-center justify-center min-h-[150px] sm:min-h-[200px]">
+        <div className="w-full max-w-2xl px-2 sm:px-0">
           <div className="relative">
             <input
               type="text"
@@ -710,7 +710,7 @@ const Step1FastTrack = ({
                 fetchTitle();
               }}
               placeholder="Paste your URL here..."
-              className={`w-full px-6 py-5 text-lg bg-[#0b0f19] border-2 rounded-2xl text-white placeholder-slate-500 focus:outline-none transition-all shadow-lg ${
+              className={`w-full px-4 sm:px-6 py-4 sm:py-5 text-base sm:text-lg bg-[#0b0f19] border-2 rounded-xl sm:rounded-2xl text-white placeholder-slate-500 focus:outline-none transition-all shadow-lg ${
                 urlError
                   ? "border-red-500 focus:border-red-500"
                   : safetyCheck.isSafe === true && !safetyCheck.loading
@@ -719,11 +719,11 @@ const Step1FastTrack = ({
               }`}
               autoFocus
             />
-            <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2">
+            <div className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 flex items-center gap-1 sm:gap-2">
               {/* Only show loading/success/error indicators after CHECK button click */}
               {checkingSlug && safetyCheck.loading && (
-                <div className="flex items-center gap-2 text-slate-400 text-sm">
-                  <span className="material-symbols-outlined animate-spin text-primary text-lg">
+                <div className="flex items-center gap-1 sm:gap-2 text-slate-400 text-xs sm:text-sm">
+                  <span className="material-symbols-outlined animate-spin text-primary text-base sm:text-lg">
                     refresh
                   </span>
                   <span className="hidden sm:inline">
@@ -732,15 +732,15 @@ const Step1FastTrack = ({
                 </div>
               )}
               {!checkingSlug && !safetyCheck.loading && safetyCheck.isSafe === true && !urlError && (
-                <div className="flex items-center gap-1.5 px-2 py-1 bg-green-500/20 text-green-400 rounded-lg text-xs font-medium">
-                  <span className="material-symbols-outlined text-sm">
+                <div className="flex items-center gap-1 sm:gap-1.5 px-1.5 sm:px-2 py-0.5 sm:py-1 bg-green-500/20 text-green-400 rounded-lg text-xs font-medium">
+                  <span className="material-symbols-outlined text-xs sm:text-sm">
                     verified
                   </span>
                   <span className="hidden sm:inline">Secure Link</span>
                 </div>
               )}
               {fetchingTitle && !checkingSlug && !safetyCheck.loading && (
-                <span className="material-symbols-outlined animate-spin text-primary text-lg">
+                <span className="material-symbols-outlined animate-spin text-primary text-base sm:text-lg">
                   refresh
                 </span>
               )}
@@ -818,11 +818,11 @@ const Step1FastTrack = ({
       </div>
 
       {/* Slug with Magic Wand */}
-      <div className="max-w-2xl mx-auto">
+      <div className="max-w-2xl mx-auto w-full px-2 sm:px-0">
         <label className="block text-sm font-medium text-white mb-2">
           Slug (URL Path)
         </label>
-        <div className="flex gap-3">
+        <div className="flex flex-col sm:flex-row gap-3">
           <input
             type="text"
             value={formData.slug}
@@ -854,7 +854,7 @@ const Step1FastTrack = ({
               }
             }}
             placeholder="e.g., iphone-deal"
-            className={`flex-1 px-4 py-3 bg-[#0b0f19] border rounded-xl text-white placeholder-slate-500 focus:outline-none transition-colors ${
+            className={`flex-1 w-full px-4 py-3 bg-[#0b0f19] border rounded-xl text-white placeholder-slate-500 focus:outline-none transition-colors text-sm sm:text-base ${
               slugError
                 ? "border-red-500 focus:border-red-500"
                 : isSlugAvailable === true
@@ -865,7 +865,7 @@ const Step1FastTrack = ({
           <button
             onClick={handleCheckSlug}
             disabled={checkingSlug}
-            className={`px-5 py-3 rounded-xl transition-colors flex items-center gap-2 font-medium disabled:opacity-50 disabled:cursor-not-allowed ${
+            className={`px-4 sm:px-5 py-3 rounded-xl transition-colors flex items-center justify-center gap-2 font-medium disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap flex-shrink-0 ${
               isSlugAvailable === true
                 ? "bg-green-500/10 hover:bg-green-500/20 border border-green-500/30 text-green-400"
                 : "bg-primary/10 hover:bg-primary/20 border border-primary/30 text-primary"
@@ -874,20 +874,23 @@ const Step1FastTrack = ({
           >
             {checkingSlug ? (
               <>
-                <span className="material-symbols-outlined animate-spin">
+                <span className="material-symbols-outlined animate-spin text-base sm:text-lg">
                   refresh
                 </span>
                 <span className="hidden sm:inline">Checking...</span>
+                <span className="sm:hidden">Check</span>
               </>
             ) : isSlugAvailable === true ? (
               <>
-                <span className="material-symbols-outlined">check_circle</span>
+                <span className="material-symbols-outlined text-base sm:text-lg">check_circle</span>
                 <span className="hidden sm:inline">Available</span>
+                <span className="sm:hidden">OK</span>
               </>
             ) : (
               <>
-                <span className="material-symbols-outlined">check_circle</span>
+                <span className="material-symbols-outlined text-base sm:text-lg">check_circle</span>
                 <span className="hidden sm:inline">Check</span>
+                <span className="sm:hidden">Check</span>
               </>
             )}
           </button>
@@ -917,7 +920,7 @@ const Step1FastTrack = ({
 
       {/* Custom Domain Chips - Only show if user has at least one custom domain */}
       {hasCustomDomains && (
-        <div className="max-w-2xl mx-auto">
+        <div className="max-w-2xl mx-auto w-full px-2 sm:px-0">
           <label className="block text-sm font-medium text-white mb-3">
             Custom Domain
           </label>
@@ -947,10 +950,10 @@ const Step1FastTrack = ({
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="max-w-2xl mx-auto p-4 bg-[#0b0f19] border border-[#232f48] rounded-xl"
+          className="max-w-2xl mx-auto w-full px-2 sm:px-0 p-3 sm:p-4 bg-[#0b0f19] border border-[#232f48] rounded-xl"
         >
           <p className="text-xs text-slate-500 mb-1">Preview:</p>
-          <p className="text-primary font-mono text-sm break-all">
+          <p className="text-primary font-mono text-xs sm:text-sm break-all">
             https://{formData.domain || domains[0]}/{formData.slug}
           </p>
         </motion.div>
@@ -961,12 +964,12 @@ const Step1FastTrack = ({
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="max-w-2xl mx-auto pt-4"
+          className="max-w-2xl mx-auto w-full px-2 sm:px-0 pt-4"
         >
           <button
             onClick={onQuickCreate}
             disabled={safetyCheck.isSafe === false}
-            className={`w-full px-6 py-3 text-white font-bold rounded-xl transition-colors flex items-center justify-center gap-2 ${
+            className={`w-full px-4 sm:px-6 py-3 text-sm sm:text-base text-white font-bold rounded-xl transition-colors flex items-center justify-center gap-2 ${
               safetyCheck.isSafe === false
                 ? "opacity-50 cursor-not-allowed"
                 : ""
@@ -993,11 +996,12 @@ const Step1FastTrack = ({
                 : ""
             }
           >
-            <span className="material-symbols-outlined">{formData.linkId ? "save" : "bolt"}</span>
-            {formData.linkId ? "Update Link" : "Create Quick Link (Skip Advanced Settings)"}
+            <span className="material-symbols-outlined text-base sm:text-lg">{formData.linkId ? "save" : "bolt"}</span>
+            <span className="hidden sm:inline">{formData.linkId ? "Update Link" : "Create Quick Link (Skip Advanced Settings)"}</span>
+            <span className="sm:hidden">{formData.linkId ? "Update Link" : "Create Quick Link"}</span>
           </button>
           {!formData.linkId && (
-            <p className="text-xs text-slate-500 text-center mt-2">
+            <p className="text-xs text-slate-500 text-center mt-2 px-2">
               You can create the link now with default settings, or continue to
               customize UTM, pixels, and security
             </p>
