@@ -78,6 +78,16 @@ const NewLinkWizard = ({ isOpen, onClose, initialData = null }) => {
 
   const [formData, setFormData] = useState(getInitialFormData());
   const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  // Modal state
+  const [modalState, setModalState] = useState({
+    isOpen: false,
+    type: 'alert',
+    title: '',
+    message: '',
+    onConfirm: null,
+    isLoading: false,
+  });
 
   // Reset form data when initialData changes (when switching between create/edit)
   useEffect(() => {
