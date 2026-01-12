@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import countriesData from '../../../data/countries.json';
 import CountryPickerBottomSheet from '../../common/CountryPickerBottomSheet';
+import { validateUrl } from '../../../lib/urlValidation';
+import Modal from '../../common/Modal';
 
 const fraudShieldOptions = [
   { value: 'none', label: 'Off', description: 'No additional protection' },
@@ -21,6 +23,14 @@ const Step3Security = ({ formData, updateFormData }) => {
   const [editingRuleIndex, setEditingRuleIndex] = useState(null);
   const [newGeoRule, setNewGeoRule] = useState({ country: '', url: '' });
   const [geoRuleErrors, setGeoRuleErrors] = useState({ country: null, url: null });
+  const [modalState, setModalState] = useState({
+    isOpen: false,
+    type: 'error',
+    title: '',
+    message: '',
+    onConfirm: null,
+    isLoading: false,
+  });
 
   const handleFraudShieldChange = (value) => {
     updateFormData('fraudShield', value);
@@ -412,6 +422,17 @@ const Step3Security = ({ formData, updateFormData }) => {
         onClose={() => setShowCountryPicker(false)}
         onSelect={handleSelectCountry}
         selectedCountry={newGeoRule.country}
+      />
+
+      {/* Error Modal */}
+      <Modal
+        isOpen={modalState.isOpen}
+        type={modalState.type}
+        title={modalState.title}
+        message={modalState.message}
+        onConfirm={modalState.onConfirm}
+        onClose={() => setModalState({ ...modalState, isOpen: false })}
+        isLoading={modalState.isLoading}
       />
     </motion.div>
   );
