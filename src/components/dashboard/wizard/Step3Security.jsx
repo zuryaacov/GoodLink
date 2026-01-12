@@ -259,6 +259,8 @@ const Step3Security = ({ formData, updateFormData }) => {
           {Array.isArray(formData.geoRules) && formData.geoRules.length > 0 && (
             <div className="space-y-3">
               {formData.geoRules.map((rule, index) => (
+                // Hide the card if it's being edited (editingRuleIndex === index)
+                editingRuleIndex === index ? null : (
                 <motion.div
                   key={index}
                   initial={{ opacity: 0, x: -20 }}
@@ -314,6 +316,7 @@ const Step3Security = ({ formData, updateFormData }) => {
                     </div>
                   </div>
                 </motion.div>
+                )
               ))}
             </div>
           )}
