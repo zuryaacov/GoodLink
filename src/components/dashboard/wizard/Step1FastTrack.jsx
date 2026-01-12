@@ -488,25 +488,9 @@ const Step1FastTrack = ({
     setIsSlugAvailable(null);
     setIsNameAvailable(null);
 
-    // Validate required fields before starting checks
-    if (!formData.targetUrl || !formData.targetUrl.trim()) {
-      setUrlError("Please enter a URL before checking");
-      return;
-    }
-
-    if (!formData.name || !formData.name.trim()) {
-      setNameError("Please enter a name before checking");
-      return;
-    }
-
-    if (!formData.slug || !formData.slug.trim()) {
-      setSlugError("Please enter a slug before checking");
-      return;
-    }
-
     // Debouncing: Don't check the same slug too frequently (wait at least 2 seconds)
     const now = Date.now();
-    const slugToCheck = formData.slug.trim().toLowerCase();
+    const slugToCheck = formData.slug?.trim().toLowerCase() || "";
     if (
       lastSlugCheck &&
       lastSlugCheck.slug === slugToCheck &&
@@ -536,7 +520,16 @@ const Step1FastTrack = ({
       // Step 1: Check URL - ALL URL validations must pass before proceeding
       console.log("🔵 [Check] Step 1: Checking URL (all validations)...");
       
-      // Perform ALL URL validations: format, safety, existence
+      // URL Check 1: Does URL exist in the field?
+      if (!formData.targetUrl || !formData.targetUrl.trim()) {
+        setUrlError("Please enter a URL before checking");
+        setCheckingSlug(false);
+        console.log("❌ [Check] URL validation failed - URL field is empty");
+        return;
+      }
+      
+      // URL Check 2-5: Perform ALL URL validations: format, safety, existence
+      console.log("🔵 [Check] URL Check 2-5: Performing format, safety, and existence checks...");
       const safetyCheckResult = await performSafetyCheckAndGetResult();
       
       console.log("🔵 [Check] URL validation result:", {
@@ -572,10 +565,20 @@ const Step1FastTrack = ({
       setUrlError(null);
       console.log("✅ [Check] All URL validations passed - proceeding to Name check");
 
-      // Step 2: Check Name - ALL Name validations
+      // Step 2: Check Name - ALL Name validations must pass before proceeding
       console.log("🔵 [Check] Step 2: Checking Name (all validations)...");
       
-      // Check name availability
+      // Name Check 1: Does name exist in the field?
+      if (!formData.name || !formData.name.trim()) {
+        setNameError("Please enter a name before checking");
+        setIsNameAvailable(false);
+        setCheckingSlug(false);
+        console.log("❌ [Check] Name validation failed - Name field is empty");
+        return;
+      }
+      
+      // Name Check 2: Check name availability
+      console.log("🔵 [Check] Name Check 2: Checking name availability...");
       const nameCheck = await checkNameAvailability(
         formData.name,
         user.id,
@@ -601,8 +604,17 @@ const Step1FastTrack = ({
       setNameError(null);
       console.log("✅ [Check] All Name validations passed - proceeding to SLUG check");
 
-      // Step 3: Check SLUG - ALL SLUG validations
-      console.log("🔵 [Check] Step 3: Checking SLUG (all validations)...");
+      // Step 3: Check SLUG - ALL SLUG validations must pass
+      console.log("🔵 [Check] Step 3: Checking SLUG (all validations including existence check)...");
+      
+      // First check: Does slug exist in the field?
+      if (!formData.slug || !formData.slug.trim()) {
+        setSlugError("Please enter a slug before checking");
+        setIsSlugAvailable(false);
+        setCheckingSlug(false);
+        console.log("❌ [Check] SLUG validation failed - SLUG field is empty");
+        return;
+      }
       
       // Perform all slug validations: format, availability, content moderation
       const validationResult = await validateSlug(
