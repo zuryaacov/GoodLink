@@ -42,7 +42,21 @@ const NewLinkWizard = ({ isOpen, onClose, initialData = null }) => {
         // Step 4
         fraudShield: initialData.fraud_shield || 'none',
         botAction: initialData.bot_action || 'block',
-        geoRules: initialData.geo_rules || [],
+        geoRules: (() => {
+          if (Array.isArray(initialData.geo_rules)) {
+            return initialData.geo_rules;
+          }
+          if (initialData.geo_rules && typeof initialData.geo_rules === 'string') {
+            try {
+              const parsed = JSON.parse(initialData.geo_rules);
+              return Array.isArray(parsed) ? parsed : [];
+            } catch (e) {
+              console.error('Error parsing geo_rules:', e);
+              return [];
+            }
+          }
+          return [];
+        })(),
         // Step 5 - calculated
         shortUrl: initialData.short_url || '',
         fullUtmString: '',
@@ -166,7 +180,7 @@ const NewLinkWizard = ({ isOpen, onClose, initialData = null }) => {
             custom_script: formData.customScript || null,
             fraud_shield: formData.fraudShield,
             bot_action: formData.botAction,
-            geo_rules: formData.geoRules,
+            geo_rules: Array.isArray(formData.geoRules) ? formData.geoRules : [],
             updated_at: new Date().toISOString(),
           })
           .eq('id', initialData.id);
@@ -209,7 +223,7 @@ const NewLinkWizard = ({ isOpen, onClose, initialData = null }) => {
             custom_script: formData.customScript || null,
             fraud_shield: formData.fraudShield,
             bot_action: formData.botAction,
-            geo_rules: formData.geoRules,
+            geo_rules: Array.isArray(formData.geoRules) ? formData.geoRules : [],
             created_at: new Date().toISOString(),
           });
 

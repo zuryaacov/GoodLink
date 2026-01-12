@@ -23,16 +23,20 @@ const Step3Security = ({ formData, updateFormData }) => {
 
   const handleAddGeoRule = () => {
     if (newGeoRule.country && newGeoRule.url) {
-      const currentRules = formData.geoRules || [];
-      updateFormData('geoRules', [...currentRules, newGeoRule]);
+      // Ensure geoRules is always an array
+      const currentRules = Array.isArray(formData.geoRules) ? formData.geoRules : [];
+      const updatedRules = [...currentRules, { ...newGeoRule }];
+      updateFormData('geoRules', updatedRules);
       setNewGeoRule({ country: '', url: '' });
       setShowGeoRuleForm(false);
     }
   };
 
   const handleRemoveGeoRule = (index) => {
-    const currentRules = formData.geoRules || [];
-    updateFormData('geoRules', currentRules.filter((_, i) => i !== index));
+    // Ensure geoRules is always an array
+    const currentRules = Array.isArray(formData.geoRules) ? formData.geoRules : [];
+    const updatedRules = currentRules.filter((_, i) => i !== index);
+    updateFormData('geoRules', updatedRules);
   };
 
   const getFraudShieldIndex = () => {
@@ -160,7 +164,7 @@ const Step3Security = ({ formData, updateFormData }) => {
         
         <div className="space-y-4">
           {/* Existing Rules */}
-          {formData.geoRules && formData.geoRules.length > 0 ? (
+          {Array.isArray(formData.geoRules) && formData.geoRules.length > 0 ? (
             formData.geoRules.map((rule, index) => (
               <motion.div
                 key={index}
