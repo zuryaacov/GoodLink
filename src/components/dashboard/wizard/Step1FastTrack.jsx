@@ -705,21 +705,23 @@ const Step1FastTrack = ({
               onChange={handleUrlChange}
               onPaste={handleUrlPaste}
               onBlur={() => {
-                // Only fetch title automatically, don't perform safety check
+                // Only fetch title automatically for name field
+                // All validations (including URL format check) happen only on CHECK button click
                 fetchTitle();
               }}
               placeholder="Paste your URL here..."
               className={`w-full px-6 py-5 text-lg bg-[#0b0f19] border-2 rounded-2xl text-white placeholder-slate-500 focus:outline-none transition-all shadow-lg ${
-                safetyCheck.isSafe === false
+                urlError
                   ? "border-red-500 focus:border-red-500"
-                  : safetyCheck.isSafe === true
+                  : safetyCheck.isSafe === true && !safetyCheck.loading
                   ? "border-green-500/50 focus:border-green-500"
                   : "border-[#232f48] focus:border-primary"
               }`}
               autoFocus
             />
             <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2">
-              {safetyCheck.loading && (
+              {/* Only show loading/success/error indicators after CHECK button click */}
+              {checkingSlug && safetyCheck.loading && (
                 <div className="flex items-center gap-2 text-slate-400 text-sm">
                   <span className="material-symbols-outlined animate-spin text-primary text-lg">
                     refresh
@@ -729,7 +731,7 @@ const Step1FastTrack = ({
                   </span>
                 </div>
               )}
-              {!safetyCheck.loading && safetyCheck.isSafe === true && (
+              {!checkingSlug && !safetyCheck.loading && safetyCheck.isSafe === true && !urlError && (
                 <div className="flex items-center gap-1.5 px-2 py-1 bg-green-500/20 text-green-400 rounded-lg text-xs font-medium">
                   <span className="material-symbols-outlined text-sm">
                     verified
@@ -737,15 +739,7 @@ const Step1FastTrack = ({
                   <span className="hidden sm:inline">Secure Link</span>
                 </div>
               )}
-              {!safetyCheck.loading && safetyCheck.isSafe === false && (
-                <div className="flex items-center gap-1.5 px-2 py-1 bg-red-500/20 text-red-400 rounded-lg text-xs font-medium">
-                  <span className="material-symbols-outlined text-sm">
-                    warning
-                  </span>
-                  <span className="hidden sm:inline">Unsafe</span>
-                </div>
-              )}
-              {fetchingTitle && !safetyCheck.loading && (
+              {fetchingTitle && !checkingSlug && !safetyCheck.loading && (
                 <span className="material-symbols-outlined animate-spin text-primary text-lg">
                   refresh
                 </span>
@@ -764,72 +758,11 @@ const Step1FastTrack = ({
             </motion.p>
           )}
 
-          {/* Validation Error */}
-          {!safetyCheck.loading &&
-            safetyCheck.error &&
-            safetyCheck.isSafe === null &&
-            !urlError && (
-              <motion.div
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="mt-4 p-4 bg-yellow-500/10 border-2 border-yellow-500/50 rounded-xl"
-              >
-                <div className="flex items-start gap-3">
-                  <span className="material-symbols-outlined text-yellow-400 text-xl flex-shrink-0">
-                    info
-                  </span>
-                  <div className="flex-1">
-                    <h4 className="text-yellow-400 font-bold text-sm mb-1">
-                      Invalid URL Format
-                    </h4>
-                    <p className="text-yellow-300 text-xs">
-                      {safetyCheck.error}
-                    </p>
-                  </div>
-                </div>
-              </motion.div>
-            )}
+          {/* Validation Error - Only show if urlError exists (after CHECK button click) */}
+          {/* Removed automatic validation error display - only show errors from CHECK button */}
 
-          {/* Safety Warning / URL Exists Warning */}
-          {!safetyCheck.loading && safetyCheck.isSafe === false && (
-            <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="mt-4 p-4 bg-red-500/10 border-2 border-red-500/50 rounded-xl"
-            >
-              <div className="flex items-start gap-3">
-                <span className="material-symbols-outlined text-red-400 text-xl flex-shrink-0">
-                  {safetyCheck.urlExists
-                    ? "link_off"
-                    : safetyCheck.error &&
-                      safetyCheck.error.includes("glynk.to")
-                    ? "block"
-                    : "warning"}
-                </span>
-                <div className="flex-1">
-                  <h4 className="text-red-400 font-bold text-sm mb-1">
-                    {safetyCheck.urlExists
-                      ? "URL Already Exists"
-                      : safetyCheck.error &&
-                        safetyCheck.error.includes("glynk.to")
-                      ? "Invalid Redirect Target"
-                      : "Unsafe Link Detected"}
-                  </h4>
-                  <p className="text-red-300 text-xs">
-                    {safetyCheck.urlExists
-                      ? safetyCheck.error ||
-                        "This URL already exists in your links. Please use a different URL."
-                      : safetyCheck.error &&
-                        safetyCheck.error.includes("glynk.to")
-                      ? safetyCheck.error
-                      : `This URL has been flagged as ${
-                          safetyCheck.threatType || "potentially unsafe"
-                        } by Google Safe Browsing. We recommend not using this link for security reasons.`}
-                  </p>
-                </div>
-              </div>
-            </motion.div>
-          )}
+          {/* Safety Warning / URL Exists Warning - Only show if urlError exists (after CHECK button click) */}
+          {/* Removed automatic safety warning display - only show warnings from CHECK button via urlError */}
 
           {/* Name input (appears when URL is entered, shows during fetch and after) */}
           {(fetchingTitle || formData.name || (formData.targetUrl && formData.targetUrl.trim())) && (
