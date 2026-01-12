@@ -18,24 +18,6 @@ const AddDomainModal = ({ isOpen, onClose, domain = null }) => {
     { number: 3, title: 'Verify', subtitle: 'Verify configuration' },
   ];
 
-  // Generate DNS records when domain is added
-  const generateDNSRecords = (domain) => {
-    // For now, use placeholder values
-    // In production, these would come from your infrastructure
-    return [
-      {
-        type: 'CNAME',
-        host: 'links',
-        value: 'cname.goodlink.to',
-      },
-      {
-        type: 'A',
-        host: '@',
-        value: '1.2.3.4', // Placeholder IP - should be your Worker's IP
-      },
-    ];
-  };
-
   const handleNext = async () => {
     if (currentStep === 1) {
       // Validate domain format
@@ -49,10 +31,6 @@ const AddDomainModal = ({ isOpen, onClose, domain = null }) => {
         return;
       }
 
-      // Generate DNS records
-      const records = generateDNSRecords(domainName.trim());
-      setDnsRecords(records);
-      
       // Save domain to database if it's a new domain
       if (!savedDomainId) {
         setIsSubmitting(true);
@@ -61,26 +39,47 @@ const AddDomainModal = ({ isOpen, onClose, domain = null }) => {
           const { data: { user } } = await supabase.auth.getUser();
           if (!user) throw new Error('User not authenticated');
 
-          const domainData = {
-            user_id: user.id,
-            domain: domainName.trim(),
-            status: 'pending',
-            dns_records: records,
-          };
+          // Get worker URL from environment variable
+          // Fallback to glynk.to if not set (for production)
+          const workerUrl = import.meta.env.VITE_WORKER_URL || 'https://glynk.to';
+          const apiUrl = `${workerUrl}/api/add-custom-domain`;
 
-          const { data, error } = await supabase
-            .from('custom_domains')
-            .insert(domainData)
-            .select()
-            .single();
+          console.log('🔵 [AddDomain] Calling worker API:', apiUrl);
 
-          if (error) throw error;
+          // Call worker endpoint to register domain with Cloudflare
+          const response = await fetch(apiUrl, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              domain: domainName.trim(),
+              user_id: user.id,
+            }),
+          });
+
+          const result = await response.json();
+
+          if (!response.ok || !result.success) {
+            throw new Error(result.error || 'Failed to register domain with Cloudflare');
+          }
+
+          console.log('✅ [AddDomain] Domain registered successfully:', result);
+
+          // Set DNS records from Cloudflare response
+          if (result.dns_records && result.dns_records.length > 0) {
+            setDnsRecords(result.dns_records);
+          }
+
+          // Save domain ID
+          if (result.domain_id) {
+            setSavedDomainId(result.domain_id);
+          }
           
-          setSavedDomainId(data.id);
           setCurrentStep(2);
         } catch (error) {
-          console.error('Error saving domain:', error);
-          setSaveError(error.message || 'Error saving domain. Please try again.');
+          console.error('❌ [AddDomain] Error:', error);
+          setSaveError(error.message || 'Error registering domain. Please try again.');
         } finally {
           setIsSubmitting(false);
         }

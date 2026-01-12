@@ -538,7 +538,7 @@ async function handleAddCustomDomain(request, env) {
         console.log('🔵 [AddDomain] User ID:', user_id);
 
         // Check Cloudflare environment variables
-        if (!env.CLOUDFLARE_ZONE_ID || !env.CLOUDFLARE_API_TOKEN) {
+        if (!env.CLOUDFLARE_ZONE_ID || !env.CLOUDFLARE_GLOBAL_KEY || !env.CLOUDFLARE_EMAIL) {
             console.error('❌ [AddDomain] Missing Cloudflare configuration');
             return new Response(JSON.stringify({
                 success: false,
@@ -559,7 +559,8 @@ async function handleAddCustomDomain(request, env) {
             {
                 method: 'POST',
                 headers: {
-                    'Authorization': `Bearer ${env.CLOUDFLARE_API_TOKEN}`,
+                    'X-Auth-Email': env.CLOUDFLARE_EMAIL,
+                    'X-Auth-Key': env.CLOUDFLARE_GLOBAL_KEY,
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({

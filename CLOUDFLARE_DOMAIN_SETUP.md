@@ -10,20 +10,21 @@ Add these secrets to your Cloudflare Worker:
 
 ```bash
 npx wrangler secret put CLOUDFLARE_ZONE_ID
-npx wrangler secret put CLOUDFLARE_API_TOKEN
+npx wrangler secret put CLOUDFLARE_GLOBAL_KEY
+npx wrangler secret put CLOUDFLARE_EMAIL
 ```
 
-### Getting Cloudflare API Token
+### Getting Cloudflare Global API Key and Email
 
 1. Go to [Cloudflare Dashboard](https://dash.cloudflare.com/)
 2. Click on your profile icon (top right)
 3. Go to **My Profile** → **API Tokens**
-4. Click **Create Token**
-5. Use the **Edit zone DNS** template or create a custom token with these permissions:
-   - **Zone** → **Zone** → **Read**
-   - **Zone** → **Zone Settings** → **Edit**
-   - **Zone** → **DNS** → **Edit**
-6. Copy the token
+4. Scroll down to **API Keys** section
+5. Find **Global API Key**
+6. Click **View** next to "Global API Key"
+7. Enter your Cloudflare password to reveal the key
+8. **Copy the Global API Key**
+9. **Note your Cloudflare account email** (the email you use to login)
 
 ### Getting Zone ID
 
@@ -38,9 +39,17 @@ npx wrangler secret put CLOUDFLARE_API_TOKEN
 1. User adds domain in Dashboard → `AddDomainModal`
 2. Frontend calls Worker endpoint: `POST /api/add-custom-domain`
 3. Worker calls Cloudflare API to register the domain
-4. Worker saves Cloudflare response to Supabase
+4. Worker saves Cloudflare response to Supabase (including `cloudflare_hostname_id`)
 5. Worker returns verification records to frontend
 6. Frontend displays DNS records for user to configure
+
+## Frontend Environment Variable
+
+The frontend needs to know the Worker URL. Add this environment variable:
+
+- **Name**: `VITE_WORKER_URL`
+- **Value**: Your Worker URL (e.g., `https://glynk.to` or `https://goodlink-backend.YOUR-ACCOUNT.workers.dev`)
+- **Note**: If not set, defaults to `https://glynk.to`
 
 ## API Endpoint
 
