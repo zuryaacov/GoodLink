@@ -67,6 +67,87 @@ const CustomDomainsManager = () => {
     }
   };
 
+  const handleVerifyDNS = async (domain) => {
+    // Show loading state
+    setModalState({
+      isOpen: true,
+      type: 'alert',
+      title: 'Verifying DNS Records',
+      message: 'Please wait while we verify your DNS configuration...',
+      onConfirm: null,
+      isLoading: true,
+    });
+
+    try {
+      const domainId = domain.id;
+      const hostnameId = domain.cloudflare_hostname_id;
+
+      if (!domainId && !hostnameId) {
+        throw new Error('Domain ID or Cloudflare hostname ID is required');
+      }
+
+      // Get worker URL from environment variable (fallback to glynk.to)
+      const workerUrl = import.meta.env.VITE_WORKER_URL || 'https://glynk.to';
+      const apiUrl = `${workerUrl}/api/verify-custom-domain`;
+
+      console.log('🔵 [VerifyDNS] Calling worker API:', apiUrl);
+
+      // Call worker endpoint to verify domain
+      const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          domain_id: domainId,
+          cloudflare_hostname_id: hostnameId,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok || !result.success) {
+        throw new Error(result.error || 'Failed to verify domain');
+      }
+
+      console.log('✅ [VerifyDNS] Verification result:', result);
+
+      if (result.is_active) {
+        // Domain is verified and active
+        setModalState({
+          isOpen: true,
+          type: 'success',
+          title: 'DNS Verified Successfully!',
+          message: `Your domain ${domain.domain} has been verified and is now active.`,
+          onConfirm: null,
+          isLoading: false,
+        });
+        // Refresh domains list
+        fetchDomains();
+      } else {
+        // DNS records not yet verified
+        setModalState({
+          isOpen: true,
+          type: 'alert',
+          title: 'DNS Verification Pending',
+          message: `DNS records are still pending verification. Current status: ${result.ssl_status || 'pending'}. Please wait a few minutes and try again.`,
+          onConfirm: null,
+          isLoading: false,
+        });
+      }
+    } catch (error) {
+      console.error('❌ [VerifyDNS] Error:', error);
+      setModalState({
+        isOpen: true,
+        type: 'error',
+        title: 'Verification Failed',
+        message: error.message || 'Error verifying DNS records. Please try again.',
+        onConfirm: null,
+        isLoading: false,
+      });
+    }
+  };
+
   const getStatusColor = (status) => {
     switch (status) {
       case 'active':
@@ -176,10 +257,7 @@ const CustomDomainsManager = () => {
               {(domain.status === 'pending' || domain.status === 'error') && domain.dns_records && (
                 <div className="pt-4 border-t border-[#232f48]">
                   <button
-                    onClick={() => {
-                      setEditingDomain(domain);
-                      setIsModalOpen(true);
-                    }}
+                    onClick={() => handleVerifyDNS(domain)}
                     className="w-full px-4 py-2.5 bg-[#FF10F0] hover:bg-[#e00ed0] text-white font-bold rounded-xl transition-colors"
                   >
                     Verify My DNS
