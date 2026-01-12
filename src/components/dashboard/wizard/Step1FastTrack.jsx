@@ -927,7 +927,7 @@ const Step1FastTrack = ({
           className="max-w-2xl mx-auto w-full px-2 sm:px-0 p-3 sm:p-4 bg-[#0b0f19] border border-[#232f48] rounded-xl"
         >
           <p className="text-xs text-slate-500 mb-1">Preview:</p>
-          <p className="text-primary font-mono text-xs sm:text-sm break-all">
+          <p className="text-[#10b981] font-mono font-bold text-[1.125rem] sm:text-[1.3125rem] break-all">
             https://{formData.domain || domains[0]}/{formData.slug}
           </p>
         </motion.div>
