@@ -114,18 +114,10 @@ const NewLinkWizard = ({ isOpen, onClose, initialData = null }) => {
         throw new Error('Target URL is required');
       }
 
-      // Generate name if not provided (use URL domain or default)
+      // Name is required - validate it
       let finalName = formData.name?.trim();
-      if (!finalName && formData.targetUrl) {
-        try {
-          const url = new URL(formData.targetUrl);
-          finalName = url.hostname.replace('www.', '');
-        } catch {
-          finalName = 'Untitled Link';
-        }
-      }
       if (!finalName) {
-        finalName = 'Untitled Link';
+        throw new Error('Link name is required. Please enter a name for your link.');
       }
 
       // Generate slug if not provided

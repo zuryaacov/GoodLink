@@ -340,13 +340,29 @@ const Step1FastTrack = ({
       if (title && title.trim()) {
         updateFormData("name", title.trim());
       } else {
-        // If no title found, leave empty - user can manually enter name
-        // The name input field will be shown automatically when fetchingTitle is true
+        // If no title found, extract domain name from URL
+        try {
+          const urlObj = new URL(normalizedUrl);
+          const domainName = urlObj.hostname.replace("www.", "").split(".")[0];
+          // Capitalize first letter
+          const capitalizedDomain = domainName.charAt(0).toUpperCase() + domainName.slice(1);
+          updateFormData("name", capitalizedDomain);
+        } catch {
+          // If still fails, leave empty - user must enter name manually
+        }
       }
     } catch (error) {
-      // Invalid URL or timeout, skip fetching
+      // Invalid URL or timeout, extract domain name from URL
       console.log("Error fetching title:", error);
-      // Leave name empty - user can manually enter name
+      try {
+        const urlObj = new URL(normalizedUrl);
+        const domainName = urlObj.hostname.replace("www.", "").split(".")[0];
+        // Capitalize first letter
+        const capitalizedDomain = domainName.charAt(0).toUpperCase() + domainName.slice(1);
+        updateFormData("name", capitalizedDomain);
+      } catch {
+        // If still fails, leave empty - user must enter name manually
+      }
     } finally {
       setFetchingTitle(false);
     }
@@ -452,13 +468,16 @@ const Step1FastTrack = ({
   // Show "Create Quick Link" button only when:
   // 1. URL is verified (safety check passed)
   // 2. Slug is provided and verified (slug check passed)
+  // 3. Name is provided (required)
   const canCreate =
     formData.targetUrl &&
     formData.targetUrl.trim() &&
     safetyCheck.isSafe === true &&
     formData.slug &&
     formData.slug.trim() &&
-    isSlugAvailable === true;
+    isSlugAvailable === true &&
+    formData.name &&
+    formData.name.trim();
 
   return (
     <motion.div
@@ -605,16 +624,22 @@ const Step1FastTrack = ({
               className="mt-4 p-4 bg-[#0b0f19] border border-[#232f48] rounded-xl"
             >
               <label className="block text-xs text-slate-500 mb-1">
-                {formData.name ? "Internal Name (Auto-filled)" : "Internal Name"}
+                Internal Name <span className="text-red-400">*</span>
+                {formData.name && !fetchingTitle && " (Auto-filled)"}
               </label>
               <div className="relative">
                 <input
                   type="text"
                   value={formData.name || ""}
                   onChange={(e) => updateFormData("name", e.target.value)}
-                  placeholder={fetchingTitle ? "Fetching title..." : "Enter name manually"}
+                  placeholder={fetchingTitle ? "Fetching title..." : "Enter name (required)"}
                   disabled={fetchingTitle}
-                  className="w-full px-3 py-2 bg-[#101622] border border-[#232f48] rounded-lg text-white text-sm focus:outline-none focus:border-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  required
+                  className={`w-full px-3 py-2 bg-[#101622] border rounded-lg text-white text-sm focus:outline-none focus:border-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
+                    !formData.name && formData.targetUrl && !fetchingTitle
+                      ? "border-red-500/50"
+                      : "border-[#232f48]"
+                  }`}
                 />
                 {fetchingTitle && (
                   <div className="absolute right-3 top-1/2 -translate-y-1/2">
@@ -624,6 +649,9 @@ const Step1FastTrack = ({
                   </div>
                 )}
               </div>
+              {!formData.name && formData.targetUrl && !fetchingTitle && (
+                <p className="text-red-400 text-xs mt-1">Name is required</p>
+              )}
             </motion.div>
           )}
         </div>
