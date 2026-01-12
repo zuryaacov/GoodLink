@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import countries from 'i18n-iso-countries';
+import countriesData from '../../../data/countries.json';
 import CountryPickerBottomSheet from '../../common/CountryPickerBottomSheet';
 
 const fraudShieldOptions = [
@@ -20,19 +20,6 @@ const Step3Security = ({ formData, updateFormData }) => {
   const [showCountryPicker, setShowCountryPicker] = useState(false);
   const [editingRuleIndex, setEditingRuleIndex] = useState(null);
   const [newGeoRule, setNewGeoRule] = useState({ country: '', url: '' });
-  const [countriesInitialized, setCountriesInitialized] = useState(false);
-
-  // Initialize countries
-  useEffect(() => {
-    if (!countriesInitialized) {
-      import('i18n-iso-countries/langs/en.json').then((enLocale) => {
-        countries.registerLocale(enLocale.default);
-        setCountriesInitialized(true);
-      }).catch((err) => {
-        console.error('Error loading countries locale:', err);
-      });
-    }
-  }, [countriesInitialized]);
 
   const handleFraudShieldChange = (value) => {
     updateFormData('fraudShield', value);
@@ -78,11 +65,8 @@ const Step3Security = ({ formData, updateFormData }) => {
   };
 
   const getCountryName = (countryCode) => {
-    try {
-      return countries.getName(countryCode, 'en') || countryCode;
-    } catch {
-      return countryCode;
-    }
+    const country = countriesData.find(c => c.code === countryCode);
+    return country ? country.name : countryCode;
   };
 
   const getCountryFlag = (countryCode) => {

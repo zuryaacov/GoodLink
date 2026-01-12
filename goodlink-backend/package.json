@@ -13,8 +13,5 @@
   "license": "MIT",
   "devDependencies": {
     "wrangler": "^4.54.0"
-  },
-  "dependencies": {
-    "i18n-iso-countries": "^7.14.0"
   }
 }

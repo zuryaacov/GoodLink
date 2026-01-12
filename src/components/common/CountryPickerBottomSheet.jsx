@@ -1,28 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import countries from 'i18n-iso-countries';
-
-// Initialize countries (using English locale)
-// Dynamic import to avoid build issues
-if (typeof window !== 'undefined') {
-  import('i18n-iso-countries/langs/en.json').then((enLocale) => {
-    countries.registerLocale(enLocale.default);
-  });
-}
+import countriesData from '../../data/countries.json';
 
 const CountryPickerBottomSheet = ({ isOpen, onClose, onSelect, selectedCountry }) => {
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Get all countries with codes
-  const allCountries = Object.keys(countries.getNames('en', { select: 'official' }))
-    .map(code => ({
-      code,
-      name: countries.getName(code, 'en'),
-      flag: getCountryFlag(code),
-    }))
-    .sort((a, b) => a.name.localeCompare(b.name));
-
-  const filteredCountries = allCountries.filter(country =>
+  const filteredCountries = countriesData.filter(country =>
     country.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     country.code.toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -32,11 +15,17 @@ const CountryPickerBottomSheet = ({ isOpen, onClose, onSelect, selectedCountry }
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = 'unset';
+      setSearchQuery(''); // Reset search when closing
     }
     return () => {
       document.body.style.overflow = 'unset';
     };
   }, [isOpen]);
+
+  const handleSelect = (countryCode) => {
+    onSelect(countryCode);
+    onClose();
+  };
 
   if (!isOpen) return null;
 
@@ -104,18 +93,14 @@ const CountryPickerBottomSheet = ({ isOpen, onClose, onSelect, selectedCountry }
                 {filteredCountries.map((country) => (
                   <button
                     key={country.code}
-                    onClick={() => {
-                      onSelect(country.code);
-                      onClose();
-                      setSearchQuery('');
-                    }}
+                    onClick={() => handleSelect(country.code)}
                     className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-colors ${
                       selectedCountry === country.code
                         ? 'bg-primary/20 border border-primary'
                         : 'bg-[#0b0f19] border border-transparent hover:bg-[#1a1f2e]'
                     }`}
                   >
-                    <span className="text-2xl flex-shrink-0">{country.flag}</span>
+                    <span className="text-2xl flex-shrink-0">{getCountryFlag(country.code)}</span>
                     <span className={`flex-1 text-left font-medium ${
                       selectedCountry === country.code ? 'text-white' : 'text-slate-300'
                     }`}>
