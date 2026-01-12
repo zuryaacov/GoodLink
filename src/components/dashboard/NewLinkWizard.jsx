@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../../lib/supabase';
 import Step1FastTrack from './wizard/Step1FastTrack';
@@ -16,6 +16,7 @@ const NewLinkWizard = ({ isOpen, onClose, initialData = null }) => {
   // Edit mode only if initialData exists AND has an ID (for duplication, we pass data without ID)
   const isEditMode = !!(initialData && initialData.id);
   const [currentStep, setCurrentStep] = useState(1);
+  const step1ValidationRef = useRef(null);
   
   // Initialize formData with initialData if in edit mode, otherwise use defaults
   const getInitialFormData = () => {
