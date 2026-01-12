@@ -98,7 +98,7 @@ const Modal = ({
             </div>
 
             <h2>{title}</h2>
-            <p>{message}</p>
+            <div>{typeof message === 'string' ? <p>{message}</p> : message}</div>
 
             <div className="modal-actions">
               {type === 'confirm' || type === 'delete' ? (

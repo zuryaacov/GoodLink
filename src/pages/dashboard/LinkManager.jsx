@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
 import NewLinkWizard from '../../components/dashboard/NewLinkWizard';
+import Modal from '../../components/common/Modal';
 
 const LinkManager = () => {
   const [isWizardOpen, setIsWizardOpen] = useState(false);
