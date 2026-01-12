@@ -1,0 +1,229 @@
+import React, { useState, useEffect } from 'react';
+import { supabase } from '../../lib/supabase';
+import Modal from '../../components/common/Modal';
+import AddDomainModal from '../../components/dashboard/AddDomainModal';
+
+const CustomDomainsManager = () => {
+  const [domains, setDomains] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingDomain, setEditingDomain] = useState(null);
+
+  // Modal states for errors/alerts
+  const [modalState, setModalState] = useState({
+    isOpen: false,
+    type: 'alert',
+    title: '',
+    message: '',
+    onConfirm: null,
+    isLoading: false,
+  });
+
+  useEffect(() => {
+    fetchDomains();
+  }, []);
+
+  const fetchDomains = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data, error } = await supabase
+        .from('custom_domains')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setDomains(data || []);
+    } catch (error) {
+      console.error('Error fetching domains:', error);
+      // If table doesn't exist, just show empty state
+      setDomains([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDelete = async (domainId) => {
+    try {
+      const { error } = await supabase
+        .from('custom_domains')
+        .delete()
+        .eq('id', domainId);
+
+      if (error) throw error;
+      fetchDomains();
+    } catch (error) {
+      console.error('Error deleting domain:', error);
+      setModalState({
+        isOpen: true,
+        type: 'error',
+        title: 'Error',
+        message: 'Error deleting domain. Please try again.',
+        onConfirm: null,
+        isLoading: false,
+      });
+    }
+  };
+
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'active':
+        return 'bg-green-500/20 text-green-400 border-green-500/30';
+      case 'pending':
+        return 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30';
+      case 'error':
+        return 'bg-red-500/20 text-red-400 border-red-500/30';
+      default:
+        return 'bg-slate-500/20 text-slate-400 border-slate-500/30';
+    }
+  };
+
+  const getStatusIcon = (status) => {
+    switch (status) {
+      case 'active':
+        return 'check_circle';
+      case 'pending':
+        return 'schedule';
+      case 'error':
+        return 'error';
+      default:
+        return 'help';
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-full">
+        <div className="text-slate-400">Loading domains...</div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="p-4 sm:p-6 lg:p-8 space-y-6">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2">Custom Domains</h1>
+          <p className="text-slate-400 text-sm">
+            Brand your links with custom domains (e.g., go.mybrand.com)
+          </p>
+        </div>
+        <button
+          onClick={() => {
+            setEditingDomain(null);
+            setIsModalOpen(true);
+          }}
+          className="px-4 sm:px-6 py-2.5 sm:py-3 bg-[#FF10F0] hover:bg-[#e00ed0] text-white font-bold rounded-xl transition-colors flex items-center justify-center gap-2 whitespace-nowrap"
+        >
+          <span className="material-symbols-outlined text-lg sm:text-xl">add</span>
+          <span className="text-sm sm:text-base">New Domain</span>
+        </button>
+      </div>
+
+      {/* Domains List */}
+      {domains.length === 0 ? (
+        // Empty State
+        <div className="bg-[#101622] border border-[#232f48] rounded-xl p-8 sm:p-12 text-center">
+          <div className="max-w-md mx-auto space-y-4">
+            <div className="text-6xl mb-4">🌐</div>
+            <h2 className="text-xl sm:text-2xl font-bold text-white">No Custom Domains Yet</h2>
+            <p className="text-slate-400 text-sm sm:text-base">
+              Brand your links with custom domains and improve click rates by up to 30%
+            </p>
+            <button
+              onClick={() => {
+                setEditingDomain(null);
+                setIsModalOpen(true);
+              }}
+              className="mt-6 px-6 py-3 bg-[#FF10F0] hover:bg-[#e00ed0] text-white font-bold rounded-xl transition-colors inline-flex items-center gap-2"
+            >
+              <span className="material-symbols-outlined">add</span>
+              Add Your First Domain
+            </button>
+          </div>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {domains.map((domain) => (
+            <div
+              key={domain.id}
+              className="bg-[#101622] border border-[#232f48] rounded-xl p-5 sm:p-6 transition-all hover:bg-white/5 hover:border-primary/30 flex flex-col gap-4"
+            >
+              {/* Domain Name & Status */}
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-lg sm:text-xl font-bold text-white mb-2 truncate" title={domain.domain}>
+                    {domain.domain}
+                  </h3>
+                  <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-lg border text-xs sm:text-sm font-medium ${getStatusColor(domain.status)}`}>
+                    <span className="material-symbols-outlined text-sm sm:text-base">{getStatusIcon(domain.status)}</span>
+                    <span className="capitalize">{domain.status}</span>
+                  </div>
+                </div>
+                <button
+                  onClick={() => handleDelete(domain.id)}
+                  className="text-slate-400 hover:text-red-400 transition-colors p-2 flex-shrink-0"
+                  title="Delete domain"
+                >
+                  <span className="material-symbols-outlined text-lg sm:text-xl">delete</span>
+                </button>
+              </div>
+
+              {/* DNS Records - Show if pending or error */}
+              {(domain.status === 'pending' || domain.status === 'error') && domain.dns_records && (
+                <div className="pt-4 border-t border-[#232f48]">
+                  <p className="text-xs text-slate-500 mb-2">DNS Configuration Required</p>
+                  <button
+                    onClick={() => {
+                      setEditingDomain(domain);
+                      setIsModalOpen(true);
+                    }}
+                    className="text-xs text-primary hover:text-primary/80 underline"
+                  >
+                    View DNS Records
+                  </button>
+                </div>
+              )}
+
+              {/* Verified Date */}
+              {domain.verified_at && (
+                <div className="text-xs text-slate-500">
+                  Verified: {new Date(domain.verified_at).toLocaleDateString()}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Add Domain Modal */}
+      {isModalOpen && (
+        <AddDomainModal
+          isOpen={isModalOpen}
+          onClose={() => {
+            setIsModalOpen(false);
+            setEditingDomain(null);
+            fetchDomains();
+          }}
+          domain={editingDomain}
+        />
+      )}
+
+      {/* Error/Alert Modal */}
+      <Modal
+        isOpen={modalState.isOpen}
+        onClose={() => setModalState({ ...modalState, isOpen: false })}
+        title={modalState.title}
+        message={modalState.message}
+        type={modalState.type}
+        onConfirm={modalState.onConfirm}
+        isLoading={modalState.isLoading}
+      />
+    </div>
+  );
+};
+
+export default CustomDomainsManager;
