@@ -1,5 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import countries from 'i18n-iso-countries';
+import CountryPickerBottomSheet from '../../common/CountryPickerBottomSheet';
 
 const fraudShieldOptions = [
   { value: 'none', label: 'Off', description: 'No additional protection' },
@@ -15,7 +17,22 @@ const botActionOptions = [
 
 const Step3Security = ({ formData, updateFormData }) => {
   const [showGeoRuleForm, setShowGeoRuleForm] = useState(false);
+  const [showCountryPicker, setShowCountryPicker] = useState(false);
+  const [editingRuleIndex, setEditingRuleIndex] = useState(null);
   const [newGeoRule, setNewGeoRule] = useState({ country: '', url: '' });
+  const [countriesInitialized, setCountriesInitialized] = useState(false);
+
+  // Initialize countries
+  useEffect(() => {
+    if (!countriesInitialized) {
+      import('i18n-iso-countries/langs/en.json').then((enLocale) => {
+        countries.registerLocale(enLocale.default);
+        setCountriesInitialized(true);
+      }).catch((err) => {
+        console.error('Error loading countries locale:', err);
+      });
+    }
+  }, [countriesInitialized]);
 
   const handleFraudShieldChange = (value) => {
     updateFormData('fraudShield', value);
@@ -23,20 +40,57 @@ const Step3Security = ({ formData, updateFormData }) => {
 
   const handleAddGeoRule = () => {
     if (newGeoRule.country && newGeoRule.url) {
-      // Ensure geoRules is always an array
       const currentRules = Array.isArray(formData.geoRules) ? formData.geoRules : [];
-      const updatedRules = [...currentRules, { ...newGeoRule }];
-      updateFormData('geoRules', updatedRules);
+      
+      if (editingRuleIndex !== null) {
+        // Edit existing rule
+        const updatedRules = [...currentRules];
+        updatedRules[editingRuleIndex] = { ...newGeoRule };
+        updateFormData('geoRules', updatedRules);
+        setEditingRuleIndex(null);
+      } else {
+        // Add new rule
+        updateFormData('geoRules', [...currentRules, { ...newGeoRule }]);
+      }
+      
       setNewGeoRule({ country: '', url: '' });
       setShowGeoRuleForm(false);
     }
   };
 
   const handleRemoveGeoRule = (index) => {
-    // Ensure geoRules is always an array
     const currentRules = Array.isArray(formData.geoRules) ? formData.geoRules : [];
     const updatedRules = currentRules.filter((_, i) => i !== index);
     updateFormData('geoRules', updatedRules);
+  };
+
+  const handleEditGeoRule = (index) => {
+    const currentRules = Array.isArray(formData.geoRules) ? formData.geoRules : [];
+    const rule = currentRules[index];
+    setNewGeoRule({ country: rule.country, url: rule.url });
+    setEditingRuleIndex(index);
+    setShowGeoRuleForm(true);
+  };
+
+  const handleSelectCountry = (countryCode) => {
+    setNewGeoRule({ ...newGeoRule, country: countryCode });
+    setShowCountryPicker(false);
+  };
+
+  const getCountryName = (countryCode) => {
+    try {
+      return countries.getName(countryCode, 'en') || countryCode;
+    } catch {
+      return countryCode;
+    }
+  };
+
+  const getCountryFlag = (countryCode) => {
+    const codePoints = countryCode
+      .toUpperCase()
+      .split('')
+      .map(char => 127397 + char.charCodeAt());
+    return String.fromCodePoint(...codePoints);
   };
 
   const getFraudShieldIndex = () => {
@@ -50,11 +104,11 @@ const Step3Security = ({ formData, updateFormData }) => {
       initial={{ opacity: 0, x: 20 }}
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: -20 }}
-      className="space-y-8"
+      className="space-y-6 sm:space-y-8"
     >
       {/* Header */}
       <div className="text-center">
-        <h3 className="text-2xl font-bold text-white mb-2">Security & Logic</h3>
+        <h3 className="text-xl sm:text-2xl font-bold text-white mb-2">Security & Logic</h3>
         <p className="text-slate-400 text-sm">Smart Rules & Protection</p>
       </div>
 
@@ -153,7 +207,7 @@ const Step3Security = ({ formData, updateFormData }) => {
         </div>
       </div>
 
-      {/* Geo-Targeting - If/Then Structure */}
+      {/* Geo-Targeting - Mobile-First Card Design */}
       <div>
         <label className="block text-sm font-medium text-white mb-3">
           Geo-Targeting Rules <span className="text-slate-500">(Optional)</span>
@@ -162,45 +216,88 @@ const Step3Security = ({ formData, updateFormData }) => {
           Set up routing rules based on visitor location
         </p>
         
-        <div className="space-y-4">
-          {/* Existing Rules */}
-          {Array.isArray(formData.geoRules) && formData.geoRules.length > 0 ? (
-            formData.geoRules.map((rule, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                className="p-4 bg-[#0b0f19] border border-[#232f48] rounded-xl"
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="px-3 py-1 bg-primary/20 text-primary rounded-lg font-bold text-sm">
-                      If
-                    </div>
-                    <span className="text-white font-medium">Country is</span>
-                    <div className="px-3 py-1 bg-slate-700 text-white rounded-lg font-mono text-sm">
-                      {rule.country}
-                    </div>
-                    <span className="text-slate-400">→</span>
-                    <span className="text-white font-medium">Go to</span>
-                    <div className="px-3 py-1 bg-slate-700 text-white rounded-lg font-mono text-sm max-w-xs truncate">
-                      {rule.url}
-                    </div>
-                  </div>
+        <div className="space-y-3 sm:space-y-4">
+          {/* Default Link Card - Always First */}
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="p-4 sm:p-5 bg-gradient-to-r from-primary/10 to-primary/5 border-2 border-primary/30 rounded-xl"
+          >
+            <div className="flex items-start gap-3">
+              <div className="px-3 py-1 bg-primary/20 text-primary rounded-lg font-bold text-xs sm:text-sm flex-shrink-0">
+                Default
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-white font-medium text-sm sm:text-base mb-1">
+                  All other countries
+                </p>
+                <p className="text-slate-400 text-xs sm:text-sm truncate font-mono">
+                  {formData.targetUrl || 'Default target URL'}
+                </p>
+              </div>
+            </div>
+          </motion.div>
+
+          {/* Dynamic Rules */}
+          {Array.isArray(formData.geoRules) && formData.geoRules.length > 0 && (
+            <div className="space-y-3">
+              {formData.geoRules.map((rule, index) => (
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  className="relative p-4 sm:p-5 bg-[#0b0f19] border border-[#232f48] rounded-xl hover:border-primary/30 transition-colors"
+                >
+                  {/* Delete Button - Top Right */}
                   <button
                     onClick={() => handleRemoveGeoRule(index)}
-                    className="text-red-400 hover:text-red-300 transition-colors"
+                    className="absolute top-3 right-3 text-[#FF10F0] hover:text-[#e00ed0] transition-colors p-1.5"
+                    title="Delete rule"
                   >
-                    <span className="material-symbols-outlined">delete</span>
+                    <span className="material-symbols-outlined text-lg sm:text-xl">delete</span>
                   </button>
-                </div>
-              </motion.div>
-            ))
-          ) : (
-            <div className="p-6 bg-[#0b0f19] border border-dashed border-[#232f48] rounded-xl text-center">
-              <p className="text-slate-500 text-sm">
-                No geo-rules configured. All visitors will use the default target URL.
-              </p>
+
+                  <div className="pr-10">
+                    <div className="flex items-start gap-3 mb-3">
+                      <div className="px-3 py-1 bg-primary/20 text-primary rounded-lg font-bold text-xs sm:text-sm flex-shrink-0">
+                        If
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-white font-medium text-sm sm:text-base mb-2">
+                          Country is
+                        </p>
+                        <button
+                          onClick={() => handleEditGeoRule(index)}
+                          className="flex items-center gap-2 px-3 py-2 bg-[#101622] border border-[#232f48] rounded-lg hover:border-primary transition-colors w-full text-left"
+                        >
+                          <span className="text-2xl">{getCountryFlag(rule.country)}</span>
+                          <span className="text-white font-medium flex-1">{getCountryName(rule.country)}</span>
+                          <span className="text-slate-500 text-xs font-mono">{rule.country}</span>
+                          <span className="material-symbols-outlined text-slate-500 text-lg">edit</span>
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="flex items-start gap-3">
+                      <div className="px-3 py-1 bg-green-500/20 text-green-400 rounded-lg font-bold text-xs sm:text-sm flex-shrink-0">
+                        Then
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-white font-medium text-sm sm:text-base mb-2">
+                          Go to URL
+                        </p>
+                        <input
+                          type="url"
+                          value={rule.url}
+                          readOnly
+                          className="w-full px-3 py-2 bg-[#101622] border border-[#232f48] rounded-lg text-white text-xs sm:text-sm font-mono truncate focus:outline-none"
+                          onClick={() => handleEditGeoRule(index)}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
             </div>
           )}
 
@@ -209,44 +306,64 @@ const Step3Security = ({ formData, updateFormData }) => {
             <motion.div
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
-              className="p-4 bg-[#0b0f19] border border-primary/50 rounded-xl space-y-3"
+              className="p-4 sm:p-5 bg-[#0b0f19] border-2 border-primary/50 rounded-xl space-y-4"
             >
-              <div className="flex items-center gap-3">
-                <div className="px-3 py-1 bg-primary/20 text-primary rounded-lg font-bold text-sm">
-                  If
-                </div>
-                <span className="text-white font-medium">Country is</span>
-                <input
-                  type="text"
-                  value={newGeoRule.country}
-                  onChange={(e) => setNewGeoRule({ ...newGeoRule, country: e.target.value.toUpperCase() })}
-                  placeholder="USA"
-                  className="flex-1 px-3 py-1 bg-[#101622] border border-[#232f48] rounded-lg text-white text-sm focus:outline-none focus:border-primary transition-colors"
-                  maxLength={3}
-                />
-                <span className="text-slate-400">→</span>
-                <span className="text-white font-medium">Go to</span>
+              <div>
+                <label className="block text-sm font-medium text-white mb-2">
+                  If Country is
+                </label>
+                <button
+                  onClick={() => setShowCountryPicker(true)}
+                  className={`w-full flex items-center gap-3 px-4 py-3 bg-[#101622] border rounded-xl transition-colors text-left ${
+                    newGeoRule.country
+                      ? 'border-primary'
+                      : 'border-[#232f48] hover:border-primary/50'
+                  }`}
+                >
+                  {newGeoRule.country ? (
+                    <>
+                      <span className="text-2xl">{getCountryFlag(newGeoRule.country)}</span>
+                      <span className="text-white font-medium flex-1">{getCountryName(newGeoRule.country)}</span>
+                      <span className="text-slate-500 text-xs font-mono">{newGeoRule.country}</span>
+                    </>
+                  ) : (
+                    <>
+                      <span className="material-symbols-outlined text-slate-500">public</span>
+                      <span className="text-slate-400 flex-1">Select country...</span>
+                    </>
+                  )}
+                  <span className="material-symbols-outlined text-slate-500">arrow_drop_down</span>
+                </button>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-white mb-2">
+                  Then go to URL
+                </label>
                 <input
                   type="url"
                   value={newGeoRule.url}
                   onChange={(e) => setNewGeoRule({ ...newGeoRule, url: e.target.value })}
                   placeholder="https://example.com"
-                  className="flex-1 px-3 py-1 bg-[#101622] border border-[#232f48] rounded-lg text-white text-sm focus:outline-none focus:border-primary transition-colors"
+                  className="w-full px-4 py-3 bg-[#101622] border border-[#232f48] rounded-xl text-white text-sm placeholder-slate-500 focus:outline-none focus:border-primary transition-colors"
                 />
               </div>
-              <div className="flex gap-2">
+
+              <div className="flex gap-2 sm:gap-3">
                 <button
                   onClick={handleAddGeoRule}
-                  className="flex-1 px-4 py-2 bg-primary hover:bg-primary/90 text-white font-bold rounded-lg transition-colors"
+                  disabled={!newGeoRule.country || !newGeoRule.url}
+                  className="flex-1 px-4 py-2.5 sm:py-3 bg-[#FF10F0] hover:bg-[#e00ed0] disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold rounded-xl transition-colors text-sm sm:text-base"
                 >
-                  Add Rule
+                  {editingRuleIndex !== null ? 'Update Rule' : 'Add Rule'}
                 </button>
                 <button
                   onClick={() => {
                     setShowGeoRuleForm(false);
                     setNewGeoRule({ country: '', url: '' });
+                    setEditingRuleIndex(null);
                   }}
-                  className="px-4 py-2 bg-[#232f48] hover:bg-[#324467] text-white font-medium rounded-lg transition-colors"
+                  className="px-4 sm:px-6 py-2.5 sm:py-3 bg-[#232f48] hover:bg-[#324467] text-white font-medium rounded-xl transition-colors text-sm sm:text-base"
                 >
                   Cancel
                 </button>
@@ -255,9 +372,9 @@ const Step3Security = ({ formData, updateFormData }) => {
           ) : (
             <button
               onClick={() => setShowGeoRuleForm(true)}
-              className="w-full px-4 py-3 border-2 border-dashed border-[#324467] text-slate-400 hover:text-white hover:border-primary rounded-xl transition-colors text-sm font-medium flex items-center justify-center gap-2"
+              className="w-full px-4 py-3 sm:py-4 border-2 border-dashed border-[#324467] text-slate-400 hover:text-white hover:border-[#FF10F0] rounded-xl transition-colors text-sm sm:text-base font-medium flex items-center justify-center gap-2"
             >
-              <span className="material-symbols-outlined">add</span>
+              <span className="material-symbols-outlined text-xl sm:text-2xl">add</span>
               Add Geo-Rule
             </button>
           )}
@@ -267,9 +384,16 @@ const Step3Security = ({ formData, updateFormData }) => {
           Example: "If visitor is from USA, redirect to URL A, otherwise redirect to default URL"
         </p>
       </div>
+
+      {/* Country Picker Bottom Sheet */}
+      <CountryPickerBottomSheet
+        isOpen={showCountryPicker}
+        onClose={() => setShowCountryPicker(false)}
+        onSelect={handleSelectCountry}
+        selectedCountry={newGeoRule.country}
+      />
     </motion.div>
   );
 };
 
 export default Step3Security;
-
