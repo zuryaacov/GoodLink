@@ -516,28 +516,38 @@ const Step1FastTrack = ({
       // Perform ALL URL validations: format, safety, existence
       const safetyCheckResult = await performSafetyCheckAndGetResult();
       
+      console.log("🔵 [Check] URL validation result:", {
+        isSafe: safetyCheckResult.isSafe,
+        urlExists: safetyCheckResult.urlExists,
+        error: safetyCheckResult.error
+      });
+      
       // Check ALL URL validations - if ANY fails, stop and show error
-      if (safetyCheckResult.error || !safetyCheckResult.isSafe || safetyCheckResult.urlExists) {
-        // Determine the specific error message
-        let errorMessage = "URL validation failed. Please fix the URL before continuing.";
-        
-        if (safetyCheckResult.urlExists) {
-          errorMessage = "This URL already exists in your links. Please use a different URL.";
-        } else if (safetyCheckResult.error) {
-          errorMessage = safetyCheckResult.error;
-        } else if (!safetyCheckResult.isSafe) {
-          errorMessage = "URL safety check failed. Please use a different URL.";
-        }
-        
-        setUrlError(errorMessage);
+      // IMPORTANT: Check error first, then urlExists, then isSafe
+      if (safetyCheckResult.error) {
+        setUrlError(safetyCheckResult.error);
         setCheckingSlug(false);
-        console.log("❌ [Check] URL validation failed:", errorMessage);
+        console.log("❌ [Check] URL validation failed - Error:", safetyCheckResult.error);
+        return;
+      }
+      
+      if (safetyCheckResult.urlExists) {
+        setUrlError("This URL already exists in your links. Please use a different URL.");
+        setCheckingSlug(false);
+        console.log("❌ [Check] URL validation failed - URL exists");
+        return;
+      }
+      
+      if (!safetyCheckResult.isSafe) {
+        setUrlError("URL safety check failed. This URL may be unsafe.");
+        setCheckingSlug(false);
+        console.log("❌ [Check] URL validation failed - Not safe");
         return;
       }
 
       // ALL URL validations passed - clear any previous errors
       setUrlError(null);
-      console.log("✅ [Check] All URL validations passed");
+      console.log("✅ [Check] All URL validations passed - proceeding to Name check");
 
       // Step 2: Check Name - ALL Name validations
       console.log("🔵 [Check] Step 2: Checking Name (all validations)...");
@@ -549,17 +559,24 @@ const Step1FastTrack = ({
         formData.linkId || null
       );
 
+      console.log("🔵 [Check] Name validation result:", {
+        isAvailable: nameCheck.isAvailable,
+        error: nameCheck.error
+      });
+
       // Check all name validations before proceeding
-      if (!nameCheck.isAvailable) {
+      if (!nameCheck.isAvailable || nameCheck.error) {
         setNameError(nameCheck.error || "Name is not available");
         setIsNameAvailable(false);
         setCheckingSlug(false);
+        console.log("❌ [Check] Name validation failed:", nameCheck.error || "Name is not available");
         return;
       }
 
       // Name is valid - clear any previous errors and mark as available
       setIsNameAvailable(true);
       setNameError(null);
+      console.log("✅ [Check] All Name validations passed - proceeding to SLUG check");
 
       // Step 3: Check SLUG - ALL SLUG validations
       console.log("🔵 [Check] Step 3: Checking SLUG (all validations)...");
@@ -575,11 +592,17 @@ const Step1FastTrack = ({
         formData.linkId || null // exclude current link ID if in edit mode
       );
 
-      // Check all slug validations
-      if (!validationResult.isValid) {
+      console.log("🔵 [Check] SLUG validation result:", {
+        isValid: validationResult.isValid,
+        error: validationResult.error
+      });
+
+      // Check all slug validations before proceeding
+      if (!validationResult.isValid || validationResult.error) {
         setSlugError(validationResult.error || "Invalid slug");
         setIsSlugAvailable(false);
         setCheckingSlug(false);
+        console.log("❌ [Check] SLUG validation failed:", validationResult.error || "Invalid slug");
         return;
       }
 
@@ -595,7 +618,7 @@ const Step1FastTrack = ({
       setSlugError(null);
       setIsSlugAvailable(true);
       
-      console.log("✅ [Check] All validations passed!");
+      console.log("✅ [Check] All validations passed! URL, Name, and SLUG are all valid.");
     } catch (error) {
       console.error("Error during validation:", error);
       setSlugError("Error during validation. Please try again.");
