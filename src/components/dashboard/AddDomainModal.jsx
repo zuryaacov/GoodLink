@@ -9,6 +9,8 @@ const AddDomainModal = ({ isOpen, onClose, domain = null }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [dnsRecords, setDnsRecords] = useState(null);
   const [isVerifying, setIsVerifying] = useState(false);
+  const [savedDomainId, setSavedDomainId] = useState(domain?.id || null);
+  const [saveError, setSaveError] = useState(null);
 
   const steps = [
     { number: 1, title: 'Domain', subtitle: 'Enter your domain' },
@@ -50,49 +52,51 @@ const AddDomainModal = ({ isOpen, onClose, domain = null }) => {
       // Generate DNS records
       const records = generateDNSRecords(domainName.trim());
       setDnsRecords(records);
-      setCurrentStep(2);
+      
+      // Save domain to database if it's a new domain
+      if (!savedDomainId) {
+        setIsSubmitting(true);
+        setSaveError(null);
+        try {
+          const { data: { user } } = await supabase.auth.getUser();
+          if (!user) throw new Error('User not authenticated');
+
+          const domainData = {
+            user_id: user.id,
+            domain: domainName.trim(),
+            status: 'pending',
+            dns_records: records,
+          };
+
+          const { data, error } = await supabase
+            .from('custom_domains')
+            .insert(domainData)
+            .select()
+            .single();
+
+          if (error) throw error;
+          
+          setSavedDomainId(data.id);
+          setCurrentStep(2);
+        } catch (error) {
+          console.error('Error saving domain:', error);
+          setSaveError(error.message || 'Error saving domain. Please try again.');
+        } finally {
+          setIsSubmitting(false);
+        }
+      } else {
+        // Domain already saved, just move to next step
+        setCurrentStep(2);
+      }
     } else if (currentStep === 2) {
       setCurrentStep(3);
     }
   };
 
   const handleSubmit = async () => {
-    setIsSubmitting(true);
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('User not authenticated');
-
-      const domainData = {
-        user_id: user.id,
-        domain: domainName.trim(),
-        status: 'pending',
-        dns_records: dnsRecords,
-      };
-
-      if (domain?.id) {
-        // Update existing domain
-        const { error } = await supabase
-          .from('custom_domains')
-          .update(domainData)
-          .eq('id', domain.id);
-
-        if (error) throw error;
-      } else {
-        // Create new domain
-        const { error } = await supabase
-          .from('custom_domains')
-          .insert(domainData);
-
-        if (error) throw error;
-      }
-
-      onClose();
-    } catch (error) {
-      console.error('Error saving domain:', error);
-      // Error handling would go here
-    } finally {
-      setIsSubmitting(false);
-    }
+    // This function is no longer needed as we save in handleNext
+    // But keeping it for backward compatibility
+    onClose();
   };
 
   const handleVerify = async () => {
@@ -102,14 +106,15 @@ const AddDomainModal = ({ isOpen, onClose, domain = null }) => {
       // For now, just simulate
       await new Promise(resolve => setTimeout(resolve, 2000));
       
-      if (domain?.id) {
+      const domainId = savedDomainId || domain?.id;
+      if (domainId) {
         const { error } = await supabase
           .from('custom_domains')
           .update({ 
             status: 'active',
             verified_at: new Date().toISOString(),
           })
-          .eq('id', domain.id);
+          .eq('id', domainId);
 
         if (error) throw error;
       }
@@ -126,6 +131,8 @@ const AddDomainModal = ({ isOpen, onClose, domain = null }) => {
     setCurrentStep(1);
     setDomainName(domain?.domain || '');
     setDnsRecords(null);
+    setSavedDomainId(domain?.id || null);
+    setSaveError(null);
     onClose();
   };
 
@@ -222,6 +229,11 @@ const AddDomainModal = ({ isOpen, onClose, domain = null }) => {
                     <p className="text-xs text-slate-500 mt-2">
                       Enter your domain (e.g., links.mybrand.com)
                     </p>
+                    {saveError && (
+                      <p className="text-red-400 text-xs mt-2">
+                        {saveError}
+                      </p>
+                    )}
                   </div>
                 </motion.div>
               )}
@@ -294,20 +306,19 @@ const AddDomainModal = ({ isOpen, onClose, domain = null }) => {
             {currentStep < steps.length ? (
               <button
                 onClick={handleNext}
-                disabled={!domainName.trim()}
+                disabled={!domainName.trim() || isSubmitting}
                 className="px-4 sm:px-6 py-2 sm:py-2.5 text-xs sm:text-sm bg-[#FF10F0] hover:bg-[#e00ed0] disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold rounded-lg sm:rounded-xl transition-colors flex-shrink-0"
               >
-                Next
+                {isSubmitting ? (
+                  <>
+                    <span className="material-symbols-outlined animate-spin text-sm sm:text-base mr-2">refresh</span>
+                    Saving...
+                  </>
+                ) : (
+                  'Next'
+                )}
               </button>
-            ) : (
-              <button
-                onClick={handleSubmit}
-                disabled={isSubmitting}
-                className="px-4 sm:px-6 py-2 sm:py-2.5 text-xs sm:text-sm bg-[#FF10F0] hover:bg-[#e00ed0] disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold rounded-lg sm:rounded-xl transition-colors flex-shrink-0"
-              >
-                {isSubmitting ? 'Saving...' : 'Save Domain'}
-              </button>
-            )}
+            ) : null}
           </div>
         </motion.div>
       </div>
