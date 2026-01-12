@@ -18,27 +18,61 @@ export function validateUrl(urlString) {
   // 1. Trim - Remove whitespace from start and end
   const trimmed = urlString.trim();
   
-  if (!trimmed) {
+  // בדיקה 1: ה-URL לא ריק
+  if (!trimmed || trimmed === '') {
     return {
       isValid: false,
       error: 'URL cannot be empty',
     };
   }
 
-  // 2. Lowercase - Domains are case-insensitive
+  // בדיקה 2: אין רווחים
+  if (/\s/.test(trimmed)) {
+    return {
+      isValid: false,
+      error: 'URL cannot contain spaces',
+    };
+  }
+
+  // בדיקה 3: תווים לא חוקיים
+  const invalidChars = /[<>"\{\}\|\\^`]/;
+  if (invalidChars.test(trimmed)) {
+    return {
+      isValid: false,
+      error: 'URL contains invalid characters',
+    };
+  }
+
+  // 2. Lowercase - Domains are case-insensitive (but preserve original for protocol check)
   const lowercased = trimmed.toLowerCase();
 
   // 3. Check for basic structure
   let urlToValidate = lowercased;
   let hasProtocol = false;
+  let protocol = null;
 
-  // Check if has protocol
-  if (lowercased.startsWith('http://') || lowercased.startsWith('https://')) {
-    hasProtocol = true;
-    urlToValidate = lowercased;
-  } else {
-    // Add https:// for validation
+  // בדיקה 4: פרוטוקול
+  const protocolRegex = /^[a-zA-Z][a-zA-Z0-9+.-]*:\/\//;
+  if (!protocolRegex.test(trimmed)) {
+    // No protocol - add https:// for validation
     urlToValidate = `https://${lowercased}`;
+    hasProtocol = false;
+  } else {
+    hasProtocol = true;
+    urlToValidate = trimmed; // Keep original case for protocol check
+    
+    // בדיקת פרוטוקול תקני
+    const validProtocols = ['http', 'https', 'ftp', 'ftps', 'ws', 'wss'];
+    protocol = trimmed.split('://')[0].toLowerCase();
+    if (!validProtocols.includes(protocol)) {
+      return {
+        isValid: false,
+        error: `Invalid protocol: ${protocol}. Only http, https, ftp, ftps, ws, and wss are allowed.`,
+      };
+    }
+    
+    // Use lowercase version for further validation
+    urlToValidate = lowercased;
   }
 
   // 4. Try to parse as URL (basic syntax check)
@@ -55,10 +89,29 @@ export function validateUrl(urlString) {
   // 5. Extract hostname (domain)
   const hostname = urlObj.hostname;
 
+  // בדיקה 6: יש דומיין
   if (!hostname || hostname.length === 0) {
     return {
       isValid: false,
       error: 'URL must contain a domain',
+    };
+  }
+
+  // בדיקה 7: דומיין תקני - בדיקה בסיסית עם regex
+  const domainRegex = /^(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)*[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?$/;
+  const ipv4Regex = /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
+  const ipv6Regex = /^\[(?:[0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}\]$|^\[(?:[0-9a-fA-F]{1,4}:)*:(?:[0-9a-fA-F]{1,4}:)*[0-9a-fA-F]{1,4}\]$/;
+  
+  // Allow localhost, IPv4, IPv6, or valid domain format
+  const isValidDomainFormat = domainRegex.test(hostname) || 
+                               ipv4Regex.test(hostname) || 
+                               ipv6Regex.test(hostname) || 
+                               hostname === 'localhost';
+  
+  if (!isValidDomainFormat) {
+    return {
+      isValid: false,
+      error: 'Invalid domain format',
     };
   }
 
@@ -81,6 +134,86 @@ export function validateUrl(urlString) {
     }
   }
 
+  // 7.5. Check minimum domain structure - must have at least domain + TLD (2 parts minimum)
+  if (domainParts.length < 2) {
+    return {
+      isValid: false,
+      error: 'Invalid domain format. Domain must include a top-level domain (TLD). Example: domain.com',
+    };
+  }
+
+  // 7.6. Check TLD validity - TLD must be at least 2 characters and contain only letters
+  const tld = domainParts[domainParts.length - 1];
+  if (!tld || tld.length < 2) {
+    return {
+      isValid: false,
+      error: 'Invalid domain format. Top-level domain (TLD) must be at least 2 characters. Example: domain.com',
+    };
+  }
+  
+  // TLD should contain only letters (no numbers, no special chars)
+  if (!/^[a-z]{2,}$/i.test(tld)) {
+    return {
+      isValid: false,
+      error: 'Invalid domain format. Top-level domain (TLD) must contain only letters.',
+    };
+  }
+
+  // 7.6.5. Check if TLD is a valid known TLD (common TLDs list)
+  // This catches cases like "www.google" where "google" is not a valid TLD
+  const validCommonTLDs = [
+    // Generic TLDs
+    'com', 'net', 'org', 'edu', 'gov', 'mil', 'int',
+    // Country code TLDs (common ones)
+    'uk', 'us', 'ca', 'au', 'de', 'fr', 'it', 'es', 'nl', 'be', 'ch', 'at', 'se', 'no', 'dk', 'fi', 'pl', 'cz', 'ie', 'pt', 'gr',
+    'il', 'ae', 'sa', 'eg', 'za', 'ng', 'ke', 'ma', 'tn', 'dz',
+    'jp', 'cn', 'kr', 'in', 'id', 'th', 'vn', 'ph', 'my', 'sg', 'hk', 'tw', 'nz',
+    'br', 'mx', 'ar', 'cl', 'co', 'pe', 've', 'ec', 'uy', 'py', 'bo', 'cr', 'pa', 'do', 'gt', 'hn', 'ni', 'sv',
+    'ru', 'ua', 'by', 'kz', 'ge', 'am', 'az',
+    // New gTLDs (common ones)
+    'io', 'ai', 'app', 'dev', 'tech', 'online', 'site', 'website', 'store', 'shop', 'blog', 'info', 'biz', 'xyz',
+  ];
+  
+  // If TLD is not in the common list and domain has only 2 parts, it's likely invalid
+  // (e.g., "www.google" where "google" is not a TLD)
+  if (domainParts.length === 2 && !validCommonTLDs.includes(tld.toLowerCase())) {
+    return {
+      isValid: false,
+      error: `Invalid domain format. "${tld}" is not a recognized top-level domain (TLD). Please verify the URL is correct.`,
+    };
+  }
+
+  // 7.7. Check for suspicious double TLD patterns (like .com.co, .net.co, etc.)
+  // Block common suspicious patterns unless they're known legitimate country codes
+  if (domainParts.length >= 3) {
+    const secondLastPart = domainParts[domainParts.length - 2];
+    const lastPart = domainParts[domainParts.length - 1];
+    
+    // Common legitimate double TLDs (country codes with generic TLDs)
+    const legitimateDoubleTLDs = [
+      'com.au', 'com.br', 'com.mx', 'com.ar', 'com.pe', 'com.ve',
+      'net.au', 'net.br', 'net.mx',
+      'org.au', 'org.br', 'org.mx',
+      'co.uk', 'co.za', 'co.nz', 'co.jp', 'co.kr',
+      'com.sg', 'com.hk', 'com.tw', 'com.cn',
+    ];
+    
+    const doubleTLD = `${secondLastPart}.${lastPart}`;
+    
+    // Common generic TLDs that shouldn't appear before country codes
+    const commonGenericTLDs = ['com', 'net', 'org', 'edu', 'gov', 'mil'];
+    
+    // If it's a generic TLD followed by a 2-letter code, check if it's legitimate
+    if (commonGenericTLDs.includes(secondLastPart) && lastPart.length === 2) {
+      if (!legitimateDoubleTLDs.includes(doubleTLD)) {
+        return {
+          isValid: false,
+          error: `Invalid domain format. "${doubleTLD}" is not a recognized domain extension. Please verify the URL is correct.`,
+        };
+      }
+    }
+  }
+
   // 8. Use validator library to check if hostname is a valid FQDN (Fully Qualified Domain Name)
   // This catches cases like "www.saasaipartners" (missing TLD)
   if (!isFQDN(hostname, {
@@ -95,16 +228,7 @@ export function validateUrl(urlString) {
     };
   }
 
-  // 12. Check protocol (must be http or https)
-  if (hasProtocol) {
-    const protocol = urlObj.protocol;
-    if (protocol !== 'http:' && protocol !== 'https:') {
-      return {
-        isValid: false,
-        error: 'URL must use http:// or https:// protocol',
-      };
-    }
-  }
+  // Protocol check already done above (lines 54-76) - no need to check again
 
   // 13. Check for valid port (if specified)
   if (urlObj.port) {
