@@ -157,7 +157,7 @@ const LinkManager = () => {
 
               {/* Short URL */}
               <div className="flex items-center gap-2 min-w-0 p-3 bg-[#0b0f19] rounded-lg border border-[#232f48]">
-                <span className="font-mono text-sm truncate flex-1 min-w-0" style={{ color: "#10b981" }} title={link.short_url}>
+                <span className="font-mono text-base font-bold truncate flex-1 min-w-0" style={{ color: "#10b981" }} title={link.short_url}>
                   {link.short_url}
                 </span>
                 <button
