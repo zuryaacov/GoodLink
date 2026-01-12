@@ -5,6 +5,7 @@ import AuthPage from "./pages/AuthPage";
 import DashboardLayout from "./layouts/DashboardLayout";
 import DashboardOverview from "./pages/dashboard/DashboardOverview";
 import LinkManager from "./pages/dashboard/LinkManager";
+import PixelManager from "./pages/dashboard/PixelManager";
 import { supabase } from "./lib/supabase";
 
 const ProtectedRoute = ({ children }) => {
@@ -90,12 +91,7 @@ function App() {
         <Route index element={<DashboardOverview />} />
         {/* Placeholders for future phases */}
         <Route path="links" element={<LinkManager />} />
-        <Route
-          path="pixels"
-          element={
-            <div className="text-white">Pixels Manager (Coming Soon)</div>
-          }
-        />
+        <Route path="pixels" element={<PixelManager />} />
         <Route
           path="domains"
           element={
