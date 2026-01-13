@@ -226,17 +226,26 @@ const CTASection = () => {
                     }
 
                     console.log('User is logged in, fetching profile...');
+                    console.log('User ID:', user.id);
 
                     try {
                       // Fetch fresh profile data to ensure we have the latest subscription info
+                      console.log('Starting profile fetch...');
                       const { data: profile, error } = await supabase
                         .from('profiles')
                         .select('plan_type, subscription_status, lemon_squeezy_customer_portal_url')
                         .eq('user_id', user.id)
                         .single();
 
+                      console.log('Profile fetch completed');
                       console.log('Profile fetched:', profile);
                       console.log('Profile error:', error);
+                      
+                      if (error) {
+                        console.error('Profile fetch error:', error);
+                        console.error('Error details:', JSON.stringify(error, null, 2));
+                      }
+                      
                       console.log('Plan type:', profile?.plan_type);
                       console.log('Customer portal URL:', profile?.lemon_squeezy_customer_portal_url);
 
