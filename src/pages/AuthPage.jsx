@@ -67,7 +67,11 @@ const AuthPage = () => {
   useEffect(() => {
     if (!planParam || !supabase) return;
 
+    let hasRun = false;
     const checkExistingUser = async () => {
+      if (hasRun) return;
+      hasRun = true;
+
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
         // User is already logged in, open checkout immediately
