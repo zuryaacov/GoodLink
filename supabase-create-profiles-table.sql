@@ -11,6 +11,7 @@ CREATE TABLE IF NOT EXISTS profiles (
   lemon_squeezy_subscription_id TEXT,
   lemon_squeezy_customer_id TEXT,
   lemon_squeezy_order_id TEXT,
+  lemon_squeezy_customer_portal_url TEXT,
   subscription_created_at TIMESTAMPTZ,
   subscription_updated_at TIMESTAMPTZ,
   subscription_cancelled_at TIMESTAMPTZ,
@@ -27,6 +28,10 @@ CREATE INDEX IF NOT EXISTS idx_profiles_lemon_squeezy_subscription_id ON profile
 -- Enable Row Level Security (RLS)
 ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
 
+-- Drop existing policies if they exist (to allow re-running this script)
+DROP POLICY IF EXISTS "Users can view their own profile" ON profiles;
+DROP POLICY IF EXISTS "Users can update their own profile" ON profiles;
+
 -- Create a policy that allows users to read their own profile
 CREATE POLICY "Users can view their own profile"
   ON profiles FOR SELECT
@@ -42,8 +47,8 @@ CREATE POLICY "Users can update their own profile"
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER AS $$
 BEGIN
-  INSERT INTO public.profiles (id, user_id, email)
-  VALUES (NEW.id, NEW.id, NEW.email);
+  INSERT INTO public.profiles (id, user_id, email, plan_type)
+  VALUES (NEW.id, NEW.id, NEW.email, 'free');
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;

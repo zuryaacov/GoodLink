@@ -130,6 +130,12 @@ async function updateUserSubscription(supabaseUrl, supabaseKey, userId, subscrip
     // Set subscription_created_at only on creation
     if (eventName === 'subscription_created') {
       updateData.subscription_created_at = attributes.created_at || new Date().toISOString();
+      
+      // Save customer portal URL from subscription_created event
+      // Lemon Squeezy sends this in attributes.urls.customer_portal
+      if (attributes.urls?.customer_portal) {
+        updateData.lemon_squeezy_customer_portal_url = attributes.urls.customer_portal;
+      }
     }
 
     // Set subscription_cancelled_at if cancelled
