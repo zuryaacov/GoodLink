@@ -229,32 +229,55 @@ const CTASection = () => {
                     console.log('User ID:', user.id);
                     console.log('UserProfile from state:', userProfile);
 
-                    // Use cached profile from state - don't fetch again
-                    const profile = userProfile;
+                    // Fetch profile if not in state
+                    let profile = userProfile;
+                    if (!profile) {
+                      console.log('Profile not in state, fetching now...');
+                      try {
+                        const { data: fetchedProfile, error: fetchError } = await supabase
+                          .from('profiles')
+                          .select('plan_type, subscription_status, lemon_squeezy_customer_portal_url')
+                          .eq('user_id', user.id)
+                          .single();
+                        
+                        console.log('Fetch result - data:', fetchedProfile);
+                        console.log('Fetch result - error:', fetchError);
+                        
+                        if (!fetchError && fetchedProfile) {
+                          profile = fetchedProfile;
+                          console.log('Profile fetched successfully:', profile);
+                        } else {
+                          console.log('Failed to fetch profile:', fetchError);
+                        }
+                      } catch (err) {
+                        console.error('Error fetching profile:', err);
+                      }
+                    }
                       
+                    console.log('Final profile:', profile);
                     console.log('Plan type:', profile?.plan_type);
                     console.log('Customer portal URL:', profile?.lemon_squeezy_customer_portal_url);
 
-                      // Check if user has a paid subscription (not FREE) and customer portal URL
-                      if (profile && profile.plan_type !== 'free' && profile.lemon_squeezy_customer_portal_url) {
-                        const portalUrl = String(profile.lemon_squeezy_customer_portal_url).trim();
-                        console.log('Portal URL after trim:', portalUrl);
-                        if (portalUrl && portalUrl.length > 0) {
-                          console.log('Would redirect to customer portal');
-                          // Show alert with URL - NO REDIRECT for debugging
-                          alert(`Would redirect to Customer Portal:\n${portalUrl}\n\n(Redirect disabled for debugging)`);
-                          return;
-                        } else {
-                          console.log('Portal URL is empty after trim');
-                        }
+                    // Check if user has a paid subscription (not FREE) and customer portal URL
+                    if (profile && profile.plan_type !== 'free' && profile.lemon_squeezy_customer_portal_url) {
+                      const portalUrl = String(profile.lemon_squeezy_customer_portal_url).trim();
+                      console.log('Portal URL after trim:', portalUrl);
+                      if (portalUrl && portalUrl.length > 0) {
+                        console.log('Would redirect to customer portal');
+                        // Show alert with URL - NO REDIRECT for debugging
+                        alert(`Would redirect to Customer Portal:\n${portalUrl}\n\n(Redirect disabled for debugging)`);
+                        return;
                       } else {
-                        console.log('Conditions not met:', {
-                          hasProfile: !!profile,
-                          planType: profile?.plan_type,
-                          hasPortalUrl: !!profile?.lemon_squeezy_customer_portal_url,
-                          planTypeIsNotFree: profile?.plan_type !== 'free'
-                        });
+                        console.log('Portal URL is empty after trim');
                       }
+                    } else {
+                      console.log('Conditions not met:', {
+                        hasProfile: !!profile,
+                        planType: profile?.plan_type,
+                        hasPortalUrl: !!profile?.lemon_squeezy_customer_portal_url,
+                        planTypeIsNotFree: profile?.plan_type !== 'free'
+                      });
+                    }
 
                     // Otherwise, open Lemon Squeezy checkout directly
                     console.log('Would redirect to checkout');
