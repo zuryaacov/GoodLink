@@ -210,13 +210,22 @@ const CTASection = () => {
 
                 {/* CTA Button */}
                 <button
-                  onClick={async () => {
+                  onClick={async (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    console.log('Button clicked!');
+                    console.log('User:', user);
+                    
                     if (!user) {
+                      console.log('User not logged in, redirecting to login');
                       // If user is not logged in, redirect to login with plan parameter
                       const planName = plan.name.toLowerCase();
                       navigate(`/login?plan=${planName}`);
                       return;
                     }
+
+                    console.log('User is logged in, fetching profile...');
 
                     try {
                       // Fetch fresh profile data to ensure we have the latest subscription info
@@ -236,6 +245,7 @@ const CTASection = () => {
                         const portalUrl = String(profile.lemon_squeezy_customer_portal_url).trim();
                         console.log('Portal URL after trim:', portalUrl);
                         if (portalUrl && portalUrl.length > 0) {
+                          console.log('Showing alert and redirecting to customer portal');
                           // Show alert with URL before redirecting
                           alert(`Redirecting to Customer Portal:\n${portalUrl}`);
                           // Redirect to customer portal
@@ -254,8 +264,10 @@ const CTASection = () => {
                       }
 
                       // Otherwise, open Lemon Squeezy checkout directly
+                      console.log('Redirecting to checkout');
                       const separator = plan.checkoutUrl.includes('?') ? '&' : '?';
                       const checkoutUrl = `${plan.checkoutUrl}${separator}checkout[custom][user_id]=${user.id}`;
+                      console.log('Checkout URL:', checkoutUrl);
                       window.location.href = checkoutUrl;
                     } catch (err) {
                       console.error('Error in button click:', err);
