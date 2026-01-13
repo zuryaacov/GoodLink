@@ -225,45 +225,33 @@ const CTASection = () => {
                       return;
                     }
 
-                    console.log('User is logged in, fetching profile...');
+                    console.log('User is logged in, checking profile...');
                     console.log('User ID:', user.id);
+                    console.log('UserProfile from state:', userProfile);
 
-                    try {
-                      // Fetch fresh profile data with timeout
-                      console.log('Starting profile fetch...');
-                      
-                      const fetchWithTimeout = async (ms) => {
-                        return Promise.race([
-                          supabase
-                            .from('profiles')
-                            .select('plan_type, subscription_status, lemon_squeezy_customer_portal_url')
-                            .eq('user_id', user.id)
-                            .limit(1),
-                          new Promise((_, reject) => 
-                            setTimeout(() => reject(new Error('Fetch timeout')), ms)
-                          )
-                        ]);
-                      };
-
-                      let profile = null;
-                      let error = null;
-                      
+                    // Use cached profile from state if available, otherwise fetch
+                    let profile = userProfile;
+                    
+                    if (!profile) {
+                      console.log('Profile not in state, fetching...');
                       try {
-                        const profileResponse = await fetchWithTimeout(3000); // 3 second timeout
-                        console.log('Profile fetch completed');
-                        profile = profileResponse.data && profileResponse.data.length > 0 ? profileResponse.data[0] : null;
-                        error = profileResponse.error;
-                      } catch (timeoutError) {
-                        console.warn('Profile fetch timeout, continuing without profile:', timeoutError);
-                        // Continue without profile - will redirect to checkout
+                        const { data: profileData, error: profileError } = await supabase
+                          .from('profiles')
+                          .select('plan_type, subscription_status, lemon_squeezy_customer_portal_url')
+                          .eq('user_id', user.id)
+                          .limit(1)
+                          .single();
+                        
+                        if (!profileError && profileData) {
+                          profile = profileData;
+                          console.log('Profile fetched:', profile);
+                        } else {
+                          console.log('Profile fetch error or no profile:', profileError);
+                        }
+                      } catch (fetchError) {
+                        console.error('Error fetching profile:', fetchError);
                       }
-                      
-                      console.log('Profile fetched:', profile);
-                      console.log('Profile error:', error);
-                      
-                      if (error) {
-                        console.error('Profile fetch error:', error);
-                      }
+                    }
                       
                       console.log('Plan type:', profile?.plan_type);
                       console.log('Customer portal URL:', profile?.lemon_squeezy_customer_portal_url);
