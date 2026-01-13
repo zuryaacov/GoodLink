@@ -241,12 +241,21 @@ const CTASection = () => {
                         }
 
                         // Otherwise, open Lemon Squeezy checkout directly
+                        if (!user?.id) {
+                          console.error('User ID is missing');
+                          return;
+                        }
                         const separator = plan.checkoutUrl.includes('?') ? '&' : '?';
                         const checkoutUrl = `${plan.checkoutUrl}${separator}checkout[custom][user_id]=${user.id}`;
                         console.log('Opening checkout:', checkoutUrl);
-                        if (window.LemonSqueezy) {
-                          window.LemonSqueezy.Url.Open(checkoutUrl);
-                        } else {
+                        try {
+                          if (window.LemonSqueezy && window.LemonSqueezy.Url) {
+                            window.LemonSqueezy.Url.Open(checkoutUrl);
+                          } else {
+                            window.location.href = checkoutUrl;
+                          }
+                        } catch (urlError) {
+                          console.error('Error opening checkout URL:', urlError);
                           window.location.href = checkoutUrl;
                         }
                       } else {
