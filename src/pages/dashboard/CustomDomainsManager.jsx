@@ -26,7 +26,10 @@ const CustomDomainsManager = () => {
   const fetchDomains = async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      if (!user) {
+        setLoading(false);
+        return;
+      }
 
       const { data, error } = await supabase
         .from('custom_domains')
