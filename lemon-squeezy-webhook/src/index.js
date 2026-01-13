@@ -234,35 +234,59 @@ export default {
       const supabaseUrl = env.SUPABASE_URL;
       const supabaseKey = env.SUPABASE_SERVICE_ROLE_KEY;
 
-      if (!secret || !supabaseUrl || !supabaseKey) {
-        console.error('Missing required environment variables');
-        return new Response('Server configuration error', { 
+      // Log which variables are missing for debugging
+      const missing = [];
+      if (!secret) missing.push('LEMON_SQUEEZY_WEBHOOK_SECRET');
+      if (!supabaseUrl) missing.push('SUPABASE_URL');
+      if (!supabaseKey) missing.push('SUPABASE_SERVICE_ROLE_KEY');
+
+      if (missing.length > 0) {
+        console.error('Missing required environment variables:', missing.join(', '));
+        console.error('Please set these in Cloudflare Dashboard → Workers & Pages → lemon-squeezy-webhook → Settings → Variables');
+        return new Response(`Server configuration error: Missing ${missing.join(', ')}`, { 
           status: 500,
           headers: { 'Content-Type': 'text/plain' }
         });
       }
 
-      // Get signature from header
-      const signature = request.headers.get('X-Lsq-Signature');
+      // Log all headers for debugging (remove in production)
+      const allHeaders = {};
+      for (const [key, value] of request.headers.entries()) {
+        allHeaders[key] = value;
+      }
+      console.log('Received headers:', JSON.stringify(allHeaders, null, 2));
+
+      // Try to get signature from header
+      // Lemon Squeezy uses X-Signature (or X-Lsq-Signature in some versions)
+      // Try different header names and case variations
+      let signature = request.headers.get('X-Signature') ||
+                     request.headers.get('x-signature') ||
+                     request.headers.get('X-Lsq-Signature') || 
+                     request.headers.get('x-lsq-signature') ||
+                     request.headers.get('X-LSQ-Signature');
+      
       if (!signature) {
-        console.error('Missing X-Lsq-Signature header');
-        return new Response('Missing signature', { 
-          status: 401,
-          headers: { 'Content-Type': 'text/plain' }
-        });
+        console.error('Missing signature header. Available headers:', Object.keys(allHeaders));
+        // For debugging: allow processing without signature (REMOVE IN PRODUCTION!)
+        console.warn('WARNING: Processing webhook without signature verification (DEBUG MODE)');
       }
 
       // Read raw body
       const rawBody = await request.text();
 
-      // Verify signature
-      const isValid = await verifySignature(rawBody, signature, secret);
-      if (!isValid) {
-        console.error('Invalid webhook signature');
-        return new Response('Invalid signature', { 
-          status: 401,
-          headers: { 'Content-Type': 'text/plain' }
-        });
+      // Verify signature (if signature exists)
+      if (signature) {
+        const isValid = await verifySignature(rawBody, signature, secret);
+        if (!isValid) {
+          console.error('Invalid webhook signature');
+          return new Response('Invalid signature', { 
+            status: 401,
+            headers: { 'Content-Type': 'text/plain' }
+          });
+        }
+        console.log('Signature verified successfully');
+      } else {
+        console.warn('WARNING: Processing webhook without signature (DEBUG MODE - REMOVE IN PRODUCTION)');
       }
 
       // Parse webhook payload

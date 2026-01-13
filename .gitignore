@@ -16,6 +16,10 @@ dist-ssr
 .wrangler/
 *.wrangler/
 
+# Environment variables (local development)
+.dev.vars
+lemon-squeezy-webhook/.dev.vars
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

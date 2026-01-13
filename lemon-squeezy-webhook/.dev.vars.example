@@ -1,0 +1,7 @@
+# Copy this file to .dev.vars and fill in your values for local development
+# This file is for local development only and should NOT be committed to git
+# Add .dev.vars to .gitignore
+
+LEMON_SQUEEZY_WEBHOOK_SECRET=your_webhook_secret_here
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_SERVICE_ROLE_KEY=your_service_role_key_here
