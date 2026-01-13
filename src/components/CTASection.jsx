@@ -256,19 +256,12 @@ const CTASection = () => {
                         });
                       }
 
-                      // Otherwise, open Lemon Squeezy checkout directly
-                      console.log('Would redirect to checkout');
-                      const separator = plan.checkoutUrl.includes('?') ? '&' : '?';
-                      const checkoutUrl = `${plan.checkoutUrl}${separator}checkout[custom][user_id]=${user.id}`;
-                      console.log('Checkout URL:', checkoutUrl);
-                      alert(`Would redirect to checkout:\n${checkoutUrl}\n\n(Redirect disabled for debugging)`);
-                    } catch (err) {
-                      console.error('Error in button click:', err);
-                      // Fallback to checkout if there's an error - NO REDIRECT for debugging
-                      const separator = plan.checkoutUrl.includes('?') ? '&' : '?';
-                      const checkoutUrl = `${plan.checkoutUrl}${separator}checkout[custom][user_id]=${user.id}`;
-                      alert(`Error occurred. Would redirect to:\n${checkoutUrl}\n\n(Redirect disabled for debugging)`);
-                    }
+                    // Otherwise, open Lemon Squeezy checkout directly
+                    console.log('Would redirect to checkout');
+                    const separator = plan.checkoutUrl.includes('?') ? '&' : '?';
+                    const checkoutUrl = `${plan.checkoutUrl}${separator}checkout[custom][user_id]=${user.id}`;
+                    console.log('Checkout URL:', checkoutUrl);
+                    alert(`Would redirect to checkout:\n${checkoutUrl}\n\n(Redirect disabled for debugging)`);
                   }}
                   className={`mt-auto w-full py-4 px-6 rounded-lg font-bold text-base transition-all text-center inline-block active:scale-95 ${
                     plan.highlighted
