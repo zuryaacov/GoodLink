@@ -229,32 +229,11 @@ const CTASection = () => {
                     console.log('User ID:', user.id);
                     console.log('UserProfile from state:', userProfile);
 
-                    // Use cached profile from state if available, otherwise fetch
-                    let profile = userProfile;
-                    
-                    if (!profile) {
-                      console.log('Profile not in state, fetching...');
-                      try {
-                        const { data: profileData, error: profileError } = await supabase
-                          .from('profiles')
-                          .select('plan_type, subscription_status, lemon_squeezy_customer_portal_url')
-                          .eq('user_id', user.id)
-                          .limit(1)
-                          .single();
-                        
-                        if (!profileError && profileData) {
-                          profile = profileData;
-                          console.log('Profile fetched:', profile);
-                        } else {
-                          console.log('Profile fetch error or no profile:', profileError);
-                        }
-                      } catch (fetchError) {
-                        console.error('Error fetching profile:', fetchError);
-                      }
-                    }
+                    // Use cached profile from state - don't fetch again
+                    const profile = userProfile;
                       
-                      console.log('Plan type:', profile?.plan_type);
-                      console.log('Customer portal URL:', profile?.lemon_squeezy_customer_portal_url);
+                    console.log('Plan type:', profile?.plan_type);
+                    console.log('Customer portal URL:', profile?.lemon_squeezy_customer_portal_url);
 
                       // Check if user has a paid subscription (not FREE) and customer portal URL
                       if (profile && profile.plan_type !== 'free' && profile.lemon_squeezy_customer_portal_url) {
