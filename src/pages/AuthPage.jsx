@@ -22,34 +22,40 @@ const AuthPage = () => {
     pro: 'https://goodlink.lemonsqueezy.com/checkout/buy/924daf77-b7b3-405d-a94a-2ad2cc476da4?embed=1'
   };
 
-  // Function to open Lemon Squeezy checkout
+  // Function to open Lemon Squeezy checkout or customer portal
   const openCheckout = async (planName) => {
     const checkoutUrl = planCheckoutUrls[planName.toLowerCase()];
     if (!checkoutUrl) return;
 
     // Get user ID
     const { data: { user } } = await supabase.auth.getUser();
-    const finalUrl = user 
-      ? `${checkoutUrl}&checkout[custom][user_id]=${user.id}`
-      : checkoutUrl;
+    if (!user) return;
 
-    // Wait a bit for Lemon Squeezy script to load if needed
-    setTimeout(() => {
-      if (window.LemonSqueezy && window.LemonSqueezy.Url) {
-        window.LemonSqueezy.Url.Open(finalUrl);
-      } else if (window.createLemonSqueezy) {
-        window.createLemonSqueezy();
-        setTimeout(() => {
-          if (window.LemonSqueezy && window.LemonSqueezy.Url) {
-            window.LemonSqueezy.Url.Open(finalUrl);
-          } else {
-            window.location.href = finalUrl;
-          }
-        }, 500);
-      } else {
-        window.location.href = finalUrl;
+    // Check if user has a paid subscription and customer portal URL
+    try {
+      const { data: profile, error } = await supabase
+        .from('profiles')
+        .select('plan_type, subscription_status, lemon_squeezy_customer_portal_url')
+        .eq('user_id', user.id)
+        .single();
+
+      // If user has a paid subscription (not FREE) and customer portal URL, redirect to customer portal
+      if (profile && profile.plan_type !== 'free' && profile.lemon_squeezy_customer_portal_url) {
+        const portalUrl = String(profile.lemon_squeezy_customer_portal_url).trim();
+        if (portalUrl && portalUrl.length > 0) {
+          // Redirect to customer portal
+          window.location.href = portalUrl;
+          return;
+        }
       }
-    }, 100);
+    } catch (error) {
+      console.error('Error checking profile:', error);
+      // Continue to checkout if error
+    }
+
+    // Otherwise, open Lemon Squeezy checkout
+    const finalUrl = `${checkoutUrl}&checkout[custom][user_id]=${user.id}`;
+    window.location.href = finalUrl;
   };
 
   // Check if user is already logged in when component mounts with plan param
