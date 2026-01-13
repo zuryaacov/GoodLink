@@ -229,26 +229,40 @@ const CTASection = () => {
                     console.log('User ID:', user.id);
 
                     try {
-                      // Fetch fresh profile data to ensure we have the latest subscription info
+                      // Fetch fresh profile data with timeout
                       console.log('Starting profile fetch...');
-                      const profileResponse = await supabase
-                        .from('profiles')
-                        .select('plan_type, subscription_status, lemon_squeezy_customer_portal_url')
-                        .eq('user_id', user.id)
-                        .limit(1);
-
-                      console.log('Profile fetch completed');
-                      console.log('Profile response:', profileResponse);
                       
-                      const profile = profileResponse.data && profileResponse.data.length > 0 ? profileResponse.data[0] : null;
-                      const error = profileResponse.error;
+                      const fetchWithTimeout = async (ms) => {
+                        return Promise.race([
+                          supabase
+                            .from('profiles')
+                            .select('plan_type, subscription_status, lemon_squeezy_customer_portal_url')
+                            .eq('user_id', user.id)
+                            .limit(1),
+                          new Promise((_, reject) => 
+                            setTimeout(() => reject(new Error('Fetch timeout')), ms)
+                          )
+                        ]);
+                      };
+
+                      let profile = null;
+                      let error = null;
+                      
+                      try {
+                        const profileResponse = await fetchWithTimeout(3000); // 3 second timeout
+                        console.log('Profile fetch completed');
+                        profile = profileResponse.data && profileResponse.data.length > 0 ? profileResponse.data[0] : null;
+                        error = profileResponse.error;
+                      } catch (timeoutError) {
+                        console.warn('Profile fetch timeout, continuing without profile:', timeoutError);
+                        // Continue without profile - will redirect to checkout
+                      }
                       
                       console.log('Profile fetched:', profile);
                       console.log('Profile error:', error);
                       
                       if (error) {
                         console.error('Profile fetch error:', error);
-                        console.error('Error details:', JSON.stringify(error, null, 2));
                       }
                       
                       console.log('Plan type:', profile?.plan_type);
