@@ -211,69 +211,43 @@ const CTASection = () => {
                 {/* CTA Button */}
                 <button
                   onClick={async () => {
+                    if (!user) {
+                      // If user is not logged in, redirect to login with plan parameter
+                      const planName = plan.name.toLowerCase();
+                      navigate(`/login?plan=${planName}`);
+                      return;
+                    }
+
                     try {
-                      if (user) {
-                        // Fetch fresh profile data to ensure we have the latest subscription info
-                        const { data: profile, error } = await supabase
-                          .from('profiles')
-                          .select('plan_type, subscription_status, lemon_squeezy_customer_portal_url')
-                          .eq('user_id', user.id)
-                          .single();
+                      // Fetch fresh profile data to ensure we have the latest subscription info
+                      const { data: profile, error } = await supabase
+                        .from('profiles')
+                        .select('plan_type, subscription_status, lemon_squeezy_customer_portal_url')
+                        .eq('user_id', user.id)
+                        .single();
 
-                        console.log('Profile data:', profile);
-                        console.log('Profile error:', error);
-
-                        // Check if user has a paid subscription (not FREE) and customer portal URL
-                        if (profile && profile.plan_type !== 'free' && profile.lemon_squeezy_customer_portal_url) {
-                          const portalUrl = profile.lemon_squeezy_customer_portal_url;
-                          console.log('Redirecting to customer portal:', portalUrl);
-                          
-                          // Validate URL before redirecting
-                          try {
-                            new URL(portalUrl);
-                            // Redirect to customer portal
-                            window.location.href = portalUrl;
-                            return;
-                          } catch (urlError) {
-                            console.error('Invalid customer portal URL:', portalUrl, urlError);
-                            // Continue to checkout if URL is invalid
-                          }
-                        }
-
-                        // Otherwise, open Lemon Squeezy checkout directly
-                        if (!user?.id) {
-                          console.error('User ID is missing');
+                      // Check if user has a paid subscription (not FREE) and customer portal URL
+                      if (profile && profile.plan_type !== 'free' && profile.lemon_squeezy_customer_portal_url) {
+                        const portalUrl = String(profile.lemon_squeezy_customer_portal_url).trim();
+                        if (portalUrl && portalUrl.length > 0) {
+                          // Show alert with URL before redirecting
+                          alert(`Redirecting to Customer Portal:\n${portalUrl}`);
+                          // Redirect to customer portal
+                          window.location.href = portalUrl;
                           return;
                         }
-                        const separator = plan.checkoutUrl.includes('?') ? '&' : '?';
-                        const checkoutUrl = `${plan.checkoutUrl}${separator}checkout[custom][user_id]=${user.id}`;
-                        console.log('Opening checkout:', checkoutUrl);
-                        try {
-                          if (window.LemonSqueezy && window.LemonSqueezy.Url) {
-                            window.LemonSqueezy.Url.Open(checkoutUrl);
-                          } else {
-                            window.location.href = checkoutUrl;
-                          }
-                        } catch (urlError) {
-                          console.error('Error opening checkout URL:', urlError);
-                          window.location.href = checkoutUrl;
-                        }
-                      } else {
-                        // If user is not logged in, redirect to login with plan parameter
-                        const planName = plan.name.toLowerCase();
-                        navigate(`/login?plan=${planName}`);
                       }
+
+                      // Otherwise, open Lemon Squeezy checkout directly
+                      const separator = plan.checkoutUrl.includes('?') ? '&' : '?';
+                      const checkoutUrl = `${plan.checkoutUrl}${separator}checkout[custom][user_id]=${user.id}`;
+                      window.location.href = checkoutUrl;
                     } catch (err) {
                       console.error('Error in button click:', err);
                       // Fallback to checkout if there's an error
-                      if (user) {
-                        const checkoutUrl = `${plan.checkoutUrl}&checkout[custom][user_id]=${user.id}`;
-                        if (window.LemonSqueezy) {
-                          window.LemonSqueezy.Url.Open(checkoutUrl);
-                        } else {
-                          window.location.href = checkoutUrl;
-                        }
-                      }
+                      const separator = plan.checkoutUrl.includes('?') ? '&' : '?';
+                      const checkoutUrl = `${plan.checkoutUrl}${separator}checkout[custom][user_id]=${user.id}`;
+                      window.location.href = checkoutUrl;
                     }
                   }}
                   className={`lemonsqueezy-button mt-auto w-full py-4 px-6 rounded-lg font-bold text-base transition-all text-center inline-block active:scale-95 ${
