@@ -211,32 +211,50 @@ const CTASection = () => {
                 {/* CTA Button */}
                 <button
                   onClick={async () => {
-                    if (user) {
-                      // Fetch fresh profile data to ensure we have the latest subscription info
-                      const { data: profile, error } = await supabase
-                        .from('profiles')
-                        .select('plan_type, subscription_status, lemon_squeezy_customer_portal_url')
-                        .eq('user_id', user.id)
-                        .single();
+                    try {
+                      if (user) {
+                        // Fetch fresh profile data to ensure we have the latest subscription info
+                        const { data: profile, error } = await supabase
+                          .from('profiles')
+                          .select('plan_type, subscription_status, lemon_squeezy_customer_portal_url')
+                          .eq('user_id', user.id)
+                          .single();
 
-                      // Check if user has a paid subscription (not FREE) and customer portal URL
-                      if (profile && profile.plan_type !== 'free' && profile.lemon_squeezy_customer_portal_url) {
-                        // Redirect to customer portal
-                        window.location.href = profile.lemon_squeezy_customer_portal_url;
-                        return;
-                      }
+                        console.log('Profile data:', profile);
+                        console.log('Profile error:', error);
 
-                      // Otherwise, open Lemon Squeezy checkout directly
-                      const checkoutUrl = `${plan.checkoutUrl}&checkout[custom][user_id]=${user.id}`;
-                      if (window.LemonSqueezy) {
-                        window.LemonSqueezy.Url.Open(checkoutUrl);
+                        // Check if user has a paid subscription (not FREE) and customer portal URL
+                        if (profile && profile.plan_type !== 'free' && profile.lemon_squeezy_customer_portal_url) {
+                          console.log('Redirecting to customer portal:', profile.lemon_squeezy_customer_portal_url);
+                          // Redirect to customer portal
+                          window.location.href = profile.lemon_squeezy_customer_portal_url;
+                          return;
+                        }
+
+                        // Otherwise, open Lemon Squeezy checkout directly
+                        const checkoutUrl = `${plan.checkoutUrl}&checkout[custom][user_id]=${user.id}`;
+                        console.log('Opening checkout:', checkoutUrl);
+                        if (window.LemonSqueezy) {
+                          window.LemonSqueezy.Url.Open(checkoutUrl);
+                        } else {
+                          window.location.href = checkoutUrl;
+                        }
                       } else {
-                        window.location.href = checkoutUrl;
+                        // If user is not logged in, redirect to login with plan parameter
+                        const planName = plan.name.toLowerCase();
+                        navigate(`/login?plan=${planName}`);
                       }
-                    } else {
-                      // If user is not logged in, redirect to login with plan parameter
-                      const planName = plan.name.toLowerCase();
-                      navigate(`/login?plan=${planName}`);
+                    } catch (err) {
+                      console.error('Error in button click:', err);
+                      // Fallback to checkout if there's an error
+                      if (user) {
+                        const checkoutUrl = `${plan.checkoutUrl}&checkout[custom][user_id]=${user.id}`;
+                        if (window.LemonSqueezy) {
+                          window.LemonSqueezy.Url.Open(checkoutUrl);
+                        } else {
+                          window.location.href = checkoutUrl;
+                        }
+                      }
                     }
                   }}
                   className={`lemonsqueezy-button mt-auto w-full py-4 px-6 rounded-lg font-bold text-base transition-all text-center inline-block active:scale-95 ${
