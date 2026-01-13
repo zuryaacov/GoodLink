@@ -235,7 +235,7 @@ const CTASection = () => {
                         .from('profiles')
                         .select('plan_type, subscription_status, lemon_squeezy_customer_portal_url')
                         .eq('user_id', user.id)
-                        .single();
+                        .maybeSingle();
 
                       console.log('Profile fetch completed');
                       console.log('Profile fetched:', profile);
