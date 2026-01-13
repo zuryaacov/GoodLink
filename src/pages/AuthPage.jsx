@@ -31,6 +31,8 @@ const AuthPage = () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
+    console.log('[AuthPage] openCheckout called, checking profile for user:', user.id);
+
     // Check if user has a paid subscription and customer portal URL
     try {
       const { data: profile, error } = await supabase
@@ -39,21 +41,33 @@ const AuthPage = () => {
         .eq('user_id', user.id)
         .single();
 
+      console.log('[AuthPage] Profile fetched:', profile);
+      console.log('[AuthPage] Profile error:', error);
+
       // If user has a paid subscription (not FREE) and customer portal URL, redirect to customer portal
       if (profile && profile.plan_type !== 'free' && profile.lemon_squeezy_customer_portal_url) {
         const portalUrl = String(profile.lemon_squeezy_customer_portal_url).trim();
+        console.log('[AuthPage] Found customer portal URL:', portalUrl);
         if (portalUrl && portalUrl.length > 0) {
+          console.log('[AuthPage] Redirecting to customer portal');
           // Redirect to customer portal
           window.location.href = portalUrl;
           return;
         }
+      } else {
+        console.log('[AuthPage] Conditions not met for portal redirect:', {
+          hasProfile: !!profile,
+          planType: profile?.plan_type,
+          hasPortalUrl: !!profile?.lemon_squeezy_customer_portal_url
+        });
       }
     } catch (error) {
-      console.error('Error checking profile:', error);
+      console.error('[AuthPage] Error checking profile:', error);
       // Continue to checkout if error
     }
 
     // Otherwise, open Lemon Squeezy checkout
+    console.log('[AuthPage] Opening checkout');
     const finalUrl = `${checkoutUrl}&checkout[custom][user_id]=${user.id}`;
     window.location.href = finalUrl;
   };
