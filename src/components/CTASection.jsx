@@ -225,14 +225,24 @@ const CTASection = () => {
 
                         // Check if user has a paid subscription (not FREE) and customer portal URL
                         if (profile && profile.plan_type !== 'free' && profile.lemon_squeezy_customer_portal_url) {
-                          console.log('Redirecting to customer portal:', profile.lemon_squeezy_customer_portal_url);
-                          // Redirect to customer portal
-                          window.location.href = profile.lemon_squeezy_customer_portal_url;
-                          return;
+                          const portalUrl = profile.lemon_squeezy_customer_portal_url;
+                          console.log('Redirecting to customer portal:', portalUrl);
+                          
+                          // Validate URL before redirecting
+                          try {
+                            new URL(portalUrl);
+                            // Redirect to customer portal
+                            window.location.href = portalUrl;
+                            return;
+                          } catch (urlError) {
+                            console.error('Invalid customer portal URL:', portalUrl, urlError);
+                            // Continue to checkout if URL is invalid
+                          }
                         }
 
                         // Otherwise, open Lemon Squeezy checkout directly
-                        const checkoutUrl = `${plan.checkoutUrl}&checkout[custom][user_id]=${user.id}`;
+                        const separator = plan.checkoutUrl.includes('?') ? '&' : '?';
+                        const checkoutUrl = `${plan.checkoutUrl}${separator}checkout[custom][user_id]=${user.id}`;
                         console.log('Opening checkout:', checkoutUrl);
                         if (window.LemonSqueezy) {
                           window.LemonSqueezy.Url.Open(checkoutUrl);
