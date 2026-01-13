@@ -6,6 +6,7 @@ import { supabase } from '../lib/supabase';
 
 const CTASection = () => {
   const [user, setUser] = useState(null);
+  const [userProfile, setUserProfile] = useState(null);
   const navigate = useNavigate();
 
   // פונקציה לאתחול Lemon Squeezy ברגע שהקומפוננטה עולה
@@ -14,15 +15,49 @@ const CTASection = () => {
       window.createLemonSqueezy();
     }
 
-    // Get current user if logged in
+    // Get current user and profile if logged in
     if (supabase) {
-      supabase.auth.getUser().then(({ data: { user } }) => {
+      const fetchUserAndProfile = async () => {
+        const { data: { user } } = await supabase.auth.getUser();
         setUser(user);
-      });
+
+        if (user) {
+          // Get user profile to check subscription status
+          const { data: profile, error } = await supabase
+            .from('profiles')
+            .select('plan_type, subscription_status, lemon_squeezy_customer_portal_url')
+            .eq('user_id', user.id)
+            .single();
+
+          if (!error && profile) {
+            setUserProfile(profile);
+          }
+        } else {
+          setUserProfile(null);
+        }
+      };
+
+      fetchUserAndProfile();
 
       // Listen for auth changes
-      const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-        setUser(session?.user ?? null);
+      const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+        const currentUser = session?.user ?? null;
+        setUser(currentUser);
+
+        if (currentUser) {
+          // Get user profile
+          const { data: profile, error } = await supabase
+            .from('profiles')
+            .select('plan_type, subscription_status, lemon_squeezy_customer_portal_url')
+            .eq('user_id', currentUser.id)
+            .single();
+
+          if (!error && profile) {
+            setUserProfile(profile);
+          }
+        } else {
+          setUserProfile(null);
+        }
       });
 
       return () => subscription.unsubscribe();
@@ -175,9 +210,20 @@ const CTASection = () => {
 
                 {/* CTA Button */}
                 <button
-                  onClick={() => {
+                  onClick={async () => {
                     if (user) {
-                      // If user is logged in, open Lemon Squeezy checkout directly
+                      // Check if user already has an active subscription (not FREE)
+                      const hasActiveSubscription = userProfile && 
+                        userProfile.plan_type !== 'free' && 
+                        userProfile.subscription_status === 'active';
+
+                      // If user has active subscription and customer portal URL, redirect to customer portal
+                      if (hasActiveSubscription && userProfile.lemon_squeezy_customer_portal_url) {
+                        window.location.href = userProfile.lemon_squeezy_customer_portal_url;
+                        return;
+                      }
+
+                      // Otherwise, open Lemon Squeezy checkout directly
                       const checkoutUrl = `${plan.checkoutUrl}&checkout[custom][user_id]=${user.id}`;
                       if (window.LemonSqueezy) {
                         window.LemonSqueezy.Url.Open(checkoutUrl);
