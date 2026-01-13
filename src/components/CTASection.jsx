@@ -211,52 +211,52 @@ const CTASection = () => {
                 {/* CTA Button */}
                 <button
                   onClick={async (e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    
-                    console.log('Button clicked!');
-                    console.log('User:', user);
-                    
-                    if (!user) {
-                      console.log('User not logged in, redirecting to login');
-                      // If user is not logged in, redirect to login with plan parameter
-                      const planName = plan.name.toLowerCase();
-                      navigate(`/login?plan=${planName}`);
-                      return;
-                    }
-
-                    // Fetch profile if not in state
-                    let profile = userProfile;
-                    if (!profile) {
-                      try {
-                        const { data: fetchedProfile, error: fetchError } = await supabase
-                          .from('profiles')
-                          .select('plan_type, subscription_status, lemon_squeezy_customer_portal_url')
-                          .eq('user_id', user.id)
-                          .single();
-                        
-                        if (!fetchError && fetchedProfile) {
-                          profile = fetchedProfile;
-                        }
-                      } catch (err) {
-                        console.error('Error fetching profile:', err);
-                      }
-                    }
-
-                    // Check if user has a paid subscription (not FREE) and customer portal URL
-                    if (profile && profile.plan_type !== 'free' && profile.lemon_squeezy_customer_portal_url) {
-                      const portalUrl = String(profile.lemon_squeezy_customer_portal_url).trim();
-                      if (portalUrl && portalUrl.length > 0) {
-                        // Open customer portal in new tab
-                        window.open(portalUrl, '_blank');
+                    try {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      
+                      if (!user) {
+                        // If user is not logged in, redirect to login with plan parameter
+                        const planName = plan.name.toLowerCase();
+                        navigate(`/login?plan=${planName}`);
                         return;
                       }
-                    }
 
-                    // Otherwise, open Lemon Squeezy checkout in new tab
-                    const separator = plan.checkoutUrl.includes('?') ? '&' : '?';
-                    const checkoutUrl = `${plan.checkoutUrl}${separator}checkout[custom][user_id]=${user.id}`;
-                    window.open(checkoutUrl, '_blank');
+                      // Fetch profile if not in state
+                      let profile = userProfile;
+                      if (!profile) {
+                        try {
+                          const { data: fetchedProfile, error: fetchError } = await supabase
+                            .from('profiles')
+                            .select('plan_type, subscription_status, lemon_squeezy_customer_portal_url')
+                            .eq('user_id', user.id)
+                            .single();
+                          
+                          if (!fetchError && fetchedProfile) {
+                            profile = fetchedProfile;
+                          }
+                        } catch (err) {
+                          console.error('Error fetching profile:', err);
+                        }
+                      }
+
+                      // Check if user has a paid subscription (not FREE) and customer portal URL
+                      if (profile && profile.plan_type !== 'free' && profile.lemon_squeezy_customer_portal_url) {
+                        const portalUrl = String(profile.lemon_squeezy_customer_portal_url).trim();
+                        if (portalUrl && portalUrl.length > 0) {
+                          // Open customer portal in new tab
+                          window.open(portalUrl, '_blank', 'noopener,noreferrer');
+                          return;
+                        }
+                      }
+
+                      // Otherwise, open Lemon Squeezy checkout in new tab
+                      const separator = plan.checkoutUrl.includes('?') ? '&' : '?';
+                      const checkoutUrl = `${plan.checkoutUrl}${separator}checkout[custom][user_id]=${user.id}`;
+                      window.open(checkoutUrl, '_blank', 'noopener,noreferrer');
+                    } catch (error) {
+                      console.error('Error in button click handler:', error);
+                    }
                   }}
                   className={`mt-auto w-full py-4 px-6 rounded-lg font-bold text-base transition-all text-center inline-block active:scale-95 ${
                     plan.highlighted
