@@ -212,14 +212,17 @@ const CTASection = () => {
                 <button
                   onClick={async () => {
                     if (user) {
-                      // Check if user already has an active subscription (not FREE)
-                      const hasActiveSubscription = userProfile && 
-                        userProfile.plan_type !== 'free' && 
-                        userProfile.subscription_status === 'active';
+                      // Fetch fresh profile data to ensure we have the latest subscription info
+                      const { data: profile, error } = await supabase
+                        .from('profiles')
+                        .select('plan_type, subscription_status, lemon_squeezy_customer_portal_url')
+                        .eq('user_id', user.id)
+                        .single();
 
-                      // If user has active subscription and customer portal URL, redirect to customer portal
-                      if (hasActiveSubscription && userProfile.lemon_squeezy_customer_portal_url) {
-                        window.location.href = userProfile.lemon_squeezy_customer_portal_url;
+                      // Check if user has a paid subscription (not FREE) and customer portal URL
+                      if (profile && profile.plan_type !== 'free' && profile.lemon_squeezy_customer_portal_url) {
+                        // Redirect to customer portal
+                        window.location.href = profile.lemon_squeezy_customer_portal_url;
                         return;
                       }
 
