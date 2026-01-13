@@ -240,11 +240,9 @@ const CTASection = () => {
                         const portalUrl = String(profile.lemon_squeezy_customer_portal_url).trim();
                         console.log('Portal URL after trim:', portalUrl);
                         if (portalUrl && portalUrl.length > 0) {
-                          console.log('Showing alert and redirecting to customer portal');
-                          // Show alert with URL before redirecting
-                          alert(`Redirecting to Customer Portal:\n${portalUrl}`);
-                          // Redirect to customer portal
-                          window.location.href = portalUrl;
+                          console.log('Would redirect to customer portal');
+                          // Show alert with URL - NO REDIRECT for debugging
+                          alert(`Would redirect to Customer Portal:\n${portalUrl}\n\n(Redirect disabled for debugging)`);
                           return;
                         } else {
                           console.log('Portal URL is empty after trim');
@@ -259,17 +257,17 @@ const CTASection = () => {
                       }
 
                       // Otherwise, open Lemon Squeezy checkout directly
-                      console.log('Redirecting to checkout');
+                      console.log('Would redirect to checkout');
                       const separator = plan.checkoutUrl.includes('?') ? '&' : '?';
                       const checkoutUrl = `${plan.checkoutUrl}${separator}checkout[custom][user_id]=${user.id}`;
                       console.log('Checkout URL:', checkoutUrl);
-                      window.location.href = checkoutUrl;
+                      alert(`Would redirect to checkout:\n${checkoutUrl}\n\n(Redirect disabled for debugging)`);
                     } catch (err) {
                       console.error('Error in button click:', err);
-                      // Fallback to checkout if there's an error
+                      // Fallback to checkout if there's an error - NO REDIRECT for debugging
                       const separator = plan.checkoutUrl.includes('?') ? '&' : '?';
                       const checkoutUrl = `${plan.checkoutUrl}${separator}checkout[custom][user_id]=${user.id}`;
-                      window.location.href = checkoutUrl;
+                      alert(`Error occurred. Would redirect to:\n${checkoutUrl}\n\n(Redirect disabled for debugging)`);
                     }
                   }}
                   className={`mt-auto w-full py-4 px-6 rounded-lg font-bold text-base transition-all text-center inline-block active:scale-95 ${
