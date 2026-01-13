@@ -247,16 +247,16 @@ const CTASection = () => {
                     if (profile && profile.plan_type !== 'free' && profile.lemon_squeezy_customer_portal_url) {
                       const portalUrl = String(profile.lemon_squeezy_customer_portal_url).trim();
                       if (portalUrl && portalUrl.length > 0) {
-                        // Redirect to customer portal
-                        window.location.href = portalUrl;
+                        // Open customer portal in new tab
+                        window.open(portalUrl, '_blank');
                         return;
                       }
                     }
 
-                    // Otherwise, open Lemon Squeezy checkout directly
+                    // Otherwise, open Lemon Squeezy checkout in new tab
                     const separator = plan.checkoutUrl.includes('?') ? '&' : '?';
                     const checkoutUrl = `${plan.checkoutUrl}${separator}checkout[custom][user_id]=${user.id}`;
-                    window.location.href = checkoutUrl;
+                    window.open(checkoutUrl, '_blank');
                   }}
                   className={`mt-auto w-full py-4 px-6 rounded-lg font-bold text-base transition-all text-center inline-block active:scale-95 ${
                     plan.highlighted

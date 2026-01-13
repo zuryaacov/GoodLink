@@ -44,32 +44,23 @@ const AuthPage = () => {
       console.log('[AuthPage] Profile fetched:', profile);
       console.log('[AuthPage] Profile error:', error);
 
-      // If user has a paid subscription (not FREE) and customer portal URL, redirect to customer portal
+      // If user has a paid subscription (not FREE) and customer portal URL, open customer portal in new tab
       if (profile && profile.plan_type !== 'free' && profile.lemon_squeezy_customer_portal_url) {
         const portalUrl = String(profile.lemon_squeezy_customer_portal_url).trim();
-        console.log('[AuthPage] Found customer portal URL:', portalUrl);
         if (portalUrl && portalUrl.length > 0) {
-          console.log('[AuthPage] Redirecting to customer portal');
-          // Redirect to customer portal
-          window.location.href = portalUrl;
+          // Open customer portal in new tab
+          window.open(portalUrl, '_blank');
           return;
         }
-      } else {
-        console.log('[AuthPage] Conditions not met for portal redirect:', {
-          hasProfile: !!profile,
-          planType: profile?.plan_type,
-          hasPortalUrl: !!profile?.lemon_squeezy_customer_portal_url
-        });
       }
     } catch (error) {
       console.error('[AuthPage] Error checking profile:', error);
       // Continue to checkout if error
     }
 
-    // Otherwise, open Lemon Squeezy checkout
-    console.log('[AuthPage] Opening checkout');
+    // Otherwise, open Lemon Squeezy checkout in new tab
     const finalUrl = `${checkoutUrl}&checkout[custom][user_id]=${user.id}`;
-    window.location.href = finalUrl;
+    window.open(finalUrl, '_blank');
   };
 
   // Check if user is already logged in when component mounts with plan param
