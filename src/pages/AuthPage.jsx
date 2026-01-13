@@ -1,10 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 
 const AuthPage = () => {
-  const [view, setView] = useState('login'); // 'login', 'signup', 'forgot-password'
+  const [searchParams] = useSearchParams();
+  const planParam = searchParams.get('plan');
+  const [view, setView] = useState(planParam ? 'signup' : 'login'); // Default to signup if plan is present
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -13,23 +15,100 @@ const AuthPage = () => {
   const [message, setMessage] = useState(null);
   const navigate = useNavigate();
 
+  // Plan checkout URLs mapping
+  const planCheckoutUrls = {
+    start: 'https://goodlink.lemonsqueezy.com/checkout/buy/54a3e3e3-3618-4922-bce6-a0617252f1ae?embed=1',
+    advanced: 'https://goodlink.lemonsqueezy.com/checkout/buy/81876116-924c-44f7-b61c-f4a8a93e83f1?embed=1',
+    pro: 'https://goodlink.lemonsqueezy.com/checkout/buy/924daf77-b7b3-405d-a94a-2ad2cc476da4?embed=1'
+  };
+
+  // Function to open Lemon Squeezy checkout
+  const openCheckout = async (planName) => {
+    const checkoutUrl = planCheckoutUrls[planName.toLowerCase()];
+    if (!checkoutUrl) return;
+
+    // Get user ID
+    const { data: { user } } = await supabase.auth.getUser();
+    const finalUrl = user 
+      ? `${checkoutUrl}&checkout[custom][user_id]=${user.id}`
+      : checkoutUrl;
+
+    // Wait a bit for Lemon Squeezy script to load if needed
+    setTimeout(() => {
+      if (window.LemonSqueezy && window.LemonSqueezy.Url) {
+        window.LemonSqueezy.Url.Open(finalUrl);
+      } else if (window.createLemonSqueezy) {
+        window.createLemonSqueezy();
+        setTimeout(() => {
+          if (window.LemonSqueezy && window.LemonSqueezy.Url) {
+            window.LemonSqueezy.Url.Open(finalUrl);
+          } else {
+            window.location.href = finalUrl;
+          }
+        }, 500);
+      } else {
+        window.location.href = finalUrl;
+      }
+    }, 100);
+  };
+
+  // Check if user is already logged in when component mounts with plan param
+  useEffect(() => {
+    if (!planParam || !supabase) return;
+
+    const checkExistingUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        // User is already logged in, open checkout immediately
+        await openCheckout(planParam);
+      }
+    };
+
+    checkExistingUser();
+  }, [planParam]);
+
   const handleGoogleLogin = async () => {
     try {
       setLoading(true);
       setError(null);
+      
+      // Save plan to sessionStorage for OAuth redirect
+      if (planParam) {
+        sessionStorage.setItem('pendingPlan', planParam);
+      }
+
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: window.location.origin
+          redirectTo: `${window.location.origin}/login${planParam ? `?plan=${planParam}` : ''}`
         }
       });
       if (error) throw error;
     } catch (err) {
       setError(err.message);
+      sessionStorage.removeItem('pendingPlan');
     } finally {
       setLoading(false);
     }
   };
+
+  // Check for pending plan after OAuth redirect
+  useEffect(() => {
+    const pendingPlan = sessionStorage.getItem('pendingPlan');
+    if (pendingPlan && supabase) {
+      const checkUser = async () => {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          await openCheckout(pendingPlan);
+          sessionStorage.removeItem('pendingPlan');
+          setTimeout(() => {
+            navigate('/dashboard');
+          }, 2000);
+        }
+      };
+      checkUser();
+    }
+  }, [navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -39,12 +118,21 @@ const AuthPage = () => {
 
     try {
       if (view === 'login') {
-        const { error } = await supabase.auth.signInWithPassword({
+        const { data, error } = await supabase.auth.signInWithPassword({
           email,
           password
         });
         if (error) throw error;
-        navigate('/dashboard');
+        
+        // If plan is present, open checkout
+        if (planParam && data?.user) {
+          await openCheckout(planParam);
+          setTimeout(() => {
+            navigate('/dashboard');
+          }, 2000);
+        } else {
+          navigate('/dashboard');
+        }
       } else if (view === 'signup') {
         if (password !== confirmPassword) {
           throw new Error("Passwords do not match");
@@ -55,9 +143,10 @@ const AuthPage = () => {
         });
         if (error) throw error;
         setMessage("Check your email for the confirmation link!");
+        // Note: For signup, checkout will open after email confirmation when user signs in
       } else if (view === 'forgot-password') {
         const { error } = await supabase.auth.resetPasswordForEmail(email, {
-          redirectTo: `${window.location.origin}/login`,
+          redirectTo: `${window.location.origin}/login${planParam ? `?plan=${planParam}` : ''}`,
         });
         if (error) throw error;
         setMessage("Password reset link sent to your email.");
@@ -73,8 +162,8 @@ const AuthPage = () => {
     <Link to="/" className="flex items-center gap-3 mb-8 transition-opacity hover:opacity-80">
       <div className="size-12 text-primary">
         <svg fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" stroke="#135bec" stroke-linecap="round" stroke-linejoin="round" stroke-width="4"></path>
-          <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" stroke="#10b981" stroke-linecap="round" stroke-linejoin="round" stroke-width="4"></path>
+          <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" stroke="#135bec" strokeLinecap="round" strokeLinejoin="round" strokeWidth="4"></path>
+          <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" stroke="#10b981" strokeLinecap="round" strokeLinejoin="round" strokeWidth="4"></path>
         </svg>
       </div>
       <h2 className="text-3xl font-bold leading-tight tracking-tight text-white">
@@ -94,6 +183,13 @@ const AuthPage = () => {
         <Logo />
 
         <div className="w-full bg-white/5 backdrop-blur-xl border border-white/10 p-8 rounded-3xl shadow-2xl relative">
+          {planParam && (
+            <div className="mb-4 p-3 bg-primary/10 border border-primary/20 rounded-lg text-center">
+              <p className="text-sm text-primary font-bold">
+                Complete your {planParam.toUpperCase()} plan purchase
+              </p>
+            </div>
+          )}
           <AnimatePresence mode="wait">
             {view === 'login' && (
               <motion.div
