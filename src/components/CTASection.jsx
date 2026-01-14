@@ -6,23 +6,51 @@ import { supabase } from '../lib/supabase';
 
 const CTASection = () => {
   const [user, setUser] = useState(null);
+  const [userProfile, setUserProfile] = useState(null);
   const navigate = useNavigate();
 
-  // פונקציה לאתחול Lemon Squeezy ברגע שהקומפוננטה עולה
+  // Get current user and profile if logged in
   useEffect(() => {
-    if (window.createLemonSqueezy) {
-      window.createLemonSqueezy();
-    }
-
-    // Get current user if logged in
     if (supabase) {
-      supabase.auth.getUser().then(({ data: { user } }) => {
+      const fetchUserAndProfile = async () => {
+        const { data: { user } } = await supabase.auth.getUser();
         setUser(user);
-      });
+
+        if (user) {
+          const { data: profile, error } = await supabase
+            .from('profiles')
+            .select('plan_type, lemon_squeezy_customer_portal_url')
+            .eq('user_id', user.id)
+            .single();
+
+          if (!error && profile) {
+            setUserProfile(profile);
+          }
+        } else {
+          setUserProfile(null);
+        }
+      };
+
+      fetchUserAndProfile();
 
       // Listen for auth changes
-      const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-        setUser(session?.user ?? null);
+      const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+        const currentUser = session?.user ?? null;
+        setUser(currentUser);
+
+        if (currentUser) {
+          const { data: profile, error } = await supabase
+            .from('profiles')
+            .select('plan_type, lemon_squeezy_customer_portal_url')
+            .eq('user_id', currentUser.id)
+            .single();
+
+          if (!error && profile) {
+            setUserProfile(profile);
+          }
+        } else {
+          setUserProfile(null);
+        }
       });
 
       return () => subscription.unsubscribe();
@@ -175,22 +203,44 @@ const CTASection = () => {
 
                 {/* CTA Button */}
                 <button
-                  onClick={() => {
-                    if (user) {
-                      // If user is logged in, open Lemon Squeezy checkout directly
-                      const checkoutUrl = `${plan.checkoutUrl}&checkout[custom][user_id]=${user.id}`;
-                      if (window.LemonSqueezy) {
-                        window.LemonSqueezy.Url.Open(checkoutUrl);
-                      } else {
-                        window.location.href = checkoutUrl;
-                      }
-                    } else {
+                  onClick={async () => {
+                    if (!user) {
                       // If user is not logged in, redirect to login with plan parameter
                       const planName = plan.name.toLowerCase();
                       navigate(`/login?plan=${planName}`);
+                      return;
                     }
+
+                    // Check if user has a paid subscription (not FREE) and customer portal URL
+                    let profile = userProfile;
+                    if (!profile) {
+                      try {
+                        const { data: fetchedProfile } = await supabase
+                          .from('profiles')
+                          .select('plan_type, lemon_squeezy_customer_portal_url')
+                          .eq('user_id', user.id)
+                          .single();
+                        if (fetchedProfile) profile = fetchedProfile;
+                      } catch (err) {
+                        console.error('Error fetching profile:', err);
+                      }
+                    }
+
+                    // If user has a paid plan and customer portal URL, open it in new window
+                    if (profile && profile.plan_type !== 'free' && profile.lemon_squeezy_customer_portal_url) {
+                      const portalUrl = String(profile.lemon_squeezy_customer_portal_url).trim();
+                      if (portalUrl) {
+                        window.open(portalUrl, '_blank', 'noopener,noreferrer');
+                        return;
+                      }
+                    }
+
+                    // Otherwise, open checkout in new window
+                    const separator = plan.checkoutUrl.includes('?') ? '&' : '?';
+                    const checkoutUrl = `${plan.checkoutUrl}${separator}checkout[custom][user_id]=${user.id}`;
+                    window.open(checkoutUrl, '_blank', 'noopener,noreferrer');
                   }}
-                  className={`lemonsqueezy-button mt-auto w-full py-4 px-6 rounded-lg font-bold text-base transition-all text-center inline-block active:scale-95 ${
+                  className={`mt-auto w-full py-4 px-6 rounded-lg font-bold text-base transition-all text-center inline-block active:scale-95 ${
                     plan.highlighted
                       ? 'bg-primary hover:bg-primary/90 text-white shadow-lg shadow-primary/30'
                       : 'bg-slate-100 dark:bg-[#232f48] hover:bg-slate-200 dark:hover:bg-[#324467] text-slate-900 dark:text-white'
