@@ -231,19 +231,26 @@ const CTASection = () => {
                 {/* CTA Button */}
                 <button
                   onClick={(e) => {
+                    console.log("1. Click started");
                     e.preventDefault();
                     e.stopPropagation();
+                    console.log("2. preventDefault done");
 
                     if (!user) {
+                      console.log("3. No user, navigating");
                       const planName = plan.name.toLowerCase();
                       navigate(`/login?plan=${planName}`);
                       return;
                     }
 
-                    // Create form dynamically to open in new tab
+                    console.log("4. User exists, starting async");
+
                     const handleAsync = async () => {
+                      console.log("5. Inside async function");
                       let profile = userProfile;
+
                       if (!profile) {
+                        console.log("6. Fetching profile from DB");
                         try {
                           const { data: fetchedProfile } = await supabase
                             .from("profiles")
@@ -252,10 +259,13 @@ const CTASection = () => {
                             )
                             .eq("user_id", user.id)
                             .single();
+                          console.log("7. Profile fetched:", fetchedProfile);
                           if (fetchedProfile) profile = fetchedProfile;
                         } catch (err) {
-                          console.error("Error fetching profile:", err);
+                          console.error("8. Error fetching profile:", err);
                         }
+                      } else {
+                        console.log("9. Using existing profile");
                       }
 
                       let targetUrl;
@@ -264,6 +274,7 @@ const CTASection = () => {
                         profile.plan_type !== "free" &&
                         profile.lemon_squeezy_customer_portal_url
                       ) {
+                        console.log("10. User has paid plan, using portal URL");
                         const portalUrl = String(
                           profile.lemon_squeezy_customer_portal_url
                         ).trim();
@@ -273,13 +284,15 @@ const CTASection = () => {
                       }
 
                       if (!targetUrl) {
+                        console.log("11. Using checkout URL");
                         const separator = plan.checkoutUrl.includes("?")
                           ? "&"
                           : "?";
                         targetUrl = `${plan.checkoutUrl}${separator}checkout[custom][user_id]=${user.id}`;
                       }
 
-                      // Use anchor tag method
+                      console.log("12. Opening URL:", targetUrl);
+
                       const a = document.createElement("a");
                       a.href = targetUrl;
                       a.target = "_blank";
@@ -287,9 +300,15 @@ const CTASection = () => {
                       document.body.appendChild(a);
                       a.click();
                       document.body.removeChild(a);
+
+                      console.log("13. URL opened, function complete");
                     };
 
-                    handleAsync();
+                    handleAsync().catch((err) => {
+                      console.error("14. Error in handleAsync:", err);
+                    });
+
+                    console.log("15. onClick handler complete");
                   }}
                   className={`mt-auto w-full py-4 px-6 rounded-lg font-bold text-base transition-all text-center inline-block active:scale-95 ${
                     plan.highlighted
