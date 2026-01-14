@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
-import { DonutChart, BarChart, Card, Title } from '@tremor/react';
+import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts';
 
 const StatCard = ({ title, value, change, icon, trend }) => (
   <div className="bg-[#101622] border border-[#232f48] rounded-2xl p-6 relative overflow-hidden group hover:border-[#324467] transition-colors">
@@ -18,6 +18,71 @@ const StatCard = ({ title, value, change, icon, trend }) => (
      <p className="text-3xl font-bold text-white tracking-tight">{value}</p>
   </div>
 );
+
+const DonutChartComponent = ({ data, title, colors }) => {
+  const COLORS = colors || ['#135bec', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
+  const total = data.reduce((sum, item) => sum + item.value, 0);
+  
+  const renderLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent, name }) => {
+    if (percent < 0.05) return null;
+    const RADIAN = Math.PI / 180;
+    const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
+    const x = cx + radius * Math.cos(-midAngle * RADIAN);
+    const y = cy + radius * Math.sin(-midAngle * RADIAN);
+
+    return (
+      <text 
+        x={x} 
+        y={y} 
+        fill="white" 
+        textAnchor={x > cx ? 'start' : 'end'} 
+        dominantBaseline="central"
+        className="text-xs font-medium"
+      >
+        {`${(percent * 100).toFixed(1)}%`}
+      </text>
+    );
+  };
+
+  return (
+    <div className="bg-[#101622] border border-[#232f48] rounded-2xl p-6">
+      <h3 className="text-lg font-bold text-white mb-4">{title}</h3>
+      <ResponsiveContainer width="100%" height={300}>
+        <PieChart>
+          <Pie
+            data={data}
+            cx="50%"
+            cy="50%"
+            labelLine={false}
+            label={renderLabel}
+            outerRadius={110}
+            innerRadius={60}
+            fill="#8884d8"
+            dataKey="value"
+          >
+            {data.map((entry, index) => (
+              <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+            ))}
+          </Pie>
+          <Tooltip 
+            contentStyle={{ 
+              backgroundColor: '#101622', 
+              border: '1px solid #232f48',
+              borderRadius: '8px',
+              color: '#fff'
+            }}
+            formatter={(value) => [`${value} (${((value / total) * 100).toFixed(1)}%)`, '']}
+          />
+          <Legend 
+            wrapperStyle={{ color: '#fff', paddingTop: '20px' }}
+            formatter={(value) => <span style={{ color: '#fff' }}>{value}</span>}
+            iconType="circle"
+          />
+        </PieChart>
+      </ResponsiveContainer>
+    </div>
+  );
+};
 
 const Analytics = () => {
   const [loading, setLoading] = useState(true);
@@ -112,8 +177,8 @@ const Analytics = () => {
     setChartData(prev => ({
       ...prev,
       humanVsBot: [
-        { name: 'Human', clicks: humanCount },
-        { name: 'Bot/Fraud', clicks: botCount },
+        { name: 'Human', value: humanCount },
+        { name: 'Bot/Fraud', value: botCount },
       ],
     }));
 
@@ -132,8 +197,8 @@ const Analytics = () => {
     setChartData(prev => ({
       ...prev,
       proxyVpn: [
-        { name: 'Proxy/VPN', clicks: proxyVpnCount },
-        { name: 'Direct', clicks: normalCount },
+        { name: 'Proxy/VPN', value: proxyVpnCount },
+        { name: 'Direct', value: normalCount },
       ],
     }));
 
@@ -155,8 +220,8 @@ const Analytics = () => {
     });
 
     const deviceOSArray = Array.from(deviceOSMap.entries())
-      .map(([name, clicks]) => ({ name, clicks }))
-      .sort((a, b) => b.clicks - a.clicks)
+      .map(([name, value]) => ({ name, value }))
+      .sort((a, b) => b.value - a.value)
       .slice(0, 10); // Top 10
 
     setChartData(prev => ({
@@ -175,8 +240,8 @@ const Analytics = () => {
     });
 
     const geoArray = Array.from(geoMap.entries())
-      .map(([name, clicks]) => ({ name, clicks }))
-      .sort((a, b) => b.clicks - a.clicks)
+      .map(([name, value]) => ({ name, value }))
+      .sort((a, b) => b.value - a.value)
       .slice(0, 15); // Top 15
 
     setChartData(prev => ({
@@ -227,54 +292,54 @@ const Analytics = () => {
       {/* Charts Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Human vs. Bot Ratio */}
-        <Card className="bg-[#101622] border-[#232f48]">
-          <Title className="text-white mb-4">Human vs. Bot Ratio</Title>
-          <DonutChart
-            data={chartData.humanVsBot}
-            category="clicks"
-            index="name"
-            colors={['blue', 'orange']}
-            className="h-72"
-          />
-        </Card>
+        <DonutChartComponent 
+          data={chartData.humanVsBot}
+          title="Human vs. Bot Ratio"
+          colors={['#135bec', '#f59e0b']}
+        />
 
         {/* Proxy/VPN Detection */}
-        <Card className="bg-[#101622] border-[#232f48]">
-          <Title className="text-white mb-4">Proxy/VPN Detection</Title>
-          <DonutChart
-            data={chartData.proxyVpn}
-            category="clicks"
-            index="name"
-            colors={['blue', 'emerald']}
-            className="h-72"
-          />
-        </Card>
+        <DonutChartComponent 
+          data={chartData.proxyVpn}
+          title="Proxy/VPN Detection"
+          colors={['#135bec', '#10b981']}
+        />
       </div>
 
       {/* Device & OS Chart */}
-      <Card className="bg-[#101622] border-[#232f48]">
-        <Title className="text-white mb-4">Device & OS Distribution</Title>
-        <DonutChart
-          data={chartData.deviceOS}
-          category="clicks"
-          index="name"
-          colors={['blue', 'emerald', 'amber', 'rose', 'violet', 'fuchsia', 'cyan', 'lime']}
-          className="h-72"
-        />
-      </Card>
+      <DonutChartComponent 
+        data={chartData.deviceOS}
+        title="Device & OS Distribution"
+        colors={['#135bec', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4', '#84cc16']}
+      />
 
       {/* Geographic Bar Chart */}
-      <Card className="bg-[#101622] border-[#232f48]">
-        <Title className="text-white mb-4">Geographic Distribution (Top 15)</Title>
-        <BarChart
-          data={chartData.geographic}
-          index="name"
-          categories={['clicks']}
-          colors={['blue']}
-          className="h-80"
-          showLegend={false}
-        />
-      </Card>
+      <div className="bg-[#101622] border border-[#232f48] rounded-2xl p-6">
+        <h3 className="text-lg font-bold text-white mb-4">Geographic Distribution (Top 15)</h3>
+        <ResponsiveContainer width="100%" height={400}>
+          <BarChart data={chartData.geographic}>
+            <CartesianGrid strokeDasharray="3 3" stroke="#232f48" />
+            <XAxis 
+              dataKey="name" 
+              stroke="#94a3b8"
+              angle={-45}
+              textAnchor="end"
+              height={100}
+              tick={{ fill: '#94a3b8', fontSize: 12 }}
+            />
+            <YAxis stroke="#94a3b8" tick={{ fill: '#94a3b8' }} />
+            <Tooltip 
+              contentStyle={{ 
+                backgroundColor: '#101622', 
+                border: '1px solid #232f48',
+                borderRadius: '8px',
+                color: '#fff'
+              }}
+            />
+            <Bar dataKey="value" fill="#135bec" radius={[8, 8, 0, 0]} />
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
     </div>
   );
 };
