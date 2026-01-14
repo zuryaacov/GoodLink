@@ -230,72 +230,60 @@ const CTASection = () => {
 
                 {/* CTA Button */}
                 <button
-                  onClick={async (e) => {
+                  onClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
 
                     if (!user) {
-                      // If user is not logged in, redirect to login with plan parameter
                       const planName = plan.name.toLowerCase();
                       navigate(`/login?plan=${planName}`);
                       return;
                     }
 
-                    // Open window immediately to avoid popup blockers
-                    const newWindow = window.open(
-                      "about:blank",
-                      "_blank",
-                      "noopener,noreferrer"
-                    );
-
-                    if (!newWindow) {
-                      alert("Please allow pop-ups for this site");
-                      return;
-                    }
-
-                    // Check if user has a paid subscription
-                    let profile = userProfile;
-                    if (!profile) {
-                      try {
-                        const { data: fetchedProfile } = await supabase
-                          .from("profiles")
-                          .select(
-                            "plan_type, lemon_squeezy_customer_portal_url"
-                          )
-                          .eq("user_id", user.id)
-                          .single();
-                        if (fetchedProfile) profile = fetchedProfile;
-                      } catch (err) {
-                        console.error("Error fetching profile:", err);
-                        newWindow.close();
-                        return;
+                    // Handle the async logic separately
+                    const handleAsync = async () => {
+                      let profile = userProfile;
+                      if (!profile) {
+                        try {
+                          const { data: fetchedProfile } = await supabase
+                            .from("profiles")
+                            .select(
+                              "plan_type, lemon_squeezy_customer_portal_url"
+                            )
+                            .eq("user_id", user.id)
+                            .single();
+                          if (fetchedProfile) profile = fetchedProfile;
+                        } catch (err) {
+                          console.error("Error fetching profile:", err);
+                        }
                       }
-                    }
 
-                    // Determine the correct URL
-                    let targetUrl;
-                    if (
-                      profile &&
-                      profile.plan_type !== "free" &&
-                      profile.lemon_squeezy_customer_portal_url
-                    ) {
-                      const portalUrl = String(
+                      let targetUrl;
+                      if (
+                        profile &&
+                        profile.plan_type !== "free" &&
                         profile.lemon_squeezy_customer_portal_url
-                      ).trim();
-                      if (portalUrl) {
-                        targetUrl = portalUrl;
+                      ) {
+                        const portalUrl = String(
+                          profile.lemon_squeezy_customer_portal_url
+                        ).trim();
+                        if (portalUrl) {
+                          targetUrl = portalUrl;
+                        }
                       }
-                    }
 
-                    if (!targetUrl) {
-                      const separator = plan.checkoutUrl.includes("?")
-                        ? "&"
-                        : "?";
-                      targetUrl = `${plan.checkoutUrl}${separator}checkout[custom][user_id]=${user.id}`;
-                    }
+                      if (!targetUrl) {
+                        const separator = plan.checkoutUrl.includes("?")
+                          ? "&"
+                          : "?";
+                        targetUrl = `${plan.checkoutUrl}${separator}checkout[custom][user_id]=${user.id}`;
+                      }
 
-                    // Update the window location
-                    newWindow.location.href = targetUrl;
+                      // Use location.href instead of window.open
+                      window.location.href = targetUrl;
+                    };
+
+                    handleAsync();
                   }}
                   className={`mt-auto w-full py-4 px-6 rounded-lg font-bold text-base transition-all text-center inline-block active:scale-95 ${
                     plan.highlighted
