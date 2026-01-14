@@ -268,7 +268,14 @@ const CTASection = () => {
                         profile.lemon_squeezy_customer_portal_url
                       ).trim();
                       if (portalUrl) {
-                        window.open(portalUrl, "_blank", "noopener,noreferrer");
+                        // Use setTimeout to release the call stack before opening new window
+                        setTimeout(() => {
+                          window.open(
+                            portalUrl,
+                            "_blank",
+                            "noopener,noreferrer"
+                          );
+                        }, 10);
                         return;
                       }
                     }
@@ -278,7 +285,10 @@ const CTASection = () => {
                       ? "&"
                       : "?";
                     const checkoutUrl = `${plan.checkoutUrl}${separator}checkout[custom][user_id]=${user.id}`;
-                    window.open(checkoutUrl, "_blank", "noopener,noreferrer");
+                    // Use setTimeout to release the call stack before opening new window
+                    setTimeout(() => {
+                      window.open(checkoutUrl, "_blank", "noopener,noreferrer");
+                    }, 10);
                   }}
                   className={`mt-auto w-full py-4 px-6 rounded-lg font-bold text-base transition-all text-center inline-block active:scale-95 ${
                     plan.highlighted
