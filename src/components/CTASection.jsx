@@ -13,27 +13,28 @@ const CTASection = () => {
   useEffect(() => {
     if (!supabase) return;
 
-    // Listen for auth changes - this will also fire on mount with current session
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log("Auth Change fired", event);
-      const currentUser = session?.user ?? null;
-      setUser(currentUser);
+    // Fetch user and profile ONCE on mount
+    const fetchUserAndProfile = async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      setUser(user);
 
-      if (currentUser) {
+      if (user) {
         const { data: profile } = await supabase
           .from("profiles")
           .select("plan_type, lemon_squeezy_customer_portal_url")
-          .eq("user_id", currentUser.id)
+          .eq("user_id", user.id)
           .single();
         setUserProfile(profile || null);
       } else {
         setUserProfile(null);
       }
-    });
+    };
 
-    return () => subscription.unsubscribe();
+    fetchUserAndProfile();
+
+    // NO onAuthStateChange at all - remove it completely for now
   }, []);
 
   const plans = [
@@ -203,42 +204,40 @@ const CTASection = () => {
                   ))}
                 </ul>
 
-                {/* CTA Button - Using <a> tag for native browser behavior */}
-                <a
-                  href={(() => {
-                    if (!user) return `/login?plan=${plan.name.toLowerCase()}`;
+                {/* CTA Button */}
+                <button
+                  onClick={(e) => {
+                    e.preventDefault();
 
+                    if (!user) {
+                      navigate(`/login?plan=${plan.name.toLowerCase()}`);
+                      return;
+                    }
+
+                    let targetUrl;
                     if (
                       userProfile?.plan_type !== "free" &&
                       userProfile?.lemon_squeezy_customer_portal_url
                     ) {
-                      return userProfile.lemon_squeezy_customer_portal_url;
+                      targetUrl = userProfile.lemon_squeezy_customer_portal_url;
+                    } else {
+                      const separator = plan.checkoutUrl.includes("?")
+                        ? "&"
+                        : "?";
+                      targetUrl = `${plan.checkoutUrl}${separator}checkout[custom][user_id]=${user.id}`;
                     }
 
-                    const separator = plan.checkoutUrl.includes("?")
-                      ? "&"
-                      : "?";
-                    return `${plan.checkoutUrl}${separator}checkout[custom][user_id]=${user.id}`;
-                  })()}
-                  target={user ? "_blank" : "_self"}
-                  rel="noopener noreferrer"
-                  onClick={(e) => {
-                    // אם המשתמש לא מחובר, ניתן ל-navigate של React Router לעבוד
-                    if (!user) {
-                      e.preventDefault();
-                      navigate(`/login?plan=${plan.name.toLowerCase()}`);
-                    }
-                    // אם הוא מחובר, ה-href הרגיל יפתח את הטאב בלי JS "תוקע"
-                    e.stopPropagation();
+                    window.open(targetUrl, "_blank", "noopener,noreferrer");
                   }}
-                  className={`mt-auto w-full py-4 px-6 rounded-lg font-bold text-base transition-all text-center inline-block ${
+                  type="button"
+                  className={`mt-auto w-full py-4 px-6 rounded-lg font-bold text-base transition-all text-center inline-block active:scale-95 ${
                     plan.highlighted
                       ? "bg-primary hover:bg-primary/90 text-white shadow-lg shadow-primary/30"
                       : "bg-slate-100 dark:bg-[#232f48] hover:bg-slate-200 dark:hover:bg-[#324467] text-slate-900 dark:text-white"
                   }`}
                 >
                   {plan.buttonText}
-                </a>
+                </button>
               </div>
             </motion.div>
           ))}
