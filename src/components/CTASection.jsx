@@ -9,13 +9,8 @@ const CTASection = () => {
   const [userProfile, setUserProfile] = useState(null);
   const navigate = useNavigate();
 
-  // פונקציה לאתחול Lemon Squeezy ברגע שהקומפוננטה עולה
+  // Get current user and profile if logged in
   useEffect(() => {
-    if (window.createLemonSqueezy) {
-      window.createLemonSqueezy();
-    }
-
-    // Get current user and profile if logged in
     if (supabase) {
       const fetchUserAndProfile = async () => {
         const { data: { user } } = await supabase.auth.getUser();
