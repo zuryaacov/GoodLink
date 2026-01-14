@@ -229,15 +229,7 @@ const CTASection = () => {
                 </ul>
 
                 {/* CTA Button */}
-                <span
-                  role="button"
-                  tabIndex={0}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" || e.key === " ") {
-                      e.preventDefault();
-                      e.currentTarget.click();
-                    }
-                  }}
+                <button
                   onClick={async (e) => {
                     e.preventDefault();
                     e.stopPropagation();
@@ -276,7 +268,14 @@ const CTASection = () => {
                         profile.lemon_squeezy_customer_portal_url
                       ).trim();
                       if (portalUrl) {
-                        window.open(portalUrl, "_blank", "noopener,noreferrer");
+                        // Create temporary link element
+                        const link = document.createElement("a");
+                        link.href = portalUrl;
+                        link.target = "_blank";
+                        link.rel = "noopener noreferrer";
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
                         return;
                       }
                     }
@@ -286,16 +285,23 @@ const CTASection = () => {
                       ? "&"
                       : "?";
                     const checkoutUrl = `${plan.checkoutUrl}${separator}checkout[custom][user_id]=${user.id}`;
-                    window.open(checkoutUrl, "_blank", "noopener,noreferrer");
+                    // Create temporary link element
+                    const link = document.createElement("a");
+                    link.href = checkoutUrl;
+                    link.target = "_blank";
+                    link.rel = "noopener noreferrer";
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
                   }}
-                  className={`mt-auto w-full py-4 px-6 rounded-lg font-bold text-base transition-all text-center inline-block active:scale-95 cursor-pointer select-none ${
+                  className={`mt-auto w-full py-4 px-6 rounded-lg font-bold text-base transition-all text-center inline-block active:scale-95 ${
                     plan.highlighted
                       ? "bg-primary hover:bg-primary/90 text-white shadow-lg shadow-primary/30"
                       : "bg-slate-100 dark:bg-[#232f48] hover:bg-slate-200 dark:hover:bg-[#324467] text-slate-900 dark:text-white"
                   }`}
                 >
                   {plan.buttonText}
-                </span>
+                </button>
               </div>
             </motion.div>
           ))}
