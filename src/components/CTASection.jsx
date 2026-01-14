@@ -11,54 +11,28 @@ const CTASection = () => {
 
   // Get current user and profile if logged in
   useEffect(() => {
-    if (supabase) {
-      const fetchUserAndProfile = async () => {
-        const {
-          data: { user },
-        } = await supabase.auth.getUser();
-        setUser(user);
+    if (!supabase) return;
 
-        if (user) {
-          const { data: profile, error } = await supabase
-            .from("profiles")
-            .select("plan_type, lemon_squeezy_customer_portal_url")
-            .eq("user_id", user.id)
-            .single();
+    // Listen for auth changes - this will also fire on mount with current session
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      const currentUser = session?.user ?? null;
+      setUser(currentUser);
 
-          if (!error && profile) {
-            setUserProfile(profile);
-          }
-        } else {
-          setUserProfile(null);
-        }
-      };
+      if (currentUser) {
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("plan_type, lemon_squeezy_customer_portal_url")
+          .eq("user_id", currentUser.id)
+          .single();
+        setUserProfile(profile || null);
+      } else {
+        setUserProfile(null);
+      }
+    });
 
-      fetchUserAndProfile();
-
-      // Listen for auth changes
-      const {
-        data: { subscription },
-      } = supabase.auth.onAuthStateChange(async (_event, session) => {
-        const currentUser = session?.user ?? null;
-        setUser(currentUser);
-
-        if (currentUser) {
-          const { data: profile, error } = await supabase
-            .from("profiles")
-            .select("plan_type, lemon_squeezy_customer_portal_url")
-            .eq("user_id", currentUser.id)
-            .single();
-
-          if (!error && profile) {
-            setUserProfile(profile);
-          }
-        } else {
-          setUserProfile(null);
-        }
-      });
-
-      return () => subscription.unsubscribe();
-    }
+    return () => subscription.unsubscribe();
   }, []);
 
   const plans = [
@@ -230,67 +204,41 @@ const CTASection = () => {
 
                 {/* CTA Button */}
                 <button
-                  onClick={async () => {
+                  onClick={(e) => {
+                    // 1. הגנה מיידית
+                    e.preventDefault();
+                    e.stopPropagation();
+
+                    // 2. בדיקת לוגין (בלי await - המשתמש כבר ב-state)
                     if (!user) {
-                      // If user is not logged in, redirect to login with plan parameter
                       const planName = plan.name.toLowerCase();
                       navigate(`/login?plan=${planName}`);
                       return;
                     }
 
-                    try {
-                      // Check if user has a paid subscription (not FREE) and customer portal URL
-                      let profile = userProfile;
-                      if (!profile) {
-                        try {
-                          const { data: fetchedProfile } = await supabase
-                            .from("profiles")
-                            .select(
-                              "plan_type, lemon_squeezy_customer_portal_url"
-                            )
-                            .eq("user_id", user.id)
-                            .single();
-                          if (fetchedProfile) profile = fetchedProfile;
-                        } catch (err) {
-                          console.error("Error fetching profile:", err);
-                        }
-                      }
+                    // 3. הכנת ה-URL בצורה סינכרונית מה-State הקיים
+                    let finalUrl = "";
 
-                      // If user has a paid plan and customer portal URL, open it in new window
-                      if (
-                        profile &&
-                        profile.plan_type !== "free" &&
-                        profile.lemon_squeezy_customer_portal_url
-                      ) {
-                        const portalUrl = String(
-                          profile.lemon_squeezy_customer_portal_url
-                        ).trim();
-                        if (portalUrl) {
-                          setTimeout(() => {
-                            window.open(
-                              portalUrl,
-                              "_blank",
-                              "noopener,noreferrer"
-                            );
-                          }, 0);
-                          return;
-                        }
-                      }
-
-                      // Otherwise, open checkout in new window
+                    if (
+                      userProfile &&
+                      userProfile.plan_type !== "free" &&
+                      userProfile.lemon_squeezy_customer_portal_url
+                    ) {
+                      finalUrl = String(
+                        userProfile.lemon_squeezy_customer_portal_url
+                      ).trim();
+                    } else {
                       const separator = plan.checkoutUrl.includes("?")
                         ? "&"
                         : "?";
-                      const checkoutUrl = `${plan.checkoutUrl}${separator}checkout[custom][user_id]=${user.id}`;
+                      finalUrl = `${plan.checkoutUrl}${separator}checkout[custom][user_id]=${user.id}`;
+                    }
+
+                    // 4. פתיחה נקייה ב-setTimeout כדי לשחרר את ה-Main Thread של האתר
+                    if (finalUrl) {
                       setTimeout(() => {
-                        window.open(
-                          checkoutUrl,
-                          "_blank",
-                          "noopener,noreferrer"
-                        );
+                        window.open(finalUrl, "_blank", "noopener,noreferrer");
                       }, 0);
-                    } catch (err) {
-                      console.error("Error in button click handler:", err);
                     }
                   }}
                   className={`mt-auto w-full py-4 px-6 rounded-lg font-bold text-base transition-all text-center inline-block active:scale-95 ${
