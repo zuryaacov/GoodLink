@@ -229,7 +229,15 @@ const CTASection = () => {
                 </ul>
 
                 {/* CTA Button */}
-                <button
+                <span
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      e.currentTarget.click();
+                    }
+                  }}
                   onClick={async (e) => {
                     e.preventDefault();
                     e.stopPropagation();
@@ -268,14 +276,7 @@ const CTASection = () => {
                         profile.lemon_squeezy_customer_portal_url
                       ).trim();
                       if (portalUrl) {
-                        // Use setTimeout to release the call stack before opening new window
-                        setTimeout(() => {
-                          window.open(
-                            portalUrl,
-                            "_blank",
-                            "noopener,noreferrer"
-                          );
-                        }, 10);
+                        window.open(portalUrl, "_blank", "noopener,noreferrer");
                         return;
                       }
                     }
@@ -285,19 +286,16 @@ const CTASection = () => {
                       ? "&"
                       : "?";
                     const checkoutUrl = `${plan.checkoutUrl}${separator}checkout[custom][user_id]=${user.id}`;
-                    // Use setTimeout to release the call stack before opening new window
-                    setTimeout(() => {
-                      window.open(checkoutUrl, "_blank", "noopener,noreferrer");
-                    }, 10);
+                    window.open(checkoutUrl, "_blank", "noopener,noreferrer");
                   }}
-                  className={`mt-auto w-full py-4 px-6 rounded-lg font-bold text-base transition-all text-center inline-block active:scale-95 ${
+                  className={`mt-auto w-full py-4 px-6 rounded-lg font-bold text-base transition-all text-center inline-block active:scale-95 cursor-pointer select-none ${
                     plan.highlighted
                       ? "bg-primary hover:bg-primary/90 text-white shadow-lg shadow-primary/30"
                       : "bg-slate-100 dark:bg-[#232f48] hover:bg-slate-200 dark:hover:bg-[#324467] text-slate-900 dark:text-white"
                   }`}
                 >
                   {plan.buttonText}
-                </button>
+                </span>
               </div>
             </motion.div>
           ))}
