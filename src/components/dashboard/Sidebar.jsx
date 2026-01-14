@@ -14,6 +14,7 @@ const Sidebar = ({ className = "", onLinkClick }) => {
   const navigate = useNavigate();
   const [userEmail, setUserEmail] = useState('');
   const [planType, setPlanType] = useState('free');
+  const [customerPortalUrl, setCustomerPortalUrl] = useState(null);
 
   useEffect(() => {
     const fetchUserInfo = async () => {
@@ -25,21 +26,32 @@ const Sidebar = ({ className = "", onLinkClick }) => {
         // Set email
         setUserEmail(user.email || '');
 
-        // Get user profile to check plan
+        // Get user profile to check plan and customer portal URL
         const { data: profile, error } = await supabase
           .from('profiles')
-          .select('plan_type')
+          .select('plan_type, lemon_squeezy_customer_portal_url')
           .eq('user_id', user.id)
           .single();
 
-        if (!error && profile?.plan_type) {
-          setPlanType(profile.plan_type);
+        if (!error && profile) {
+          if (profile?.plan_type) {
+            setPlanType(profile.plan_type);
+          } else {
+            setPlanType('free');
+          }
+          if (profile?.lemon_squeezy_customer_portal_url) {
+            setCustomerPortalUrl(profile.lemon_squeezy_customer_portal_url);
+          } else {
+            setCustomerPortalUrl(null);
+          }
         } else {
           setPlanType('free');
+          setCustomerPortalUrl(null);
         }
       } catch (error) {
         console.error('Error fetching user info:', error);
         setPlanType('free');
+        setCustomerPortalUrl(null);
       }
     };
 
@@ -137,6 +149,11 @@ const Sidebar = ({ className = "", onLinkClick }) => {
             <div className="flex flex-col flex-1 min-w-0">
                 <span className="text-sm font-bold text-white truncate">{userEmail || 'User'}</span>
                 <span className="text-xs text-slate-500">{getPlanDisplayName(planType)}</span>
+                {customerPortalUrl && (
+                  <span className="text-xs text-slate-400 truncate mt-0.5" title={customerPortalUrl}>
+                    {customerPortalUrl}
+                  </span>
+                )}
             </div>
         </div>
         
