@@ -282,7 +282,7 @@ const AddDomainModal = ({ isOpen, onClose, domain = null }) => {
                     <p className="text-sm text-slate-400 mb-4">
                       Add these DNS records to your domain registrar (e.g., Cloudflare, GoDaddy)
                     </p>
-                    {dnsRecords && <DNSRecordsDisplay records={dnsRecords} />}
+                    {dnsRecords && <DNSRecordsDisplay records={dnsRecords} domain={domainName} />}
                   </div>
                 </motion.div>
               )}

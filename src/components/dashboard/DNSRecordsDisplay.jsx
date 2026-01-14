@@ -1,116 +1,203 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 
-const DNSRecordsDisplay = ({ records }) => {
-  const [copiedIndex, setCopiedIndex] = useState(null);
+// Extract host from full Cloudflare hostname
+const extractDnsHost = (fullCfhName, userDomain) => {
+  // fullCfhName example: _cf-custom-hostname.www.userdomain.com
+  // userDomain example: userdomain.com
+  
+  if (!fullCfhName || !userDomain) return "";
 
-  const handleCopy = async (value, index) => {
+  // Remove the domain name from the end, including the dot before it
+  const host = fullCfhName.replace(`.${userDomain}`, "");
+  
+  return host; // Returns: _cf-custom-hostname.www
+};
+
+const DNSRecordsDisplay = ({ records, domain }) => {
+  const [copiedField, setCopiedField] = useState(null);
+
+  const handleCopy = async (value, fieldName) => {
     try {
       await navigator.clipboard.writeText(value);
-      setCopiedIndex(index);
-      setTimeout(() => setCopiedIndex(null), 2000);
+      setCopiedField(fieldName);
+      setTimeout(() => setCopiedField(null), 2000);
     } catch (err) {
       console.error('Failed to copy:', err);
     }
   };
 
-  // Mobile: Cards layout
-  // Desktop: Table layout
+  // Find TXT record for ownership verification
+  const ownershipRecord = records?.find(r => r.type === 'TXT' && r.host?.includes('_cf-custom-hostname'));
+  
+  // Find CNAME record
+  const cnameRecord = records?.find(r => r.type === 'CNAME');
+
+  // Extract host for TXT record
+  const txtHost = ownershipRecord?.host ? extractDnsHost(ownershipRecord.host, domain || '') : (ownershipRecord?.host || '');
+  
+  // Extract subdomain from domain (e.g., "www" from "www.userdomain.com")
+  const getSubdomain = (domainName) => {
+    if (!domainName) return '@';
+    const parts = domainName.split('.');
+    if (parts.length > 2) {
+      return parts[0]; // e.g., "www" from "www.userdomain.com"
+    }
+    return '@'; // Root domain
+  };
+  
+  const cnameHost = getSubdomain(domain);
+  const fallbackOrigin = cnameRecord?.value || 'glynk.to';
+
+  const CopyButton = ({ value, fieldName, className = "" }) => (
+    <button
+      onClick={() => handleCopy(value, fieldName)}
+      className={`px-3 py-1.5 bg-[#232f48] hover:bg-[#324467] text-white text-xs font-medium rounded-lg transition-colors flex items-center gap-2 ${className}`}
+    >
+      {copiedField === fieldName ? (
+        <>
+          <span className="material-symbols-outlined text-sm">check</span>
+          Copied
+        </>
+      ) : (
+        <>
+          <span className="material-symbols-outlined text-sm">content_copy</span>
+          Copy
+        </>
+      )}
+    </button>
+  );
+
   return (
-    <>
-      {/* Desktop: Table Layout */}
-      <div className="hidden md:block overflow-x-auto">
-        <table className="w-full border-collapse">
-          <thead>
-            <tr className="border-b border-[#232f48]">
-              <th className="text-left py-3 px-4 text-sm font-bold text-white">Type</th>
-              <th className="text-left py-3 px-4 text-sm font-bold text-white">Host/Name</th>
-              <th className="text-left py-3 px-4 text-sm font-bold text-white">Value</th>
-              <th className="text-left py-3 px-4 text-sm font-bold text-white">Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {records.map((record, index) => (
-              <tr key={index} className="border-b border-[#232f48] hover:bg-[#101622]">
-                <td className="py-3 px-4 text-sm text-white font-medium">{record.type}</td>
-                <td className="py-3 px-4 text-sm text-slate-300 font-mono">{record.host}</td>
-                <td className="py-3 px-4 text-sm text-slate-300 font-mono">{record.value}</td>
-                <td className="py-3 px-4">
-                  <button
-                    onClick={() => handleCopy(record.value, index)}
-                    className="px-3 py-1.5 bg-[#232f48] hover:bg-[#324467] text-white text-xs font-medium rounded-lg transition-colors flex items-center gap-2"
-                  >
-                    {copiedIndex === index ? (
-                      <>
-                        <span className="material-symbols-outlined text-sm">check</span>
-                        Copied
-                      </>
-                    ) : (
-                      <>
-                        <span className="material-symbols-outlined text-sm">content_copy</span>
-                        Copy
-                      </>
-                    )}
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+    <div className="space-y-6">
+      {/* Header */}
+      <div>
+        <h4 className="text-lg font-bold text-white mb-2">🌐 Connect Your Custom Domain</h4>
+        <p className="text-sm text-slate-400">
+          To point your domain to our platform, please follow these steps in your DNS provider (e.g., Namecheap, GoDaddy, Cloudflare).
+        </p>
       </div>
 
-      {/* Mobile: Card Layout */}
-      <div className="md:hidden space-y-3">
-        {records.map((record, index) => (
-          <motion.div
-            key={index}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="bg-[#101622] border border-[#232f48] rounded-xl p-4 space-y-3"
-          >
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-primary uppercase">{record.type} Record</span>
-            </div>
-            
-            <div className="space-y-2">
-              <div className="flex items-center justify-between gap-2">
-                <div className="flex-1 min-w-0">
-                  <span className="text-xs text-slate-500">Name: </span>
-                  <span className="text-sm text-white font-mono font-bold break-all">{record.host}</span>
-                </div>
-                <button
-                  onClick={() => handleCopy(record.host, `host-${index}`)}
-                  className="px-2 py-1 bg-[#232f48] hover:bg-[#324467] text-white text-xs rounded-lg transition-colors flex-shrink-0"
-                >
-                  {copiedIndex === `host-${index}` ? (
-                    <span className="material-symbols-outlined text-sm">check</span>
-                  ) : (
-                    <span className="material-symbols-outlined text-sm">content_copy</span>
-                  )}
-                </button>
+      {/* Step 1: Ownership Verification */}
+      {ownershipRecord && (
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-[#101622] border border-[#232f48] rounded-xl p-5 space-y-4"
+        >
+          <div>
+            <h5 className="text-base font-bold text-white mb-1">Step 1: Ownership Verification</h5>
+            <p className="text-sm text-slate-400 mb-4">
+              Create a TXT record to verify you own this domain.
+            </p>
+          </div>
+          
+          <div className="space-y-3">
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex-1">
+                <label className="text-xs text-slate-500 mb-1 block">Type:</label>
+                <code className="block px-3 py-2 bg-[#0b0f19] border border-[#232f48] rounded-lg text-sm text-white font-mono">
+                  TXT
+                </code>
               </div>
+            </div>
 
-              <div className="flex items-center justify-between gap-2">
-                <div className="flex-1 min-w-0">
-                  <span className="text-xs text-slate-500">Value: </span>
-                  <span className="text-sm text-white font-mono font-bold break-all">{record.value}</span>
-                </div>
-                <button
-                  onClick={() => handleCopy(record.value, index)}
-                  className="px-2 py-1 bg-[#232f48] hover:bg-[#324467] text-white text-xs rounded-lg transition-colors flex-shrink-0"
-                >
-                  {copiedIndex === index ? (
-                    <span className="material-symbols-outlined text-sm">check</span>
-                  ) : (
-                    <span className="material-symbols-outlined text-sm">content_copy</span>
-                  )}
-                </button>
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex-1 min-w-0">
+                <label className="text-xs text-slate-500 mb-1 block">Host/Name:</label>
+                <code className="block px-3 py-2 bg-[#0b0f19] border border-[#232f48] rounded-lg text-sm text-white font-mono break-all">
+                  {txtHost || ownershipRecord.host}
+                </code>
+              </div>
+              <div className="flex-shrink-0 pt-6">
+                <CopyButton value={txtHost || ownershipRecord.host} fieldName="txt-host" />
               </div>
             </div>
-          </motion.div>
-        ))}
+
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex-1 min-w-0">
+                <label className="text-xs text-slate-500 mb-1 block">Value:</label>
+                <code className="block px-3 py-2 bg-[#0b0f19] border border-[#232f48] rounded-lg text-sm text-white font-mono break-all">
+                  {ownershipRecord.value}
+                </code>
+              </div>
+              <div className="flex-shrink-0 pt-6">
+                <CopyButton value={ownershipRecord.value} fieldName="txt-value" />
+              </div>
+            </div>
+          </div>
+        </motion.div>
+      )}
+
+      {/* Step 2: Route Traffic */}
+      {cnameRecord && (
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-[#101622] border border-[#232f48] rounded-xl p-5 space-y-4"
+        >
+          <div>
+            <h5 className="text-base font-bold text-white mb-1">Step 2: Route Traffic</h5>
+            <p className="text-sm text-slate-400 mb-4">
+              Create a CNAME record to connect your domain to our servers.
+            </p>
+          </div>
+          
+          <div className="space-y-3">
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex-1">
+                <label className="text-xs text-slate-500 mb-1 block">Type:</label>
+                <code className="block px-3 py-2 bg-[#0b0f19] border border-[#232f48] rounded-lg text-sm text-white font-mono">
+                  CNAME
+                </code>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex-1 min-w-0">
+                <label className="text-xs text-slate-500 mb-1 block">Host/Name:</label>
+                <code className="block px-3 py-2 bg-[#0b0f19] border border-[#232f48] rounded-lg text-sm text-white font-mono break-all">
+                  {cnameHost}
+                </code>
+                <p className="text-xs text-slate-500 mt-1">(e.g., "www" or "links")</p>
+              </div>
+              <div className="flex-shrink-0 pt-6">
+                <CopyButton value={cnameHost} fieldName="cname-host" />
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex-1 min-w-0">
+                <label className="text-xs text-slate-500 mb-1 block">Target/Value:</label>
+                <code className="block px-3 py-2 bg-[#0b0f19] border border-[#232f48] rounded-lg text-sm text-white font-mono break-all">
+                  {fallbackOrigin}
+                </code>
+                <p className="text-xs text-slate-500 mt-1">(Your Fallback Origin)</p>
+              </div>
+              <div className="flex-shrink-0 pt-6">
+                <CopyButton value={fallbackOrigin} fieldName="cname-value" />
+              </div>
+            </div>
+          </div>
+        </motion.div>
+      )}
+
+      {/* Important Notes */}
+      <div className="bg-primary/10 border border-primary/30 rounded-xl p-4">
+        <h6 className="text-sm font-bold text-primary mb-2">💡 Important Notes:</h6>
+        <ul className="space-y-1 text-xs text-slate-300">
+          <li>
+            <strong>DNS Propagation:</strong> Changes can take anywhere from a few minutes to 24 hours to take effect worldwide.
+          </li>
+          <li>
+            <strong>Host Field:</strong> Most DNS providers automatically append your domain name. Do not enter your full domain in the Host field (e.g., use <code className="bg-[#0b0f19] px-1 py-0.5 rounded">www</code>, not <code className="bg-[#0b0f19] px-1 py-0.5 rounded">www.yourdomain.com</code>).
+          </li>
+          <li>
+            <strong>SSL:</strong> Once verified, we will automatically generate an SSL certificate for your domain.
+          </li>
+        </ul>
       </div>
-    </>
+    </div>
   );
 };
 
