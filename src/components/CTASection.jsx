@@ -16,7 +16,8 @@ const CTASection = () => {
     // Listen for auth changes - this will also fire on mount with current session
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (_event, session) => {
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log("Auth Change fired", event);
       const currentUser = session?.user ?? null;
       setUser(currentUser);
 
@@ -202,53 +203,42 @@ const CTASection = () => {
                   ))}
                 </ul>
 
-                {/* CTA Button */}
-                <button
-                  onClick={(e) => {
-                    // 1. הגנה מיידית
-                    e.preventDefault();
-                    e.stopPropagation();
-
-                    // 2. בדיקת לוגין (בלי await - המשתמש כבר ב-state)
-                    if (!user) {
-                      const planName = plan.name.toLowerCase();
-                      navigate(`/login?plan=${planName}`);
-                      return;
-                    }
-
-                    // 3. הכנת ה-URL בצורה סינכרונית מה-State הקיים
-                    let finalUrl = "";
+                {/* CTA Button - Using <a> tag for native browser behavior */}
+                <a
+                  href={(() => {
+                    if (!user) return `/login?plan=${plan.name.toLowerCase()}`;
 
                     if (
-                      userProfile &&
-                      userProfile.plan_type !== "free" &&
-                      userProfile.lemon_squeezy_customer_portal_url
+                      userProfile?.plan_type !== "free" &&
+                      userProfile?.lemon_squeezy_customer_portal_url
                     ) {
-                      finalUrl = String(
-                        userProfile.lemon_squeezy_customer_portal_url
-                      ).trim();
-                    } else {
-                      const separator = plan.checkoutUrl.includes("?")
-                        ? "&"
-                        : "?";
-                      finalUrl = `${plan.checkoutUrl}${separator}checkout[custom][user_id]=${user.id}`;
+                      return userProfile.lemon_squeezy_customer_portal_url;
                     }
 
-                    // 4. פתיחה נקייה ב-setTimeout כדי לשחרר את ה-Main Thread של האתר
-                    if (finalUrl) {
-                      setTimeout(() => {
-                        window.open(finalUrl, "_blank", "noopener,noreferrer");
-                      }, 0);
+                    const separator = plan.checkoutUrl.includes("?")
+                      ? "&"
+                      : "?";
+                    return `${plan.checkoutUrl}${separator}checkout[custom][user_id]=${user.id}`;
+                  })()}
+                  target={user ? "_blank" : "_self"}
+                  rel="noopener noreferrer"
+                  onClick={(e) => {
+                    // אם המשתמש לא מחובר, ניתן ל-navigate של React Router לעבוד
+                    if (!user) {
+                      e.preventDefault();
+                      navigate(`/login?plan=${plan.name.toLowerCase()}`);
                     }
+                    // אם הוא מחובר, ה-href הרגיל יפתח את הטאב בלי JS "תוקע"
+                    e.stopPropagation();
                   }}
-                  className={`mt-auto w-full py-4 px-6 rounded-lg font-bold text-base transition-all text-center inline-block active:scale-95 ${
+                  className={`mt-auto w-full py-4 px-6 rounded-lg font-bold text-base transition-all text-center inline-block ${
                     plan.highlighted
                       ? "bg-primary hover:bg-primary/90 text-white shadow-lg shadow-primary/30"
                       : "bg-slate-100 dark:bg-[#232f48] hover:bg-slate-200 dark:hover:bg-[#324467] text-slate-900 dark:text-white"
                   }`}
                 >
                   {plan.buttonText}
-                </button>
+                </a>
               </div>
             </motion.div>
           ))}
