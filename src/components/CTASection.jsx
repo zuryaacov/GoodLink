@@ -6,53 +6,23 @@ import { supabase } from '../lib/supabase';
 
 const CTASection = () => {
   const [user, setUser] = useState(null);
-  const [userProfile, setUserProfile] = useState(null);
   const navigate = useNavigate();
 
-  // Get current user and profile if logged in
+  // פונקציה לאתחול Lemon Squeezy ברגע שהקומפוננטה עולה
   useEffect(() => {
+    if (window.createLemonSqueezy) {
+      window.createLemonSqueezy();
+    }
+
+    // Get current user if logged in
     if (supabase) {
-      const fetchUserAndProfile = async () => {
-        const { data: { user } } = await supabase.auth.getUser();
+      supabase.auth.getUser().then(({ data: { user } }) => {
         setUser(user);
-
-        if (user) {
-          // Get user profile to check subscription status
-          const { data: profile, error } = await supabase
-            .from('profiles')
-            .select('plan_type, subscription_status, lemon_squeezy_customer_portal_url')
-            .eq('user_id', user.id)
-            .single();
-
-          if (!error && profile) {
-            setUserProfile(profile);
-          }
-        } else {
-          setUserProfile(null);
-        }
-      };
-
-      fetchUserAndProfile();
+      });
 
       // Listen for auth changes
-      const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
-        const currentUser = session?.user ?? null;
-        setUser(currentUser);
-
-        if (currentUser) {
-          // Get user profile
-          const { data: profile, error } = await supabase
-            .from('profiles')
-            .select('plan_type, subscription_status, lemon_squeezy_customer_portal_url')
-            .eq('user_id', currentUser.id)
-            .single();
-
-          if (!error && profile) {
-            setUserProfile(profile);
-          }
-        } else {
-          setUserProfile(null);
-        }
+      const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+        setUser(session?.user ?? null);
       });
 
       return () => subscription.unsubscribe();
@@ -205,66 +175,22 @@ const CTASection = () => {
 
                 {/* CTA Button */}
                 <button
-                  onClick={async (e) => {
-                    try {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      
-                      if (!user) {
-                        // If user is not logged in, redirect to login with plan parameter
-                        const planName = plan.name.toLowerCase();
-                        navigate(`/login?plan=${planName}`);
-                        return;
-                      }
-
-                      // Fetch profile if not in state
-                      let profile = userProfile;
-                      if (!profile) {
-                        try {
-                          const { data: fetchedProfile, error: fetchError } = await supabase
-                            .from('profiles')
-                            .select('plan_type, subscription_status, lemon_squeezy_customer_portal_url')
-                            .eq('user_id', user.id)
-                            .single();
-                          
-                          if (!fetchError && fetchedProfile) {
-                            profile = fetchedProfile;
-                          }
-                        } catch (err) {
-                          console.error('Error fetching profile:', err);
-                        }
-                      }
-
-                      // Check if user has a paid subscription (not FREE) and customer portal URL
-                      if (profile && profile.plan_type !== 'free' && profile.lemon_squeezy_customer_portal_url) {
-                        const portalUrl = String(profile.lemon_squeezy_customer_portal_url).trim();
-                        if (portalUrl && portalUrl.length > 0) {
-                          // Open customer portal in new tab - simple approach
-                          const newWindow = window.open(portalUrl, '_blank', 'noopener,noreferrer');
-                          // Check if popup blocker blocked it (optional)
-                          if (newWindow) {
-                            newWindow.focus();
-                          } else {
-                            window.location.href = portalUrl;
-                          }
-                          return;
-                        }
-                      }
-
-                      // Otherwise, open Lemon Squeezy checkout in new tab
-                      const separator = plan.checkoutUrl.includes('?') ? '&' : '?';
-                      const checkoutUrl = `${plan.checkoutUrl}${separator}checkout[custom][user_id]=${user.id}`;
-                      const newWindow = window.open(checkoutUrl, '_blank', 'noopener,noreferrer');
-                      if (newWindow) {
-                        newWindow.focus();
+                  onClick={() => {
+                    if (user) {
+                      // If user is logged in, open Lemon Squeezy checkout directly
+                      const checkoutUrl = `${plan.checkoutUrl}&checkout[custom][user_id]=${user.id}`;
+                      if (window.LemonSqueezy) {
+                        window.LemonSqueezy.Url.Open(checkoutUrl);
                       } else {
                         window.location.href = checkoutUrl;
                       }
-                    } catch (error) {
-                      console.error('Error in button click handler:', error);
+                    } else {
+                      // If user is not logged in, redirect to login with plan parameter
+                      const planName = plan.name.toLowerCase();
+                      navigate(`/login?plan=${planName}`);
                     }
                   }}
-                  className={`mt-auto w-full py-4 px-6 rounded-lg font-bold text-base transition-all text-center inline-block active:scale-95 ${
+                  className={`lemonsqueezy-button mt-auto w-full py-4 px-6 rounded-lg font-bold text-base transition-all text-center inline-block active:scale-95 ${
                     plan.highlighted
                       ? 'bg-primary hover:bg-primary/90 text-white shadow-lg shadow-primary/30'
                       : 'bg-slate-100 dark:bg-[#232f48] hover:bg-slate-200 dark:hover:bg-[#324467] text-slate-900 dark:text-white'

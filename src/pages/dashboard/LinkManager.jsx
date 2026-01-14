@@ -27,10 +27,7 @@ const LinkManager = () => {
   const fetchLinks = async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        setLoading(false);
-        return;
-      }
+      if (!user) return;
 
       const { data, error } = await supabase
         .from('links')
