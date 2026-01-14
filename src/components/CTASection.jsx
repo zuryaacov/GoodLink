@@ -230,85 +230,65 @@ const CTASection = () => {
 
                 {/* CTA Button */}
                 <button
+                  type="button"
                   onClick={(e) => {
-                    console.log("1. Click started");
                     e.preventDefault();
                     e.stopPropagation();
-                    console.log("2. preventDefault done");
 
                     if (!user) {
-                      console.log("3. No user, navigating");
                       const planName = plan.name.toLowerCase();
                       navigate(`/login?plan=${planName}`);
                       return;
                     }
 
-                    console.log("4. User exists, starting async");
+                    // Wrap everything to prevent event propagation issues
+                    requestAnimationFrame(() => {
+                      const handleAsync = async () => {
+                        let profile = userProfile;
 
-                    const handleAsync = async () => {
-                      console.log("5. Inside async function");
-                      let profile = userProfile;
-
-                      if (!profile) {
-                        console.log("6. Fetching profile from DB");
-                        try {
-                          const { data: fetchedProfile } = await supabase
-                            .from("profiles")
-                            .select(
-                              "plan_type, lemon_squeezy_customer_portal_url"
-                            )
-                            .eq("user_id", user.id)
-                            .single();
-                          console.log("7. Profile fetched:", fetchedProfile);
-                          if (fetchedProfile) profile = fetchedProfile;
-                        } catch (err) {
-                          console.error("8. Error fetching profile:", err);
+                        if (!profile) {
+                          try {
+                            const { data: fetchedProfile } = await supabase
+                              .from("profiles")
+                              .select(
+                                "plan_type, lemon_squeezy_customer_portal_url"
+                              )
+                              .eq("user_id", user.id)
+                              .single();
+                            if (fetchedProfile) profile = fetchedProfile;
+                          } catch (err) {
+                            console.error("Error fetching profile:", err);
+                            return; // Important: stop here if error
+                          }
                         }
-                      } else {
-                        console.log("9. Using existing profile");
-                      }
 
-                      let targetUrl;
-                      if (
-                        profile &&
-                        profile.plan_type !== "free" &&
-                        profile.lemon_squeezy_customer_portal_url
-                      ) {
-                        console.log("10. User has paid plan, using portal URL");
-                        const portalUrl = String(
+                        let targetUrl;
+                        if (
+                          profile &&
+                          profile.plan_type !== "free" &&
                           profile.lemon_squeezy_customer_portal_url
-                        ).trim();
-                        if (portalUrl) {
-                          targetUrl = portalUrl;
+                        ) {
+                          const portalUrl = String(
+                            profile.lemon_squeezy_customer_portal_url
+                          ).trim();
+                          if (portalUrl) {
+                            targetUrl = portalUrl;
+                          }
                         }
-                      }
 
-                      if (!targetUrl) {
-                        console.log("11. Using checkout URL");
-                        const separator = plan.checkoutUrl.includes("?")
-                          ? "&"
-                          : "?";
-                        targetUrl = `${plan.checkoutUrl}${separator}checkout[custom][user_id]=${user.id}`;
-                      }
+                        if (!targetUrl) {
+                          const separator = plan.checkoutUrl.includes("?")
+                            ? "&"
+                            : "?";
+                          targetUrl = `${plan.checkoutUrl}${separator}checkout[custom][user_id]=${user.id}`;
+                        }
 
-                      console.log("12. Opening URL:", targetUrl);
+                        // Open in new window
+                        window.open(targetUrl, "_blank", "noopener,noreferrer");
+                      };
 
-                      const a = document.createElement("a");
-                      a.href = targetUrl;
-                      a.target = "_blank";
-                      a.rel = "noopener noreferrer";
-                      document.body.appendChild(a);
-                      a.click();
-                      document.body.removeChild(a);
-
-                      console.log("13. URL opened, function complete");
-                    };
-
-                    handleAsync().catch((err) => {
-                      console.error("14. Error in handleAsync:", err);
+                      handleAsync();
                     });
-
-                    console.log("15. onClick handler complete");
                   }}
                   className={`mt-auto w-full py-4 px-6 rounded-lg font-bold text-base transition-all text-center inline-block active:scale-95 ${
                     plan.highlighted
