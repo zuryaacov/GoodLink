@@ -719,7 +719,7 @@ async function handleAddCustomDomain(request, env) {
 
         console.log('✅ [AddDomain] Domain saved successfully');
 
-        // Return success response
+        // Return success response - include full SSL object for debugging
         return new Response(JSON.stringify({
             success: true,
             cloudflare_hostname_id: hostnameId,
@@ -727,6 +727,7 @@ async function handleAddCustomDomain(request, env) {
                 ownership_verification: ownershipVerification,
                 ssl_verification: sslVerification,
             },
+            ssl: cloudflareData.result.ssl,  // Include full SSL object
             dns_records: dnsRecords,
             domain_id: domainId
         }), {
