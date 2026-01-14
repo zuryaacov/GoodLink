@@ -1,10 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Outlet, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import Sidebar from '../components/dashboard/Sidebar';
 
 const DashboardLayout = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  // Ensure page starts at top on mount
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
 
   return (
     <div className="flex h-screen bg-[#0b0f19] overflow-hidden">
@@ -16,7 +21,7 @@ const DashboardLayout = () => {
       {/* Main Content Area */}
       <div className="flex-1 lg:ml-64 flex flex-col h-full overflow-hidden">
          {/* Mobile Header */}
-        <header className="lg:hidden h-16 bg-[#101622] border-b border-[#232f48] flex items-center justify-between px-4 sticky top-0 z-40">
+        <header className="lg:hidden h-16 bg-[#101622] border-b border-[#232f48] flex items-center justify-between px-4 fixed top-0 left-0 right-0 z-40">
            <Link to="/" className="flex items-center gap-2">
              <div className="size-8 text-primary">
                 <svg fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -71,7 +76,7 @@ const DashboardLayout = () => {
           )}
         </AnimatePresence>
 
-        <main className="flex-1 p-4 lg:p-6 overflow-y-auto overflow-x-hidden w-full">
+        <main className="flex-1 p-4 lg:p-6 overflow-y-auto overflow-x-hidden w-full lg:pt-6 pt-20">
           <Outlet />
         </main>
       </div>
