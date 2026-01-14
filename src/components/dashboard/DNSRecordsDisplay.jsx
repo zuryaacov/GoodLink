@@ -48,12 +48,20 @@ const DNSRecordsDisplay = ({ records, domain }) => {
     }
   };
 
+  // Debug: Log the records we receive
+  console.log('🔵 [DNSRecordsDisplay] All records:', records);
+  console.log('🔵 [DNSRecordsDisplay] Domain:', domain);
+
   // Find TXT records - ownership verification (first) and SSL verification (second)
   // Note: Worker sends 'txt' (lowercase) but we check case-insensitively
   const txtRecords =
     records?.filter((r) => r.type?.toUpperCase() === "TXT") || [];
   const ownershipRecord = txtRecords[0]; // First TXT record is ownership verification
   const sslRecord = txtRecords[1]; // Second TXT record is SSL verification (if exists)
+  
+  console.log('🔵 [DNSRecordsDisplay] TXT records found:', txtRecords.length);
+  console.log('🔵 [DNSRecordsDisplay] Ownership record:', ownershipRecord);
+  console.log('🔵 [DNSRecordsDisplay] SSL record:', sslRecord);
 
   // Find CNAME record (also case-insensitive)
   const cnameRecord = records?.find((r) => r.type?.toUpperCase() === "CNAME");

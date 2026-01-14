@@ -568,9 +568,12 @@ async function handleAddCustomDomain(request, env) {
                 body: JSON.stringify({
                     hostname: domain,
                     ssl: {
-                        method: 'txt',
-                        type: 'dv',
-                        settings: { min_tls_version: '1.2' }
+                        method: 'txt',      // Critical: This ensures TXT validation records are returned
+                        type: 'dv',         // Domain Validation
+                        settings: {
+                            http2: 'on',
+                            min_tls_version: '1.2'
+                        }
                     }
                 }),
             }
@@ -600,6 +603,10 @@ async function handleAddCustomDomain(request, env) {
         const ownershipVerification = cloudflareData.result.ownership_verification;
         const sslVerification = cloudflareData.result.ssl?.validation_records?.[0];
 
+        console.log('🔵 [AddDomain] Ownership verification:', JSON.stringify(ownershipVerification, null, 2));
+        console.log('🔵 [AddDomain] SSL verification:', JSON.stringify(sslVerification, null, 2));
+        console.log('🔵 [AddDomain] SSL object:', JSON.stringify(cloudflareData.result.ssl, null, 2));
+
         // Prepare DNS records for display
         const dnsRecords = [];
         if (ownershipVerification) {
@@ -610,12 +617,19 @@ async function handleAddCustomDomain(request, env) {
             });
         }
         if (sslVerification) {
+            console.log('🔵 [AddDomain] Adding SSL verification record:', {
+                txt_name: sslVerification.txt_name,
+                txt_value: sslVerification.txt_value
+            });
             dnsRecords.push({
                 type: 'TXT',
                 host: sslVerification.txt_name || '_cf-custom-hostname',
                 value: sslVerification.txt_value || ''
             });
+        } else {
+            console.log('⚠️ [AddDomain] No SSL verification record found');
         }
+        console.log('🔵 [AddDomain] DNS records prepared:', JSON.stringify(dnsRecords, null, 2));
         // Add CNAME record
         dnsRecords.push({
             type: 'CNAME',
