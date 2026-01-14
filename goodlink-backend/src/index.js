@@ -611,9 +611,9 @@ async function handleAddCustomDomain(request, env) {
         }
         if (sslVerification) {
             dnsRecords.push({
-                type: sslVerification.type || 'TXT',
-                host: sslVerification.name || '_cf-custom-hostname',
-                value: sslVerification.value || ''
+                type: 'TXT',
+                host: sslVerification.txt_name || '_cf-custom-hostname',
+                value: sslVerification.txt_value || ''
             });
         }
         // Add CNAME record
