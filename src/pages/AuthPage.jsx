@@ -6,7 +6,7 @@ import { supabase } from '../lib/supabase';
 const AuthPage = () => {
   const [searchParams] = useSearchParams();
   const planParam = searchParams.get('plan');
-  const [view, setView] = useState(planParam ? 'signup' : 'login'); // Default to signup if plan is present
+  const [view, setView] = useState('login'); // Always start with login view
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
