@@ -555,35 +555,36 @@ async function handleAddCustomDomain(request, env) {
         }
 
         // Call Cloudflare API to register custom hostname
-        console.log('🔵 [AddDomain] Calling Cloudflare API...');
-        const cloudflareResponse = await fetch(
-            `https://api.cloudflare.com/client/v4/zones/${env.CLOUDFLARE_ZONE_ID}/custom_hostnames`,
-            {
-                method: 'POST',
-                headers: {
-                    'X-Auth-Email': env.CLOUDFLARE_EMAIL,
-                    'X-Auth-Key': env.CLOUDFLARE_GLOBAL_KEY,
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    hostname: domain,
-                    ssl: {
-                        method: 'txt',      // Critical: This ensures TXT validation records are returned
-                        type: 'dv',         // Domain Validation
-                        settings: {
-                            http2: 'on',
-                            min_tls_version: '1.2'
-                        }
+        console.log('🔵 [AddDomain] Calling Cloudflare API to create custom hostname...');
+        const cfUrl = `https://api.cloudflare.com/client/v4/zones/${env.CLOUDFLARE_ZONE_ID}/custom_hostnames`;
+        const cfHeaders = {
+            'X-Auth-Email': env.CLOUDFLARE_EMAIL,
+            'X-Auth-Key': env.CLOUDFLARE_GLOBAL_KEY,
+            'Content-Type': 'application/json',
+        };
+
+        // 1. Create the custom hostname
+        const createResponse = await fetch(cfUrl, {
+            method: 'POST',
+            headers: cfHeaders,
+            body: JSON.stringify({
+                hostname: domain,
+                ssl: {
+                    method: 'txt',      // Critical: This ensures TXT validation records are returned
+                    type: 'dv',         // Domain Validation
+                    settings: {
+                        http2: 'on',
+                        min_tls_version: '1.2'
                     }
-                }),
-            }
-        );
+                }
+            }),
+        });
 
-        const cloudflareData = await cloudflareResponse.json();
-        console.log('🔵 [AddDomain] Cloudflare response:', JSON.stringify(cloudflareData, null, 2));
+        const createData = await createResponse.json();
+        console.log('🔵 [AddDomain] Initial Cloudflare response:', JSON.stringify(createData, null, 2));
 
-        if (!cloudflareData.success) {
-            const errorMsg = cloudflareData.errors?.[0]?.message || 'Cloudflare API error';
+        if (!createData.success) {
+            const errorMsg = createData.errors?.[0]?.message || 'Cloudflare API error';
             console.error('❌ [AddDomain] Cloudflare API error:', errorMsg);
             return new Response(JSON.stringify({
                 success: false,
@@ -599,16 +600,54 @@ async function handleAddCustomDomain(request, env) {
             });
         }
 
-        const hostnameId = cloudflareData.result.id;
-        const ownershipVerification = cloudflareData.result.ownership_verification;
-        const sslVerification = cloudflareData.result.ssl?.validation_records?.[0];
+        const hostnameId = createData.result.id;
+        console.log('🔵 [AddDomain] Hostname created with ID:', hostnameId);
+
+        // 2. Wait for Cloudflare to generate SSL validation records
+        // Cloudflare needs a moment to communicate with the Certificate Authority
+        console.log('🔵 [AddDomain] Waiting for SSL validation records to be generated...');
+        await new Promise(resolve => setTimeout(resolve, 2500)); // Wait 2.5 seconds
+
+        // 3. Fetch the updated hostname data (including SSL validation records)
+        console.log('🔵 [AddDomain] Fetching updated hostname data from Cloudflare...');
+        const getResponse = await fetch(`${cfUrl}/${hostnameId}`, {
+            method: 'GET',
+            headers: cfHeaders,
+        });
+
+        const cloudflareData = await getResponse.json();
+        console.log('🔵 [AddDomain] Updated Cloudflare response:', JSON.stringify(cloudflareData, null, 2));
+
+        if (!cloudflareData.success) {
+            const errorMsg = cloudflareData.errors?.[0]?.message || 'Failed to fetch hostname data';
+            console.error('❌ [AddDomain] Failed to fetch updated data:', errorMsg);
+            return new Response(JSON.stringify({
+                success: false,
+                error: errorMsg
+            }), {
+                status: 400,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Access-Control-Allow-Origin': '*',
+                    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+                    'Access-Control-Allow-Headers': 'Content-Type, Authorization'
+                }
+            });
+        }
+
+        const result = cloudflareData.result;
+        const ownershipVerification = result.ownership_verification;
+        const sslVerification = result.ssl?.validation_records?.[0];
 
         console.log('🔵 [AddDomain] Ownership verification:', JSON.stringify(ownershipVerification, null, 2));
         console.log('🔵 [AddDomain] SSL verification:', JSON.stringify(sslVerification, null, 2));
-        console.log('🔵 [AddDomain] SSL object:', JSON.stringify(cloudflareData.result.ssl, null, 2));
+        console.log('🔵 [AddDomain] SSL object:', JSON.stringify(result.ssl, null, 2));
 
         // Prepare DNS records for display
+        // Build dns_records array with ownership, SSL validation, and CNAME records
         const dnsRecords = [];
+        
+        // 1. Ownership verification (TXT record)
         if (ownershipVerification) {
             dnsRecords.push({
                 type: ownershipVerification.type || 'TXT',
@@ -616,26 +655,33 @@ async function handleAddCustomDomain(request, env) {
                 value: ownershipVerification.value || ''
             });
         }
-        if (sslVerification) {
+        
+        // 2. SSL verification (TXT record) - from ssl.validation_records[0]
+        if (sslVerification && sslVerification.txt_name && sslVerification.txt_value) {
             console.log('🔵 [AddDomain] Adding SSL verification record:', {
                 txt_name: sslVerification.txt_name,
                 txt_value: sslVerification.txt_value
             });
             dnsRecords.push({
                 type: 'TXT',
-                host: sslVerification.txt_name || '_cf-custom-hostname',
-                value: sslVerification.txt_value || ''
+                host: sslVerification.txt_name,
+                value: sslVerification.txt_value
             });
         } else {
-            console.log('⚠️ [AddDomain] No SSL verification record found');
+            console.log('⚠️ [AddDomain] No SSL verification record found - ssl.validation_records may be empty or not yet available');
+            if (result.ssl) {
+                console.log('🔵 [AddDomain] SSL object exists but validation_records:', result.ssl.validation_records);
+            }
         }
-        console.log('🔵 [AddDomain] DNS records prepared:', JSON.stringify(dnsRecords, null, 2));
-        // Add CNAME record
+        
+        // 3. CNAME record (point traffic)
         dnsRecords.push({
             type: 'CNAME',
             host: '@',
             value: 'glynk.to' // Fallback domain
         });
+        
+        console.log('🔵 [AddDomain] DNS records prepared:', JSON.stringify(dnsRecords, null, 2));
 
         // Save to Supabase
         console.log('🔵 [AddDomain] Saving to Supabase...');
@@ -727,7 +773,7 @@ async function handleAddCustomDomain(request, env) {
                 ownership_verification: ownershipVerification,
                 ssl_verification: sslVerification,
             },
-            ssl: cloudflareData.result.ssl,  // Include full SSL object
+            ssl: result.ssl,  // Include full SSL object
             dns_records: dnsRecords,
             domain_id: domainId
         }), {
