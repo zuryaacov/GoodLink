@@ -230,7 +230,7 @@ const CTASection = () => {
 
                 {/* CTA Button */}
                 <button
-                  onClick={(e) => {
+                  onClick={async (e) => {
                     e.preventDefault();
                     e.stopPropagation();
 
@@ -241,27 +241,61 @@ const CTASection = () => {
                       return;
                     }
 
-                    // If user has a paid plan and customer portal URL, open it in new window
-                    if (
-                      userProfile &&
-                      userProfile.plan_type !== "free" &&
-                      userProfile.lemon_squeezy_customer_portal_url
-                    ) {
-                      const portalUrl = String(
-                        userProfile.lemon_squeezy_customer_portal_url
-                      ).trim();
-                      if (portalUrl) {
-                        window.open(portalUrl, "_blank", "noopener,noreferrer");
+                    // Open window immediately to avoid popup blockers
+                    const newWindow = window.open(
+                      "about:blank",
+                      "_blank",
+                      "noopener,noreferrer"
+                    );
+
+                    if (!newWindow) {
+                      alert("Please allow pop-ups for this site");
+                      return;
+                    }
+
+                    // Check if user has a paid subscription
+                    let profile = userProfile;
+                    if (!profile) {
+                      try {
+                        const { data: fetchedProfile } = await supabase
+                          .from("profiles")
+                          .select(
+                            "plan_type, lemon_squeezy_customer_portal_url"
+                          )
+                          .eq("user_id", user.id)
+                          .single();
+                        if (fetchedProfile) profile = fetchedProfile;
+                      } catch (err) {
+                        console.error("Error fetching profile:", err);
+                        newWindow.close();
                         return;
                       }
                     }
 
-                    // Otherwise, open checkout in new window
-                    const separator = plan.checkoutUrl.includes("?")
-                      ? "&"
-                      : "?";
-                    const checkoutUrl = `${plan.checkoutUrl}${separator}checkout[custom][user_id]=${user.id}`;
-                    window.open(checkoutUrl, "_blank", "noopener,noreferrer");
+                    // Determine the correct URL
+                    let targetUrl;
+                    if (
+                      profile &&
+                      profile.plan_type !== "free" &&
+                      profile.lemon_squeezy_customer_portal_url
+                    ) {
+                      const portalUrl = String(
+                        profile.lemon_squeezy_customer_portal_url
+                      ).trim();
+                      if (portalUrl) {
+                        targetUrl = portalUrl;
+                      }
+                    }
+
+                    if (!targetUrl) {
+                      const separator = plan.checkoutUrl.includes("?")
+                        ? "&"
+                        : "?";
+                      targetUrl = `${plan.checkoutUrl}${separator}checkout[custom][user_id]=${user.id}`;
+                    }
+
+                    // Update the window location
+                    newWindow.location.href = targetUrl;
                   }}
                   className={`mt-auto w-full py-4 px-6 rounded-lg font-bold text-base transition-all text-center inline-block active:scale-95 ${
                     plan.highlighted
