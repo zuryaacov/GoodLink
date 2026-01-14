@@ -19,6 +19,14 @@ const CustomDomainsManager = () => {
     isLoading: false,
   });
 
+  // Modal state for delete confirmation
+  const [deleteModalState, setDeleteModalState] = useState({
+    isOpen: false,
+    domainId: null,
+    domainName: '',
+    isLoading: false,
+  });
+
   useEffect(() => {
     fetchDomains();
   }, []);
@@ -32,6 +40,7 @@ const CustomDomainsManager = () => {
         .from('custom_domains')
         .select('*')
         .eq('user_id', user.id)
+        .neq('status', 'deleted') // Don't fetch deleted domains
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -45,17 +54,36 @@ const CustomDomainsManager = () => {
     }
   };
 
-  const handleDelete = async (domainId) => {
+  const handleDeleteClick = (domainId, domainName) => {
+    setDeleteModalState({
+      isOpen: true,
+      domainId,
+      domainName,
+      isLoading: false,
+    });
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!deleteModalState.domainId) return;
+    
+    setDeleteModalState(prev => ({ ...prev, isLoading: true }));
+    
     try {
       const { error } = await supabase
         .from('custom_domains')
-        .delete()
-        .eq('id', domainId);
+        .update({ 
+          status: 'deleted',
+          deleted_at: new Date().toISOString()
+        })
+        .eq('id', deleteModalState.domainId);
 
       if (error) throw error;
+      
+      setDeleteModalState({ isOpen: false, domainId: null, domainName: '', isLoading: false });
       fetchDomains();
     } catch (error) {
       console.error('Error deleting domain:', error);
+      setDeleteModalState(prev => ({ ...prev, isLoading: false }));
       setModalState({
         isOpen: true,
         type: 'error',
@@ -245,7 +273,7 @@ const CustomDomainsManager = () => {
                   </div>
                 </div>
                 <button
-                  onClick={() => handleDelete(domain.id)}
+                  onClick={() => handleDeleteClick(domain.id, domain.domain)}
                   className="text-slate-400 hover:text-red-400 transition-colors p-2 flex-shrink-0"
                   title="Delete domain"
                 >
@@ -288,6 +316,23 @@ const CustomDomainsManager = () => {
           domain={editingDomain}
         />
       )}
+
+      {/* Delete Confirmation Modal */}
+      <Modal
+        isOpen={deleteModalState.isOpen}
+        onClose={() => !deleteModalState.isLoading && setDeleteModalState({ ...deleteModalState, isOpen: false })}
+        title="Delete this domain?"
+        message={
+          <>
+            Are you sure you want to delete <strong>{deleteModalState.domainName}</strong>? This action cannot be undone.
+          </>
+        }
+        type="delete"
+        confirmText="Delete Domain"
+        cancelText="Cancel"
+        onConfirm={handleDeleteConfirm}
+        isLoading={deleteModalState.isLoading}
+      />
 
       {/* Error/Alert Modal */}
       <Modal
