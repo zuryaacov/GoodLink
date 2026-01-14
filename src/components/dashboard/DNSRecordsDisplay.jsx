@@ -3,15 +3,19 @@ import { motion } from 'framer-motion';
 
 // Extract host from full Cloudflare hostname
 const extractDnsHost = (fullCfhName, userDomain) => {
-  // fullCfhName example: _cf-custom-hostname.www.userdomain.com
-  // userDomain example: userdomain.com
+  // fullCfhName: _cf-custom-hostname.www.tipul4u.com
+  // userDomain: tipul4u.com
   
   if (!fullCfhName || !userDomain) return "";
 
-  // Remove the domain name from the end, including the dot before it
-  const host = fullCfhName.replace(`.${userDomain}`, "");
+  // Check if the string ends with the user's domain
+  const suffix = `.${userDomain}`;
+  if (fullCfhName.endsWith(suffix)) {
+    // Cut from the start until before the domain's dot
+    return fullCfhName.slice(0, -suffix.length);
+  }
   
-  return host; // Returns: _cf-custom-hostname.www
+  return fullCfhName;
 };
 
 const DNSRecordsDisplay = ({ records, domain }) => {
@@ -76,11 +80,11 @@ const DNSRecordsDisplay = ({ records, domain }) => {
       <div>
         <h4 className="text-lg font-bold text-white mb-2">🌐 Connect Your Custom Domain</h4>
         <p className="text-sm text-slate-400">
-          To point your domain to our platform, please follow these steps in your DNS provider (e.g., Namecheap, GoDaddy, Cloudflare).
+          Follow these steps to point your domain to our platform.
         </p>
       </div>
 
-      {/* Step 1: Ownership Verification */}
+      {/* Step 1: Verify Ownership */}
       {ownershipRecord && (
         <motion.div
           initial={{ opacity: 0, y: 10 }}
@@ -88,9 +92,9 @@ const DNSRecordsDisplay = ({ records, domain }) => {
           className="bg-[#101622] border border-[#232f48] rounded-xl p-5 space-y-4"
         >
           <div>
-            <h5 className="text-base font-bold text-white mb-1">Step 1: Ownership Verification</h5>
+            <h5 className="text-base font-bold text-white mb-1">Step 1: Verify Ownership (TXT Record)</h5>
             <p className="text-sm text-slate-400 mb-4">
-              Create a TXT record to verify you own this domain.
+              You need to prove you own this domain to generate an SSL certificate.
             </p>
           </div>
           
@@ -131,7 +135,7 @@ const DNSRecordsDisplay = ({ records, domain }) => {
         </motion.div>
       )}
 
-      {/* Step 2: Route Traffic */}
+      {/* Step 2: Point Traffic */}
       {cnameRecord && (
         <motion.div
           initial={{ opacity: 0, y: 10 }}
@@ -139,9 +143,9 @@ const DNSRecordsDisplay = ({ records, domain }) => {
           className="bg-[#101622] border border-[#232f48] rounded-xl p-5 space-y-4"
         >
           <div>
-            <h5 className="text-base font-bold text-white mb-1">Step 2: Route Traffic</h5>
+            <h5 className="text-base font-bold text-white mb-1">Step 2: Point Traffic (CNAME Record)</h5>
             <p className="text-sm text-slate-400 mb-4">
-              Create a CNAME record to connect your domain to our servers.
+              Connect your subdomain to our servers.
             </p>
           </div>
           
@@ -184,18 +188,18 @@ const DNSRecordsDisplay = ({ records, domain }) => {
         </motion.div>
       )}
 
-      {/* Important Notes */}
-      <div className="bg-primary/10 border border-primary/30 rounded-xl p-4">
-        <h6 className="text-sm font-bold text-primary mb-2">💡 Important Notes:</h6>
-        <ul className="space-y-1 text-xs text-slate-300">
+      {/* Common Pitfalls */}
+      <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-xl p-4">
+        <h6 className="text-sm font-bold text-yellow-400 mb-2">⚠️ Common Pitfalls to Avoid:</h6>
+        <ul className="space-y-2 text-xs text-slate-300">
           <li>
-            <strong>DNS Propagation:</strong> Changes can take anywhere from a few minutes to 24 hours to take effect worldwide.
+            <strong>Double Domain Names:</strong> In the "Host" field, do not include your full domain. For example, use <code className="bg-[#0b0f19] px-1 py-0.5 rounded text-yellow-300">_cf-custom-hostname.www</code> instead of <code className="bg-[#0b0f19] px-1 py-0.5 rounded text-yellow-300">_cf-custom-hostname.www.tipul4u.com</code>.
           </li>
           <li>
-            <strong>Host Field:</strong> Most DNS providers automatically append your domain name. Do not enter your full domain in the Host field (e.g., use <code className="bg-[#0b0f19] px-1 py-0.5 rounded">www</code>, not <code className="bg-[#0b0f19] px-1 py-0.5 rounded">www.yourdomain.com</code>).
+            <strong>Propagation Time:</strong> DNS changes usually take 5–10 minutes but can take up to 24 hours in some cases.
           </li>
           <li>
-            <strong>SSL:</strong> Once verified, we will automatically generate an SSL certificate for your domain.
+            <strong>Cloudflare Users:</strong> If you are using Cloudflare for your own DNS, ensure the CNAME record is set to DNS Only (Grey Cloud), not Proxied.
           </li>
         </ul>
       </div>
