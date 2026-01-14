@@ -239,8 +239,14 @@ const CTASection = () => {
                       if (profile && profile.plan_type !== 'free' && profile.lemon_squeezy_customer_portal_url) {
                         const portalUrl = String(profile.lemon_squeezy_customer_portal_url).trim();
                         if (portalUrl && portalUrl.length > 0) {
-                          // Open customer portal in new tab
-                          window.open(portalUrl, '_blank', 'noopener,noreferrer');
+                          // Open customer portal in new tab - simple approach
+                          const newWindow = window.open(portalUrl, '_blank', 'noopener,noreferrer');
+                          // Check if popup blocker blocked it (optional)
+                          if (newWindow) {
+                            newWindow.focus();
+                          } else {
+                            window.location.href = portalUrl;
+                          }
                           return;
                         }
                       }
@@ -248,7 +254,12 @@ const CTASection = () => {
                       // Otherwise, open Lemon Squeezy checkout in new tab
                       const separator = plan.checkoutUrl.includes('?') ? '&' : '?';
                       const checkoutUrl = `${plan.checkoutUrl}${separator}checkout[custom][user_id]=${user.id}`;
-                      window.open(checkoutUrl, '_blank', 'noopener,noreferrer');
+                      const newWindow = window.open(checkoutUrl, '_blank', 'noopener,noreferrer');
+                      if (newWindow) {
+                        newWindow.focus();
+                      } else {
+                        window.location.href = checkoutUrl;
+                      }
                     } catch (error) {
                       console.error('Error in button click handler:', error);
                     }
