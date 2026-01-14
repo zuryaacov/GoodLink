@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "../lib/supabase";
 
 const CTASection = () => {
+  console.log("RENDER");
   const [user, setUser] = useState(null);
   const [userProfile, setUserProfile] = useState(null);
   const navigate = useNavigate();
