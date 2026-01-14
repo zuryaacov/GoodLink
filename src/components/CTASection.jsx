@@ -11,42 +11,34 @@ const CTASection = () => {
 
   // Get current user and profile if logged in
   useEffect(() => {
-    if (!supabase) return;
+    if (supabase) {
+      const fetchUserAndProfile = async () => {
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+        setUser(user);
 
-    const fetchUserAndProfile = async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      setUser(user);
+        if (user) {
+          const { data: profile, error } = await supabase
+            .from("profiles")
+            .select("plan_type, lemon_squeezy_customer_portal_url")
+            .eq("user_id", user.id)
+            .single();
 
-      if (user) {
-        const { data: profile, error } = await supabase
-          .from("profiles")
-          .select("plan_type, lemon_squeezy_customer_portal_url")
-          .eq("user_id", user.id)
-          .single();
-
-        if (!error && profile) {
-          setUserProfile(profile);
+          if (!error && profile) {
+            setUserProfile(profile);
+          }
+        } else {
+          setUserProfile(null);
         }
-      } else {
-        setUserProfile(null);
-      }
-    };
+      };
 
-    fetchUserAndProfile();
+      fetchUserAndProfile();
 
-    // Listen for auth changes - but ONLY for actual auth changes
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event, session) => {
-      // Only update on actual auth changes, not on focus/blur
-      if (
-        event === "SIGNED_IN" ||
-        event === "SIGNED_OUT" ||
-        event === "TOKEN_REFRESHED" ||
-        event === "USER_UPDATED"
-      ) {
+      // Listen for auth changes
+      const {
+        data: { subscription },
+      } = supabase.auth.onAuthStateChange(async (_event, session) => {
         const currentUser = session?.user ?? null;
         setUser(currentUser);
 
@@ -63,10 +55,10 @@ const CTASection = () => {
         } else {
           setUserProfile(null);
         }
-      }
-    });
+      });
 
-    return () => subscription.unsubscribe();
+      return () => subscription.unsubscribe();
+    }
   }, []);
 
   const plans = [
@@ -249,44 +241,52 @@ const CTASection = () => {
                       return;
                     }
 
-                    // Check if user has a paid subscription (not FREE) and customer portal URL
-                    let profile = userProfile;
-                    if (!profile) {
-                      try {
-                        const { data: fetchedProfile } = await supabase
-                          .from("profiles")
-                          .select(
-                            "plan_type, lemon_squeezy_customer_portal_url"
-                          )
-                          .eq("user_id", user.id)
-                          .single();
-                        if (fetchedProfile) profile = fetchedProfile;
-                      } catch (err) {
-                        console.error("Error fetching profile:", err);
+                    try {
+                      // Check if user has a paid subscription (not FREE) and customer portal URL
+                      let profile = userProfile;
+                      if (!profile) {
+                        try {
+                          const { data: fetchedProfile } = await supabase
+                            .from("profiles")
+                            .select(
+                              "plan_type, lemon_squeezy_customer_portal_url"
+                            )
+                            .eq("user_id", user.id)
+                            .single();
+                          if (fetchedProfile) profile = fetchedProfile;
+                        } catch (err) {
+                          console.error("Error fetching profile:", err);
+                        }
                       }
-                    }
 
-                    // If user has a paid plan and customer portal URL, open it in new window
-                    if (
-                      profile &&
-                      profile.plan_type !== "free" &&
-                      profile.lemon_squeezy_customer_portal_url
-                    ) {
-                      const portalUrl = String(
+                      // If user has a paid plan and customer portal URL, open it in new window
+                      if (
+                        profile &&
+                        profile.plan_type !== "free" &&
                         profile.lemon_squeezy_customer_portal_url
-                      ).trim();
-                      if (portalUrl) {
-                        window.open(portalUrl, "_blank", "noopener,noreferrer");
-                        return;
+                      ) {
+                        const portalUrl = String(
+                          profile.lemon_squeezy_customer_portal_url
+                        ).trim();
+                        if (portalUrl) {
+                          window.open(
+                            portalUrl,
+                            "_blank",
+                            "noopener,noreferrer"
+                          );
+                          return;
+                        }
                       }
-                    }
 
-                    // Otherwise, open checkout in new window
-                    const separator = plan.checkoutUrl.includes("?")
-                      ? "&"
-                      : "?";
-                    const checkoutUrl = `${plan.checkoutUrl}${separator}checkout[custom][user_id]=${user.id}`;
-                    window.open(checkoutUrl, "_blank", "noopener,noreferrer");
+                      // Otherwise, open checkout in new window
+                      const separator = plan.checkoutUrl.includes("?")
+                        ? "&"
+                        : "?";
+                      const checkoutUrl = `${plan.checkoutUrl}${separator}checkout[custom][user_id]=${user.id}`;
+                      window.open(checkoutUrl, "_blank", "noopener,noreferrer");
+                    } catch (err) {
+                      console.error("Error in button click handler:", err);
+                    }
                   }}
                   className={`mt-auto w-full py-4 px-6 rounded-lg font-bold text-base transition-all text-center inline-block active:scale-95 ${
                     plan.highlighted
