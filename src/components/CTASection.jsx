@@ -240,7 +240,7 @@ const CTASection = () => {
                       return;
                     }
 
-                    // Handle the async logic separately
+                    // Create form dynamically to open in new tab
                     const handleAsync = async () => {
                       let profile = userProfile;
                       if (!profile) {
@@ -279,8 +279,14 @@ const CTASection = () => {
                         targetUrl = `${plan.checkoutUrl}${separator}checkout[custom][user_id]=${user.id}`;
                       }
 
-                      // Use location.href instead of window.open
-                      window.location.href = targetUrl;
+                      // Use anchor tag method
+                      const a = document.createElement("a");
+                      a.href = targetUrl;
+                      a.target = "_blank";
+                      a.rel = "noopener noreferrer";
+                      document.body.appendChild(a);
+                      a.click();
+                      document.body.removeChild(a);
                     };
 
                     handleAsync();
