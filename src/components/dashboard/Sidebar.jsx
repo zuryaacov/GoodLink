@@ -151,11 +151,6 @@ const Sidebar = ({ className = "", onLinkClick }) => {
             <div className="flex flex-col flex-1 min-w-0">
                 <span className="text-sm font-bold text-white truncate">{userEmail || 'User'}</span>
                 <span className="text-xs text-slate-500">{getPlanDisplayName(planType)}</span>
-                {customerPortalUrl && (
-                  <span className="text-xs text-slate-400 truncate mt-0.5" title={customerPortalUrl}>
-                    {customerPortalUrl}
-                  </span>
-                )}
             </div>
         </div>
         
