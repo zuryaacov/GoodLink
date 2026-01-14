@@ -27,9 +27,15 @@ const DNSRecordsDisplay = ({ records, domain }) => {
     }
   };
 
+  // Debug: Log records to see what we're getting
+  console.log('🔵 [DNSRecordsDisplay] records:', records);
+  console.log('🔵 [DNSRecordsDisplay] domain:', domain);
+
   // Find TXT records - take the first one (ownership verification comes first from worker)
   const txtRecords = records?.filter(r => r.type === 'TXT') || [];
+  console.log('🔵 [DNSRecordsDisplay] txtRecords:', txtRecords);
   const ownershipRecord = txtRecords[0]; // First TXT record is ownership verification
+  console.log('🔵 [DNSRecordsDisplay] ownershipRecord:', ownershipRecord);
   
   // Find CNAME record
   const cnameRecord = records?.find(r => r.type === 'CNAME');
