@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from 'react';
-import { Check } from 'lucide-react';
-import { motion } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
-import { supabase } from '../lib/supabase';
+import React, { useEffect, useState } from "react";
+import { Check } from "lucide-react";
+import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
+import { supabase } from "../lib/supabase";
 
 const CTASection = () => {
   const [user, setUser] = useState(null);
@@ -13,14 +13,16 @@ const CTASection = () => {
   useEffect(() => {
     if (supabase) {
       const fetchUserAndProfile = async () => {
-        const { data: { user } } = await supabase.auth.getUser();
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
         setUser(user);
 
         if (user) {
           const { data: profile, error } = await supabase
-            .from('profiles')
-            .select('plan_type, lemon_squeezy_customer_portal_url')
-            .eq('user_id', user.id)
+            .from("profiles")
+            .select("plan_type, lemon_squeezy_customer_portal_url")
+            .eq("user_id", user.id)
             .single();
 
           if (!error && profile) {
@@ -34,15 +36,17 @@ const CTASection = () => {
       fetchUserAndProfile();
 
       // Listen for auth changes
-      const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      const {
+        data: { subscription },
+      } = supabase.auth.onAuthStateChange(async (_event, session) => {
         const currentUser = session?.user ?? null;
         setUser(currentUser);
 
         if (currentUser) {
           const { data: profile, error } = await supabase
-            .from('profiles')
-            .select('plan_type, lemon_squeezy_customer_portal_url')
-            .eq('user_id', currentUser.id)
+            .from("profiles")
+            .select("plan_type, lemon_squeezy_customer_portal_url")
+            .eq("user_id", currentUser.id)
             .single();
 
           if (!error && profile) {
@@ -59,53 +63,56 @@ const CTASection = () => {
 
   const plans = [
     {
-      name: 'START',
-      price: '9.99',
-      description: 'Perfect for getting started',
+      name: "START",
+      price: "9.99",
+      description: "Perfect for getting started",
       features: [
-        'Basic link management',
-        'Up to 1,000 clicks/month',
-        'Standard analytics',
-        'Email support'
+        "Basic link management",
+        "Up to 1,000 clicks/month",
+        "Standard analytics",
+        "Email support",
       ],
       highlighted: false,
-      checkoutUrl: 'https://goodlink.lemonsqueezy.com/checkout/buy/54a3e3e3-3618-4922-bce6-a0617252f1ae?embed=1',
-      buttonText: 'Get Started'
+      checkoutUrl:
+        "https://goodlink.lemonsqueezy.com/checkout/buy/54a3e3e3-3618-4922-bce6-a0617252f1ae?embed=1",
+      buttonText: "Get Started",
     },
     {
-      name: 'ADVANCED',
-      price: '19.99',
-      description: 'For growing businesses',
+      name: "ADVANCED",
+      price: "19.99",
+      description: "For growing businesses",
       features: [
-        'Advanced link management',
-        'Up to 10,000 clicks/month',
-        'Real-time analytics',
-        'Priority email support',
-        'Custom domains',
-        'Pixel tracking'
+        "Advanced link management",
+        "Up to 10,000 clicks/month",
+        "Real-time analytics",
+        "Priority email support",
+        "Custom domains",
+        "Pixel tracking",
       ],
       highlighted: true,
-      checkoutUrl: 'https://goodlink.lemonsqueezy.com/checkout/buy/81876116-924c-44f7-b61c-f4a8a93e83f1?embed=1',
-      buttonText: 'Go Advanced'
+      checkoutUrl:
+        "https://goodlink.lemonsqueezy.com/checkout/buy/81876116-924c-44f7-b61c-f4a8a93e83f1?embed=1",
+      buttonText: "Go Advanced",
     },
     {
-      name: 'PRO',
-      price: '59.99',
-      description: 'For power users',
+      name: "PRO",
+      price: "59.99",
+      description: "For power users",
       features: [
-        'Unlimited link management',
-        'Unlimited clicks',
-        'Advanced analytics',
-        '24/7 priority support',
-        'Unlimited custom domains',
-        'Advanced pixel tracking',
-        'API access',
-        'White-label options'
+        "Unlimited link management",
+        "Unlimited clicks",
+        "Advanced analytics",
+        "24/7 priority support",
+        "Unlimited custom domains",
+        "Advanced pixel tracking",
+        "API access",
+        "White-label options",
       ],
       highlighted: false,
-      checkoutUrl: 'https://goodlink.lemonsqueezy.com/checkout/buy/924daf77-b7b3-405d-a94a-2ad2cc476da4?embed=1',
-      buttonText: 'Go Pro'
-    }
+      checkoutUrl:
+        "https://goodlink.lemonsqueezy.com/checkout/buy/924daf77-b7b3-405d-a94a-2ad2cc476da4?embed=1",
+      buttonText: "Go Pro",
+    },
   ];
 
   const containerVariants = {
@@ -113,9 +120,9 @@ const CTASection = () => {
     visible: {
       opacity: 1,
       transition: {
-        staggerChildren: 0.15
-      }
-    }
+        staggerChildren: 0.15,
+      },
+    },
   };
 
   const itemVariants = {
@@ -125,13 +132,16 @@ const CTASection = () => {
       y: 0,
       transition: {
         duration: 0.5,
-        ease: "easeOut"
-      }
-    }
+        ease: "easeOut",
+      },
+    },
   };
 
   return (
-    <section id="pricing" className="py-20 px-6 md:px-20 bg-background-light dark:bg-background-dark">
+    <section
+      id="pricing"
+      className="py-20 px-6 md:px-20 bg-background-light dark:bg-background-dark"
+    >
       <div className="mx-auto max-w-[1200px] flex flex-col gap-16">
         {/* Headline */}
         <motion.div
@@ -148,7 +158,8 @@ const CTASection = () => {
             Choose Your Plan
           </h2>
           <p className="text-slate-600 dark:text-slate-400 text-lg md:text-xl font-normal leading-relaxed">
-            Flexible pricing designed to scale with your business. Start free, upgrade when you're ready.
+            Flexible pricing designed to scale with your business. Start free,
+            upgrade when you're ready.
           </p>
         </motion.div>
 
@@ -160,14 +171,14 @@ const CTASection = () => {
           viewport={{ once: true }}
           className="grid grid-cols-1 md:grid-cols-3 gap-8"
         >
-          {plans.map((plan, index) => (
+          {plans.map((plan) => (
             <motion.div
               key={plan.name}
               variants={itemVariants}
               className={`relative flex flex-col rounded-xl border-2 transition-all duration-300 ${
                 plan.highlighted
-                  ? 'border-primary bg-primary/5 dark:bg-primary/10 shadow-2xl scale-105 md:scale-110'
-                  : 'border-slate-200 dark:border-[#324467] bg-white dark:bg-[#192233]/50 hover:border-primary/50 hover:shadow-xl'
+                  ? "border-primary bg-primary/5 dark:bg-primary/10 shadow-2xl scale-105 md:scale-110"
+                  : "border-slate-200 dark:border-[#324467] bg-white dark:bg-[#192233]/50 hover:border-primary/50 hover:shadow-xl"
               }`}
             >
               {plan.highlighted && (
@@ -176,34 +187,53 @@ const CTASection = () => {
                 </span>
               )}
 
-              <div className={`p-8 flex flex-col gap-6 ${plan.highlighted ? 'bg-primary/5 dark:bg-primary/10' : ''}`}>
+              <div
+                className={`p-8 flex flex-col gap-6 ${
+                  plan.highlighted ? "bg-primary/5 dark:bg-primary/10" : ""
+                }`}
+              >
                 {/* Plan Header */}
                 <div className="flex flex-col gap-2">
-                  <h3 className="text-slate-900 dark:text-white text-2xl font-black">{plan.name}</h3>
-                  <p className="text-slate-500 dark:text-slate-400 text-sm">{plan.description}</p>
+                  <h3 className="text-slate-900 dark:text-white text-2xl font-black">
+                    {plan.name}
+                  </h3>
+                  <p className="text-slate-500 dark:text-slate-400 text-sm">
+                    {plan.description}
+                  </p>
                 </div>
 
                 {/* Price */}
                 <div className="flex items-baseline gap-1">
-                  <span className="text-slate-900 dark:text-white text-5xl font-black">${plan.price}</span>
-                  <span className="text-slate-500 dark:text-slate-400 text-lg font-medium">/month</span>
+                  <span className="text-slate-900 dark:text-white text-5xl font-black">
+                    ${plan.price}
+                  </span>
+                  <span className="text-slate-500 dark:text-slate-400 text-lg font-medium">
+                    /month
+                  </span>
                 </div>
 
                 {/* Features List */}
                 <ul className="flex flex-col gap-4 mt-2">
                   {plan.features.map((feature, featureIndex) => (
                     <li key={featureIndex} className="flex items-start gap-3">
-                      <Check className={`w-5 h-5 mt-0.5 flex-shrink-0 ${
-                        plan.highlighted ? 'text-primary' : 'text-primary'
-                      }`} />
-                      <span className="text-slate-700 dark:text-slate-300 text-sm leading-relaxed">{feature}</span>
+                      <Check
+                        className={`w-5 h-5 mt-0.5 flex-shrink-0 ${
+                          plan.highlighted ? "text-primary" : "text-primary"
+                        }`}
+                      />
+                      <span className="text-slate-700 dark:text-slate-300 text-sm leading-relaxed">
+                        {feature}
+                      </span>
                     </li>
                   ))}
                 </ul>
 
                 {/* CTA Button */}
                 <button
-                  onClick={async () => {
+                  onClick={async (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+
                     if (!user) {
                       // If user is not logged in, redirect to login with plan parameter
                       const planName = plan.name.toLowerCase();
@@ -216,34 +246,44 @@ const CTASection = () => {
                     if (!profile) {
                       try {
                         const { data: fetchedProfile } = await supabase
-                          .from('profiles')
-                          .select('plan_type, lemon_squeezy_customer_portal_url')
-                          .eq('user_id', user.id)
+                          .from("profiles")
+                          .select(
+                            "plan_type, lemon_squeezy_customer_portal_url"
+                          )
+                          .eq("user_id", user.id)
                           .single();
                         if (fetchedProfile) profile = fetchedProfile;
                       } catch (err) {
-                        console.error('Error fetching profile:', err);
+                        console.error("Error fetching profile:", err);
                       }
                     }
 
                     // If user has a paid plan and customer portal URL, open it in new window
-                    if (profile && profile.plan_type !== 'free' && profile.lemon_squeezy_customer_portal_url) {
-                      const portalUrl = String(profile.lemon_squeezy_customer_portal_url).trim();
+                    if (
+                      profile &&
+                      profile.plan_type !== "free" &&
+                      profile.lemon_squeezy_customer_portal_url
+                    ) {
+                      const portalUrl = String(
+                        profile.lemon_squeezy_customer_portal_url
+                      ).trim();
                       if (portalUrl) {
-                        window.open(portalUrl, '_blank', 'noopener,noreferrer');
+                        window.open(portalUrl, "_blank", "noopener,noreferrer");
                         return;
                       }
                     }
 
                     // Otherwise, open checkout in new window
-                    const separator = plan.checkoutUrl.includes('?') ? '&' : '?';
+                    const separator = plan.checkoutUrl.includes("?")
+                      ? "&"
+                      : "?";
                     const checkoutUrl = `${plan.checkoutUrl}${separator}checkout[custom][user_id]=${user.id}`;
-                    window.open(checkoutUrl, '_blank', 'noopener,noreferrer');
+                    window.open(checkoutUrl, "_blank", "noopener,noreferrer");
                   }}
                   className={`mt-auto w-full py-4 px-6 rounded-lg font-bold text-base transition-all text-center inline-block active:scale-95 ${
                     plan.highlighted
-                      ? 'bg-primary hover:bg-primary/90 text-white shadow-lg shadow-primary/30'
-                      : 'bg-slate-100 dark:bg-[#232f48] hover:bg-slate-200 dark:hover:bg-[#324467] text-slate-900 dark:text-white'
+                      ? "bg-primary hover:bg-primary/90 text-white shadow-lg shadow-primary/30"
+                      : "bg-slate-100 dark:bg-[#232f48] hover:bg-slate-200 dark:hover:bg-[#324467] text-slate-900 dark:text-white"
                   }`}
                 >
                   {plan.buttonText}
