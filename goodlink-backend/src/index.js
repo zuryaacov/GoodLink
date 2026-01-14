@@ -1487,6 +1487,7 @@ export default {
                 });
             }
 
+            const hostname = url.hostname;
             const domain = hostname.replace(/^www\./, '');
             console.log('🔵 Domain:', domain);
             console.log('🔵 Querying Supabase for link...');
