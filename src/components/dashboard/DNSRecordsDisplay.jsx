@@ -27,8 +27,9 @@ const DNSRecordsDisplay = ({ records, domain }) => {
     }
   };
 
-  // Find TXT record for ownership verification
-  const ownershipRecord = records?.find(r => r.type === 'TXT' && r.host?.includes('_cf-custom-hostname'));
+  // Find TXT records - take the first one (ownership verification comes first from worker)
+  const txtRecords = records?.filter(r => r.type === 'TXT') || [];
+  const ownershipRecord = txtRecords[0]; // First TXT record is ownership verification
   
   // Find CNAME record
   const cnameRecord = records?.find(r => r.type === 'CNAME');
