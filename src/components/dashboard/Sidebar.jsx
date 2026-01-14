@@ -3,11 +3,10 @@ import { NavLink, useNavigate, Link } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 
 const sidebarLinks = [
-  { name: 'Overview', href: '/dashboard', icon: 'dashboard' },
+  { name: 'Analytics', href: '/dashboard', icon: 'insights' },
   { name: 'Link Manager', href: '/dashboard/links', icon: 'link' },
   { name: 'Pixel Manager', href: '/dashboard/pixels', icon: 'ads_click' },
   { name: 'Domains', href: '/dashboard/domains', icon: 'public' },
-  { name: 'Analytics', href: '/dashboard/analytics', icon: 'insights' },
 ];
 
 const Sidebar = ({ className = "", onLinkClick }) => {

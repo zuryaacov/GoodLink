@@ -3,7 +3,7 @@ import { Routes, Route, Navigate, Outlet } from "react-router-dom";
 import Homepage from "./pages/Homepage";
 import AuthPage from "./pages/AuthPage";
 import DashboardLayout from "./layouts/DashboardLayout";
-import DashboardOverview from "./pages/dashboard/DashboardOverview";
+import Analytics from "./pages/dashboard/Analytics";
 import LinkManager from "./pages/dashboard/LinkManager";
 import PixelManager from "./pages/dashboard/PixelManager";
 import CustomDomainsManager from "./pages/dashboard/CustomDomainsManager";
@@ -89,17 +89,11 @@ function App() {
           </ProtectedRoute>
         }
       >
-        <Route index element={<DashboardOverview />} />
+        <Route index element={<Analytics />} />
         {/* Placeholders for future phases */}
         <Route path="links" element={<LinkManager />} />
         <Route path="pixels" element={<PixelManager />} />
         <Route path="domains" element={<CustomDomainsManager />} />
-        <Route
-          path="analytics"
-          element={
-            <div className="text-white">Analytics Reports (Coming Soon)</div>
-          }
-        />
       </Route>
     </Routes>
   );
