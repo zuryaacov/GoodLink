@@ -48,19 +48,25 @@ const DNSRecordsDisplay = ({ records, domain }) => {
     }
   };
 
-  // Find TXT records - take the first one (ownership verification comes first from worker)
+  // Find TXT records - ownership verification (first) and SSL verification (second)
   // Note: Worker sends 'txt' (lowercase) but we check case-insensitively
   const txtRecords =
     records?.filter((r) => r.type?.toUpperCase() === "TXT") || [];
   const ownershipRecord = txtRecords[0]; // First TXT record is ownership verification
+  const sslRecord = txtRecords[1]; // Second TXT record is SSL verification (if exists)
 
   // Find CNAME record (also case-insensitive)
   const cnameRecord = records?.find((r) => r.type?.toUpperCase() === "CNAME");
 
-  // Extract host for TXT record
-  const txtHost = ownershipRecord?.host
+  // Extract host for ownership TXT record
+  const ownershipHost = ownershipRecord?.host
     ? extractDnsHost(ownershipRecord.host, domain || "")
     : ownershipRecord?.host || "";
+
+  // Extract host for SSL TXT record
+  const sslHost = sslRecord?.host
+    ? extractDnsHost(sslRecord.host, domain || "")
+    : sslRecord?.host || "";
 
   // Extract subdomain from domain (e.g., "www" from "www.userdomain.com")
   const getSubdomain = (domainName) => {
@@ -143,13 +149,13 @@ const DNSRecordsDisplay = ({ records, domain }) => {
                   Host/Name:
                 </label>
                 <code className="block px-3 py-2 bg-[#0b0f19] border border-[#232f48] rounded-lg text-sm text-white font-mono break-all">
-                  {txtHost || ownershipRecord.host}
+                  {ownershipHost || ownershipRecord.host}
                 </code>
               </div>
               <div className="flex-shrink-0 pt-6">
                 <CopyButton
-                  value={txtHost || ownershipRecord.host}
-                  fieldName="txt-host"
+                  value={ownershipHost || ownershipRecord.host}
+                  fieldName="ownership-host"
                 />
               </div>
             </div>
@@ -166,7 +172,7 @@ const DNSRecordsDisplay = ({ records, domain }) => {
               <div className="flex-shrink-0 pt-6">
                 <CopyButton
                   value={ownershipRecord.value}
-                  fieldName="txt-value"
+                  fieldName="ownership-value"
                 />
               </div>
             </div>
@@ -174,7 +180,72 @@ const DNSRecordsDisplay = ({ records, domain }) => {
         </motion.div>
       )}
 
-      {/* Step 2: Point Traffic */}
+      {/* Step 2: SSL Verification */}
+      {sslRecord && (
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-[#101622] border border-[#232f48] rounded-xl p-5 space-y-4"
+        >
+          <div>
+            <h5 className="text-base font-bold text-white mb-1">
+              Step 2: SSL Verification (TXT Record)
+            </h5>
+            <p className="text-sm text-slate-400 mb-4">
+              Add this TXT record to enable SSL certificate generation.
+            </p>
+          </div>
+
+          <div className="space-y-3">
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex-1">
+                <label className="text-xs text-slate-500 mb-1 block">
+                  Type:
+                </label>
+                <code className="block px-3 py-2 bg-[#0b0f19] border border-[#232f48] rounded-lg text-sm text-white font-mono">
+                  TXT
+                </code>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex-1 min-w-0">
+                <label className="text-xs text-slate-500 mb-1 block">
+                  Host/Name:
+                </label>
+                <code className="block px-3 py-2 bg-[#0b0f19] border border-[#232f48] rounded-lg text-sm text-white font-mono break-all">
+                  {sslHost || sslRecord.host}
+                </code>
+              </div>
+              <div className="flex-shrink-0 pt-6">
+                <CopyButton
+                  value={sslHost || sslRecord.host}
+                  fieldName="ssl-host"
+                />
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex-1 min-w-0">
+                <label className="text-xs text-slate-500 mb-1 block">
+                  Value:
+                </label>
+                <code className="block px-3 py-2 bg-[#0b0f19] border border-[#232f48] rounded-lg text-sm text-white font-mono break-all">
+                  {sslRecord.value}
+                </code>
+              </div>
+              <div className="flex-shrink-0 pt-6">
+                <CopyButton
+                  value={sslRecord.value}
+                  fieldName="ssl-value"
+                />
+              </div>
+            </div>
+          </div>
+        </motion.div>
+      )}
+
+      {/* Step 3: Point Traffic */}
       {cnameRecord && (
         <motion.div
           initial={{ opacity: 0, y: 10 }}
@@ -183,7 +254,7 @@ const DNSRecordsDisplay = ({ records, domain }) => {
         >
           <div>
             <h5 className="text-base font-bold text-white mb-1">
-              Step 2: Point Traffic (CNAME Record)
+              Step 3: Point Traffic (CNAME Record)
             </h5>
             <p className="text-sm text-slate-400 mb-4">
               Connect your subdomain to our servers.
