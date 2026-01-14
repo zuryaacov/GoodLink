@@ -22,34 +22,42 @@ const AuthPage = () => {
     pro: 'https://goodlink.lemonsqueezy.com/checkout/buy/924daf77-b7b3-405d-a94a-2ad2cc476da4?embed=1'
   };
 
-  // Function to open Lemon Squeezy checkout
+  // Function to open Lemon Squeezy checkout or customer portal
   const openCheckout = async (planName) => {
     const checkoutUrl = planCheckoutUrls[planName.toLowerCase()];
     if (!checkoutUrl) return;
 
     // Get user ID
     const { data: { user } } = await supabase.auth.getUser();
-    const finalUrl = user 
-      ? `${checkoutUrl}&checkout[custom][user_id]=${user.id}`
-      : checkoutUrl;
+    if (!user) return;
 
-    // Wait a bit for Lemon Squeezy script to load if needed
-    setTimeout(() => {
-      if (window.LemonSqueezy && window.LemonSqueezy.Url) {
-        window.LemonSqueezy.Url.Open(finalUrl);
-      } else if (window.createLemonSqueezy) {
-        window.createLemonSqueezy();
-        setTimeout(() => {
-          if (window.LemonSqueezy && window.LemonSqueezy.Url) {
-            window.LemonSqueezy.Url.Open(finalUrl);
-          } else {
-            window.location.href = finalUrl;
-          }
-        }, 500);
-      } else {
-        window.location.href = finalUrl;
+    // Check user profile to see if they have a paid plan
+    try {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("plan_type, lemon_squeezy_customer_portal_url")
+        .eq("user_id", user.id)
+        .single();
+
+      // If user has a paid plan (not FREE) and has customer portal URL, open it
+      if (
+        profile &&
+        profile.plan_type !== "free" &&
+        profile.lemon_squeezy_customer_portal_url
+      ) {
+        const portalUrl = String(profile.lemon_squeezy_customer_portal_url).trim();
+        if (portalUrl) {
+          window.open(portalUrl, "_blank", "noopener,noreferrer");
+          return;
+        }
       }
-    }, 100);
+    } catch (err) {
+      console.error("Error fetching profile:", err);
+    }
+
+    // Otherwise, if user is on FREE plan, open checkout
+    const finalUrl = `${checkoutUrl}&checkout[custom][user_id]=${user.id}`;
+    window.open(finalUrl, "_blank", "noopener,noreferrer");
   };
 
   // Check if user is already logged in when component mounts with plan param
