@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
+import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts';
 
 const StatCard = ({ title, value, change, icon, trend }) => (
   <div className="bg-[#101622] border border-[#232f48] rounded-2xl p-6 relative overflow-hidden group hover:border-[#324467] transition-colors">
@@ -18,12 +19,80 @@ const StatCard = ({ title, value, change, icon, trend }) => (
   </div>
 );
 
+const DonutChart = ({ data, title, colors }) => {
+  const COLORS = colors || ['#135bec', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
+  
+  const renderCustomLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent }) => {
+    if (percent < 0.05) return null; // Don't show label for small slices
+    const RADIAN = Math.PI / 180;
+    const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
+    const x = cx + radius * Math.cos(-midAngle * RADIAN);
+    const y = cy + radius * Math.sin(-midAngle * RADIAN);
+
+    return (
+      <text 
+        x={x} 
+        y={y} 
+        fill="white" 
+        textAnchor={x > cx ? 'start' : 'end'} 
+        dominantBaseline="central"
+        className="text-xs font-medium"
+      >
+        {`${(percent * 100).toFixed(1)}%`}
+      </text>
+    );
+  };
+
+  return (
+    <div className="bg-[#101622] border border-[#232f48] rounded-2xl p-6">
+      <h3 className="text-lg font-bold text-white mb-4">{title}</h3>
+      <ResponsiveContainer width="100%" height={300}>
+        <PieChart>
+          <Pie
+            data={data}
+            cx="50%"
+            cy="50%"
+            labelLine={false}
+            label={renderCustomLabel}
+            outerRadius={100}
+            fill="#8884d8"
+            dataKey="value"
+          >
+            {data.map((entry, index) => (
+              <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+            ))}
+          </Pie>
+          <Tooltip 
+            contentStyle={{ 
+              backgroundColor: '#101622', 
+              border: '1px solid #232f48',
+              borderRadius: '8px',
+              color: '#fff'
+            }}
+            formatter={(value, name) => [`${value} (${((value / data.reduce((sum, item) => sum + item.value, 0)) * 100).toFixed(1)}%)`, name]}
+          />
+          <Legend 
+            wrapperStyle={{ color: '#fff', paddingTop: '20px' }}
+            formatter={(value) => <span style={{ color: '#fff' }}>{value}</span>}
+          />
+        </PieChart>
+      </ResponsiveContainer>
+    </div>
+  );
+};
+
 const Analytics = () => {
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({
     totalClicks: 0,
     activeLinks: 0,
     botDetected: 0,
+  });
+  const [chartData, setChartData] = useState({
+    humanVsBot: [],
+    proxyVpn: [],
+    deviceOS: [],
+    geographic: [],
   });
 
   useEffect(() => {
@@ -38,15 +107,27 @@ const Analytics = () => {
         return;
       }
 
-      // Fetch Total Clicks
-      const { count: totalClicksCount, error: clicksError } = await supabase
+      // Fetch all clicks data for charts
+      const { data: allClicks, error: clicksError } = await supabase
         .from('clicks')
-        .select('*', { count: 'exact', head: true })
+        .select('is_bot, verdict, fraud_score, is_vpn, is_proxy, device_type, os, os_version, country, city')
         .eq('user_id', user.id);
 
       if (clicksError) {
-        console.error('Error fetching total clicks:', clicksError);
+        console.error('Error fetching clicks:', clicksError);
+        setLoading(false);
+        return;
       }
+
+      // Calculate stats
+      const totalClicks = allClicks?.length || 0;
+      const botDetected = allClicks?.filter(click => {
+        return (
+          click.is_bot === true ||
+          (click.verdict && click.verdict.toLowerCase().includes('bot')) ||
+          (click.fraud_score && click.fraud_score > 80)
+        );
+      }).length || 0;
 
       // Fetch Active Links count
       const { count: activeLinksCount, error: linksError } = await supabase
@@ -56,44 +137,114 @@ const Analytics = () => {
         .eq('status', 'active')
         .neq('status', 'deleted');
 
-      if (linksError) {
-        console.error('Error fetching active links:', linksError);
-      }
-
-      // Fetch Bot Detected clicks count
-      // Bot is detected if: is_bot = true OR verdict contains 'bot' OR fraud_score > 80
-      // Note: Supabase PostgREST doesn't support complex OR conditions with different operators in a single query
-      // We'll need to fetch and filter client-side, or use multiple queries
-      const { data: allClicks, error: clicksDataError } = await supabase
-        .from('clicks')
-        .select('is_bot, verdict, fraud_score')
-        .eq('user_id', user.id);
-
-      let botDetectedCount = 0;
-      if (!clicksDataError && allClicks) {
-        botDetectedCount = allClicks.filter(click => {
-          return (
-            click.is_bot === true ||
-            (click.verdict && click.verdict.toLowerCase().includes('bot')) ||
-            (click.fraud_score && click.fraud_score > 80)
-          );
-        }).length;
-      }
-
-      if (clicksDataError) {
-        console.error('Error fetching bot detected clicks:', clicksDataError);
-      }
-
       setStats({
-        totalClicks: totalClicksCount || 0,
+        totalClicks,
         activeLinks: activeLinksCount || 0,
-        botDetected: botDetectedCount || 0,
+        botDetected,
       });
+
+      // Process chart data
+      processChartData(allClicks || []);
+
     } catch (error) {
       console.error('Error fetching stats:', error);
     } finally {
       setLoading(false);
     }
+  };
+
+  const processChartData = (clicks) => {
+    // 1. Human vs. Bot Ratio
+    let humanCount = 0;
+    let botCount = 0;
+    
+    clicks.forEach(click => {
+      const isBot = (
+        click.is_bot === true ||
+        (click.verdict && click.verdict.toLowerCase().includes('bot')) ||
+        (click.fraud_score && click.fraud_score > 80)
+      );
+      if (isBot) {
+        botCount++;
+      } else {
+        humanCount++;
+      }
+    });
+
+    setChartData(prev => ({
+      ...prev,
+      humanVsBot: [
+        { name: 'Human', value: humanCount },
+        { name: 'Bot/Fraud', value: botCount },
+      ],
+    }));
+
+    // 2. Proxy/VPN detection
+    let proxyVpnCount = 0;
+    let normalCount = 0;
+    
+    clicks.forEach(click => {
+      if (click.is_vpn === true || click.is_proxy === true) {
+        proxyVpnCount++;
+      } else {
+        normalCount++;
+      }
+    });
+
+    setChartData(prev => ({
+      ...prev,
+      proxyVpn: [
+        { name: 'Proxy/VPN', value: proxyVpnCount },
+        { name: 'Direct', value: normalCount },
+      ],
+    }));
+
+    // 3. Device & OS (with iOS focus)
+    const deviceOSMap = new Map();
+    clicks.forEach(click => {
+      const os = click.os || 'Unknown';
+      const osVersion = click.os_version || '';
+      const deviceType = click.device_type || 'unknown';
+      
+      let key = os;
+      if (os.toLowerCase() === 'ios' && osVersion) {
+        key = `iOS ${osVersion}`;
+      } else if (os && deviceType) {
+        key = `${os} (${deviceType})`;
+      }
+      
+      deviceOSMap.set(key, (deviceOSMap.get(key) || 0) + 1);
+    });
+
+    const deviceOSArray = Array.from(deviceOSMap.entries())
+      .map(([name, value]) => ({ name, value }))
+      .sort((a, b) => b.value - a.value)
+      .slice(0, 10); // Top 10
+
+    setChartData(prev => ({
+      ...prev,
+      deviceOS: deviceOSArray,
+    }));
+
+    // 4. Geographic (Country/City)
+    const geoMap = new Map();
+    clicks.forEach(click => {
+      const country = click.country || 'Unknown';
+      const city = click.city || '';
+      const key = city ? `${city}, ${country}` : country;
+      
+      geoMap.set(key, (geoMap.get(key) || 0) + 1);
+    });
+
+    const geoArray = Array.from(geoMap.entries())
+      .map(([name, value]) => ({ name, value }))
+      .sort((a, b) => b.value - a.value)
+      .slice(0, 15); // Top 15
+
+    setChartData(prev => ({
+      ...prev,
+      geographic: geoArray,
+    }));
   };
 
   const formatNumber = (num) => {
@@ -133,6 +284,58 @@ const Analytics = () => {
           value={formatNumber(stats.activeLinks)}
           icon="link" 
         />
+      </div>
+
+      {/* Charts Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Human vs. Bot Ratio */}
+        <DonutChart 
+          data={chartData.humanVsBot}
+          title="Human vs. Bot Ratio"
+          colors={['#10b981', '#ef4444']}
+        />
+
+        {/* Proxy/VPN Detection */}
+        <DonutChart 
+          data={chartData.proxyVpn}
+          title="Proxy/VPN Detection"
+          colors={['#135bec', '#10b981']}
+        />
+      </div>
+
+      {/* Device & OS Chart */}
+      <DonutChart 
+        data={chartData.deviceOS}
+        title="Device & OS Distribution"
+        colors={['#135bec', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4', '#84cc16']}
+      />
+
+      {/* Geographic Bar Chart */}
+      <div className="bg-[#101622] border border-[#232f48] rounded-2xl p-6">
+        <h3 className="text-lg font-bold text-white mb-4">Geographic Distribution (Top 15)</h3>
+        <ResponsiveContainer width="100%" height={400}>
+          <BarChart data={chartData.geographic}>
+            <CartesianGrid strokeDasharray="3 3" stroke="#232f48" />
+            <XAxis 
+              dataKey="name" 
+              stroke="#94a3b8"
+              angle={-45}
+              textAnchor="end"
+              height={100}
+              tick={{ fill: '#94a3b8', fontSize: 12 }}
+            />
+            <YAxis stroke="#94a3b8" tick={{ fill: '#94a3b8' }} />
+            <Tooltip 
+              contentStyle={{ 
+                backgroundColor: '#101622', 
+                border: '1px solid #232f48',
+                borderRadius: '8px',
+                color: '#fff'
+              }}
+            />
+            <Bar dataKey="value" fill="#135bec" radius={[8, 8, 0, 0]} />
+          </BarChart>
+        </ResponsiveContainer>
       </div>
     </div>
   );
