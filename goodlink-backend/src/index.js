@@ -312,9 +312,49 @@ async function saveTelemetryOnly(telemetryId, linkId, userId, slug, domain, targ
 }
 
 /**
+ * Check if a click with the same telemetry_id already exists (deduplication)
+ */
+async function checkDuplicateClick(telemetryId, linkId, supabaseUrl, supabaseKey) {
+    if (!telemetryId || !linkId) return false;
+    
+    try {
+        const checkUrl = `${supabaseUrl}/rest/v1/clicks?telemetry_id=eq.${encodeURIComponent(telemetryId)}&link_id=eq.${encodeURIComponent(linkId)}&select=id&limit=1`;
+        const response = await fetch(checkUrl, {
+            method: 'GET',
+            headers: {
+                'apikey': supabaseKey,
+                'Authorization': `Bearer ${supabaseKey}`,
+                'Content-Type': 'application/json',
+            },
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            if (data && data.length > 0) {
+                console.log('🔍 [Deduplication] Duplicate click detected (telemetry_id + link_id) - skipping');
+                return true; // Duplicate found
+            }
+        }
+        return false; // No duplicate
+    } catch (error) {
+        console.error('⚠️ [Deduplication] Error checking for duplicates:', error.message);
+        return false; // On error, allow tracking (fail open)
+    }
+}
+
+/**
  * Save data to Supabase
  */
 async function saveToSupabase(logData, env) {
+    // Check for duplicate before saving
+    if (logData.telemetry_id && logData.link_id) {
+        const isDuplicate = await checkDuplicateClick(logData.telemetry_id, logData.link_id, env.SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY);
+        if (isDuplicate) {
+            console.log('⏭️ [Deduplication] Skipping save - duplicate click detected');
+            return; // Skip saving duplicate
+        }
+    }
+
     const supabaseResponse = await fetch(`${env.SUPABASE_URL}/rest/v1/clicks`, {
         method: "POST",
         headers: {
