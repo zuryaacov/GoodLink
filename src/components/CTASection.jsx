@@ -230,10 +230,7 @@ const CTASection = () => {
 
                 {/* CTA Button */}
                 <button
-                  onClick={async (e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-
+                  onClick={async () => {
                     if (!user) {
                       // If user is not logged in, redirect to login with plan parameter
                       const planName = plan.name.toLowerCase();
@@ -269,11 +266,13 @@ const CTASection = () => {
                           profile.lemon_squeezy_customer_portal_url
                         ).trim();
                         if (portalUrl) {
-                          window.open(
-                            portalUrl,
-                            "_blank",
-                            "noopener,noreferrer"
-                          );
+                          setTimeout(() => {
+                            window.open(
+                              portalUrl,
+                              "_blank",
+                              "noopener,noreferrer"
+                            );
+                          }, 0);
                           return;
                         }
                       }
@@ -283,7 +282,13 @@ const CTASection = () => {
                         ? "&"
                         : "?";
                       const checkoutUrl = `${plan.checkoutUrl}${separator}checkout[custom][user_id]=${user.id}`;
-                      window.open(checkoutUrl, "_blank", "noopener,noreferrer");
+                      setTimeout(() => {
+                        window.open(
+                          checkoutUrl,
+                          "_blank",
+                          "noopener,noreferrer"
+                        );
+                      }, 0);
                     } catch (err) {
                       console.error("Error in button click handler:", err);
                     }
