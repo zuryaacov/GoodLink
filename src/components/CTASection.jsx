@@ -230,7 +230,7 @@ const CTASection = () => {
 
                 {/* CTA Button */}
                 <button
-                  onClick={async (e) => {
+                  onClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
 
@@ -241,31 +241,14 @@ const CTASection = () => {
                       return;
                     }
 
-                    // Check if user has a paid subscription (not FREE) and customer portal URL
-                    let profile = userProfile;
-                    if (!profile) {
-                      try {
-                        const { data: fetchedProfile } = await supabase
-                          .from("profiles")
-                          .select(
-                            "plan_type, lemon_squeezy_customer_portal_url"
-                          )
-                          .eq("user_id", user.id)
-                          .single();
-                        if (fetchedProfile) profile = fetchedProfile;
-                      } catch (err) {
-                        console.error("Error fetching profile:", err);
-                      }
-                    }
-
                     // If user has a paid plan and customer portal URL, open it in new window
                     if (
-                      profile &&
-                      profile.plan_type !== "free" &&
-                      profile.lemon_squeezy_customer_portal_url
+                      userProfile &&
+                      userProfile.plan_type !== "free" &&
+                      userProfile.lemon_squeezy_customer_portal_url
                     ) {
                       const portalUrl = String(
-                        profile.lemon_squeezy_customer_portal_url
+                        userProfile.lemon_squeezy_customer_portal_url
                       ).trim();
                       if (portalUrl) {
                         window.open(portalUrl, "_blank", "noopener,noreferrer");

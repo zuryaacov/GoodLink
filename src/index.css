@@ -180,16 +180,3 @@ html {
   opacity: 0.5;
   cursor: not-allowed;
 }
-
-/* Override Lemon Squeezy overlay/container to prevent blocking */
-.lemonsqueezy-container, 
-.lemonsqueezy-overlay {
-  display: none !important;
-  pointer-events: none !important;
-}
-
-/* Ensure body is interactive */
-body {
-  pointer-events: auto !important;
-  overflow: auto !important;
-}
