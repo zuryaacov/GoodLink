@@ -98,6 +98,8 @@ const Sidebar = ({ className = "", onLinkClick }) => {
     // Navigate to homepage first to avoid ProtectedRoute redirecting to /login
     navigate('/');
     await supabase.auth.signOut();
+    // Refresh the page after logout
+    window.location.reload();
   };
 
   // Base classes with default width if not overridden

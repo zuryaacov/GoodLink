@@ -28,6 +28,8 @@ const Navbar = () => {
   const handleLogout = async () => {
     await supabase.auth.signOut();
     setIsOpen(false);
+    // Refresh the page after logout
+    window.location.reload();
   };
 
   const navLinks = [
