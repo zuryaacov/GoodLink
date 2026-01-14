@@ -2,20 +2,30 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 
 // Extract host from full Cloudflare hostname
+// This handles complex domains like co.il, com.au, etc.
 const extractDnsHost = (fullCfhName, userDomain) => {
-  // fullCfhName: _cf-custom-hostname.www.tipul4u.com
-  // userDomain: tipul4u.com
-  
   if (!fullCfhName || !userDomain) return "";
 
-  // Check if the string ends with the user's domain
-  const suffix = `.${userDomain}`;
-  if (fullCfhName.endsWith(suffix)) {
-    // Cut from the start until before the domain's dot
-    return fullCfhName.slice(0, -suffix.length);
+  // 1. Trim whitespace if user accidentally added any
+  const full = fullCfhName.trim();
+  const domain = userDomain.trim();
+
+  // 2. Find where the user's domain starts in the Cloudflare string
+  const domainIndex = full.lastIndexOf(domain);
+
+  if (domainIndex > 0) {
+    // 3. Cut everything that appears before the domain, including the dot that separates them
+    let host = full.substring(0, domainIndex);
+    
+    // If there's a dot at the end (e.g., _cf-custom-hostname.www.), remove it
+    if (host.endsWith('.')) {
+      host = host.slice(0, -1);
+    }
+    
+    return host;
   }
-  
-  return fullCfhName;
+
+  return full;
 };
 
 const DNSRecordsDisplay = ({ records, domain }) => {
