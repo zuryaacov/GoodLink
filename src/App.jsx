@@ -5,6 +5,7 @@ import AuthPage from "./pages/AuthPage";
 import DashboardLayout from "./layouts/DashboardLayout";
 import Analytics from "./pages/dashboard/Analytics";
 import LinkManager from "./pages/dashboard/LinkManager";
+import UtmPresetManager from "./pages/dashboard/UtmPresetManager";
 import PixelManager from "./pages/dashboard/PixelManager";
 import CustomDomainsManager from "./pages/dashboard/CustomDomainsManager";
 import { supabase } from "./lib/supabase";
@@ -92,6 +93,7 @@ function App() {
         <Route index element={<Analytics />} />
         {/* Placeholders for future phases */}
         <Route path="links" element={<LinkManager />} />
+        <Route path="utm-presets" element={<UtmPresetManager />} />
         <Route path="pixels" element={<PixelManager />} />
         <Route path="domains" element={<CustomDomainsManager />} />
       </Route>

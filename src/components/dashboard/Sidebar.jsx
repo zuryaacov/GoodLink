@@ -5,6 +5,7 @@ import { supabase } from '../../lib/supabase';
 const sidebarLinks = [
   { name: 'Analytics', href: '/dashboard', icon: 'insights' },
   { name: 'Link Manager', href: '/dashboard/links', icon: 'link' },
+  { name: 'UTM Preset', href: '/dashboard/utm-presets', icon: 'campaign' },
   { name: 'Pixel Manager', href: '/dashboard/pixels', icon: 'ads_click' },
   { name: 'Domains', href: '/dashboard/domains', icon: 'public' },
 ];
