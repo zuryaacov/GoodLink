@@ -326,10 +326,19 @@ const AuthPage = () => {
         }
 
         // Honeypot check - if this field is filled, it's a bot
-        console.log("Honeypot value:", honeypot);
-        if (honeypot && honeypot.trim() !== "") {
+        // Check both state and DOM element (bots might fill it directly)
+        const honeypotField = document.querySelector('input[name="website"]');
+        const honeypotValue = honeypotField?.value || honeypot;
+
+        console.log("Honeypot value (state):", honeypot);
+        console.log("Honeypot value (DOM):", honeypotField?.value);
+
+        if (honeypotValue && honeypotValue.trim() !== "") {
           // Silently block bot without revealing why
-          console.warn("Bot detected via honeypot field, value:", honeypot);
+          console.warn(
+            "Bot detected via honeypot field, value:",
+            honeypotValue
+          );
           setError("Registration failed. Please try again.");
           setLoading(false);
           return;
