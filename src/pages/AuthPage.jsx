@@ -13,6 +13,8 @@ const AuthPage = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [message, setMessage] = useState(null);
+  const [turnstileToken, setTurnstileToken] = useState(null);
+  const [turnstileWidgetId, setTurnstileWidgetId] = useState(null);
   const navigate = useNavigate();
 
   // Plan checkout URLs mapping
@@ -118,6 +120,48 @@ const AuthPage = () => {
     }
   }, [navigate]);
 
+  // Initialize Turnstile widget when signup view is active
+  useEffect(() => {
+    if (view === 'signup' && window.turnstile) {
+      const siteKey = import.meta.env.VITE_TURNSTILE_SITE_KEY;
+      if (!siteKey) {
+        console.warn('Turnstile Site Key not found. Please add VITE_TURNSTILE_SITE_KEY to your environment variables.');
+        return;
+      }
+
+      // Reset token when switching to signup
+      setTurnstileToken(null);
+
+      // Render Turnstile widget
+      const widgetId = window.turnstile.render('#turnstile-widget', {
+        sitekey: siteKey,
+        callback: (token) => {
+          setTurnstileToken(token);
+        },
+        'error-callback': () => {
+          setTurnstileToken(null);
+          setError('Turnstile verification failed. Please try again.');
+        },
+        'expired-callback': () => {
+          setTurnstileToken(null);
+        },
+      });
+
+      setTurnstileWidgetId(widgetId);
+
+      return () => {
+        if (widgetId && window.turnstile) {
+          window.turnstile.remove(widgetId);
+        }
+      };
+    } else if (view !== 'signup' && turnstileWidgetId && window.turnstile) {
+      // Cleanup when leaving signup view
+      window.turnstile.remove(turnstileWidgetId);
+      setTurnstileWidgetId(null);
+      setTurnstileToken(null);
+    }
+  }, [view, turnstileWidgetId]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -145,6 +189,34 @@ const AuthPage = () => {
         if (password !== confirmPassword) {
           throw new Error("Passwords do not match");
         }
+
+        // Verify Turnstile token before signup
+        if (!turnstileToken) {
+          throw new Error("Please complete the security verification");
+        }
+
+        const turnstileWorkerUrl = import.meta.env.VITE_TURNSTILE_WORKER_URL || 'https://turnstile-verification.fancy-sky-7888.workers.dev';
+        const verifyResponse = await fetch(`${turnstileWorkerUrl}/api/verify-turnstile`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            token: turnstileToken,
+          }),
+        });
+
+        if (!verifyResponse.ok) {
+          const errorData = await verifyResponse.json().catch(() => ({}));
+          throw new Error(errorData.error || 'Security verification failed. Please try again.');
+        }
+
+        const verifyResult = await verifyResponse.json();
+        if (!verifyResult.success) {
+          throw new Error('Security verification failed. Please try again.');
+        }
+
+        // Only proceed with signup if Turnstile verification passed
         const { error } = await supabase.auth.signUp({
           email,
           password
@@ -359,7 +431,11 @@ const AuthPage = () => {
                       required
                     />
                   </div>
-                  <button type="submit" disabled={loading} className="h-12 w-full bg-primary hover:bg-primary/90 text-white font-bold rounded-xl transition-all shadow-lg shadow-primary/20 mt-2 disabled:opacity-50 flex items-center justify-center gap-2">
+                  
+                  {/* Turnstile Widget - only for email signup */}
+                  <div id="turnstile-widget" className="flex justify-center"></div>
+                  
+                  <button type="submit" disabled={loading || !turnstileToken} className="h-12 w-full bg-primary hover:bg-primary/90 text-white font-bold rounded-xl transition-all shadow-lg shadow-primary/20 mt-2 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
                     {loading && <div className="size-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>}
                     Create Account
                   </button>

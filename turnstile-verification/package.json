@@ -1,0 +1,17 @@
+{
+  "name": "turnstile-verification",
+  "version": "1.0.0",
+  "description": "Cloudflare Worker for Turnstile verification on signup",
+  "main": "src/index.js",
+  "scripts": {
+    "deploy": "wrangler deploy",
+    "dev": "wrangler dev",
+    "tail": "wrangler tail"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "wrangler": "^4.54.0"
+  }
+}
