@@ -331,28 +331,13 @@ const AuthPage = () => {
         const honeypotValueFromDOM = honeypotField?.value || "";
         const honeypotValue = honeypotValueFromDOM || honeypot;
 
-        console.log("=== HONEYPOT CHECK ===");
-        console.log("Honeypot value (state):", honeypot);
-        console.log("Honeypot value (DOM):", honeypotValueFromDOM);
-        console.log("Honeypot field found:", !!honeypotField);
-        console.log("Final honeypot value:", honeypotValue);
-        console.log(
-          "Will block?",
-          honeypotValue && honeypotValue.trim() !== ""
-        );
-
         if (honeypotValue && honeypotValue.trim() !== "") {
           // Silently block bot without revealing why
-          console.warn(
-            "🚫 Bot detected via honeypot field, value:",
-            honeypotValue
-          );
+          console.warn("Bot detected via honeypot field");
           setError("Registration failed. Please try again.");
           setLoading(false);
           return;
         }
-
-        console.log("✅ Honeypot check passed - continuing with signup");
 
         // Verify Turnstile token before signup
         if (!turnstileToken) {
