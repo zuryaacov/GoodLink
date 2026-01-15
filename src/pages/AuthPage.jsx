@@ -122,45 +122,71 @@ const AuthPage = () => {
 
   // Initialize Turnstile widget when signup view is active
   useEffect(() => {
-    if (view === 'signup' && window.turnstile) {
-      const siteKey = import.meta.env.VITE_TURNSTILE_SITE_KEY;
-      if (!siteKey) {
-        console.warn('Turnstile Site Key not found. Please add VITE_TURNSTILE_SITE_KEY to your environment variables.');
+    if (view !== 'signup') {
+      // Cleanup when leaving signup view
+      if (turnstileWidgetId && window.turnstile) {
+        window.turnstile.remove(turnstileWidgetId);
+        setTurnstileWidgetId(null);
+      }
+      setTurnstileToken(null);
+      return;
+    }
+
+    if (!window.turnstile) {
+      console.warn('Turnstile script not loaded yet');
+      return;
+    }
+
+    const siteKey = import.meta.env.VITE_TURNSTILE_SITE_KEY;
+    if (!siteKey) {
+      console.warn('Turnstile Site Key not found. Please add VITE_TURNSTILE_SITE_KEY to your environment variables.');
+      return;
+    }
+
+    // Reset token when switching to signup
+    setTurnstileToken(null);
+
+    // Wait for the DOM element to be available
+    const timer = setTimeout(() => {
+      const container = document.getElementById('turnstile-widget');
+      if (!container) {
+        console.error('Turnstile container not found');
         return;
       }
 
-      // Reset token when switching to signup
-      setTurnstileToken(null);
+      // Render Turnstile widget with the actual HTMLElement
+      try {
+        const widgetId = window.turnstile.render(container, {
+          sitekey: siteKey,
+          callback: (token) => {
+            setTurnstileToken(token);
+          },
+          'error-callback': () => {
+            setTurnstileToken(null);
+            setError('Turnstile verification failed. Please try again.');
+          },
+          'expired-callback': () => {
+            setTurnstileToken(null);
+          },
+        });
 
-      // Render Turnstile widget
-      const widgetId = window.turnstile.render('#turnstile-widget', {
-        sitekey: siteKey,
-        callback: (token) => {
-          setTurnstileToken(token);
-        },
-        'error-callback': () => {
-          setTurnstileToken(null);
-          setError('Turnstile verification failed. Please try again.');
-        },
-        'expired-callback': () => {
-          setTurnstileToken(null);
-        },
-      });
+        setTurnstileWidgetId(widgetId);
+      } catch (error) {
+        console.error('Error rendering Turnstile widget:', error);
+      }
+    }, 100);
 
-      setTurnstileWidgetId(widgetId);
-
-      return () => {
-        if (widgetId && window.turnstile) {
-          window.turnstile.remove(widgetId);
+    return () => {
+      clearTimeout(timer);
+      if (turnstileWidgetId && window.turnstile) {
+        try {
+          window.turnstile.remove(turnstileWidgetId);
+        } catch (error) {
+          console.error('Error removing Turnstile widget:', error);
         }
-      };
-    } else if (view !== 'signup' && turnstileWidgetId && window.turnstile) {
-      // Cleanup when leaving signup view
-      window.turnstile.remove(turnstileWidgetId);
-      setTurnstileWidgetId(null);
-      setTurnstileToken(null);
-    }
-  }, [view, turnstileWidgetId]);
+      }
+    };
+  }, [view]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
