@@ -198,11 +198,28 @@ const AuthPage = () => {
           },
           'error-callback': () => {
             setTurnstileToken(null);
-            // Don't set error here - let the user retry by resetting the widget
-            // The error will be shown when they try to submit without a token
+            setError('Turnstile verification failed. Please try again.');
+            // Reset the widget so user can try again
+            setTimeout(() => {
+              if (window.turnstile && widgetId) {
+                try {
+                  window.turnstile.reset(widgetId);
+                } catch (e) {
+                  // Ignore errors
+                }
+              }
+            }, 500);
           },
           'expired-callback': () => {
             setTurnstileToken(null);
+            // Reset the widget when token expires
+            if (window.turnstile && widgetId) {
+              try {
+                window.turnstile.reset(widgetId);
+              } catch (e) {
+                // Ignore errors
+              }
+            }
           },
         });
 
@@ -313,43 +330,15 @@ const AuthPage = () => {
           if (error.message && error.message.includes('confirmation email')) {
             throw new Error('Email configuration error. Please contact support or check your Supabase email settings.');
           }
-          
-          // Check if email already exists
-          if (error.message && (
-            error.message.toLowerCase().includes('already registered') ||
-            error.message.toLowerCase().includes('user already exists') ||
-            error.message.toLowerCase().includes('email already registered') ||
-            error.message.toLowerCase().includes('user already registered') ||
-            error.code === 'signup_disabled' ||
-            error.status === 422
-          )) {
-            throw new Error('This email is already registered. Please sign in instead or use a different email address.');
-          }
-          
           throw error;
         }
         
-        // Check if user already exists
-        // Supabase behavior: 
-        // - New user: returns user with no session (if email confirmation enabled)
-        // - Existing confirmed user: Supabase should return an error, but if not, we check email_confirmed_at
-        // - Existing unconfirmed user: Supabase might return user without error
-        if (data?.user) {
-          // If user has email_confirmed_at and it's not null, they already exist and are confirmed
-          // But we need to be careful - a new user won't have this set
-          // The safest approach: if Supabase didn't return an error, assume it's a new user
-          // Only check email_confirmed_at if it's explicitly set (not null/undefined)
-          
-          // If we got a session from signup, user was just created and email confirmation is disabled
-          if (data?.session) {
-            // User is already confirmed (if email confirmation is disabled)
-            navigate('/dashboard');
-            return;
-          }
-          
-          // User needs to confirm email
-          // Supabase will handle duplicate emails by returning an error, so if we got here without error, it's a new user
+        // Check if email confirmation is required
+        if (data?.user && !data?.session) {
           setMessage("Check your email for the confirmation link! If you don't receive it, check your spam folder.");
+        } else if (data?.session) {
+          // User is already confirmed (if email confirmation is disabled)
+          navigate('/dashboard');
         }
         // Note: For signup, checkout will open after email confirmation when user signs in
       } else if (view === 'forgot-password') {
@@ -361,6 +350,27 @@ const AuthPage = () => {
       }
     } catch (err) {
       setError(err.message);
+      
+      // Reset Turnstile widget if signup/login failed, so user can try again
+      if (view === 'signup' && turnstileWidgetId && window.turnstile) {
+        try {
+          window.turnstile.reset(turnstileWidgetId);
+          setTurnstileToken(null);
+        } catch (e) {
+          // If reset fails, try removing and re-rendering
+          try {
+            window.turnstile.remove(turnstileWidgetId);
+            setTurnstileWidgetId(null);
+            // Clear container to force re-render
+            const container = turnstileContainerRef.current;
+            if (container) {
+              container.innerHTML = '';
+            }
+          } catch (removeError) {
+            // Ignore errors
+          }
+        }
+      }
     } finally {
       setLoading(false);
     }
@@ -582,34 +592,6 @@ const AuthPage = () => {
                   
                   {/* Turnstile Widget - only for email signup */}
                   <div ref={turnstileContainerRef} id="turnstile-widget" className="flex justify-center min-h-[65px]"></div>
-                  
-                  {/* Reset Turnstile button - shown when widget fails */}
-                  {!turnstileToken && turnstileWidgetId && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        // Reset the widget
-                        if (window.turnstile && turnstileWidgetId) {
-                          try {
-                            window.turnstile.remove(turnstileWidgetId);
-                          } catch (e) {
-                            // Ignore
-                          }
-                        }
-                        setTurnstileWidgetId(null);
-                        setTurnstileToken(null);
-                        // Force re-render by clearing the container
-                        const container = turnstileContainerRef.current;
-                        if (container) {
-                          container.innerHTML = '';
-                        }
-                        // Re-render will happen automatically via useEffect
-                      }}
-                      className="text-xs text-primary hover:text-primary/80 font-bold transition-colors underline-offset-4 hover:underline mb-2"
-                    >
-                      Reset security verification
-                    </button>
-                  )}
                   
                   <button type="submit" disabled={loading || !turnstileToken} className="h-12 w-full bg-primary hover:bg-primary/90 text-white font-bold rounded-xl transition-all shadow-lg shadow-primary/20 mt-2 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
                     {loading && <div className="size-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>}
