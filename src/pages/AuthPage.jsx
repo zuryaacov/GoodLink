@@ -290,12 +290,29 @@ const AuthPage = () => {
         }
 
         // Only proceed with signup if Turnstile verification passed
-        const { error } = await supabase.auth.signUp({
+        const { error, data } = await supabase.auth.signUp({
           email,
-          password
+          password,
+          options: {
+            emailRedirectTo: `${window.location.origin}/login${planParam ? `?plan=${planParam}` : ''}`,
+          }
         });
-        if (error) throw error;
-        setMessage("Check your email for the confirmation link!");
+        
+        if (error) {
+          // Check if it's an email sending error
+          if (error.message && error.message.includes('confirmation email')) {
+            throw new Error('Email configuration error. Please contact support or check your Supabase email settings.');
+          }
+          throw error;
+        }
+        
+        // Check if email confirmation is required
+        if (data?.user && !data?.session) {
+          setMessage("Check your email for the confirmation link! If you don't receive it, check your spam folder.");
+        } else if (data?.session) {
+          // User is already confirmed (if email confirmation is disabled)
+          navigate('/dashboard');
+        }
         // Note: For signup, checkout will open after email confirmation when user signs in
       } else if (view === 'forgot-password') {
         const { error } = await supabase.auth.resetPasswordForEmail(email, {
