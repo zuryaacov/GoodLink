@@ -582,7 +582,7 @@ const AuthPage = () => {
                       <button
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition-colors"
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-[#10b981] hover:text-[#10b981]/80 transition-colors"
                         tabIndex={-1}
                       >
                         {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
@@ -679,7 +679,7 @@ const AuthPage = () => {
                       <button
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition-colors"
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-[#10b981] hover:text-[#10b981]/80 transition-colors"
                         tabIndex={-1}
                       >
                         {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
@@ -701,7 +701,7 @@ const AuthPage = () => {
                       <button
                         type="button"
                         onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition-colors"
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-[#10b981] hover:text-[#10b981]/80 transition-colors"
                         tabIndex={-1}
                       >
                         {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
