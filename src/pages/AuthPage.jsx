@@ -123,13 +123,16 @@ const AuthPage = () => {
 
   // Initialize Turnstile widget when signup view is active
   useEffect(() => {
+    let currentWidgetId = null;
+    let timer = null;
+
     if (view !== 'signup') {
       // Cleanup when leaving signup view
       if (turnstileWidgetId && window.turnstile) {
         try {
           window.turnstile.remove(turnstileWidgetId);
         } catch (error) {
-          console.error('Error removing Turnstile widget:', error);
+          // Ignore errors if widget already removed
         }
         setTurnstileWidgetId(null);
       }
@@ -156,11 +159,27 @@ const AuthPage = () => {
       const container = turnstileContainerRef.current;
       if (!container) {
         // Retry after a short delay if container not found
-        setTimeout(checkAndRender, 100);
+        timer = setTimeout(checkAndRender, 100);
         return;
       }
 
-      // Check if widget already exists
+      // Check if widget already exists in the container (cleanup first)
+      const existingWidget = container.querySelector('.cf-turnstile');
+      if (existingWidget) {
+        try {
+          // Try to get widget ID from the element
+          const widgetIdAttr = existingWidget.getAttribute('data-widget-id');
+          if (widgetIdAttr && window.turnstile) {
+            window.turnstile.remove(widgetIdAttr);
+          }
+        } catch (error) {
+          // Ignore errors
+        }
+        // Clear the container
+        container.innerHTML = '';
+      }
+
+      // Also cleanup previous widget from state if exists
       if (turnstileWidgetId && window.turnstile) {
         try {
           window.turnstile.remove(turnstileWidgetId);
@@ -185,6 +204,7 @@ const AuthPage = () => {
           },
         });
 
+        currentWidgetId = widgetId;
         setTurnstileWidgetId(widgetId);
       } catch (error) {
         console.error('Error rendering Turnstile widget:', error);
@@ -192,19 +212,28 @@ const AuthPage = () => {
     };
 
     // Wait a bit for the animation to complete and DOM to be ready
-    const timer = setTimeout(checkAndRender, 350);
+    timer = setTimeout(checkAndRender, 350);
 
     return () => {
-      clearTimeout(timer);
-      if (turnstileWidgetId && window.turnstile) {
+      if (timer) {
+        clearTimeout(timer);
+      }
+      // Cleanup: remove widget using the current widget ID
+      if (currentWidgetId && window.turnstile) {
+        try {
+          window.turnstile.remove(currentWidgetId);
+        } catch (error) {
+          // Ignore errors if widget already removed
+        }
+      } else if (turnstileWidgetId && window.turnstile) {
         try {
           window.turnstile.remove(turnstileWidgetId);
         } catch (error) {
-          console.error('Error removing Turnstile widget:', error);
+          // Ignore errors if widget already removed
         }
       }
     };
-  }, [view, turnstileWidgetId]);
+  }, [view]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
