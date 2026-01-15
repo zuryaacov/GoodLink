@@ -326,23 +326,33 @@ const AuthPage = () => {
         }
 
         // Honeypot check - if this field is filled, it's a bot
-        // Check both state and DOM element (bots might fill it directly)
+        // Check DOM element directly (bots might fill it directly, bypassing React state)
         const honeypotField = document.querySelector('input[name="website"]');
-        const honeypotValue = honeypotField?.value || honeypot;
+        const honeypotValueFromDOM = honeypotField?.value || "";
+        const honeypotValue = honeypotValueFromDOM || honeypot;
 
+        console.log("=== HONEYPOT CHECK ===");
         console.log("Honeypot value (state):", honeypot);
-        console.log("Honeypot value (DOM):", honeypotField?.value);
+        console.log("Honeypot value (DOM):", honeypotValueFromDOM);
+        console.log("Honeypot field found:", !!honeypotField);
+        console.log("Final honeypot value:", honeypotValue);
+        console.log(
+          "Will block?",
+          honeypotValue && honeypotValue.trim() !== ""
+        );
 
         if (honeypotValue && honeypotValue.trim() !== "") {
           // Silently block bot without revealing why
           console.warn(
-            "Bot detected via honeypot field, value:",
+            "🚫 Bot detected via honeypot field, value:",
             honeypotValue
           );
           setError("Registration failed. Please try again.");
           setLoading(false);
           return;
         }
+
+        console.log("✅ Honeypot check passed - continuing with signup");
 
         // Verify Turnstile token before signup
         if (!turnstileToken) {
@@ -858,11 +868,7 @@ const AuthPage = () => {
                     type="text"
                     name="website"
                     id="website"
-                    value={honeypot}
-                    onChange={(e) => {
-                      console.log("Honeypot field changed:", e.target.value);
-                      setHoneypot(e.target.value);
-                    }}
+                    defaultValue=""
                     tabIndex={-1}
                     autoComplete="off"
                     style={{
@@ -871,6 +877,8 @@ const AuthPage = () => {
                       opacity: 0,
                       pointerEvents: "auto", // Allow bots to fill it
                       zIndex: -1,
+                      width: "1px",
+                      height: "1px",
                     }}
                     aria-hidden="true"
                   />
