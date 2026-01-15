@@ -312,6 +312,18 @@ const AuthPage = () => {
           if (error.message && error.message.includes('confirmation email')) {
             throw new Error('Email configuration error. Please contact support or check your Supabase email settings.');
           }
+          
+          // Check if email already exists
+          if (error.message && (
+            error.message.toLowerCase().includes('already registered') ||
+            error.message.toLowerCase().includes('user already exists') ||
+            error.message.toLowerCase().includes('email already registered') ||
+            error.code === 'signup_disabled' ||
+            error.status === 422
+          )) {
+            throw new Error('This email is already registered. Please sign in instead or use a different email address.');
+          }
+          
           throw error;
         }
         
