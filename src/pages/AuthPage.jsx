@@ -318,6 +318,7 @@ const AuthPage = () => {
             error.message.toLowerCase().includes('already registered') ||
             error.message.toLowerCase().includes('user already exists') ||
             error.message.toLowerCase().includes('email already registered') ||
+            error.message.toLowerCase().includes('user already registered') ||
             error.code === 'signup_disabled' ||
             error.status === 422
           )) {
@@ -327,12 +328,25 @@ const AuthPage = () => {
           throw error;
         }
         
-        // Check if email confirmation is required
-        if (data?.user && !data?.session) {
-          setMessage("Check your email for the confirmation link! If you don't receive it, check your spam folder.");
-        } else if (data?.session) {
-          // User is already confirmed (if email confirmation is disabled)
-          navigate('/dashboard');
+        // Check if user already exists (Supabase sometimes returns user without error)
+        // If user exists and is already confirmed, we should redirect to login
+        if (data?.user) {
+          // Check if user is already confirmed by checking if they have email_confirmed_at
+          if (data.user.email_confirmed_at) {
+            // User already exists and is confirmed - redirect to login
+            setError('This email is already registered. Please sign in instead.');
+            setView('login');
+            return;
+          }
+          
+          // User exists but not confirmed - check if we got a session (means email confirmation is disabled)
+          if (data?.session) {
+            // User is already confirmed (if email confirmation is disabled)
+            navigate('/dashboard');
+          } else {
+            // User needs to confirm email
+            setMessage("Check your email for the confirmation link! If you don't receive it, check your spam folder.");
+          }
         }
         // Note: For signup, checkout will open after email confirmation when user signs in
       } else if (view === 'forgot-password') {
