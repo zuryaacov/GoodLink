@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { Eye, EyeOff } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
 const AuthPage = () => {
@@ -10,6 +11,8 @@ const AuthPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [honeypot, setHoneypot] = useState(''); // Honeypot field for bot detection
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -567,14 +570,24 @@ const AuthPage = () => {
                         Forgot?
                       </button>
                     </div>
-                    <input 
-                      type="password" 
-                      placeholder="••••••••"
-                      className="h-12 w-full bg-[#192233] border border-white/10 rounded-xl px-4 text-white focus:outline-none focus:border-primary/50 transition-colors"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      required
-                    />
+                    <div className="relative">
+                      <input 
+                        type={showPassword ? "text" : "password"} 
+                        placeholder="••••••••"
+                        className="h-12 w-full bg-[#192233] border border-white/10 rounded-xl px-4 pr-12 text-white focus:outline-none focus:border-primary/50 transition-colors"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        required
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition-colors"
+                        tabIndex={-1}
+                      >
+                        {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                      </button>
+                    </div>
                   </div>
                   <button 
                     type="submit" 
@@ -654,26 +667,46 @@ const AuthPage = () => {
                   </div>
                   <div className="flex flex-col gap-2">
                     <label className="text-sm font-bold text-slate-300 ml-1">Password</label>
-                    <input 
-                      type="password" 
-                      placeholder="••••••••"
-                      className="h-12 w-full bg-[#192233] border border-white/10 rounded-xl px-4 text-white focus:outline-none focus:border-primary/50 transition-colors"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      required
-                    />
+                    <div className="relative">
+                      <input 
+                        type={showPassword ? "text" : "password"} 
+                        placeholder="••••••••"
+                        className="h-12 w-full bg-[#192233] border border-white/10 rounded-xl px-4 pr-12 text-white focus:outline-none focus:border-primary/50 transition-colors"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        required
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition-colors"
+                        tabIndex={-1}
+                      >
+                        {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                      </button>
+                    </div>
                     {view === 'signup' && <PasswordStrengthMeter password={password} />}
                   </div>
                   <div className="flex flex-col gap-2">
                     <label className="text-sm font-bold text-slate-300 ml-1">Confirm Password</label>
-                    <input 
-                      type="password" 
-                      placeholder="••••••••"
-                      className="h-12 w-full bg-[#192233] border border-white/10 rounded-xl px-4 text-white focus:outline-none focus:border-primary/50 transition-colors"
-                      value={confirmPassword}
-                      onChange={(e) => setConfirmPassword(e.target.value)}
-                      required
-                    />
+                    <div className="relative">
+                      <input 
+                        type={showConfirmPassword ? "text" : "password"} 
+                        placeholder="••••••••"
+                        className="h-12 w-full bg-[#192233] border border-white/10 rounded-xl px-4 pr-12 text-white focus:outline-none focus:border-primary/50 transition-colors"
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        required
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition-colors"
+                        tabIndex={-1}
+                      >
+                        {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                      </button>
+                    </div>
                   </div>
                   
                   {/* Honeypot field - hidden from humans, traps bots */}
