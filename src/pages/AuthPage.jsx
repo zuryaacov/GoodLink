@@ -1,19 +1,19 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { Eye, EyeOff } from 'lucide-react';
-import { supabase } from '../lib/supabase';
+import React, { useState, useEffect, useRef } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { Eye, EyeOff } from "lucide-react";
+import { supabase } from "../lib/supabase";
 
 const AuthPage = () => {
   const [searchParams] = useSearchParams();
-  const planParam = searchParams.get('plan');
-  const [view, setView] = useState('login'); // Always start with login view
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+  const planParam = searchParams.get("plan");
+  const [view, setView] = useState("login"); // Always start with login view
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [honeypot, setHoneypot] = useState(''); // Honeypot field for bot detection
+  const [honeypot, setHoneypot] = useState(""); // Honeypot field for bot detection
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [message, setMessage] = useState(null);
@@ -24,9 +24,11 @@ const AuthPage = () => {
 
   // Plan checkout URLs mapping
   const planCheckoutUrls = {
-    start: 'https://goodlink.lemonsqueezy.com/checkout/buy/54a3e3e3-3618-4922-bce6-a0617252f1ae?embed=1',
-    advanced: 'https://goodlink.lemonsqueezy.com/checkout/buy/81876116-924c-44f7-b61c-f4a8a93e83f1?embed=1',
-    pro: 'https://goodlink.lemonsqueezy.com/checkout/buy/924daf77-b7b3-405d-a94a-2ad2cc476da4?embed=1'
+    start:
+      "https://goodlink.lemonsqueezy.com/checkout/buy/54a3e3e3-3618-4922-bce6-a0617252f1ae?embed=1",
+    advanced:
+      "https://goodlink.lemonsqueezy.com/checkout/buy/81876116-924c-44f7-b61c-f4a8a93e83f1?embed=1",
+    pro: "https://goodlink.lemonsqueezy.com/checkout/buy/924daf77-b7b3-405d-a94a-2ad2cc476da4?embed=1",
   };
 
   // Function to open Lemon Squeezy checkout or customer portal
@@ -35,7 +37,9 @@ const AuthPage = () => {
     if (!checkoutUrl) return;
 
     // Get user ID
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
     if (!user) return;
 
     // Check user profile to see if they have a paid plan
@@ -52,7 +56,9 @@ const AuthPage = () => {
         profile.plan_type !== "free" &&
         profile.lemon_squeezy_customer_portal_url
       ) {
-        const portalUrl = String(profile.lemon_squeezy_customer_portal_url).trim();
+        const portalUrl = String(
+          profile.lemon_squeezy_customer_portal_url
+        ).trim();
         if (portalUrl) {
           window.open(portalUrl, "_blank", "noopener,noreferrer");
           return;
@@ -72,7 +78,9 @@ const AuthPage = () => {
     if (!planParam || !supabase) return;
 
     const checkExistingUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (user) {
         // User is already logged in, open checkout immediately
         await openCheckout(planParam);
@@ -86,22 +94,24 @@ const AuthPage = () => {
     try {
       setLoading(true);
       setError(null);
-      
+
       // Save plan to sessionStorage for OAuth redirect
       if (planParam) {
-        sessionStorage.setItem('pendingPlan', planParam);
+        sessionStorage.setItem("pendingPlan", planParam);
       }
 
       const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
+        provider: "google",
         options: {
-          redirectTo: `${window.location.origin}/login${planParam ? `?plan=${planParam}` : ''}`
-        }
+          redirectTo: `${window.location.origin}/login${
+            planParam ? `?plan=${planParam}` : ""
+          }`,
+        },
       });
       if (error) throw error;
     } catch (err) {
       setError(err.message);
-      sessionStorage.removeItem('pendingPlan');
+      sessionStorage.removeItem("pendingPlan");
     } finally {
       setLoading(false);
     }
@@ -109,15 +119,17 @@ const AuthPage = () => {
 
   // Check for pending plan after OAuth redirect
   useEffect(() => {
-    const pendingPlan = sessionStorage.getItem('pendingPlan');
+    const pendingPlan = sessionStorage.getItem("pendingPlan");
     if (pendingPlan && supabase) {
       const checkUser = async () => {
-        const { data: { user } } = await supabase.auth.getUser();
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
         if (user) {
           await openCheckout(pendingPlan);
-          sessionStorage.removeItem('pendingPlan');
+          sessionStorage.removeItem("pendingPlan");
           setTimeout(() => {
-            navigate('/dashboard');
+            navigate("/dashboard");
           }, 2000);
         }
       };
@@ -130,7 +142,7 @@ const AuthPage = () => {
     let currentWidgetId = null;
     let timer = null;
 
-    if (view !== 'signup') {
+    if (view !== "signup") {
       // Cleanup when leaving signup view
       if (turnstileWidgetId && window.turnstile) {
         try {
@@ -145,13 +157,15 @@ const AuthPage = () => {
     }
 
     if (!window.turnstile) {
-      console.warn('Turnstile script not loaded yet');
+      console.warn("Turnstile script not loaded yet");
       return;
     }
 
     const siteKey = import.meta.env.VITE_TURNSTILE_SITE_KEY;
     if (!siteKey) {
-      console.warn('Turnstile Site Key not found. Please add VITE_TURNSTILE_SITE_KEY to your environment variables.');
+      console.warn(
+        "Turnstile Site Key not found. Please add VITE_TURNSTILE_SITE_KEY to your environment variables."
+      );
       return;
     }
 
@@ -168,11 +182,11 @@ const AuthPage = () => {
       }
 
       // Check if widget already exists in the container (cleanup first)
-      const existingWidget = container.querySelector('.cf-turnstile');
+      const existingWidget = container.querySelector(".cf-turnstile");
       if (existingWidget) {
         try {
           // Try to get widget ID from the element
-          const widgetIdAttr = existingWidget.getAttribute('data-widget-id');
+          const widgetIdAttr = existingWidget.getAttribute("data-widget-id");
           if (widgetIdAttr && window.turnstile) {
             window.turnstile.remove(widgetIdAttr);
           }
@@ -180,7 +194,7 @@ const AuthPage = () => {
           // Ignore errors
         }
         // Clear the container
-        container.innerHTML = '';
+        container.innerHTML = "";
       }
 
       // Also cleanup previous widget from state if exists
@@ -199,9 +213,9 @@ const AuthPage = () => {
           callback: (token) => {
             setTurnstileToken(token);
           },
-          'error-callback': () => {
+          "error-callback": () => {
             setTurnstileToken(null);
-            setError('Turnstile verification failed. Please try again.');
+            setError("Turnstile verification failed. Please try again.");
             // Reset the widget so user can try again
             setTimeout(() => {
               if (window.turnstile && widgetId) {
@@ -213,7 +227,7 @@ const AuthPage = () => {
               }
             }, 500);
           },
-          'expired-callback': () => {
+          "expired-callback": () => {
             setTurnstileToken(null);
             // Reset the widget when token expires
             if (window.turnstile && widgetId) {
@@ -229,7 +243,7 @@ const AuthPage = () => {
         currentWidgetId = widgetId;
         setTurnstileWidgetId(widgetId);
       } catch (error) {
-        console.error('Error rendering Turnstile widget:', error);
+        console.error("Error rendering Turnstile widget:", error);
       }
     };
 
@@ -264,54 +278,60 @@ const AuthPage = () => {
     setMessage(null);
 
     try {
-      if (view === 'login') {
+      if (view === "login") {
         const { data, error } = await supabase.auth.signInWithPassword({
           email,
-          password
+          password,
         });
         if (error) throw error;
-        
+
         // If plan is present, open checkout
         if (planParam && data?.user) {
           await openCheckout(planParam);
           setTimeout(() => {
-            navigate('/dashboard');
+            navigate("/dashboard");
           }, 2000);
         } else {
-          navigate('/dashboard');
+          navigate("/dashboard");
         }
-      } else if (view === 'signup') {
+      } else if (view === "signup") {
         // Password validation
         if (password.length < 8) {
           throw new Error("Password must be at least 8 characters long");
         }
-        
+
         // Check for at least one uppercase letter, one lowercase letter, and one number
         const hasUpper = /[A-Z]/.test(password);
         const hasLower = /[a-z]/.test(password);
         const hasNumber = /[0-9]/.test(password);
-        
+
         if (!hasUpper) {
-          throw new Error("Password must contain at least one uppercase letter (A-Z)");
+          throw new Error(
+            "Password must contain at least one uppercase letter (A-Z)"
+          );
         }
-        
+
         if (!hasLower) {
-          throw new Error("Password must contain at least one lowercase letter (a-z)");
+          throw new Error(
+            "Password must contain at least one lowercase letter (a-z)"
+          );
         }
-        
+
         if (!hasNumber) {
           throw new Error("Password must contain at least one number");
         }
-        
+
         if (password !== confirmPassword) {
           throw new Error("Passwords do not match");
         }
 
         // Honeypot check - if this field is filled, it's a bot
-        if (honeypot && honeypot.trim() !== '') {
+        console.log("Honeypot value:", honeypot);
+        if (honeypot && honeypot.trim() !== "") {
           // Silently block bot without revealing why
-          console.warn('Bot detected via honeypot field');
-          setError('Registration failed. Please try again.');
+          console.warn("Bot detected via honeypot field, value:", honeypot);
+          setError("Registration failed. Please try again.");
+          setLoading(false);
           return;
         }
 
@@ -320,25 +340,32 @@ const AuthPage = () => {
           throw new Error("Please complete the security verification");
         }
 
-        const turnstileWorkerUrl = import.meta.env.VITE_TURNSTILE_WORKER_URL || 'https://turnstile-verification.fancy-sky-7888.workers.dev';
-        const verifyResponse = await fetch(`${turnstileWorkerUrl}/api/verify-turnstile`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            token: turnstileToken,
-          }),
-        });
+        const turnstileWorkerUrl =
+          import.meta.env.VITE_TURNSTILE_WORKER_URL ||
+          "https://turnstile-verification.fancy-sky-7888.workers.dev";
+        const verifyResponse = await fetch(
+          `${turnstileWorkerUrl}/api/verify-turnstile`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              token: turnstileToken,
+            }),
+          }
+        );
 
         if (!verifyResponse.ok) {
           const errorData = await verifyResponse.json().catch(() => ({}));
-          throw new Error(errorData.error || 'Security verification failed. Please try again.');
+          throw new Error(
+            errorData.error || "Security verification failed. Please try again."
+          );
         }
 
         const verifyResult = await verifyResponse.json();
         if (!verifyResult.success) {
-          throw new Error('Security verification failed. Please try again.');
+          throw new Error("Security verification failed. Please try again.");
         }
 
         // Only proceed with signup if Turnstile verification passed
@@ -346,38 +373,46 @@ const AuthPage = () => {
           email,
           password,
           options: {
-            emailRedirectTo: `${window.location.origin}/login${planParam ? `?plan=${planParam}` : ''}`,
-          }
+            emailRedirectTo: `${window.location.origin}/login${
+              planParam ? `?plan=${planParam}` : ""
+            }`,
+          },
         });
-        
+
         if (error) {
           // Check if it's an email sending error
-          if (error.message && error.message.includes('confirmation email')) {
-            throw new Error('Email configuration error. Please contact support or check your Supabase email settings.');
+          if (error.message && error.message.includes("confirmation email")) {
+            throw new Error(
+              "Email configuration error. Please contact support or check your Supabase email settings."
+            );
           }
           throw error;
         }
-        
+
         // Check if email confirmation is required
         if (data?.user && !data?.session) {
-          setMessage("Check your email for the confirmation link! If you don't receive it, check your spam folder.");
+          setMessage(
+            "Check your email for the confirmation link! If you don't receive it, check your spam folder."
+          );
         } else if (data?.session) {
           // User is already confirmed (if email confirmation is disabled)
-          navigate('/dashboard');
+          navigate("/dashboard");
         }
         // Note: For signup, checkout will open after email confirmation when user signs in
-      } else if (view === 'forgot-password') {
+      } else if (view === "forgot-password") {
         const { error } = await supabase.auth.resetPasswordForEmail(email, {
-          redirectTo: `${window.location.origin}/login${planParam ? `?plan=${planParam}` : ''}`,
+          redirectTo: `${window.location.origin}/login${
+            planParam ? `?plan=${planParam}` : ""
+          }`,
         });
         if (error) throw error;
         setMessage("Password reset link sent to your email.");
       }
     } catch (err) {
       setError(err.message);
-      
+
       // Reset Turnstile widget if signup/login failed, so user can try again
-      if (view === 'signup' && turnstileWidgetId && window.turnstile) {
+      if (view === "signup" && turnstileWidgetId && window.turnstile) {
         try {
           window.turnstile.reset(turnstileWidgetId);
           setTurnstileToken(null);
@@ -389,7 +424,7 @@ const AuthPage = () => {
             // Clear container to force re-render
             const container = turnstileContainerRef.current;
             if (container) {
-              container.innerHTML = '';
+              container.innerHTML = "";
             }
           } catch (removeError) {
             // Ignore errors
@@ -418,20 +453,20 @@ const AuthPage = () => {
 
     // צבעים לפי חוזק
     const strengthColor = () => {
-      if (strengthScore === 0) return 'bg-slate-600';
-      if (strengthScore === 1) return 'bg-red-500';
-      if (strengthScore === 2) return 'bg-orange-500';
-      if (strengthScore === 3) return 'bg-yellow-500';
-      return 'bg-green-500';
+      if (strengthScore === 0) return "bg-slate-600";
+      if (strengthScore === 1) return "bg-red-500";
+      if (strengthScore === 2) return "bg-orange-500";
+      if (strengthScore === 3) return "bg-yellow-500";
+      return "bg-green-500";
     };
 
     // טקסט לפי חוזק
     const strengthText = () => {
-      if (strengthScore === 0) return '';
-      if (strengthScore === 1) return 'Very Weak';
-      if (strengthScore === 2) return 'Weak';
-      if (strengthScore === 3) return 'Medium';
-      return 'Strong';
+      if (strengthScore === 0) return "";
+      if (strengthScore === 1) return "Very Weak";
+      if (strengthScore === 2) return "Weak";
+      if (strengthScore === 3) return "Medium";
+      return "Strong";
     };
 
     return (
@@ -442,7 +477,7 @@ const AuthPage = () => {
             <div
               key={step}
               className={`h-1.5 w-full rounded-full transition-colors duration-300 ${
-                step <= strengthScore ? strengthColor() : 'bg-slate-700'
+                step <= strengthScore ? strengthColor() : "bg-slate-700"
               }`}
             />
           ))}
@@ -450,32 +485,53 @@ const AuthPage = () => {
 
         {/* רשימת דרישות (Checklist) */}
         <ul className="text-xs space-y-1 text-slate-400">
-          <li className={`flex items-center gap-2 ${checks.length ? "text-green-500 font-medium" : ""}`}>
+          <li
+            className={`flex items-center gap-2 ${
+              checks.length ? "text-green-500 font-medium" : ""
+            }`}
+          >
             <span>{checks.length ? "✓" : "○"}</span>
             <span>At least 8 characters</span>
           </li>
-          <li className={`flex items-center gap-2 ${checks.hasUpper ? "text-green-500 font-medium" : ""}`}>
+          <li
+            className={`flex items-center gap-2 ${
+              checks.hasUpper ? "text-green-500 font-medium" : ""
+            }`}
+          >
             <span>{checks.hasUpper ? "✓" : "○"}</span>
             <span>One uppercase letter (A-Z)</span>
           </li>
-          <li className={`flex items-center gap-2 ${checks.hasLower ? "text-green-500 font-medium" : ""}`}>
+          <li
+            className={`flex items-center gap-2 ${
+              checks.hasLower ? "text-green-500 font-medium" : ""
+            }`}
+          >
             <span>{checks.hasLower ? "✓" : "○"}</span>
             <span>One lowercase letter (a-z)</span>
           </li>
-          <li className={`flex items-center gap-2 ${checks.hasNumber ? "text-green-500 font-medium" : ""}`}>
+          <li
+            className={`flex items-center gap-2 ${
+              checks.hasNumber ? "text-green-500 font-medium" : ""
+            }`}
+          >
             <span>{checks.hasNumber ? "✓" : "○"}</span>
             <span>At least one number</span>
           </li>
         </ul>
-        
+
         {/* Strength text */}
         {strengthScore > 0 && (
-          <p className={`text-xs mt-2 font-medium ${
-            strengthScore === 1 ? 'text-red-500' :
-            strengthScore === 2 ? 'text-orange-500' :
-            strengthScore === 3 ? 'text-yellow-500' :
-            'text-green-500'
-          }`}>
+          <p
+            className={`text-xs mt-2 font-medium ${
+              strengthScore === 1
+                ? "text-red-500"
+                : strengthScore === 2
+                ? "text-orange-500"
+                : strengthScore === 3
+                ? "text-yellow-500"
+                : "text-green-500"
+            }`}
+          >
             Password strength: {strengthText()}
           </p>
         )}
@@ -484,16 +540,35 @@ const AuthPage = () => {
   };
 
   const Logo = () => (
-    <Link to="/" className="flex items-center gap-3 mb-8 transition-opacity hover:opacity-80">
+    <Link
+      to="/"
+      className="flex items-center gap-3 mb-8 transition-opacity hover:opacity-80"
+    >
       <div className="size-12 text-primary">
         <svg fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" stroke="#135bec" strokeLinecap="round" strokeLinejoin="round" strokeWidth="4"></path>
-          <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" stroke="#10b981" strokeLinecap="round" strokeLinejoin="round" strokeWidth="4"></path>
+          <path
+            d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"
+            stroke="#135bec"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="4"
+          ></path>
+          <path
+            d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"
+            stroke="#10b981"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="4"
+          ></path>
         </svg>
       </div>
       <h2 className="text-3xl font-bold leading-tight tracking-tight text-white">
-        <b><span className="text-[#10b981]">Good</span></b>
-        <b><span className="text-[#135bec]"> Link</span></b>
+        <b>
+          <span className="text-[#10b981]">Good</span>
+        </b>
+        <b>
+          <span className="text-[#135bec]"> Link</span>
+        </b>
       </h2>
     </Link>
   );
@@ -516,7 +591,7 @@ const AuthPage = () => {
             </div>
           )}
           <AnimatePresence mode="wait">
-            {view === 'login' && (
+            {view === "login" && (
               <motion.div
                 key="login"
                 initial={{ opacity: 0, x: -20 }}
@@ -526,8 +601,12 @@ const AuthPage = () => {
                 className="flex flex-col gap-6"
               >
                 <div className="text-center mb-2">
-                  <h1 className="text-2xl font-bold text-white mb-2">Welcome Back</h1>
-                  <p className="text-slate-400">Log in to your GoodLink.ai account</p>
+                  <h1 className="text-2xl font-bold text-white mb-2">
+                    Welcome Back
+                  </h1>
+                  <p className="text-slate-400">
+                    Log in to your GoodLink.ai account
+                  </p>
                 </div>
 
                 {error && (
@@ -544,9 +623,11 @@ const AuthPage = () => {
 
                 <form onSubmit={handleSubmit} className="flex flex-col gap-4">
                   <div className="flex flex-col gap-2">
-                    <label className="text-sm font-bold text-slate-300 ml-1">Email Address</label>
-                    <input 
-                      type="email" 
+                    <label className="text-sm font-bold text-slate-300 ml-1">
+                      Email Address
+                    </label>
+                    <input
+                      type="email"
                       placeholder="name@example.com"
                       className="h-12 w-full bg-[#192233] border border-white/10 rounded-xl px-4 text-white focus:outline-none focus:border-primary/50 transition-colors"
                       value={email}
@@ -556,12 +637,14 @@ const AuthPage = () => {
                   </div>
                   <div className="flex flex-col gap-2">
                     <div className="flex justify-between items-center ml-1">
-                      <label className="text-sm font-bold text-slate-300">Password</label>
-                      <button 
+                      <label className="text-sm font-bold text-slate-300">
+                        Password
+                      </label>
+                      <button
                         type="button"
                         onClick={() => {
-                          setView('forgot-password');
-                          setHoneypot('');
+                          setView("forgot-password");
+                          setHoneypot("");
                           setError(null);
                           setMessage(null);
                         }}
@@ -571,8 +654,8 @@ const AuthPage = () => {
                       </button>
                     </div>
                     <div className="relative">
-                      <input 
-                        type={showPassword ? "text" : "password"} 
+                      <input
+                        type={showPassword ? "text" : "password"}
                         placeholder="••••••••"
                         className="h-12 w-full bg-[#192233] border border-white/10 rounded-xl px-4 pr-12 text-white focus:outline-none focus:border-primary/50 transition-colors"
                         value={password}
@@ -585,49 +668,79 @@ const AuthPage = () => {
                         className="absolute right-3 top-1/2 -translate-y-1/2 text-[#10b981] hover:text-[#10b981]/80 transition-colors"
                         tabIndex={-1}
                       >
-                        {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                        {showPassword ? (
+                          <EyeOff size={20} />
+                        ) : (
+                          <Eye size={20} />
+                        )}
                       </button>
                     </div>
                   </div>
-                  <button 
-                    type="submit" 
+                  <button
+                    type="submit"
                     disabled={loading}
                     className="h-12 w-full bg-primary hover:bg-primary/90 text-white font-bold rounded-xl transition-all shadow-lg shadow-primary/20 mt-2 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                   >
-                    {loading && <div className="size-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>}
+                    {loading && (
+                      <div className="size-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                    )}
                     Sign In
                   </button>
                 </form>
 
                 <div className="relative flex items-center justify-center my-2">
-                  <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-white/10"></div></div>
-                  <span className="relative z-10 bg-[#161d2b] px-4 text-xs text-slate-500 font-bold uppercase tracking-widest">Or continue with</span>
+                  <div className="absolute inset-0 flex items-center">
+                    <div className="w-full border-t border-white/10"></div>
+                  </div>
+                  <span className="relative z-10 bg-[#161d2b] px-4 text-xs text-slate-500 font-bold uppercase tracking-widest">
+                    Or continue with
+                  </span>
                 </div>
 
-                <button 
+                <button
                   onClick={handleGoogleLogin}
                   disabled={loading}
                   className="h-12 w-full bg-white/5 hover:bg-white/10 border border-white/10 text-white font-bold rounded-xl flex items-center justify-center gap-3 transition-all disabled:opacity-50"
                 >
                   <svg className="size-5" viewBox="0 0 24 24">
-                    <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-                    <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-                    <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
-                    <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+                    <path
+                      d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                      fill="#4285F4"
+                    />
+                    <path
+                      d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                      fill="#34A853"
+                    />
+                    <path
+                      d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"
+                      fill="#FBBC05"
+                    />
+                    <path
+                      d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+                      fill="#EA4335"
+                    />
                   </svg>
                   Google
                 </button>
 
                 <p className="text-center text-sm text-slate-400 mt-2">
-                  Don't have an account? {' '}
-                  <button onClick={() => { setView('signup'); setError(null); setMessage(null); setHoneypot(''); }} className="text-primary hover:text-primary/80 font-bold transition-colors underline-offset-4 hover:underline">
+                  Don't have an account?{" "}
+                  <button
+                    onClick={() => {
+                      setView("signup");
+                      setError(null);
+                      setMessage(null);
+                      setHoneypot("");
+                    }}
+                    className="text-primary hover:text-primary/80 font-bold transition-colors underline-offset-4 hover:underline"
+                  >
                     Create one for free
                   </button>
                 </p>
               </motion.div>
             )}
 
-            {view === 'signup' && (
+            {view === "signup" && (
               <motion.div
                 key="signup"
                 initial={{ opacity: 0, x: 20 }}
@@ -637,8 +750,12 @@ const AuthPage = () => {
                 className="flex flex-col gap-6"
               >
                 <div className="text-center mb-2">
-                  <h1 className="text-2xl font-bold text-white mb-2">Join GoodLink.ai</h1>
-                  <p className="text-slate-400">Start securing your data today</p>
+                  <h1 className="text-2xl font-bold text-white mb-2">
+                    Join GoodLink.ai
+                  </h1>
+                  <p className="text-slate-400">
+                    Start securing your data today
+                  </p>
                 </div>
 
                 {error && (
@@ -655,9 +772,11 @@ const AuthPage = () => {
 
                 <form onSubmit={handleSubmit} className="flex flex-col gap-4">
                   <div className="flex flex-col gap-2">
-                    <label className="text-sm font-bold text-slate-300 ml-1">Email Address</label>
-                    <input 
-                      type="email" 
+                    <label className="text-sm font-bold text-slate-300 ml-1">
+                      Email Address
+                    </label>
+                    <input
+                      type="email"
                       placeholder="name@example.com"
                       className="h-12 w-full bg-[#192233] border border-white/10 rounded-xl px-4 text-white focus:outline-none focus:border-primary/50 transition-colors"
                       value={email}
@@ -666,10 +785,12 @@ const AuthPage = () => {
                     />
                   </div>
                   <div className="flex flex-col gap-2">
-                    <label className="text-sm font-bold text-slate-300 ml-1">Password</label>
+                    <label className="text-sm font-bold text-slate-300 ml-1">
+                      Password
+                    </label>
                     <div className="relative">
-                      <input 
-                        type={showPassword ? "text" : "password"} 
+                      <input
+                        type={showPassword ? "text" : "password"}
                         placeholder="••••••••"
                         className="h-12 w-full bg-[#192233] border border-white/10 rounded-xl px-4 pr-12 text-white focus:outline-none focus:border-primary/50 transition-colors"
                         value={password}
@@ -682,16 +803,24 @@ const AuthPage = () => {
                         className="absolute right-3 top-1/2 -translate-y-1/2 text-[#10b981] hover:text-[#10b981]/80 transition-colors"
                         tabIndex={-1}
                       >
-                        {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                        {showPassword ? (
+                          <EyeOff size={20} />
+                        ) : (
+                          <Eye size={20} />
+                        )}
                       </button>
                     </div>
-                    {view === 'signup' && <PasswordStrengthMeter password={password} />}
+                    {view === "signup" && (
+                      <PasswordStrengthMeter password={password} />
+                    )}
                   </div>
                   <div className="flex flex-col gap-2">
-                    <label className="text-sm font-bold text-slate-300 ml-1">Confirm Password</label>
+                    <label className="text-sm font-bold text-slate-300 ml-1">
+                      Confirm Password
+                    </label>
                     <div className="relative">
-                      <input 
-                        type={showConfirmPassword ? "text" : "password"} 
+                      <input
+                        type={showConfirmPassword ? "text" : "password"}
                         placeholder="••••••••"
                         className="h-12 w-full bg-[#192233] border border-white/10 rounded-xl px-4 pr-12 text-white focus:outline-none focus:border-primary/50 transition-colors"
                         value={confirmPassword}
@@ -700,68 +829,115 @@ const AuthPage = () => {
                       />
                       <button
                         type="button"
-                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                        onClick={() =>
+                          setShowConfirmPassword(!showConfirmPassword)
+                        }
                         className="absolute right-3 top-1/2 -translate-y-1/2 text-[#10b981] hover:text-[#10b981]/80 transition-colors"
                         tabIndex={-1}
                       >
-                        {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                        {showConfirmPassword ? (
+                          <EyeOff size={20} />
+                        ) : (
+                          <Eye size={20} />
+                        )}
                       </button>
                     </div>
                   </div>
-                  
+
                   {/* Honeypot field - hidden from humans, traps bots */}
                   <input
                     type="text"
                     name="website"
+                    id="website"
                     value={honeypot}
-                    onChange={(e) => setHoneypot(e.target.value)}
+                    onChange={(e) => {
+                      console.log("Honeypot field changed:", e.target.value);
+                      setHoneypot(e.target.value);
+                    }}
                     tabIndex={-1}
                     autoComplete="off"
                     style={{
-                      position: 'absolute',
-                      left: '-9999px',
-                      width: '1px',
-                      height: '1px',
+                      position: "absolute",
+                      left: "-9999px",
                       opacity: 0,
-                      pointerEvents: 'none'
+                      pointerEvents: "auto", // Allow bots to fill it
+                      zIndex: -1,
                     }}
                     aria-hidden="true"
                   />
-                  
+
                   {/* Turnstile Widget - only for email signup */}
-                  <div ref={turnstileContainerRef} id="turnstile-widget" className="flex justify-center min-h-[65px]"></div>
-                  
-                  <button type="submit" disabled={loading || !turnstileToken} className="h-12 w-full bg-primary hover:bg-primary/90 text-white font-bold rounded-xl transition-all shadow-lg shadow-primary/20 mt-2 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
-                    {loading && <div className="size-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>}
+                  <div
+                    ref={turnstileContainerRef}
+                    id="turnstile-widget"
+                    className="flex justify-center min-h-[65px]"
+                  ></div>
+
+                  <button
+                    type="submit"
+                    disabled={loading || !turnstileToken}
+                    className="h-12 w-full bg-primary hover:bg-primary/90 text-white font-bold rounded-xl transition-all shadow-lg shadow-primary/20 mt-2 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  >
+                    {loading && (
+                      <div className="size-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                    )}
                     Create Account
                   </button>
                 </form>
 
                 <div className="relative flex items-center justify-center my-2">
-                  <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-white/10"></div></div>
-                  <span className="relative z-10 bg-[#161d2b] px-4 text-xs text-slate-500 font-bold uppercase tracking-widest">Or join with</span>
+                  <div className="absolute inset-0 flex items-center">
+                    <div className="w-full border-t border-white/10"></div>
+                  </div>
+                  <span className="relative z-10 bg-[#161d2b] px-4 text-xs text-slate-500 font-bold uppercase tracking-widest">
+                    Or join with
+                  </span>
                 </div>
 
-                <button onClick={handleGoogleLogin} disabled={loading} className="h-12 w-full bg-white/5 hover:bg-white/10 border border-white/10 text-white font-bold rounded-xl flex items-center justify-center gap-3 transition-all disabled:opacity-50">
+                <button
+                  onClick={handleGoogleLogin}
+                  disabled={loading}
+                  className="h-12 w-full bg-white/5 hover:bg-white/10 border border-white/10 text-white font-bold rounded-xl flex items-center justify-center gap-3 transition-all disabled:opacity-50"
+                >
                   <svg className="size-5" viewBox="0 0 24 24">
-                    <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-                    <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-                    <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
-                    <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+                    <path
+                      d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                      fill="#4285F4"
+                    />
+                    <path
+                      d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                      fill="#34A853"
+                    />
+                    <path
+                      d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"
+                      fill="#FBBC05"
+                    />
+                    <path
+                      d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+                      fill="#EA4335"
+                    />
                   </svg>
                   Google
                 </button>
 
                 <p className="text-center text-sm text-slate-400 mt-2">
-                  Already have an account? {' '}
-                  <button onClick={() => { setView('login'); setError(null); setMessage(null); setHoneypot(''); }} className="text-primary hover:text-primary/80 font-bold transition-colors underline-offset-4 hover:underline">
+                  Already have an account?{" "}
+                  <button
+                    onClick={() => {
+                      setView("login");
+                      setError(null);
+                      setMessage(null);
+                      setHoneypot("");
+                    }}
+                    className="text-primary hover:text-primary/80 font-bold transition-colors underline-offset-4 hover:underline"
+                  >
                     Sign In
                   </button>
                 </p>
               </motion.div>
             )}
 
-            {view === 'forgot-password' && (
+            {view === "forgot-password" && (
               <motion.div
                 key="forgot"
                 initial={{ opacity: 0, y: 10 }}
@@ -771,8 +947,12 @@ const AuthPage = () => {
                 className="flex flex-col gap-6"
               >
                 <div className="text-center mb-2">
-                  <h1 className="text-2xl font-bold text-white mb-2">Reset Password</h1>
-                  <p className="text-slate-400">We'll send you recovery instructions</p>
+                  <h1 className="text-2xl font-bold text-white mb-2">
+                    Reset Password
+                  </h1>
+                  <p className="text-slate-400">
+                    We'll send you recovery instructions
+                  </p>
                 </div>
 
                 {error && (
@@ -789,9 +969,11 @@ const AuthPage = () => {
 
                 <form onSubmit={handleSubmit} className="flex flex-col gap-6">
                   <div className="flex flex-col gap-2">
-                    <label className="text-sm font-bold text-slate-300 ml-1">Email Address</label>
-                    <input 
-                      type="email" 
+                    <label className="text-sm font-bold text-slate-300 ml-1">
+                      Email Address
+                    </label>
+                    <input
+                      type="email"
                       placeholder="name@example.com"
                       className="h-12 w-full bg-[#192233] border border-white/10 rounded-xl px-4 text-white focus:outline-none focus:border-primary/50 transition-colors"
                       value={email}
@@ -799,17 +981,30 @@ const AuthPage = () => {
                       required
                     />
                   </div>
-                  <button type="submit" disabled={loading} className="h-12 w-full bg-primary hover:bg-primary/90 text-white font-bold rounded-xl transition-all shadow-lg shadow-primary/20 flex items-center justify-center gap-2">
-                    {loading && <div className="size-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>}
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="h-12 w-full bg-primary hover:bg-primary/90 text-white font-bold rounded-xl transition-all shadow-lg shadow-primary/20 flex items-center justify-center gap-2"
+                  >
+                    {loading && (
+                      <div className="size-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                    )}
                     Send Link
                   </button>
                 </form>
 
-                <button 
-                  onClick={() => { setView('login'); setError(null); setMessage(null); setHoneypot(''); }}
+                <button
+                  onClick={() => {
+                    setView("login");
+                    setError(null);
+                    setMessage(null);
+                    setHoneypot("");
+                  }}
                   className="flex items-center justify-center gap-2 text-sm text-slate-400 hover:text-white transition-colors group"
                 >
-                  <span className="material-symbols-outlined text-sm transition-transform group-hover:-translate-x-1">arrow_back</span>
+                  <span className="material-symbols-outlined text-sm transition-transform group-hover:-translate-x-1">
+                    arrow_back
+                  </span>
                   Back to Login
                 </button>
               </motion.div>
@@ -818,7 +1013,15 @@ const AuthPage = () => {
         </div>
 
         <div className="mt-8 text-xs text-slate-500 text-center max-w-[280px]">
-          By continuing, you agree to GoodLink's <a href="#" className="underline">Terms of Service</a> and <a href="#" className="underline">Privacy Policy</a>.
+          By continuing, you agree to GoodLink's{" "}
+          <a href="#" className="underline">
+            Terms of Service
+          </a>{" "}
+          and{" "}
+          <a href="#" className="underline">
+            Privacy Policy
+          </a>
+          .
         </div>
       </div>
     </div>
