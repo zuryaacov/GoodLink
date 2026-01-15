@@ -329,27 +329,30 @@ const AuthPage = () => {
         }
         
         // Check if user already exists
-        // Supabase behavior: if email exists and is confirmed, it returns user with email_confirmed_at
-        // If email exists but not confirmed, it returns user without email_confirmed_at
-        // If email is new, it returns user without email_confirmed_at (needs confirmation)
+        // Supabase behavior: 
+        // - New user: returns user with recent created_at (just now), no session (if email confirmation enabled)
+        // - Existing confirmed user: returns user with old created_at and email_confirmed_at set
+        // - Existing unconfirmed user: returns user with old created_at, no email_confirmed_at
         if (data?.user) {
-          // If user has email_confirmed_at, they already exist and are confirmed
-          if (data.user.email_confirmed_at) {
-            // Check if this is a brand new user (created less than 2 seconds ago)
-            // If created recently, it might be a new user that was just confirmed
-            const userCreatedAt = new Date(data.user.created_at);
-            const now = new Date();
-            const secondsSinceCreation = (now - userCreatedAt) / 1000;
-            
-            // If user was created more than 2 seconds ago and is confirmed, they already existed
-            if (secondsSinceCreation > 2) {
+          const userCreatedAt = new Date(data.user.created_at);
+          const now = new Date();
+          const secondsSinceCreation = (now - userCreatedAt) / 1000;
+          
+          // If user was created more than 10 seconds ago, it's definitely an existing user
+          // (signup process takes less than a second, so 10 seconds is safe)
+          if (secondsSinceCreation > 10) {
+            if (data.user.email_confirmed_at) {
+              // User exists and is confirmed
               setError('This email is already registered. Please sign in instead.');
-              setView('login');
-              // Clear the password fields for security
-              setPassword('');
-              setConfirmPassword('');
-              return;
+            } else {
+              // User exists but not confirmed
+              setError('This email is already registered but not confirmed. Please check your email for the confirmation link or try signing in.');
             }
+            setView('login');
+            // Clear the password fields for security
+            setPassword('');
+            setConfirmPassword('');
+            return;
           }
           
           // If we got a session from signup, user was just created and email confirmation is disabled
@@ -359,9 +362,7 @@ const AuthPage = () => {
             return;
           }
           
-          // User needs to confirm email
-          // This could be a new user or an existing unconfirmed user
-          // We'll show the confirmation message for both cases
+          // User needs to confirm email (new user - created less than 10 seconds ago)
           setMessage("Check your email for the confirmation link! If you don't receive it, check your spam folder.");
         }
         // Note: For signup, checkout will open after email confirmation when user signs in
