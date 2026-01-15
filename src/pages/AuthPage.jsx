@@ -10,6 +10,7 @@ const AuthPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [honeypot, setHoneypot] = useState(''); // Honeypot field for bot detection
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [message, setMessage] = useState(null);
@@ -263,6 +264,14 @@ const AuthPage = () => {
           throw new Error("Passwords do not match");
         }
 
+        // Honeypot check - if this field is filled, it's a bot
+        if (honeypot && honeypot.trim() !== '') {
+          // Silently block bot without revealing why
+          console.warn('Bot detected via honeypot field');
+          setError('Registration failed. Please try again.');
+          return;
+        }
+
         // Verify Turnstile token before signup
         if (!turnstileToken) {
           throw new Error("Please complete the security verification");
@@ -406,6 +415,7 @@ const AuthPage = () => {
                         type="button"
                         onClick={() => {
                           setView('forgot-password');
+                          setHoneypot('');
                           setError(null);
                           setMessage(null);
                         }}
@@ -454,7 +464,7 @@ const AuthPage = () => {
 
                 <p className="text-center text-sm text-slate-400 mt-2">
                   Don't have an account? {' '}
-                  <button onClick={() => { setView('signup'); setError(null); setMessage(null); }} className="text-primary hover:text-primary/80 font-bold transition-colors underline-offset-4 hover:underline">
+                  <button onClick={() => { setView('signup'); setError(null); setMessage(null); setHoneypot(''); }} className="text-primary hover:text-primary/80 font-bold transition-colors underline-offset-4 hover:underline">
                     Create one for free
                   </button>
                 </p>
@@ -522,6 +532,25 @@ const AuthPage = () => {
                     />
                   </div>
                   
+                  {/* Honeypot field - hidden from humans, traps bots */}
+                  <input
+                    type="text"
+                    name="website"
+                    value={honeypot}
+                    onChange={(e) => setHoneypot(e.target.value)}
+                    tabIndex={-1}
+                    autoComplete="off"
+                    style={{
+                      position: 'absolute',
+                      left: '-9999px',
+                      width: '1px',
+                      height: '1px',
+                      opacity: 0,
+                      pointerEvents: 'none'
+                    }}
+                    aria-hidden="true"
+                  />
+                  
                   {/* Turnstile Widget - only for email signup */}
                   <div ref={turnstileContainerRef} id="turnstile-widget" className="flex justify-center min-h-[65px]"></div>
                   
@@ -548,7 +577,7 @@ const AuthPage = () => {
 
                 <p className="text-center text-sm text-slate-400 mt-2">
                   Already have an account? {' '}
-                  <button onClick={() => { setView('login'); setError(null); setMessage(null); }} className="text-primary hover:text-primary/80 font-bold transition-colors underline-offset-4 hover:underline">
+                  <button onClick={() => { setView('login'); setError(null); setMessage(null); setHoneypot(''); }} className="text-primary hover:text-primary/80 font-bold transition-colors underline-offset-4 hover:underline">
                     Sign In
                   </button>
                 </p>
@@ -600,7 +629,7 @@ const AuthPage = () => {
                 </form>
 
                 <button 
-                  onClick={() => { setView('login'); setError(null); setMessage(null); }}
+                  onClick={() => { setView('login'); setError(null); setMessage(null); setHoneypot(''); }}
                   className="flex items-center justify-center gap-2 text-sm text-slate-400 hover:text-white transition-colors group"
                 >
                   <span className="material-symbols-outlined text-sm transition-transform group-hover:-translate-x-1">arrow_back</span>
