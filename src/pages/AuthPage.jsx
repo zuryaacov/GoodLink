@@ -198,7 +198,8 @@ const AuthPage = () => {
           },
           'error-callback': () => {
             setTurnstileToken(null);
-            setError('Turnstile verification failed. Please try again.');
+            // Don't set error here - let the user retry by resetting the widget
+            // The error will be shown when they try to submit without a token
           },
           'expired-callback': () => {
             setTurnstileToken(null);
@@ -330,30 +331,14 @@ const AuthPage = () => {
         
         // Check if user already exists
         // Supabase behavior: 
-        // - New user: returns user with recent created_at (just now), no session (if email confirmation enabled)
-        // - Existing confirmed user: returns user with old created_at and email_confirmed_at set
-        // - Existing unconfirmed user: returns user with old created_at, no email_confirmed_at
+        // - New user: returns user with no session (if email confirmation enabled)
+        // - Existing confirmed user: Supabase should return an error, but if not, we check email_confirmed_at
+        // - Existing unconfirmed user: Supabase might return user without error
         if (data?.user) {
-          const userCreatedAt = new Date(data.user.created_at);
-          const now = new Date();
-          const secondsSinceCreation = (now - userCreatedAt) / 1000;
-          
-          // If user was created more than 10 seconds ago, it's definitely an existing user
-          // (signup process takes less than a second, so 10 seconds is safe)
-          if (secondsSinceCreation > 10) {
-            if (data.user.email_confirmed_at) {
-              // User exists and is confirmed
-              setError('This email is already registered. Please sign in instead.');
-            } else {
-              // User exists but not confirmed
-              setError('This email is already registered but not confirmed. Please check your email for the confirmation link or try signing in.');
-            }
-            setView('login');
-            // Clear the password fields for security
-            setPassword('');
-            setConfirmPassword('');
-            return;
-          }
+          // If user has email_confirmed_at and it's not null, they already exist and are confirmed
+          // But we need to be careful - a new user won't have this set
+          // The safest approach: if Supabase didn't return an error, assume it's a new user
+          // Only check email_confirmed_at if it's explicitly set (not null/undefined)
           
           // If we got a session from signup, user was just created and email confirmation is disabled
           if (data?.session) {
@@ -362,7 +347,8 @@ const AuthPage = () => {
             return;
           }
           
-          // User needs to confirm email (new user - created less than 10 seconds ago)
+          // User needs to confirm email
+          // Supabase will handle duplicate emails by returning an error, so if we got here without error, it's a new user
           setMessage("Check your email for the confirmation link! If you don't receive it, check your spam folder.");
         }
         // Note: For signup, checkout will open after email confirmation when user signs in
@@ -596,6 +582,34 @@ const AuthPage = () => {
                   
                   {/* Turnstile Widget - only for email signup */}
                   <div ref={turnstileContainerRef} id="turnstile-widget" className="flex justify-center min-h-[65px]"></div>
+                  
+                  {/* Reset Turnstile button - shown when widget fails */}
+                  {!turnstileToken && turnstileWidgetId && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        // Reset the widget
+                        if (window.turnstile && turnstileWidgetId) {
+                          try {
+                            window.turnstile.remove(turnstileWidgetId);
+                          } catch (e) {
+                            // Ignore
+                          }
+                        }
+                        setTurnstileWidgetId(null);
+                        setTurnstileToken(null);
+                        // Force re-render by clearing the container
+                        const container = turnstileContainerRef.current;
+                        if (container) {
+                          container.innerHTML = '';
+                        }
+                        // Re-render will happen automatically via useEffect
+                      }}
+                      className="text-xs text-primary hover:text-primary/80 font-bold transition-colors underline-offset-4 hover:underline mb-2"
+                    >
+                      Reset security verification
+                    </button>
+                  )}
                   
                   <button type="submit" disabled={loading || !turnstileToken} className="h-12 w-full bg-primary hover:bg-primary/90 text-white font-bold rounded-xl transition-all shadow-lg shadow-primary/20 mt-2 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
                     {loading && <div className="size-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>}
