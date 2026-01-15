@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
@@ -15,6 +15,7 @@ const AuthPage = () => {
   const [message, setMessage] = useState(null);
   const [turnstileToken, setTurnstileToken] = useState(null);
   const [turnstileWidgetId, setTurnstileWidgetId] = useState(null);
+  const turnstileContainerRef = useRef(null);
   const navigate = useNavigate();
 
   // Plan checkout URLs mapping
@@ -125,7 +126,11 @@ const AuthPage = () => {
     if (view !== 'signup') {
       // Cleanup when leaving signup view
       if (turnstileWidgetId && window.turnstile) {
-        window.turnstile.remove(turnstileWidgetId);
+        try {
+          window.turnstile.remove(turnstileWidgetId);
+        } catch (error) {
+          console.error('Error removing Turnstile widget:', error);
+        }
         setTurnstileWidgetId(null);
       }
       setTurnstileToken(null);
@@ -146,12 +151,22 @@ const AuthPage = () => {
     // Reset token when switching to signup
     setTurnstileToken(null);
 
-    // Wait for the DOM element to be available
-    const timer = setTimeout(() => {
-      const container = document.getElementById('turnstile-widget');
+    // Wait for the DOM element to be available (wait for animation to complete)
+    const checkAndRender = () => {
+      const container = turnstileContainerRef.current;
       if (!container) {
-        console.error('Turnstile container not found');
+        // Retry after a short delay if container not found
+        setTimeout(checkAndRender, 100);
         return;
+      }
+
+      // Check if widget already exists
+      if (turnstileWidgetId && window.turnstile) {
+        try {
+          window.turnstile.remove(turnstileWidgetId);
+        } catch (error) {
+          // Ignore if already removed
+        }
       }
 
       // Render Turnstile widget with the actual HTMLElement
@@ -174,7 +189,10 @@ const AuthPage = () => {
       } catch (error) {
         console.error('Error rendering Turnstile widget:', error);
       }
-    }, 100);
+    };
+
+    // Wait a bit for the animation to complete and DOM to be ready
+    const timer = setTimeout(checkAndRender, 350);
 
     return () => {
       clearTimeout(timer);
@@ -186,7 +204,7 @@ const AuthPage = () => {
         }
       }
     };
-  }, [view]);
+  }, [view, turnstileWidgetId]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -459,7 +477,7 @@ const AuthPage = () => {
                   </div>
                   
                   {/* Turnstile Widget - only for email signup */}
-                  <div id="turnstile-widget" className="flex justify-center"></div>
+                  <div ref={turnstileContainerRef} id="turnstile-widget" className="flex justify-center min-h-[65px]"></div>
                   
                   <button type="submit" disabled={loading || !turnstileToken} className="h-12 w-full bg-primary hover:bg-primary/90 text-white font-bold rounded-xl transition-all shadow-lg shadow-primary/20 mt-2 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
                     {loading && <div className="size-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>}
