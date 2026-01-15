@@ -307,9 +307,6 @@ const AuthPage = () => {
           }
         });
         
-        // Debug: log the response to understand what Supabase returns
-        console.log('SignUp response:', { error, data, user: data?.user });
-        
         if (error) {
           // Check if it's an email sending error
           if (error.message && error.message.includes('confirmation email')) {
@@ -332,24 +329,27 @@ const AuthPage = () => {
         }
         
         // Check if user already exists
-        // Supabase behavior: if email exists, it returns user object but no session
-        // We need to check if the user was just created or already existed
+        // Supabase behavior: if email exists and is confirmed, it returns user with email_confirmed_at
+        // If email exists but not confirmed, it returns user without email_confirmed_at
+        // If email is new, it returns user without email_confirmed_at (needs confirmation)
         if (data?.user) {
-          // Try to sign in with the same credentials to check if user already exists
-          // If sign in succeeds, it means the user already existed
-          const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
-            email,
-            password
-          });
-          
-          // If sign in succeeded immediately, it means user already existed
-          if (signInData?.session && !signInError) {
-            setError('This email is already registered. Please sign in instead.');
-            setView('login');
-            // Clear the password fields for security
-            setPassword('');
-            setConfirmPassword('');
-            return;
+          // If user has email_confirmed_at, they already exist and are confirmed
+          if (data.user.email_confirmed_at) {
+            // Check if this is a brand new user (created less than 2 seconds ago)
+            // If created recently, it might be a new user that was just confirmed
+            const userCreatedAt = new Date(data.user.created_at);
+            const now = new Date();
+            const secondsSinceCreation = (now - userCreatedAt) / 1000;
+            
+            // If user was created more than 2 seconds ago and is confirmed, they already existed
+            if (secondsSinceCreation > 2) {
+              setError('This email is already registered. Please sign in instead.');
+              setView('login');
+              // Clear the password fields for security
+              setPassword('');
+              setConfirmPassword('');
+              return;
+            }
           }
           
           // If we got a session from signup, user was just created and email confirmation is disabled
@@ -359,20 +359,9 @@ const AuthPage = () => {
             return;
           }
           
-          // User needs to confirm email (either new user or existing unconfirmed user)
-          // Check if user was just created (created_at is very recent)
-          const userCreatedAt = new Date(data.user.created_at);
-          const now = new Date();
-          const secondsSinceCreation = (now - userCreatedAt) / 1000;
-          
-          // If user was created more than 5 seconds ago, it's likely an existing user
-          if (secondsSinceCreation > 5) {
-            setError('This email is already registered but not confirmed. Please check your email for the confirmation link or try signing in.');
-            setView('login');
-            return;
-          }
-          
-          // New user needs to confirm email
+          // User needs to confirm email
+          // This could be a new user or an existing unconfirmed user
+          // We'll show the confirmation message for both cases
           setMessage("Check your email for the confirmation link! If you don't receive it, check your spam folder.");
         }
         // Note: For signup, checkout will open after email confirmation when user signs in
