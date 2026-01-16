@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
 import { X, CheckCircle2, Zap } from 'lucide-react';
-import { Facebook, Globe, Send, Layout, MousePointer2 } from 'lucide-react';
+import { Facebook, Globe, Send, Layout } from 'lucide-react';
 
 const PLATFORMS = {
   meta: {
@@ -56,19 +56,6 @@ const PLATFORMS = {
       utm_term: "{site}"
     }
   },
-  custom: {
-    id: 'custom',
-    name: "Custom",
-    icon: <MousePointer2 size={24} />,
-    color: "slate",
-    presets: {
-      utm_source: "",
-      utm_medium: "",
-      utm_campaign: "",
-      utm_content: "",
-      utm_term: ""
-    }
-  }
 };
 
 const MEDIUM_OPTIONS = ["paidsocial", "cpc", "native", "display", "email"];
@@ -84,7 +71,6 @@ const PARAM_COLORS = {
 const UtmPresetBuilder = ({ isOpen, onClose, editingPreset, links }) => {
   const [selectedPlatform, setSelectedPlatform] = useState('meta');
   const [presetName, setPresetName] = useState('');
-  const [slug, setSlug] = useState('');
   const [params, setParams] = useState(PLATFORMS.meta.presets);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -92,7 +78,6 @@ const UtmPresetBuilder = ({ isOpen, onClose, editingPreset, links }) => {
   useEffect(() => {
     if (editingPreset) {
       setPresetName(editingPreset.name || '');
-      setSlug(editingPreset.slug || '');
       setSelectedPlatform(editingPreset.platform || 'meta');
       setParams({
         utm_source: editingPreset.utm_source || '',
@@ -103,7 +88,6 @@ const UtmPresetBuilder = ({ isOpen, onClose, editingPreset, links }) => {
       });
     } else {
       setPresetName('');
-      setSlug('');
       setSelectedPlatform('meta');
       setParams(PLATFORMS.meta.presets);
     }
@@ -118,13 +102,12 @@ const UtmPresetBuilder = ({ isOpen, onClose, editingPreset, links }) => {
     setParams(prev => ({ ...prev, [key]: value }));
   };
 
-  const buildUtmUrl = () => {
-    const baseUrl = `https://glynk.to/${slug}`;
+  const buildUtmQueryString = () => {
     const queryParams = Object.entries(params)
       .filter(([_, value]) => value)
       .map(([key, value]) => `${key}=${encodeURIComponent(value)}`)
       .join('&');
-    return queryParams ? `${baseUrl}?${queryParams}` : baseUrl;
+    return queryParams;
   };
 
   const handleSave = async () => {
@@ -137,29 +120,17 @@ const UtmPresetBuilder = ({ isOpen, onClose, editingPreset, links }) => {
         return;
       }
 
-      if (!slug.trim()) {
-        setError('Slug is required');
-        return;
-      }
-
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
         setError('User not authenticated');
         return;
       }
 
-      // Check if slug exists in user's links
-      const link = links.find(l => l.slug === slug);
-      if (!link) {
-        setError('Slug not found in your links');
-        return;
-      }
-
       const presetData = {
         name: presetName.trim(),
         platform: selectedPlatform,
-        slug: slug.trim(),
-        link_id: link.id,
+        slug: null, // Will be linked to a link later when editing/adding a link
+        link_id: null, // Will be linked to a link later when editing/adding a link
         utm_source: params.utm_source || null,
         utm_medium: params.utm_medium || null,
         utm_campaign: params.utm_campaign || null,
@@ -195,7 +166,7 @@ const UtmPresetBuilder = ({ isOpen, onClose, editingPreset, links }) => {
 
   if (!isOpen) return null;
 
-  const fullUrl = buildUtmUrl();
+  const queryString = buildUtmQueryString();
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
@@ -219,29 +190,17 @@ const UtmPresetBuilder = ({ isOpen, onClose, editingPreset, links }) => {
         )}
 
         <div className="space-y-8">
-          {/* Preset Name and Slug */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-bold text-slate-300 mb-2">Preset Name</label>
-              <input
-                type="text"
-                value={presetName}
-                onChange={(e) => setPresetName(e.target.value)}
-                placeholder="e.g., Summer Campaign Meta"
-                className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-primary"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-bold text-slate-300 mb-2">Link Slug</label>
-              <input
-                type="text"
-                value={slug}
-                onChange={(e) => setSlug(e.target.value)}
-                placeholder="e.g., summer-promo"
-                className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-primary"
-              />
-              <p className="text-xs text-slate-500 mt-1">Must match an existing link slug</p>
-            </div>
+          {/* Preset Name */}
+          <div>
+            <label className="block text-sm font-bold text-slate-300 mb-2">Preset Name</label>
+            <input
+              type="text"
+              value={presetName}
+              onChange={(e) => setPresetName(e.target.value)}
+              placeholder="e.g., Summer Campaign Meta"
+              className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-primary"
+            />
+            <p className="text-xs text-slate-500 mt-1">This preset will be linked to a link when editing/adding a link</p>
           </div>
 
           {/* Step 1: Platform Selection */}
@@ -250,7 +209,7 @@ const UtmPresetBuilder = ({ isOpen, onClose, editingPreset, links }) => {
               <span className="bg-primary text-white w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold">1</span>
               <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest">Select Platform</h3>
             </div>
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
               {Object.values(PLATFORMS).map((p) => (
                 <button
                   key={p.id}
@@ -382,7 +341,7 @@ const UtmPresetBuilder = ({ isOpen, onClose, editingPreset, links }) => {
             <div className="bg-slate-950 border border-slate-800 rounded-2xl p-6">
               <div className="font-mono text-sm break-all text-slate-300" dir="ltr">
                 <span className="text-slate-500">https://glynk.to/</span>
-                <span className="text-primary font-bold">{slug || 'your-slug'}</span>
+                <span className="text-primary font-bold">your-slug</span>
                 {Object.entries(params).some(([_, v]) => v) && <span className="text-slate-600">?</span>}
                 {Object.entries(params).map(([key, value], index) => {
                   if (!value) return null;
@@ -402,6 +361,7 @@ const UtmPresetBuilder = ({ isOpen, onClose, editingPreset, links }) => {
                   );
                 })}
               </div>
+              <p className="text-xs text-slate-500 mt-3">Preview shows UTM parameters. This preset will be linked to a specific link when editing/adding a link.</p>
             </div>
           </div>
 
@@ -409,7 +369,7 @@ const UtmPresetBuilder = ({ isOpen, onClose, editingPreset, links }) => {
           <div className="flex gap-4 pt-4">
             <button
               onClick={handleSave}
-              disabled={loading || !presetName.trim() || !slug.trim()}
+              disabled={loading || !presetName.trim()}
               className="flex-1 px-6 py-3 bg-primary hover:bg-primary/90 text-white font-bold rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
               {loading ? (

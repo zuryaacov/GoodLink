@@ -11,8 +11,8 @@ CREATE TABLE IF NOT EXISTS utm_presets (
   utm_campaign VARCHAR(255),
   utm_content VARCHAR(255),
   utm_term VARCHAR(255),
-  slug VARCHAR(255) NOT NULL, -- The link slug this preset is associated with
-  link_id UUID REFERENCES links(id) ON DELETE CASCADE, -- Optional: link to a specific link
+  slug VARCHAR(255), -- The link slug this preset is associated with (will be set when linking to a link)
+  link_id UUID REFERENCES links(id) ON DELETE CASCADE, -- Optional: link to a specific link (will be set when linking to a link)
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   is_active BOOLEAN NOT NULL DEFAULT true

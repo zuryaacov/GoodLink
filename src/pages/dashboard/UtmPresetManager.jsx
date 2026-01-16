@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
 import UtmPresetBuilder from '../../components/dashboard/UtmPresetBuilder';
 import Modal from '../../components/common/Modal';
-import { Copy, Trash2, Edit2, ExternalLink } from 'lucide-react';
+import { Copy, Trash2, Edit2 } from 'lucide-react';
 
 const PLATFORMS = {
   meta: { name: 'Meta (FB/IG)', colorClass: 'text-blue-400 bg-blue-400/10' },
@@ -83,8 +83,7 @@ const UtmPresetManager = () => {
     }
   };
 
-  const buildUtmUrl = (preset) => {
-    const baseUrl = `https://glynk.to/${preset.slug}`;
+  const buildUtmQueryString = (preset) => {
     const params = [];
     
     if (preset.utm_source) params.push(`utm_source=${encodeURIComponent(preset.utm_source)}`);
@@ -93,13 +92,13 @@ const UtmPresetManager = () => {
     if (preset.utm_content) params.push(`utm_content=${encodeURIComponent(preset.utm_content)}`);
     if (preset.utm_term) params.push(`utm_term=${encodeURIComponent(preset.utm_term)}`);
     
-    return params.length > 0 ? `${baseUrl}?${params.join('&')}` : baseUrl;
+    return params.length > 0 ? params.join('&') : '';
   };
 
   const handleCopy = async (preset) => {
     try {
-      const url = buildUtmUrl(preset);
-      await navigator.clipboard.writeText(url);
+      const queryString = buildUtmQueryString(preset);
+      await navigator.clipboard.writeText(queryString);
       setCopiedId(preset.id);
       setTimeout(() => setCopiedId(null), 2000);
     } catch (err) {
@@ -198,8 +197,8 @@ const UtmPresetManager = () => {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {presets.map((preset) => {
-            const platform = PLATFORMS[preset.platform] || PLATFORMS.custom;
-            const url = buildUtmUrl(preset);
+            const platform = PLATFORMS[preset.platform] || { name: preset.platform, colorClass: 'text-slate-400 bg-slate-400/10' };
+            const queryString = buildUtmQueryString(preset);
             
             return (
               <div
@@ -232,9 +231,15 @@ const UtmPresetManager = () => {
                 </div>
 
                 <div className="space-y-2 mb-4">
-                  <div className="text-xs font-mono text-slate-400 break-all bg-slate-900/50 p-3 rounded-lg">
-                    {url}
-                  </div>
+                  {queryString ? (
+                    <div className="text-xs font-mono text-slate-400 break-all bg-slate-900/50 p-3 rounded-lg">
+                      {queryString}
+                    </div>
+                  ) : (
+                    <div className="text-xs text-slate-500 italic p-3 rounded-lg">
+                      No UTM parameters set
+                    </div>
+                  )}
                   
                   {preset.utm_source && (
                     <div className="flex items-center gap-2 text-sm">
@@ -269,19 +274,10 @@ const UtmPresetManager = () => {
                     ) : (
                       <>
                         <Copy size={16} />
-                        Copy URL
+                        Copy Query String
                       </>
                     )}
                   </button>
-                  <a
-                    href={url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="p-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition-colors"
-                    title="Open in new tab"
-                  >
-                    <ExternalLink size={16} />
-                  </a>
                 </div>
               </div>
             );
