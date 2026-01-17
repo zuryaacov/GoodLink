@@ -11,6 +11,7 @@ import PixelManager from "./pages/dashboard/PixelManager";
 import PixelBuilderPage from "./pages/dashboard/PixelBuilderPage";
 import CustomDomainsManager from "./pages/dashboard/CustomDomainsManager";
 import AddDomainPage from "./pages/dashboard/AddDomainPage";
+import LinkBuilderPage from "./pages/dashboard/LinkBuilderPage";
 import { supabase } from "./lib/supabase";
 
 const ProtectedRoute = ({ children }) => {
@@ -151,6 +152,24 @@ function App() {
         element={
           <ProtectedRoute>
             <AddDomainPage />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Link Builder Routes (without DashboardLayout/navbar) */}
+      <Route
+        path="/dashboard/links/new"
+        element={
+          <ProtectedRoute>
+            <LinkBuilderPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/dashboard/links/edit/:id"
+        element={
+          <ProtectedRoute>
+            <LinkBuilderPage />
           </ProtectedRoute>
         }
       />

@@ -1,12 +1,10 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
-import NewLinkWizard from '../../components/dashboard/NewLinkWizard';
 import Modal from '../../components/common/Modal';
 
 const LinkManager = () => {
-  const [isWizardOpen, setIsWizardOpen] = useState(false);
-  const [editingLink, setEditingLink] = useState(null);
-  const [duplicatingLink, setDuplicatingLink] = useState(null);
+  const navigate = useNavigate();
   const [links, setLinks] = useState([]);
   const [loading, setLoading] = useState(true);
   
@@ -108,21 +106,8 @@ const LinkManager = () => {
           <p className="text-sm md:text-base text-slate-400">Create and manage your smart links</p>
         </div>
         <button
-          onClick={() => {
-            setEditingLink(null);
-            setDuplicatingLink(null);
-            setIsWizardOpen(true);
-          }}
-          className="flex items-center justify-center gap-2 w-full sm:w-auto px-6 py-3 md:py-2.5 text-white font-bold rounded-xl transition-colors shadow-lg text-base md:text-sm"
-          style={{
-            backgroundColor: "#FF10F0",
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = "#e00ed0";
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = "#FF10F0";
-          }}
+          onClick={() => navigate('/dashboard/links/new')}
+          className="flex items-center justify-center gap-2 w-full sm:w-auto px-6 py-3 md:py-2.5 text-white font-bold rounded-xl transition-colors shadow-lg text-base md:text-sm bg-[#FF10F0] hover:bg-[#e00ed0]"
         >
           <span className="material-symbols-outlined text-xl md:text-base">add</span>
           New Link
@@ -198,23 +183,10 @@ const LinkManager = () => {
                     link={link} 
                     onRefresh={fetchLinks}
                     onEdit={(linkToEdit) => {
-                      setEditingLink(linkToEdit);
-                      setDuplicatingLink(null);
-                      setIsWizardOpen(true);
+                      navigate(`/dashboard/links/edit/${linkToEdit.id}`);
                     }}
                     onDuplicate={(linkToDuplicate) => {
-                      // Create a copy of the link data without the ID for duplication
-                      // This ensures it's treated as a new link (create mode)
-                      const duplicateData = {
-                        ...linkToDuplicate,
-                        id: undefined, // Remove ID so it's treated as a new link
-                        name: linkToDuplicate.name ? `${linkToDuplicate.name} (Copy)` : 'Untitled Link (Copy)',
-                        slug: linkToDuplicate.slug ? `${linkToDuplicate.slug}-copy` : '',
-                        short_url: '', // Will be regenerated
-                      };
-                      setEditingLink(null); // Clear editing link to ensure create mode
-                      setDuplicatingLink(duplicateData);
-                      setIsWizardOpen(true);
+                      navigate(`/dashboard/links/new?duplicate=${linkToDuplicate.id}`);
                     }}
                     onShowModal={(modalConfig) => {
                       setModalState(modalConfig);
@@ -225,20 +197,6 @@ const LinkManager = () => {
             </div>
           ))}
         </div>
-      )}
-
-      {/* Wizard Modal */}
-      {isWizardOpen && (
-        <NewLinkWizard
-          isOpen={isWizardOpen}
-          onClose={() => {
-            setIsWizardOpen(false);
-            setEditingLink(null);
-            setDuplicatingLink(null);
-            fetchLinks(); // Refresh links after closing wizard
-          }}
-          initialData={editingLink || duplicatingLink}
-        />
       )}
 
       {/* Error/Alert Modal */}
