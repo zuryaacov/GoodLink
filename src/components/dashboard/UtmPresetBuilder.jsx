@@ -213,7 +213,6 @@ const UtmPresetBuilder = ({ isOpen, onClose, editingPreset, links }) => {
     utm_content: '',
     utm_term: ''
   });
-  const [activeChipsFor, setActiveChipsFor] = useState(null); // Format: 'source', 'medium', etc.
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -239,7 +238,6 @@ const UtmPresetBuilder = ({ isOpen, onClose, editingPreset, links }) => {
         utm_term: ''
       });
     }
-    setActiveChipsFor(null);
   }, [editingPreset, isOpen]);
 
   const handlePlatformChange = (platformId) => {
@@ -252,22 +250,16 @@ const UtmPresetBuilder = ({ isOpen, onClose, editingPreset, links }) => {
       utm_content: '',
       utm_term: ''
     });
-    setActiveChipsFor(null);
-  };
-
-  const handleUtmTypeClick = (utmType) => {
-    // Toggle chips visibility for this UTM type
-    if (activeChipsFor === utmType) {
-      setActiveChipsFor(null);
-    } else {
-      setActiveChipsFor(utmType);
-    }
   };
 
   const handleChipClick = (utmType, value) => {
     const utmKey = `utm_${utmType}`;
-    setParams(prev => ({ ...prev, [utmKey]: value }));
-    setActiveChipsFor(null); // Close chips after selection
+    // Toggle: if clicking the same chip, deselect it
+    if (params[utmKey] === value) {
+      setParams(prev => ({ ...prev, [utmKey]: '' }));
+    } else {
+      setParams(prev => ({ ...prev, [utmKey]: value }));
+    }
   };
 
   const updateParam = (key, value) => {
@@ -405,100 +397,60 @@ const UtmPresetBuilder = ({ isOpen, onClose, editingPreset, links }) => {
             </div>
           </div>
 
-          {/* Step 2: UTM Type Buttons */}
+          {/* Step 2: UTM Parameters as Chips */}
           <div>
             <div className="flex items-center gap-2 mb-4">
               <span className="bg-primary text-white w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold">2</span>
-              <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest">Select UTM Parameter</h3>
+              <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest">Select UTM Parameters</h3>
             </div>
-            <div className="grid grid-cols-5 gap-3">
-              {UTM_TYPES.map((utmType) => {
-                const utmKey = utmType.key;
-                const hasValue = params[utmKey] && params[utmKey].trim() !== '';
-                const isActive = activeChipsFor === utmType.id;
-                
-                return (
-                  <div key={utmType.id} className="relative">
-                    <button
-                      onClick={() => handleUtmTypeClick(utmType.id)}
-                      className={`w-full p-3 rounded-xl border-2 transition-all font-bold text-sm ${
-                        isActive
-                          ? 'border-primary bg-primary/10 text-primary'
-                          : hasValue
-                          ? 'border-emerald-500/50 bg-emerald-500/10 text-emerald-400'
-                          : 'border-slate-700 bg-slate-800 text-slate-400 hover:border-slate-600'
-                      }`}
-                    >
-                      {utmType.label}
-                    </button>
-                    
-                    {/* Chips dropdown */}
-                    {isActive && platformOptions[utmType.id] && (
-                      <div className="absolute z-10 top-full left-0 right-0 mt-2 p-4 bg-slate-800 border border-slate-700 rounded-xl shadow-2xl max-h-64 overflow-y-auto">
-                        <div className="flex flex-wrap gap-2">
-                          {platformOptions[utmType.id].map((option) => (
-                            <button
-                              key={option}
-                              onClick={() => handleChipClick(utmType.id, option)}
-                              className={`px-4 py-2 rounded-lg text-sm font-bold transition-all border ${
-                                params[utmKey] === option
-                                  ? "bg-primary text-white border-primary"
-                                  : "bg-slate-700 text-slate-300 border-slate-600 hover:border-slate-500"
-                              }`}
-                            >
-                              {option}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
+            
+            {UTM_TYPES.map((utmType) => {
+              const utmKey = utmType.key;
+              const value = params[utmKey] || '';
+              const options = platformOptions[utmType.id] || [];
+              
+              if (options.length === 0) return null;
+              
+              return (
+                <div key={utmType.id} className="mb-6">
+                  <div className="flex items-center justify-between mb-3">
+                    <label className="text-sm font-bold text-slate-300 uppercase">{utmType.label}</label>
+                    {value && (
+                      <span className="text-xs text-emerald-400 font-medium">Selected: {value}</span>
                     )}
                   </div>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Step 3: Current Values Display */}
-          <div className="bg-slate-800/50 border border-slate-700 rounded-2xl p-6 space-y-4">
-            <div className="flex items-center gap-2 mb-4">
-              <span className="bg-primary text-white w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold">3</span>
-              <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest">Current UTM Parameters</h3>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {UTM_TYPES.map((utmType) => {
-                const utmKey = utmType.key;
-                const value = params[utmKey] || '';
-                const isDynamic = value.includes('{') || value.includes('__');
-                
-                return (
-                  <div key={utmType.id}>
-                    <label className="block text-xs font-bold text-slate-400 mb-2 uppercase">{utmType.label}</label>
-                    <div className="relative">
-                      <input
-                        type="text"
-                        value={value}
-                        onChange={(e) => updateParam(utmKey, e.target.value)}
-                        placeholder={`Click ${utmType.label} button above to select`}
-                        className="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-xl text-white font-mono text-sm focus:outline-none focus:border-primary"
-                      />
-                      {isDynamic && (
-                        <div className="absolute left-3 top-1/2 -translate-y-1/2 flex items-center gap-1 bg-yellow-500/20 text-yellow-400 px-2 py-1 rounded-md text-[10px] font-bold">
-                          <Zap size={10} />
-                          DYNAMIC
-                        </div>
-                      )}
-                    </div>
+                  <div className="flex flex-wrap gap-2">
+                    {options.map((option) => {
+                      const isSelected = params[utmKey] === option;
+                      const isDynamic = option.includes('{') || option.includes('__');
+                      
+                      return (
+                        <button
+                          key={option}
+                          onClick={() => handleChipClick(utmType.id, option)}
+                          className={`px-4 py-2 rounded-lg text-sm font-bold transition-all border ${
+                            isSelected
+                              ? "bg-primary text-white border-primary shadow-lg scale-105"
+                              : "bg-slate-800 text-slate-300 border-slate-700 hover:border-slate-600 hover:bg-slate-750"
+                          }`}
+                        >
+                          {option}
+                          {isDynamic && !isSelected && (
+                            <span className="ml-2 text-[10px] text-yellow-400">⚡</span>
+                          )}
+                        </button>
+                      );
+                    })}
                   </div>
-                );
-              })}
-            </div>
+                </div>
+              );
+            })}
           </div>
 
-          {/* Step 4: Preview URL */}
+          {/* Step 3: Preview URL */}
           <div>
             <div className="flex items-center gap-2 mb-4">
-              <span className="bg-primary text-white w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold">4</span>
+              <span className="bg-primary text-white w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold">3</span>
               <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest">Preview Query String</h3>
             </div>
             <div className="bg-slate-950 border border-slate-800 rounded-2xl p-6">
