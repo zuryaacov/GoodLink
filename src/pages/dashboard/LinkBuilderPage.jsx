@@ -36,6 +36,7 @@ const LinkBuilderPage = () => {
     utmMedium: '',
     utmCampaign: '',
     utmContent: '',
+    utmTerm: '',
     parameterPassThrough: true,
     platformPreset: null,
     selectedPixels: [],
@@ -108,6 +109,7 @@ const LinkBuilderPage = () => {
         utmMedium: data.utm_medium || '',
         utmCampaign: data.utm_campaign || '',
         utmContent: data.utm_content || '',
+        utmTerm: data.utm_term || '',
         parameterPassThrough: data.parameter_pass_through !== undefined ? data.parameter_pass_through : true,
         platformPreset: null,
         selectedPixels: data.pixels || [],
@@ -195,6 +197,7 @@ const LinkBuilderPage = () => {
       if (formData.utmMedium) utmParams.append('utm_medium', formData.utmMedium);
       if (formData.utmCampaign) utmParams.append('utm_campaign', formData.utmCampaign);
       if (formData.utmContent) utmParams.append('utm_content', formData.utmContent);
+      if (formData.utmTerm) utmParams.append('utm_term', formData.utmTerm);
 
       const baseUrl = formData.domain || 'glynk.to';
       const shortUrl = `https://${baseUrl}/${finalSlug}`;
@@ -213,6 +216,7 @@ const LinkBuilderPage = () => {
             utm_medium: formData.utmMedium || null,
             utm_campaign: formData.utmCampaign || null,
             utm_content: formData.utmContent || null,
+            utm_term: formData.utmTerm || null,
             parameter_pass_through: formData.parameterPassThrough,
             pixels: formData.selectedPixels,
             server_side_tracking: formData.serverSideTracking,
@@ -254,6 +258,7 @@ const LinkBuilderPage = () => {
             utm_medium: formData.utmMedium || null,
             utm_campaign: formData.utmCampaign || null,
             utm_content: formData.utmContent || null,
+            utm_term: formData.utmTerm || null,
             parameter_pass_through: formData.parameterPassThrough,
             pixels: formData.selectedPixels,
             server_side_tracking: formData.serverSideTracking,

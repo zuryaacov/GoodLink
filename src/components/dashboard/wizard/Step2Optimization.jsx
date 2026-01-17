@@ -2,52 +2,19 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { supabase } from '../../../lib/supabase';
 
-const platformPresets = [
-  {
-    name: 'Facebook',
-    icon: 'facebook',
-    color: 'bg-blue-600',
-    hoverColor: 'hover:bg-blue-700',
-    borderColor: 'border-blue-500',
-    utmSource: 'facebook',
-    utmMedium: 'cpc',
-    utmCampaign: '{{campaign.name}}',
-  },
-  {
-    name: 'TikTok',
-    icon: 'video_library',
-    color: 'bg-black',
-    hoverColor: 'hover:bg-gray-900',
-    borderColor: 'border-gray-600',
-    utmSource: 'tiktok',
-    utmMedium: 'cpc',
-    utmCampaign: '{{campaign.name}}',
-  },
-  {
-    name: 'Google',
-    icon: 'search',
-    color: 'bg-blue-500',
-    hoverColor: 'hover:bg-blue-600',
-    borderColor: 'border-blue-400',
-    utmSource: 'google',
-    utmMedium: 'cpc',
-    utmCampaign: '{{campaign.name}}',
-  },
-  {
-    name: 'Taboola',
-    icon: 'campaign',
-    color: 'bg-purple-600',
-    hoverColor: 'hover:bg-purple-700',
-    borderColor: 'border-purple-500',
-    utmSource: 'taboola',
-    utmMedium: 'native',
-    utmCampaign: '{{campaign.name}}',
-  },
-];
+const PLATFORMS = {
+  meta: { name: 'Meta (FB/IG)', colorClass: 'text-blue-400 bg-blue-400/10' },
+  google: { name: 'Google Ads', colorClass: 'text-emerald-400 bg-emerald-400/10' },
+  tiktok: { name: 'TikTok Ads', colorClass: 'text-pink-400 bg-pink-400/10' },
+  taboola: { name: 'Taboola', colorClass: 'text-orange-400 bg-orange-400/10' },
+  outbrain: { name: 'Outbrain', colorClass: 'text-indigo-400 bg-indigo-400/10' }
+};
 
 const Step2Optimization = ({ formData, updateFormData }) => {
   const [availablePixels, setAvailablePixels] = useState([]);
   const [loadingPixels, setLoadingPixels] = useState(false);
+  const [availablePresets, setAvailablePresets] = useState([]);
+  const [loadingPresets, setLoadingPresets] = useState(false);
 
   useEffect(() => {
     const fetchPixels = async () => {
@@ -86,23 +53,52 @@ const Step2Optimization = ({ formData, updateFormData }) => {
         setLoadingPixels(false);
       }
     };
+
+    const fetchPresets = async () => {
+      setLoadingPresets(true);
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          const { data, error } = await supabase
+            .from('utm_presets')
+            .select('*')
+            .eq('user_id', user.id)
+            .eq('is_active', true)
+            .order('created_at', { ascending: false });
+
+          if (error) throw error;
+          setAvailablePresets(data || []);
+        }
+      } catch (error) {
+        console.error('Error fetching UTM presets:', error);
+        setAvailablePresets([]);
+      } finally {
+        setLoadingPresets(false);
+      }
+    };
+
     fetchPixels();
+    fetchPresets();
   }, []);
 
-  const handlePlatformClick = (preset) => {
-    const isActive = formData.platformPreset === preset.name;
+  const handlePresetClick = (preset) => {
+    const isActive = formData.platformPreset === preset.id;
     if (isActive) {
       // Deactivate
       updateFormData('platformPreset', null);
       updateFormData('utmSource', '');
       updateFormData('utmMedium', '');
       updateFormData('utmCampaign', '');
+      updateFormData('utmContent', '');
+      updateFormData('utmTerm', '');
     } else {
-      // Activate
-      updateFormData('platformPreset', preset.name);
-      updateFormData('utmSource', preset.utmSource);
-      updateFormData('utmMedium', preset.utmMedium);
-      updateFormData('utmCampaign', preset.utmCampaign);
+      // Activate - update all UTM fields from preset
+      updateFormData('platformPreset', preset.id);
+      updateFormData('utmSource', preset.utm_source || '');
+      updateFormData('utmMedium', preset.utm_medium || '');
+      updateFormData('utmCampaign', preset.utm_campaign || '');
+      updateFormData('utmContent', preset.utm_content || '');
+      updateFormData('utmTerm', preset.utm_term || '');
     }
   };
 
@@ -128,68 +124,88 @@ const Step2Optimization = ({ formData, updateFormData }) => {
         <p className="text-slate-400 text-sm">UTM & Pixels</p>
       </div>
 
-      {/* UTM Presets - Large Colorful Logos */}
-      <div>
-        <label className="block text-sm font-medium text-white mb-4">
-          UTM Presets <span className="text-slate-500">(One-Tap Setup)</span>
-        </label>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {platformPresets.map((preset) => {
-            const isActive = formData.platformPreset === preset.name;
-            return (
-              <button
-                key={preset.name}
-                onClick={() => handlePlatformClick(preset)}
-                className={`relative p-6 rounded-2xl border-2 transition-all transform ${
-                  isActive
-                    ? `${preset.color} ${preset.borderColor} border-2 scale-105 shadow-xl`
-                    : 'bg-[#0b0f19] border-[#232f48] hover:border-[#324467]'
-                }`}
-              >
-                {isActive && (
-                  <motion.div
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    className="absolute -top-2 -right-2 w-6 h-6 bg-primary rounded-full flex items-center justify-center"
-                  >
-                    <span className="material-symbols-outlined text-white text-sm">check</span>
-                  </motion.div>
-                )}
-                <div className="flex flex-col items-center gap-3">
-                  <span
-                    className={`material-symbols-outlined text-4xl ${
-                      isActive ? 'text-white' : 'text-slate-400'
+      {/* UTM Presets - User's Custom Presets */}
+      {availablePresets.length > 0 && (
+        <div>
+          <label className="block text-sm font-medium text-white mb-4">
+            UTM Presets
+          </label>
+          {loadingPresets ? (
+            <div className="text-slate-400 text-sm">Loading presets...</div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {availablePresets.map((preset) => {
+                const isActive = formData.platformPreset === preset.id;
+                const platformInfo = PLATFORMS[preset.platform] || { name: preset.platform, colorClass: 'text-slate-400 bg-slate-400/10' };
+                
+                return (
+                  <button
+                    key={preset.id}
+                    onClick={() => handlePresetClick(preset)}
+                    className={`relative p-4 rounded-xl border-2 transition-all text-left ${
+                      isActive
+                        ? 'border-primary bg-primary/10 shadow-lg'
+                        : 'border-[#232f48] bg-[#0b0f19] hover:border-[#324467]'
                     }`}
                   >
-                    {preset.icon}
-                  </span>
-                  <span
-                    className={`font-bold text-sm ${
-                      isActive ? 'text-white' : 'text-slate-300'
-                    }`}
-                  >
-                    {preset.name}
-                  </span>
-                </div>
-              </button>
-            );
-          })}
+                    {isActive && (
+                      <motion.div
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        className="absolute -top-2 -right-2 w-6 h-6 bg-primary rounded-full flex items-center justify-center"
+                      >
+                        <span className="material-symbols-outlined text-white text-sm">check</span>
+                      </motion.div>
+                    )}
+                    <div className="flex items-start gap-3">
+                      <div className={`px-2 py-1 rounded-lg text-xs font-bold ${platformInfo.colorClass}`}>
+                        {platformInfo.name}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h4 className={`font-bold text-sm mb-1 ${isActive ? 'text-white' : 'text-slate-300'}`}>
+                          {preset.name}
+                        </h4>
+                        {(preset.utm_source || preset.utm_medium || preset.utm_campaign) && (
+                          <div className="space-y-1 text-xs font-mono text-slate-500">
+                            {preset.utm_source && <div>utm_source={preset.utm_source}</div>}
+                            {preset.utm_medium && <div>utm_medium={preset.utm_medium}</div>}
+                            {preset.utm_campaign && <div>utm_campaign={preset.utm_campaign}</div>}
+                            {preset.utm_content && <div>utm_content={preset.utm_content}</div>}
+                            {preset.utm_term && <div>utm_term={preset.utm_term}</div>}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          )}
         </div>
-        {formData.platformPreset && (
+      )}
+
+      {/* Show selected preset info */}
+      {formData.platformPreset && (() => {
+        const selectedPreset = availablePresets.find(p => p.id === formData.platformPreset);
+        if (!selectedPreset) return null;
+        
+        return (
           <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="mt-4 p-4 bg-[#0b0f19] border border-[#232f48] rounded-xl"
+            className="p-4 bg-[#0b0f19] border border-primary/30 rounded-xl"
           >
-            <p className="text-xs text-slate-500 mb-2">UTM Parameters (Auto-filled):</p>
+            <p className="text-xs text-slate-500 mb-2">Selected Preset: <span className="text-white font-medium">{selectedPreset.name}</span></p>
             <div className="space-y-1 text-sm font-mono">
               {formData.utmSource && <p className="text-white">utm_source={formData.utmSource}</p>}
               {formData.utmMedium && <p className="text-white">utm_medium={formData.utmMedium}</p>}
               {formData.utmCampaign && <p className="text-white">utm_campaign={formData.utmCampaign}</p>}
+              {formData.utmContent && <p className="text-white">utm_content={formData.utmContent}</p>}
+              {formData.utmTerm && <p className="text-white">utm_term={formData.utmTerm}</p>}
             </div>
           </motion.div>
-        )}
-      </div>
+        );
+      })()}
 
       {/* Manual UTM Fields (if no preset selected) */}
       {!formData.platformPreset && (
