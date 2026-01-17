@@ -9,7 +9,7 @@ const PLATFORMS = {
   google: { name: 'Google Ads', colorClass: 'text-emerald-400 bg-emerald-400/10' },
   tiktok: { name: 'TikTok Ads', colorClass: 'text-pink-400 bg-pink-400/10' },
   taboola: { name: 'Taboola', colorClass: 'text-orange-400 bg-orange-400/10' },
-  custom: { name: 'Custom', colorClass: 'text-slate-400 bg-slate-400/10' }
+  outbrain: { name: 'Outbrain', colorClass: 'text-indigo-400 bg-indigo-400/10' }
 };
 
 const UtmPresetManager = () => {

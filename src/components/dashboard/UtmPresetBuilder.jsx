@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
 import { X, CheckCircle2, Zap } from 'lucide-react';
-import { Facebook, Globe, Send, Layout } from 'lucide-react';
+import { Facebook, Globe, Send, Layout, TrendingUp } from 'lucide-react';
 
 const PLATFORMS = {
   meta: {
@@ -9,56 +9,191 @@ const PLATFORMS = {
     name: "Meta (FB/IG)",
     icon: <Facebook size={24} />,
     color: "blue",
-    presets: {
-      utm_source: "{{site_source_name}}",
-      utm_medium: "paidsocial",
-      utm_campaign: "{{campaign.name}}",
-      utm_content: "{{ad.name}}",
-      utm_term: "{{adset.name}}"
-    }
   },
   google: {
     id: 'google',
     name: "Google Ads",
     icon: <Globe size={24} />,
     color: "emerald",
-    presets: {
-      utm_source: "google",
-      utm_medium: "cpc",
-      utm_campaign: "{campaignid}",
-      utm_content: "{adgroupid}",
-      utm_term: "{keyword}"
-    }
   },
   tiktok: {
     id: 'tiktok',
     name: "TikTok Ads",
     icon: <Send size={24} />,
     color: "pink",
-    presets: {
-      utm_source: "tiktok",
-      utm_medium: "paidsocial",
-      utm_campaign: "__CAMPAIGN_NAME__",
-      utm_content: "__CID_NAME__",
-      utm_term: "__AID_NAME__"
-    }
   },
   taboola: {
     id: 'taboola',
     name: "Taboola",
     icon: <Layout size={24} />,
     color: "orange",
-    presets: {
-      utm_source: "taboola",
-      utm_medium: "native",
-      utm_campaign: "{campaign_name}",
-      utm_content: "{content_item_title}",
-      utm_term: "{site}"
-    }
   },
+  outbrain: {
+    id: 'outbrain',
+    name: "Outbrain",
+    icon: <TrendingUp size={24} />,
+    color: "indigo",
+  }
 };
 
-const MEDIUM_OPTIONS = ["paidsocial", "cpc", "native", "display", "email"];
+// UTM Options for each platform and parameter type
+const UTM_OPTIONS = {
+  meta: {
+    source: [
+      'meta_ads',
+      'audience_network',
+      'whatsapp_ads',
+      'messenger_ads',
+      'instagram_ads',
+      'facebook_ads',
+      '{{site_source_name}}',
+      'meta',
+      'instagram',
+      'facebook'
+    ],
+    medium: [
+      'video',
+      'retargeting',
+      'cpm',
+      'cpc',
+      'paidsocial'
+    ],
+    campaign: [
+      '{{campaign.name}}',
+      '{{campaign.id}}'
+    ],
+    content: [
+      '{{ad.name}}',
+      '{{ad.id}}'
+    ],
+    term: [
+      '{{placement}}',
+      '{{adset.name}}',
+      '{{adset.id}}'
+    ]
+  },
+  google: {
+    source: [
+      'google'
+    ],
+    medium: [
+      'pmax',
+      'shopping',
+      'video',
+      'display',
+      'cpc'
+    ],
+    campaign: [
+      '{campaignname}',
+      '{campaignid}'
+    ],
+    content: [
+      '{adid}',
+      '{creative}',
+      '{adgroupname}',
+      '{adgroupid}'
+    ],
+    term: [
+      '{loc_physical_ms}',
+      '{targetid}',
+      '{placement}',
+      '{searchterm}',
+      '{matchtype}',
+      '{keyword}'
+    ]
+  },
+  tiktok: {
+    source: [
+      'tiktok'
+    ],
+    medium: [
+      'cpv',
+      'cpm',
+      'cpc',
+      'paidsocial'
+    ],
+    campaign: [
+      '__CAMPAIGN_ID__',
+      '__CAMPAIGN_NAME__'
+    ],
+    content: [
+      '__CID__',
+      '__CID_NAME__'
+    ],
+    term: [
+      '__PLACEMENT__',
+      '__AID_NAME__',
+      '__QUERY__',
+      '__KEYWORD__'
+    ]
+  },
+  taboola: {
+    source: [
+      'taboola'
+    ],
+    medium: [
+      'content',
+      'video',
+      'paid',
+      'display',
+      'discovery',
+      'cpc',
+      'native'
+    ],
+    campaign: [
+      '{campaign_id}',
+      '{campaign_name}'
+    ],
+    content: [
+      '{thumbnail_id}',
+      '{creative_id}',
+      '{ad_title}',
+      '{content_item_title}'
+    ],
+    term: [
+      '{section_id}',
+      '{site_id}',
+      '{site}'
+    ]
+  },
+  outbrain: {
+    source: [
+      'outbrain_paid',
+      'Outbrain'
+    ],
+    medium: [
+      'content',
+      'video',
+      'paidsocial',
+      'paid',
+      'discovery',
+      'cpc',
+      'native'
+    ],
+    campaign: [
+      '{{campaign_id}}',
+      '{{campaign_name}}'
+    ],
+    content: [
+      '{{promoted_link_id}}',
+      '{{ad_title}}',
+      '{{ad_id}}'
+    ],
+    term: [
+      '{{publisher_name}}',
+      '{{section_id}}',
+      '{{section_name}}'
+    ]
+  }
+};
+
+const UTM_TYPES = [
+  { id: 'source', label: 'Source', key: 'utm_source' },
+  { id: 'medium', label: 'Medium', key: 'utm_medium' },
+  { id: 'campaign', label: 'Campaign', key: 'utm_campaign' },
+  { id: 'content', label: 'Content', key: 'utm_content' },
+  { id: 'term', label: 'Term', key: 'utm_term' }
+];
 
 const PARAM_COLORS = {
   utm_source: "text-blue-400",
@@ -71,7 +206,14 @@ const PARAM_COLORS = {
 const UtmPresetBuilder = ({ isOpen, onClose, editingPreset, links }) => {
   const [selectedPlatform, setSelectedPlatform] = useState('meta');
   const [presetName, setPresetName] = useState('');
-  const [params, setParams] = useState(PLATFORMS.meta.presets);
+  const [params, setParams] = useState({
+    utm_source: '',
+    utm_medium: '',
+    utm_campaign: '',
+    utm_content: '',
+    utm_term: ''
+  });
+  const [activeChipsFor, setActiveChipsFor] = useState(null); // Format: 'source', 'medium', etc.
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -89,13 +231,43 @@ const UtmPresetBuilder = ({ isOpen, onClose, editingPreset, links }) => {
     } else {
       setPresetName('');
       setSelectedPlatform('meta');
-      setParams(PLATFORMS.meta.presets);
+      setParams({
+        utm_source: '',
+        utm_medium: '',
+        utm_campaign: '',
+        utm_content: '',
+        utm_term: ''
+      });
     }
+    setActiveChipsFor(null);
   }, [editingPreset, isOpen]);
 
   const handlePlatformChange = (platformId) => {
     setSelectedPlatform(platformId);
-    setParams(PLATFORMS[platformId].presets);
+    // Reset params when changing platform
+    setParams({
+      utm_source: '',
+      utm_medium: '',
+      utm_campaign: '',
+      utm_content: '',
+      utm_term: ''
+    });
+    setActiveChipsFor(null);
+  };
+
+  const handleUtmTypeClick = (utmType) => {
+    // Toggle chips visibility for this UTM type
+    if (activeChipsFor === utmType) {
+      setActiveChipsFor(null);
+    } else {
+      setActiveChipsFor(utmType);
+    }
+  };
+
+  const handleChipClick = (utmType, value) => {
+    const utmKey = `utm_${utmType}`;
+    setParams(prev => ({ ...prev, [utmKey]: value }));
+    setActiveChipsFor(null); // Close chips after selection
   };
 
   const updateParam = (key, value) => {
@@ -129,8 +301,8 @@ const UtmPresetBuilder = ({ isOpen, onClose, editingPreset, links }) => {
       const presetData = {
         name: presetName.trim(),
         platform: selectedPlatform,
-        slug: null, // Will be linked to a link later when editing/adding a link
-        link_id: null, // Will be linked to a link later when editing/adding a link
+        slug: null,
+        link_id: null,
         utm_source: params.utm_source || null,
         utm_medium: params.utm_medium || null,
         utm_campaign: params.utm_campaign || null,
@@ -139,7 +311,6 @@ const UtmPresetBuilder = ({ isOpen, onClose, editingPreset, links }) => {
       };
 
       if (editingPreset) {
-        // Update existing preset
         const { error } = await supabase
           .from('utm_presets')
           .update(presetData)
@@ -147,7 +318,6 @@ const UtmPresetBuilder = ({ isOpen, onClose, editingPreset, links }) => {
 
         if (error) throw error;
       } else {
-        // Create new preset
         const { error } = await supabase
           .from('utm_presets')
           .insert([{ ...presetData, user_id: user.id }]);
@@ -167,6 +337,7 @@ const UtmPresetBuilder = ({ isOpen, onClose, editingPreset, links }) => {
   if (!isOpen) return null;
 
   const queryString = buildUtmQueryString();
+  const platformOptions = UTM_OPTIONS[selectedPlatform] || {};
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
@@ -209,7 +380,7 @@ const UtmPresetBuilder = ({ isOpen, onClose, editingPreset, links }) => {
               <span className="bg-primary text-white w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold">1</span>
               <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest">Select Platform</h3>
             </div>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
               {Object.values(PLATFORMS).map((p) => (
                 <button
                   key={p.id}
@@ -234,117 +405,112 @@ const UtmPresetBuilder = ({ isOpen, onClose, editingPreset, links }) => {
             </div>
           </div>
 
-          {/* Step 2: UTM Parameters */}
-          <div className="bg-slate-800/50 border border-slate-700 rounded-2xl p-6 space-y-6">
+          {/* Step 2: UTM Type Buttons */}
+          <div>
             <div className="flex items-center gap-2 mb-4">
               <span className="bg-primary text-white w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold">2</span>
-              <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest">UTM Parameters</h3>
+              <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest">Select UTM Parameter</h3>
             </div>
-
-            {/* Medium Selection (Chips) */}
-            <div>
-              <label className="block text-xs font-bold text-slate-400 mb-2 uppercase">Medium</label>
-              <div className="flex flex-wrap gap-2">
-                {MEDIUM_OPTIONS.map(opt => (
-                  <button
-                    key={opt}
-                    onClick={() => updateParam('utm_medium', opt)}
-                    className={`px-4 py-2 rounded-lg text-sm font-bold transition-all border ${
-                      params.utm_medium === opt
-                        ? "bg-primary text-white border-primary"
-                        : "bg-slate-700 text-slate-300 border-slate-600 hover:border-slate-500"
-                    }`}
-                  >
-                    {opt}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* UTM Parameters Inputs */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs font-bold text-slate-400 mb-2 uppercase">Source</label>
-                <input
-                  type="text"
-                  value={params.utm_source}
-                  onChange={(e) => updateParam('utm_source', e.target.value)}
-                  placeholder="e.g., facebook, google"
-                  className="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-xl text-white font-mono text-sm focus:outline-none focus:border-primary"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-slate-400 mb-2 uppercase">Medium</label>
-                <input
-                  type="text"
-                  value={params.utm_medium}
-                  onChange={(e) => updateParam('utm_medium', e.target.value)}
-                  placeholder="e.g., paidsocial, cpc"
-                  className="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-xl text-white font-mono text-sm focus:outline-none focus:border-primary"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-slate-400 mb-2 uppercase">Campaign</label>
-                <div className="relative">
-                  <input
-                    type="text"
-                    value={params.utm_campaign}
-                    onChange={(e) => updateParam('utm_campaign', e.target.value)}
-                    placeholder="e.g., {campaign.name}"
-                    className="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-xl text-white font-mono text-sm focus:outline-none focus:border-primary"
-                  />
-                  {(params.utm_campaign.includes('{') || params.utm_campaign.includes('__')) && (
-                    <div className="absolute left-3 top-1/2 -translate-y-1/2 flex items-center gap-1 bg-yellow-500/20 text-yellow-400 px-2 py-1 rounded-md text-[10px] font-bold">
-                      <Zap size={10} />
-                      DYNAMIC
-                    </div>
-                  )}
-                </div>
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-slate-400 mb-2 uppercase">Content</label>
-                <div className="relative">
-                  <input
-                    type="text"
-                    value={params.utm_content}
-                    onChange={(e) => updateParam('utm_content', e.target.value)}
-                    placeholder="e.g., {ad.name}"
-                    className="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-xl text-white font-mono text-sm focus:outline-none focus:border-primary"
-                  />
-                  {(params.utm_content.includes('{') || params.utm_content.includes('__')) && (
-                    <div className="absolute left-3 top-1/2 -translate-y-1/2 flex items-center gap-1 bg-emerald-500/20 text-emerald-400 px-2 py-1 rounded-md text-[10px] font-bold">
-                      <Zap size={10} />
-                      DYNAMIC
-                    </div>
-                  )}
-                </div>
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-slate-400 mb-2 uppercase">Term</label>
-                <input
-                  type="text"
-                  value={params.utm_term}
-                  onChange={(e) => updateParam('utm_term', e.target.value)}
-                  placeholder="e.g., {keyword}"
-                  className="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-xl text-white font-mono text-sm focus:outline-none focus:border-primary"
-                />
-              </div>
+            <div className="grid grid-cols-5 gap-3">
+              {UTM_TYPES.map((utmType) => {
+                const utmKey = utmType.key;
+                const hasValue = params[utmKey] && params[utmKey].trim() !== '';
+                const isActive = activeChipsFor === utmType.id;
+                
+                return (
+                  <div key={utmType.id} className="relative">
+                    <button
+                      onClick={() => handleUtmTypeClick(utmType.id)}
+                      className={`w-full p-3 rounded-xl border-2 transition-all font-bold text-sm ${
+                        isActive
+                          ? 'border-primary bg-primary/10 text-primary'
+                          : hasValue
+                          ? 'border-emerald-500/50 bg-emerald-500/10 text-emerald-400'
+                          : 'border-slate-700 bg-slate-800 text-slate-400 hover:border-slate-600'
+                      }`}
+                    >
+                      {utmType.label}
+                    </button>
+                    
+                    {/* Chips dropdown */}
+                    {isActive && platformOptions[utmType.id] && (
+                      <div className="absolute z-10 top-full left-0 right-0 mt-2 p-4 bg-slate-800 border border-slate-700 rounded-xl shadow-2xl max-h-64 overflow-y-auto">
+                        <div className="flex flex-wrap gap-2">
+                          {platformOptions[utmType.id].map((option) => (
+                            <button
+                              key={option}
+                              onClick={() => handleChipClick(utmType.id, option)}
+                              className={`px-4 py-2 rounded-lg text-sm font-bold transition-all border ${
+                                params[utmKey] === option
+                                  ? "bg-primary text-white border-primary"
+                                  : "bg-slate-700 text-slate-300 border-slate-600 hover:border-slate-500"
+                              }`}
+                            >
+                              {option}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           </div>
 
-          {/* Step 3: Preview URL */}
-          <div>
+          {/* Step 3: Current Values Display */}
+          <div className="bg-slate-800/50 border border-slate-700 rounded-2xl p-6 space-y-4">
             <div className="flex items-center gap-2 mb-4">
               <span className="bg-primary text-white w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold">3</span>
-              <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest">Preview URL</h3>
+              <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest">Current UTM Parameters</h3>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {UTM_TYPES.map((utmType) => {
+                const utmKey = utmType.key;
+                const value = params[utmKey] || '';
+                const isDynamic = value.includes('{') || value.includes('__');
+                
+                return (
+                  <div key={utmType.id}>
+                    <label className="block text-xs font-bold text-slate-400 mb-2 uppercase">{utmType.label}</label>
+                    <div className="relative">
+                      <input
+                        type="text"
+                        value={value}
+                        onChange={(e) => updateParam(utmKey, e.target.value)}
+                        placeholder={`Click ${utmType.label} button above to select`}
+                        className="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-xl text-white font-mono text-sm focus:outline-none focus:border-primary"
+                      />
+                      {isDynamic && (
+                        <div className="absolute left-3 top-1/2 -translate-y-1/2 flex items-center gap-1 bg-yellow-500/20 text-yellow-400 px-2 py-1 rounded-md text-[10px] font-bold">
+                          <Zap size={10} />
+                          DYNAMIC
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Step 4: Preview URL */}
+          <div>
+            <div className="flex items-center gap-2 mb-4">
+              <span className="bg-primary text-white w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold">4</span>
+              <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest">Preview Query String</h3>
             </div>
             <div className="bg-slate-950 border border-slate-800 rounded-2xl p-6">
               <div className="font-mono text-sm break-all text-slate-300" dir="ltr">
                 <span className="text-slate-500">https://glynk.to/</span>
                 <span className="text-primary font-bold">your-slug</span>
-                {Object.entries(params).some(([_, v]) => v) && <span className="text-slate-600">?</span>}
+                {queryString && <span className="text-slate-600">?</span>}
                 {Object.entries(params).map(([key, value], index) => {
                   if (!value) return null;
+                  const filteredParams = Object.entries(params).filter(([_, v]) => v);
+                  const paramIndex = filteredParams.findIndex(([k]) => k === key);
+                  
                   return (
                     <span key={key} className="inline-block">
                       <span className={PARAM_COLORS[key] || "text-slate-300"}>
@@ -354,7 +520,7 @@ const UtmPresetBuilder = ({ isOpen, onClose, editingPreset, links }) => {
                           {value}
                         </span>
                       </span>
-                      {index < Object.entries(params).filter(([_, v]) => v).length - 1 && (
+                      {paramIndex < filteredParams.length - 1 && (
                         <span className="text-slate-600 mx-1">&</span>
                       )}
                     </span>
