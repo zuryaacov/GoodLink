@@ -82,23 +82,17 @@ const Step2Optimization = ({ formData, updateFormData }) => {
   }, []);
 
   const handlePresetClick = (preset) => {
-    const isActive = formData.platformPreset === preset.id;
-    if (isActive) {
-      // Deactivate
-      updateFormData('platformPreset', null);
-      updateFormData('utmSource', '');
-      updateFormData('utmMedium', '');
-      updateFormData('utmCampaign', '');
-      updateFormData('utmContent', '');
-      updateFormData('utmTerm', '');
+    const selectedPresets = formData.selectedUtmPresets || [];
+    const isSelected = selectedPresets.includes(preset.id);
+    
+    if (isSelected) {
+      // Remove preset from selection
+      const newSelectedPresets = selectedPresets.filter(id => id !== preset.id);
+      updateFormData('selectedUtmPresets', newSelectedPresets);
     } else {
-      // Activate - update all UTM fields from preset
-      updateFormData('platformPreset', preset.id);
-      updateFormData('utmSource', preset.utm_source || '');
-      updateFormData('utmMedium', preset.utm_medium || '');
-      updateFormData('utmCampaign', preset.utm_campaign || '');
-      updateFormData('utmContent', preset.utm_content || '');
-      updateFormData('utmTerm', preset.utm_term || '');
+      // Add preset to selection
+      const newSelectedPresets = [...selectedPresets, preset.id];
+      updateFormData('selectedUtmPresets', newSelectedPresets);
     }
   };
 
@@ -133,38 +127,40 @@ const Step2Optimization = ({ formData, updateFormData }) => {
           {loadingPresets ? (
             <div className="text-slate-400 text-sm">Loading presets...</div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div className="space-y-3">
               {availablePresets.map((preset) => {
-                const isActive = formData.platformPreset === preset.id;
+                const selectedPresets = formData.selectedUtmPresets || [];
+                const isSelected = selectedPresets.includes(preset.id);
                 const platformInfo = PLATFORMS[preset.platform] || { name: preset.platform, colorClass: 'text-slate-400 bg-slate-400/10' };
                 
                 return (
                   <button
                     key={preset.id}
                     onClick={() => handlePresetClick(preset)}
-                    className={`relative p-4 rounded-xl border-2 transition-all text-left ${
-                      isActive
+                    className={`w-full relative p-4 rounded-xl border-2 transition-all text-left ${
+                      isSelected
                         ? 'border-primary bg-primary/10 shadow-lg'
                         : 'border-[#232f48] bg-[#0b0f19] hover:border-[#324467]'
                     }`}
                   >
-                    {isActive && (
-                      <motion.div
-                        initial={{ scale: 0 }}
-                        animate={{ scale: 1 }}
-                        className="absolute -top-2 -right-2 w-6 h-6 bg-primary rounded-full flex items-center justify-center"
-                      >
-                        <span className="material-symbols-outlined text-white text-sm">check</span>
-                      </motion.div>
-                    )}
                     <div className="flex items-start gap-3">
-                      <div className={`px-2 py-1 rounded-lg text-xs font-bold ${platformInfo.colorClass}`}>
-                        {platformInfo.name}
+                      {/* Checkbox */}
+                      <div className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 mt-0.5 ${
+                        isSelected ? 'border-primary bg-primary' : 'border-slate-500 bg-transparent'
+                      }`}>
+                        {isSelected && (
+                          <span className="material-symbols-outlined text-white text-sm">check</span>
+                        )}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <h4 className={`font-bold text-sm mb-1 ${isActive ? 'text-white' : 'text-slate-300'}`}>
-                          {preset.name}
-                        </h4>
+                        <div className="flex items-center gap-2 mb-1">
+                          <div className={`px-2 py-1 rounded-lg text-xs font-bold ${platformInfo.colorClass}`}>
+                            {platformInfo.name}
+                          </div>
+                          <h4 className={`font-bold text-sm ${isSelected ? 'text-white' : 'text-slate-300'}`}>
+                            {preset.name}
+                          </h4>
+                        </div>
                         {(preset.utm_source || preset.utm_medium || preset.utm_campaign) && (
                           <div className="space-y-1 text-xs font-mono text-slate-500">
                             {preset.utm_source && <div>utm_source={preset.utm_source}</div>}
