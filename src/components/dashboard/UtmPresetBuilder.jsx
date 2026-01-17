@@ -35,22 +35,17 @@ const getPlatformLogo = (platform) => {
         </div>
       );
     case 'taboola':
-      // Taboola logo - using brand color #FF4056
+      // Taboola logo - brand color #0056F0 (Taboola Blue)
       return (
-        <div className="w-12 h-12 rounded-lg bg-[#FF4056] flex items-center justify-center">
-          <svg viewBox="0 0 24 24" width="20" height="20" fill="white" xmlns="http://www.w3.org/2000/svg">
-            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z"/>
-            <path d="M8 12h8M12 8v8" stroke="white" strokeWidth="2" strokeLinecap="round"/>
-          </svg>
+        <div className="w-12 h-12 rounded-lg bg-[#0056F0] flex items-center justify-center">
+          <span className="text-white font-bold text-xs">T</span>
         </div>
       );
     case 'outbrain':
-      // Outbrain logo - using brand color #184869 (dark blue)
+      // Outbrain logo - brand color #184869 (Outbrain Blue)
       return (
         <div className="w-12 h-12 rounded-lg bg-[#184869] flex items-center justify-center">
-          <svg viewBox="0 0 24 24" width="20" height="20" fill="white" xmlns="http://www.w3.org/2000/svg">
-            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
-          </svg>
+          <span className="text-white font-bold text-xs">O</span>
         </div>
       );
     default:
