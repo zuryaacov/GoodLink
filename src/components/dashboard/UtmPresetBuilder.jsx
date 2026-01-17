@@ -330,12 +330,14 @@ const UtmPresetBuilder = ({ isOpen, onClose, editingPreset, links }) => {
 
       if (!presetName.trim()) {
         setError('Preset name is required');
+        setLoading(false);
         return;
       }
 
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
         setError('User not authenticated');
+        setLoading(false);
         return;
       }
 
@@ -351,26 +353,37 @@ const UtmPresetBuilder = ({ isOpen, onClose, editingPreset, links }) => {
         utm_term: params.utm_term || null,
       };
 
+      console.log('Saving preset:', presetData);
+
       if (editingPreset) {
-        const { error } = await supabase
+        const { data, error } = await supabase
           .from('utm_presets')
           .update(presetData)
-          .eq('id', editingPreset.id);
+          .eq('id', editingPreset.id)
+          .select();
 
-        if (error) throw error;
+        if (error) {
+          console.error('Update error:', error);
+          throw error;
+        }
+        console.log('Preset updated:', data);
       } else {
-        const { error } = await supabase
+        const { data, error } = await supabase
           .from('utm_presets')
-          .insert([{ ...presetData, user_id: user.id }]);
+          .insert([{ ...presetData, user_id: user.id }])
+          .select();
 
-        if (error) throw error;
+        if (error) {
+          console.error('Insert error:', error);
+          throw error;
+        }
+        console.log('Preset created:', data);
       }
 
       onClose();
     } catch (error) {
       console.error('Error saving preset:', error);
       setError(error.message || 'Failed to save preset. Please try again.');
-    } finally {
       setLoading(false);
     }
   };
@@ -533,7 +546,13 @@ const UtmPresetBuilder = ({ isOpen, onClose, editingPreset, links }) => {
           {/* Actions */}
           <div className="flex gap-4 pt-4">
             <button
-              onClick={handleSave}
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('Create/Update button clicked');
+                handleSave();
+              }}
               disabled={loading || !presetName.trim()}
               className="flex-1 px-6 py-3 bg-primary hover:bg-primary/90 text-white font-bold rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
