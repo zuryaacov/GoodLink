@@ -100,8 +100,8 @@ const UtmPresetManager = () => {
 
   const handleCopy = async (preset) => {
     try {
-      // Use encoded version for copy (proper URL format)
-      const queryString = buildUtmQueryString(preset, true);
+      // Don't encode - copy raw values with {} brackets (same as display)
+      const queryString = buildUtmQueryString(preset, false);
       await navigator.clipboard.writeText(queryString);
       setCopiedId(preset.id);
       setTimeout(() => setCopiedId(null), 2000);
@@ -171,7 +171,7 @@ const UtmPresetManager = () => {
         </div>
         <button
           onClick={handleNewPreset}
-          className="px-6 py-3 bg-primary hover:bg-primary/90 text-white font-bold rounded-xl transition-all shadow-lg shadow-primary/20 flex items-center gap-2"
+          className="px-6 py-3 bg-[#FF10F0] hover:bg-[#e00ed0] text-white font-bold rounded-xl transition-all shadow-lg shadow-[#FF10F0]/20 flex items-center gap-2"
         >
           <span className="material-symbols-outlined">add</span>
           New UTM Preset
@@ -185,7 +185,7 @@ const UtmPresetManager = () => {
           <p className="text-slate-400 mb-6">Create your first UTM preset to start tracking your campaigns</p>
           <button
             onClick={handleNewPreset}
-            className="px-6 py-3 bg-primary hover:bg-primary/90 text-white font-bold rounded-xl transition-all"
+            className="px-6 py-3 bg-[#FF10F0] hover:bg-[#e00ed0] text-white font-bold rounded-xl transition-all"
           >
             Create First Preset
           </button>
@@ -229,7 +229,7 @@ const UtmPresetManager = () => {
 
                 <div className="space-y-2 mb-4">
                   {queryString ? (
-                    <div className="text-base font-mono text-slate-400 break-all bg-slate-900/50 p-3 rounded-lg">
+                    <div className="text-base font-mono font-bold text-emerald-400 break-all bg-slate-900/50 p-3 rounded-lg">
                       {queryString}
                     </div>
                   ) : (

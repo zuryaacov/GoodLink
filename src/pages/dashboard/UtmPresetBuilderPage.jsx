@@ -430,7 +430,7 @@ const UtmPresetBuilderPage = () => {
             type="button"
             onClick={handleSave}
             disabled={loading || !presetName.trim()}
-            className="flex-1 px-6 py-3 bg-primary hover:bg-primary/90 text-white font-bold rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            className="flex-1 px-6 py-3 bg-[#FF10F0] hover:bg-[#e00ed0] text-white font-bold rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
             {loading ? (
               <>
@@ -443,13 +443,6 @@ const UtmPresetBuilderPage = () => {
                 {id ? 'Update Preset' : 'Create Preset'}
               </>
             )}
-          </button>
-          <button
-            type="button"
-            onClick={() => navigate('/dashboard/utm-presets')}
-            className="px-6 py-3 bg-slate-700 hover:bg-slate-600 text-white font-bold rounded-xl transition-all"
-          >
-            Cancel
           </button>
         </div>
       </div>
