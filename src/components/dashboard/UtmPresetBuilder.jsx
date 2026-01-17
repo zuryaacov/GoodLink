@@ -1,37 +1,91 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
 import { X, CheckCircle2, Zap } from 'lucide-react';
-import { Facebook, Globe, Send, Layout, TrendingUp } from 'lucide-react';
+
+const getPlatformLogo = (platform) => {
+  switch (platform) {
+    case 'meta':
+      // Facebook/Meta logo
+      return (
+        <div className="w-12 h-12 rounded-lg bg-[#1877F2] flex items-center justify-center">
+          <svg viewBox="0 0 24 24" width="24" height="24" fill="white" xmlns="http://www.w3.org/2000/svg">
+            <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+          </svg>
+        </div>
+      );
+    case 'google':
+      // Google Ads logo
+      return (
+        <div className="w-12 h-12 rounded-lg bg-white flex items-center justify-center">
+          <svg viewBox="0 0 24 24" width="24" height="24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+            <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+            <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+            <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+          </svg>
+        </div>
+      );
+    case 'tiktok':
+      // TikTok logo
+      return (
+        <div className="w-12 h-12 rounded-lg bg-black flex items-center justify-center">
+          <svg viewBox="0 0 24 24" width="24" height="24" fill="white" xmlns="http://www.w3.org/2000/svg">
+            <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z"/>
+          </svg>
+        </div>
+      );
+    case 'taboola':
+      // Taboola logo - using brand color #FF4056
+      return (
+        <div className="w-12 h-12 rounded-lg bg-[#FF4056] flex items-center justify-center">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="white" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z"/>
+            <path d="M8 12h8M12 8v8" stroke="white" strokeWidth="2" strokeLinecap="round"/>
+          </svg>
+        </div>
+      );
+    case 'outbrain':
+      // Outbrain logo - using brand color #184869 (dark blue)
+      return (
+        <div className="w-12 h-12 rounded-lg bg-[#184869] flex items-center justify-center">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="white" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+          </svg>
+        </div>
+      );
+    default:
+      return (
+        <div className="w-12 h-12 rounded-lg bg-slate-700 flex items-center justify-center">
+          <span className="text-slate-400 text-xs">?</span>
+        </div>
+      );
+  }
+};
 
 const PLATFORMS = {
   meta: {
     id: 'meta',
     name: "Meta (FB/IG)",
-    icon: <Facebook size={24} />,
     color: "blue",
   },
   google: {
     id: 'google',
     name: "Google Ads",
-    icon: <Globe size={24} />,
     color: "emerald",
   },
   tiktok: {
     id: 'tiktok',
     name: "TikTok Ads",
-    icon: <Send size={24} />,
     color: "pink",
   },
   taboola: {
     id: 'taboola',
     name: "Taboola",
-    icon: <Layout size={24} />,
     color: "orange",
   },
   outbrain: {
     id: 'outbrain',
     name: "Outbrain",
-    icon: <TrendingUp size={24} />,
     color: "indigo",
   }
 };
@@ -377,15 +431,13 @@ const UtmPresetBuilder = ({ isOpen, onClose, editingPreset, links }) => {
                 <button
                   key={p.id}
                   onClick={() => handlePlatformChange(p.id)}
-                  className={`relative group flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all ${
+                  className={`relative group flex flex-col items-center gap-3 p-4 rounded-xl border-2 transition-all ${
                     selectedPlatform === p.id
                       ? `border-primary bg-primary/10 text-white`
                       : "border-slate-700 bg-slate-800 text-slate-400 hover:border-slate-600"
                   }`}
                 >
-                  <div className={selectedPlatform === p.id ? "text-primary" : "text-slate-500"}>
-                    {p.icon}
-                  </div>
+                  {getPlatformLogo(p.id)}
                   <span className="font-bold text-xs text-center">{p.name}</span>
                   {selectedPlatform === p.id && (
                     <div className="absolute -top-2 -right-2 bg-primary text-white rounded-full p-1">
