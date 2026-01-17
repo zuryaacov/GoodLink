@@ -250,9 +250,9 @@ const LinkManager = () => {
                           </div>
                           
                           {/* Preset URL */}
-                          <div className="flex items-center gap-2 min-w-0">
+                          <div className="flex items-start gap-2 min-w-0">
                             <span 
-                              className="font-mono text-xs text-emerald-400 font-bold truncate flex-1 min-w-0 break-all" 
+                              className="font-mono text-xs text-emerald-400 font-bold flex-1 min-w-0 break-all whitespace-normal" 
                               title={presetUrl}
                             >
                               {presetUrl}
@@ -260,7 +260,7 @@ const LinkManager = () => {
                             <button
                               id={`copy-btn-${presetId}`}
                               onClick={() => handleCopy(presetUrl, presetId)}
-                              className="text-slate-400 hover:text-primary transition-colors p-1.5 rounded flex-shrink-0"
+                              className="text-slate-400 hover:text-primary transition-colors p-1.5 rounded flex-shrink-0 mt-0.5"
                               title="Copy Preset URL"
                             >
                               <span className="material-symbols-outlined text-base">content_copy</span>
