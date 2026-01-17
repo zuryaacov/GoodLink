@@ -1,13 +1,12 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import Modal from '../../components/common/Modal';
-import AddDomainModal from '../../components/dashboard/AddDomainModal';
 
 const CustomDomainsManager = () => {
+  const navigate = useNavigate();
   const [domains, setDomains] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingDomain, setEditingDomain] = useState(null);
 
   // Modal states for errors/alerts
   const [modalState, setModalState] = useState({
@@ -220,10 +219,7 @@ const CustomDomainsManager = () => {
           </p>
         </div>
         <button
-          onClick={() => {
-            setEditingDomain(null);
-            setIsModalOpen(true);
-          }}
+          onClick={() => navigate('/dashboard/domains/new')}
           className="px-6 py-3 bg-[#FF10F0] hover:bg-[#e00ed0] text-white font-bold rounded-xl transition-all shadow-lg shadow-[#FF10F0]/20 flex items-center gap-2 whitespace-nowrap"
         >
           <span className="material-symbols-outlined">add</span>
@@ -288,19 +284,6 @@ const CustomDomainsManager = () => {
             </div>
           ))}
         </div>
-      )}
-
-      {/* Add Domain Modal */}
-      {isModalOpen && (
-        <AddDomainModal
-          isOpen={isModalOpen}
-          onClose={() => {
-            setIsModalOpen(false);
-            setEditingDomain(null);
-            fetchDomains();
-          }}
-          domain={editingDomain}
-        />
       )}
 
       {/* Delete Confirmation Modal */}

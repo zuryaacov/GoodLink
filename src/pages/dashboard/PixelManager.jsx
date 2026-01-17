@@ -1,13 +1,12 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import Modal from '../../components/common/Modal';
-import PixelModal from '../../components/dashboard/PixelModal';
 
 const PixelManager = () => {
+  const navigate = useNavigate();
   const [pixels, setPixels] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingPixel, setEditingPixel] = useState(null);
   
   // Modal states for delete confirmation
   const [deleteModalState, setDeleteModalState] = useState({
@@ -200,10 +199,7 @@ const PixelManager = () => {
           <p className="text-sm md:text-base text-slate-400">Manage your tracking pixels</p>
         </div>
         <button
-          onClick={() => {
-            setEditingPixel(null);
-            setIsModalOpen(true);
-          }}
+          onClick={() => navigate('/dashboard/pixels/new')}
           className="flex items-center justify-center gap-2 w-full sm:w-auto px-6 py-3 md:py-2.5 text-white font-bold rounded-xl transition-colors shadow-lg text-base md:text-sm"
           style={{
             backgroundColor: "#FF10F0",
@@ -292,8 +288,7 @@ const PixelManager = () => {
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => {
-                      setEditingPixel(pixel);
-                      setIsModalOpen(true);
+                      navigate(`/dashboard/pixels/edit/${pixel.id}`);
                     }}
                     className="text-slate-400 hover:text-primary transition-colors p-2"
                     title="Edit pixel"
@@ -319,19 +314,6 @@ const PixelManager = () => {
             </div>
           ))}
         </div>
-      )}
-
-      {/* Pixel Modal */}
-      {isModalOpen && (
-        <PixelModal
-          isOpen={isModalOpen}
-          onClose={() => {
-            setIsModalOpen(false);
-            setEditingPixel(null);
-            fetchPixels();
-          }}
-          initialData={editingPixel}
-        />
       )}
 
       {/* Delete Confirmation Modal */}

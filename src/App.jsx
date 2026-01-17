@@ -8,7 +8,9 @@ import LinkManager from "./pages/dashboard/LinkManager";
 import UtmPresetManager from "./pages/dashboard/UtmPresetManager";
 import UtmPresetBuilderPage from "./pages/dashboard/UtmPresetBuilderPage";
 import PixelManager from "./pages/dashboard/PixelManager";
+import PixelBuilderPage from "./pages/dashboard/PixelBuilderPage";
 import CustomDomainsManager from "./pages/dashboard/CustomDomainsManager";
+import AddDomainPage from "./pages/dashboard/AddDomainPage";
 import { supabase } from "./lib/supabase";
 
 const ProtectedRoute = ({ children }) => {
@@ -113,6 +115,42 @@ function App() {
         element={
           <ProtectedRoute>
             <UtmPresetBuilderPage />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Pixel Builder Routes (without DashboardLayout/navbar) */}
+      <Route
+        path="/dashboard/pixels/new"
+        element={
+          <ProtectedRoute>
+            <PixelBuilderPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/dashboard/pixels/edit/:id"
+        element={
+          <ProtectedRoute>
+            <PixelBuilderPage />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Custom Domain Routes (without DashboardLayout/navbar) */}
+      <Route
+        path="/dashboard/domains/new"
+        element={
+          <ProtectedRoute>
+            <AddDomainPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/dashboard/domains/edit/:id"
+        element={
+          <ProtectedRoute>
+            <AddDomainPage />
           </ProtectedRoute>
         }
       />
