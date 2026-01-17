@@ -211,12 +211,11 @@ const CustomDomainsManager = () => {
   }
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <h1 className="text-3xl font-bold text-white mb-2">Custom Domains</h1>
-          <p className="text-slate-400">
+    <div className="flex flex-col gap-6 md:gap-8 w-full max-w-7xl mx-auto">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="flex flex-col gap-2">
+          <h1 className="text-2xl sm:text-3xl font-bold text-white">Custom Domains</h1>
+          <p className="text-slate-400 text-sm sm:text-base">
             Brand your links with custom domains (e.g., go.mybrand.com)
           </p>
         </div>
@@ -225,7 +224,7 @@ const CustomDomainsManager = () => {
             setEditingDomain(null);
             setIsModalOpen(true);
           }}
-          className="px-6 py-3 bg-[#FF10F0] hover:bg-[#e00ed0] text-white font-bold rounded-xl transition-all shadow-lg shadow-[#FF10F0]/20 flex items-center gap-2"
+          className="px-6 py-3 bg-[#FF10F0] hover:bg-[#e00ed0] text-white font-bold rounded-xl transition-all shadow-lg shadow-[#FF10F0]/20 flex items-center gap-2 whitespace-nowrap"
         >
           <span className="material-symbols-outlined">add</span>
           New Domain
@@ -234,28 +233,15 @@ const CustomDomainsManager = () => {
 
       {/* Domains List */}
       {domains.length === 0 ? (
-        // Empty State
-        <div className="bg-[#101622] border border-[#232f48] rounded-xl p-8 sm:p-12 text-center">
-          <div className="max-w-md mx-auto space-y-4">
-            <div className="text-6xl mb-4">🌐</div>
-            <h2 className="text-xl sm:text-2xl font-bold text-white">No Custom Domains Yet</h2>
-            <p className="text-slate-400 text-sm sm:text-base">
-              Brand your links with custom domains and improve click rates by up to 30%
-            </p>
-            <button
-              onClick={() => {
-                setEditingDomain(null);
-                setIsModalOpen(true);
-              }}
-              className="mt-6 px-6 py-3 bg-[#FF10F0] hover:bg-[#e00ed0] text-white font-bold rounded-xl transition-colors inline-flex items-center gap-2"
-            >
-              <span className="material-symbols-outlined">add</span>
-              Add Your First Domain
-            </button>
+        <div className="bg-[#101622] border border-[#232f48] rounded-2xl p-4 md:p-6 w-full">
+          <div className="text-center py-12">
+            <span className="material-symbols-outlined text-6xl text-slate-600 mb-4">public</span>
+            <p className="text-slate-400 text-lg mb-2">No custom domains yet</p>
+            <p className="text-slate-500 text-sm">Create your first custom domain to get started</p>
           </div>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 w-full">
           {domains.map((domain) => (
             <div
               key={domain.id}
