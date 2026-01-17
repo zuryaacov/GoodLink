@@ -80,13 +80,38 @@ const LinkManager = () => {
     }
   };
 
-  const handleCopy = async (url) => {
+  const handleCopy = async (url, presetId = null) => {
     try {
       await navigator.clipboard.writeText(url);
       // You could add a toast notification here
+      if (presetId) {
+        // Visual feedback for preset copy
+        const element = document.getElementById(`copy-btn-${presetId}`);
+        if (element) {
+          const originalText = element.innerHTML;
+          element.innerHTML = '<span class="material-symbols-outlined text-base">check</span>';
+          setTimeout(() => {
+            element.innerHTML = originalText;
+          }, 1000);
+        }
+      }
     } catch (err) {
       console.error('Failed to copy:', err);
     }
+  };
+
+  const buildPresetUrl = (link, preset) => {
+    const baseUrl = link.short_url || '';
+    if (!preset || !baseUrl) return baseUrl;
+
+    const params = [];
+    if (preset.utm_source) params.push(`utm_source=${preset.utm_source}`);
+    if (preset.utm_medium) params.push(`utm_medium=${preset.utm_medium}`);
+    if (preset.utm_campaign) params.push(`utm_campaign=${preset.utm_campaign}`);
+    if (preset.utm_content) params.push(`utm_content=${preset.utm_content}`);
+    if (preset.utm_term) params.push(`utm_term=${preset.utm_term}`);
+
+    return params.length > 0 ? `${baseUrl}?${params.join('&')}` : baseUrl;
   };
 
   const truncateText = (text, maxLength = 40) => {
@@ -193,9 +218,9 @@ const LinkManager = () => {
 
               {/* UTM Presets */}
               {link.utm_presets && Array.isArray(link.utm_presets) && link.utm_presets.length > 0 && (
-                <div className="space-y-2">
-                  <div className="text-xs text-slate-500 font-medium">UTM Presets:</div>
-                  <div className="flex flex-wrap gap-2">
+                <div className="space-y-3 pt-2 border-t border-[#232f48]">
+                  <div className="text-xs text-slate-500 font-medium">UTM Preset Links:</div>
+                  <div className="space-y-2">
                     {link.utm_presets.map((presetId) => {
                       const preset = presetsMap[presetId];
                       if (!preset) return null;
@@ -205,17 +230,42 @@ const LinkManager = () => {
                         colorClass: 'text-slate-400 bg-slate-400/10' 
                       };
                       
+                      const presetUrl = buildPresetUrl(link, preset);
+                      
                       return (
                         <div
                           key={presetId}
-                          className={`px-3 py-1.5 rounded-lg border border-[#232f48] bg-[#0b0f19] flex items-center gap-2 ${platformInfo.colorClass}`}
+                          className="p-3 bg-[#0b0f19] rounded-lg border border-[#232f48] space-y-2"
                         >
-                          <span className="text-xs font-bold">{platformInfo.name}</span>
-                          <span className="text-xs text-slate-300">•</span>
-                          <span className="text-xs text-slate-300 truncate max-w-[120px]" title={preset.name}>
-                            {preset.name}
-                          </span>
-                          <span className="text-xs text-slate-500">({link.domain})</span>
+                          {/* Preset Header */}
+                          <div className="flex items-center gap-2">
+                            <div className={`px-2 py-1 rounded text-xs font-bold ${platformInfo.colorClass}`}>
+                              {platformInfo.name}
+                            </div>
+                            <span className="text-xs text-slate-500">•</span>
+                            <span className="text-xs text-slate-300 font-medium truncate flex-1" title={preset.name}>
+                              {preset.name}
+                            </span>
+                            <span className="text-xs text-slate-500">({link.domain})</span>
+                          </div>
+                          
+                          {/* Preset URL */}
+                          <div className="flex items-center gap-2 min-w-0">
+                            <span 
+                              className="font-mono text-xs text-emerald-400 font-bold truncate flex-1 min-w-0 break-all" 
+                              title={presetUrl}
+                            >
+                              {presetUrl}
+                            </span>
+                            <button
+                              id={`copy-btn-${presetId}`}
+                              onClick={() => handleCopy(presetUrl, presetId)}
+                              className="text-slate-400 hover:text-primary transition-colors p-1.5 rounded flex-shrink-0"
+                              title="Copy Preset URL"
+                            >
+                              <span className="material-symbols-outlined text-base">content_copy</span>
+                            </button>
+                          </div>
                         </div>
                       );
                     })}
