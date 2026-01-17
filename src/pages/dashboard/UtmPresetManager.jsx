@@ -83,21 +83,26 @@ const UtmPresetManager = () => {
     }
   };
 
-  const buildUtmQueryString = (preset) => {
+  const buildUtmQueryString = (preset, encode = false) => {
     const params = [];
     
-    if (preset.utm_source) params.push(`utm_source=${encodeURIComponent(preset.utm_source)}`);
-    if (preset.utm_medium) params.push(`utm_medium=${encodeURIComponent(preset.utm_medium)}`);
-    if (preset.utm_campaign) params.push(`utm_campaign=${encodeURIComponent(preset.utm_campaign)}`);
-    if (preset.utm_content) params.push(`utm_content=${encodeURIComponent(preset.utm_content)}`);
-    if (preset.utm_term) params.push(`utm_term=${encodeURIComponent(preset.utm_term)}`);
+    // For display: show raw values with {} brackets
+    // For copy: use encodeURIComponent for proper URL encoding
+    const encodeValue = (value) => encode ? encodeURIComponent(value) : value;
+    
+    if (preset.utm_source) params.push(`utm_source=${encodeValue(preset.utm_source)}`);
+    if (preset.utm_medium) params.push(`utm_medium=${encodeValue(preset.utm_medium)}`);
+    if (preset.utm_campaign) params.push(`utm_campaign=${encodeValue(preset.utm_campaign)}`);
+    if (preset.utm_content) params.push(`utm_content=${encodeValue(preset.utm_content)}`);
+    if (preset.utm_term) params.push(`utm_term=${encodeValue(preset.utm_term)}`);
     
     return params.length > 0 ? params.join('&') : '';
   };
 
   const handleCopy = async (preset) => {
     try {
-      const queryString = buildUtmQueryString(preset);
+      // Use encoded version for copy (proper URL format)
+      const queryString = buildUtmQueryString(preset, true);
       await navigator.clipboard.writeText(queryString);
       setCopiedId(preset.id);
       setTimeout(() => setCopiedId(null), 2000);
@@ -198,7 +203,8 @@ const UtmPresetManager = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {presets.map((preset) => {
             const platform = PLATFORMS[preset.platform] || { name: preset.platform, colorClass: 'text-slate-400 bg-slate-400/10' };
-            const queryString = buildUtmQueryString(preset);
+            // Display query string without encoding (to show {{}} instead of %7B%7D)
+            const queryString = buildUtmQueryString(preset, false);
             
             return (
               <div
