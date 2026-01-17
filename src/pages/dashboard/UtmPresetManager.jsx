@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
-import UtmPresetBuilder from '../../components/dashboard/UtmPresetBuilder';
 import Modal from '../../components/common/Modal';
 import { Copy, Trash2, Edit2 } from 'lucide-react';
 
@@ -13,11 +13,10 @@ const PLATFORMS = {
 };
 
 const UtmPresetManager = () => {
+  const navigate = useNavigate();
   const [presets, setPresets] = useState([]);
   const [links, setLinks] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [isBuilderOpen, setIsBuilderOpen] = useState(false);
-  const [editingPreset, setEditingPreset] = useState(null);
   const [copiedId, setCopiedId] = useState(null);
   
   const [modalState, setModalState] = useState({
@@ -145,19 +144,11 @@ const UtmPresetManager = () => {
   };
 
   const handleEdit = (preset) => {
-    setEditingPreset(preset);
-    setIsBuilderOpen(true);
+    navigate(`/dashboard/utm-presets/edit/${preset.id}`);
   };
 
   const handleNewPreset = () => {
-    setEditingPreset(null);
-    setIsBuilderOpen(true);
-  };
-
-  const handleBuilderClose = () => {
-    setIsBuilderOpen(false);
-    setEditingPreset(null);
-    fetchPresets();
+    navigate('/dashboard/utm-presets/new');
   };
 
   if (loading) {
@@ -301,15 +292,6 @@ const UtmPresetManager = () => {
             );
           })}
         </div>
-      )}
-
-      {isBuilderOpen && (
-        <UtmPresetBuilder
-          isOpen={isBuilderOpen}
-          onClose={handleBuilderClose}
-          editingPreset={editingPreset}
-          links={links}
-        />
       )}
 
       <Modal

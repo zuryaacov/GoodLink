@@ -6,6 +6,7 @@ import DashboardLayout from "./layouts/DashboardLayout";
 import Analytics from "./pages/dashboard/Analytics";
 import LinkManager from "./pages/dashboard/LinkManager";
 import UtmPresetManager from "./pages/dashboard/UtmPresetManager";
+import UtmPresetBuilderPage from "./pages/dashboard/UtmPresetBuilderPage";
 import PixelManager from "./pages/dashboard/PixelManager";
 import CustomDomainsManager from "./pages/dashboard/CustomDomainsManager";
 import { supabase } from "./lib/supabase";
@@ -97,6 +98,24 @@ function App() {
         <Route path="pixels" element={<PixelManager />} />
         <Route path="domains" element={<CustomDomainsManager />} />
       </Route>
+
+      {/* UTM Preset Builder Routes (without DashboardLayout/navbar) */}
+      <Route
+        path="/dashboard/utm-presets/new"
+        element={
+          <ProtectedRoute>
+            <UtmPresetBuilderPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/dashboard/utm-presets/edit/:id"
+        element={
+          <ProtectedRoute>
+            <UtmPresetBuilderPage />
+          </ProtectedRoute>
+        }
+      />
     </Routes>
   );
 }
