@@ -3,9 +3,18 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import Modal from '../../components/common/Modal';
 
+const PLATFORMS = {
+  meta: { name: 'Meta (FB/IG)', colorClass: 'text-blue-400 bg-blue-400/10' },
+  google: { name: 'Google Ads', colorClass: 'text-emerald-400 bg-emerald-400/10' },
+  tiktok: { name: 'TikTok Ads', colorClass: 'text-pink-400 bg-pink-400/10' },
+  taboola: { name: 'Taboola', colorClass: 'text-orange-400 bg-orange-400/10' },
+  outbrain: { name: 'Outbrain', colorClass: 'text-indigo-400 bg-indigo-400/10' }
+};
+
 const LinkManager = () => {
   const navigate = useNavigate();
   const [links, setLinks] = useState([]);
+  const [presetsMap, setPresetsMap] = useState({}); // Map of preset ID to preset data
   const [loading, setLoading] = useState(true);
   
   // Modal states
@@ -27,15 +36,43 @@ const LinkManager = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      const { data, error } = await supabase
+      // Fetch links
+      const { data: linksData, error: linksError } = await supabase
         .from('links')
         .select('*')
         .eq('user_id', user.id)
-        .neq('status', 'deleted') // Don't fetch deleted links
+        .neq('status', 'deleted')
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
-      setLinks(data || []);
+      if (linksError) throw linksError;
+      
+      // Collect all unique preset IDs from all links
+      const presetIds = new Set();
+      (linksData || []).forEach(link => {
+        if (Array.isArray(link.utm_presets)) {
+          link.utm_presets.forEach(id => presetIds.add(id));
+        }
+      });
+
+      // Fetch all presets if there are any
+      let presetsDataMap = {};
+      if (presetIds.size > 0) {
+        const { data: presetsData, error: presetsError } = await supabase
+          .from('utm_presets')
+          .select('*')
+          .in('id', Array.from(presetIds))
+          .eq('user_id', user.id);
+
+        if (!presetsError && presetsData) {
+          presetsDataMap = presetsData.reduce((acc, preset) => {
+            acc[preset.id] = preset;
+            return acc;
+          }, {});
+        }
+      }
+
+      setPresetsMap(presetsDataMap);
+      setLinks(linksData || []);
     } catch (error) {
       console.error('Error fetching links:', error);
     } finally {
@@ -153,6 +190,38 @@ const LinkManager = () => {
                   <span className="material-symbols-outlined text-base">content_copy</span>
                 </button>
               </div>
+
+              {/* UTM Presets */}
+              {link.utm_presets && Array.isArray(link.utm_presets) && link.utm_presets.length > 0 && (
+                <div className="space-y-2">
+                  <div className="text-xs text-slate-500 font-medium">UTM Presets:</div>
+                  <div className="flex flex-wrap gap-2">
+                    {link.utm_presets.map((presetId) => {
+                      const preset = presetsMap[presetId];
+                      if (!preset) return null;
+                      
+                      const platformInfo = PLATFORMS[preset.platform] || { 
+                        name: preset.platform, 
+                        colorClass: 'text-slate-400 bg-slate-400/10' 
+                      };
+                      
+                      return (
+                        <div
+                          key={presetId}
+                          className={`px-3 py-1.5 rounded-lg border border-[#232f48] bg-[#0b0f19] flex items-center gap-2 ${platformInfo.colorClass}`}
+                        >
+                          <span className="text-xs font-bold">{platformInfo.name}</span>
+                          <span className="text-xs text-slate-300">•</span>
+                          <span className="text-xs text-slate-300 truncate max-w-[120px]" title={preset.name}>
+                            {preset.name}
+                          </span>
+                          <span className="text-xs text-slate-500">({link.domain})</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
 
               {/* Status & Actions */}
               <div className="flex items-center justify-between gap-3 pt-2 border-t border-[#232f48]">
