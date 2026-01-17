@@ -238,7 +238,7 @@ const UtmPresetManager = () => {
 
                 <div className="space-y-2 mb-4">
                   {queryString ? (
-                    <div className="text-xs font-mono text-slate-400 break-all bg-slate-900/50 p-3 rounded-lg">
+                    <div className="text-base font-mono text-slate-400 break-all bg-slate-900/50 p-3 rounded-lg">
                       {queryString}
                     </div>
                   ) : (
