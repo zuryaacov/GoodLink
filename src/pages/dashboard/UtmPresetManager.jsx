@@ -265,6 +265,18 @@ const UtmPresetManager = () => {
                       <span className="text-slate-300">{preset.utm_campaign}</span>
                     </div>
                   )}
+                  {preset.utm_content && (
+                    <div className="flex items-center gap-2 text-sm">
+                      <span className="text-emerald-400 font-mono text-xs w-20">content:</span>
+                      <span className="text-slate-300">{preset.utm_content}</span>
+                    </div>
+                  )}
+                  {preset.utm_term && (
+                    <div className="flex items-center gap-2 text-sm">
+                      <span className="text-orange-400 font-mono text-xs w-20">term:</span>
+                      <span className="text-slate-300">{preset.utm_term}</span>
+                    </div>
+                  )}
                 </div>
 
                 <div className="flex gap-2">
