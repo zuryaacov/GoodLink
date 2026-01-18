@@ -233,15 +233,30 @@ const LinkBuilderPage = () => {
         if (error) throw error;
 
         // Fetch the updated link to get full data for Redis cache
+        console.log('🔄 [LinkBuilder] Fetching updated link for Redis cache...');
         const { data: updatedLink, error: fetchError } = await supabase
           .from('links')
           .select('*')
           .eq('id', id)
           .single();
 
-        if (!fetchError && updatedLink) {
+        if (fetchError) {
+          console.error('❌ [LinkBuilder] Error fetching updated link:', fetchError);
+        } else if (updatedLink) {
+          console.log('✅ [LinkBuilder] Link fetched, updating Redis cache...');
           // Update Redis cache
-          await updateLinkInRedis(updatedLink, supabase);
+          try {
+            const redisResult = await updateLinkInRedis(updatedLink, supabase);
+            if (redisResult) {
+              console.log('✅ [LinkBuilder] Redis cache updated successfully');
+            } else {
+              console.warn('⚠️ [LinkBuilder] Redis cache update returned false');
+            }
+          } catch (redisError) {
+            console.error('❌ [LinkBuilder] Error updating Redis cache:', redisError);
+          }
+        } else {
+          console.warn('⚠️ [LinkBuilder] No updated link data found');
         }
 
         setModalState({
@@ -287,6 +302,9 @@ const LinkBuilderPage = () => {
         if (error) throw error;
 
         // Fetch the created link to get full data for Redis cache
+        console.log('🔄 [LinkBuilder] Fetching created link for Redis cache...');
+        console.log('🔄 [LinkBuilder] Searching for link:', { user_id: user.id, slug: finalSlug, domain: baseUrl });
+        
         const { data: newLinks, error: fetchError } = await supabase
           .from('links')
           .select('*')
@@ -297,9 +315,29 @@ const LinkBuilderPage = () => {
           .limit(1)
           .single();
 
-        if (!fetchError && newLinks) {
+        if (fetchError) {
+          console.error('❌ [LinkBuilder] Error fetching created link:', fetchError);
+          console.error('❌ [LinkBuilder] Fetch error details:', {
+            message: fetchError.message,
+            details: fetchError.details,
+            hint: fetchError.hint
+          });
+        } else if (newLinks) {
+          console.log('✅ [LinkBuilder] Link fetched, updating Redis cache...');
+          console.log('✅ [LinkBuilder] Link data:', { id: newLinks.id, domain: newLinks.domain, slug: newLinks.slug });
           // Update Redis cache
-          await updateLinkInRedis(newLinks, supabase);
+          try {
+            const redisResult = await updateLinkInRedis(newLinks, supabase);
+            if (redisResult) {
+              console.log('✅ [LinkBuilder] Redis cache updated successfully');
+            } else {
+              console.warn('⚠️ [LinkBuilder] Redis cache update returned false');
+            }
+          } catch (redisError) {
+            console.error('❌ [LinkBuilder] Error updating Redis cache:', redisError);
+          }
+        } else {
+          console.warn('⚠️ [LinkBuilder] No created link data found');
         }
 
         try {
