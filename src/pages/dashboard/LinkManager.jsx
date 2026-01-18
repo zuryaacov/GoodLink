@@ -252,8 +252,9 @@ const LinkManager = () => {
                           {/* Preset URL */}
                           <div className="flex items-start gap-2 min-w-0">
                             <span 
-                              className="font-mono text-xs text-emerald-400 font-bold flex-1 min-w-0 break-all whitespace-normal" 
+                              className="font-mono text-base font-bold text-emerald-400 flex-1 min-w-0 break-all whitespace-normal" 
                               title={presetUrl}
+                              style={{ fontWeight: '700' }}
                             >
                               {presetUrl}
                             </span>
