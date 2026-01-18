@@ -97,8 +97,8 @@ const Modal = ({
               {getDefaultIcon()}
             </div>
 
-            <h2>{title}</h2>
-            <div>{typeof message === 'string' ? <p>{message}</p> : message}</div>
+            <h2 className="text-white">{title}</h2>
+            <div className="text-white">{typeof message === 'string' ? <p className="text-white">{message}</p> : message}</div>
 
             <div className="modal-actions">
               {type === 'confirm' || type === 'delete' ? (
