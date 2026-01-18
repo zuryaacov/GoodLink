@@ -2,6 +2,8 @@
  * Cloudflare Worker for Link Redirect (Fixed)
  */
 
+import { Redis } from "@upstash/redis/cloudflare";
+
 /**
  * Extract slug from URL path
  */
@@ -45,10 +47,24 @@ function buildTargetUrl(targetUrl, linkData, requestUrl) {
 }
 
 /**
- * Update link cache in Upstash Redis
+ * Initialize Redis client from environment variables
  */
-async function updateLinkCacheInRedis(cacheKey, cacheData, redisUrl, redisToken) {
-    if (!redisUrl || !redisToken) {
+function getRedisClient(env) {
+    if (!env.UPSTASH_REDIS_REST_URL || !env.UPSTASH_REDIS_REST_TOKEN) {
+        return null;
+    }
+    
+    return new Redis({
+        url: env.UPSTASH_REDIS_REST_URL,
+        token: env.UPSTASH_REDIS_REST_TOKEN,
+    });
+}
+
+/**
+ * Update link cache in Upstash Redis using SDK
+ */
+async function updateLinkCacheInRedis(cacheKey, cacheData, redisClient) {
+    if (!redisClient) {
         console.error('❌ [Redis] Missing Redis configuration');
         return false;
     }
@@ -56,24 +72,10 @@ async function updateLinkCacheInRedis(cacheKey, cacheData, redisUrl, redisToken)
     try {
         console.log('📝 [Redis] Updating cache for key:', cacheKey);
         
-        // Upstash Redis REST API: POST with command array ["SET", "key", "value"]
+        // Use Upstash SDK to set the value
         const value = JSON.stringify(cacheData);
-        const response = await fetch(`${redisUrl}`, {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${redisToken}`,
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(['SET', cacheKey, value]),
-        });
+        await redisClient.set(cacheKey, value);
 
-        if (!response.ok) {
-            const errorText = await response.text();
-            console.error('❌ [Redis] Error updating cache:', response.status, errorText);
-            return false;
-        }
-
-        const data = await response.json();
         console.log('✅ [Redis] Cache updated successfully');
         return true;
     } catch (error) {
@@ -83,41 +85,31 @@ async function updateLinkCacheInRedis(cacheKey, cacheData, redisUrl, redisToken)
 }
 
 /**
- * Get link from Upstash Redis
- * Upstash Redis REST API format: POST with command array
+ * Get link from Upstash Redis using SDK
  */
-async function getLinkFromRedis(slug, domain, redisUrl, redisToken) {
+async function getLinkFromRedis(slug, domain, redisClient) {
+    if (!redisClient) {
+        return null;
+    }
+    
     try {
         const cacheKey = `link:${domain}:${slug}`;
         
-        // Upstash Redis REST API: POST with command array ["GET", "key"]
-        const response = await fetch(`${redisUrl}`, {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${redisToken}`,
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(['GET', cacheKey]),
-        });
+        // Use Upstash SDK to get the value
+        const cachedValue = await redisClient.get(cacheKey);
 
-        if (!response.ok) {
-            console.log('⚠️ [Redis] Cache miss or error:', response.status);
-            return null;
-        }
-
-        const data = await response.json();
-        if (!data || data.result === null || data.result === undefined) {
+        if (!cachedValue || cachedValue === null) {
             console.log('⚠️ [Redis] Cache miss - key not found:', cacheKey);
             return null;
         }
 
-        // Parse the cached link data (Redis returns the value as string)
+        // Parse the cached link data
         let linkData;
         try {
-            if (typeof data.result === 'string') {
-                linkData = JSON.parse(data.result);
+            if (typeof cachedValue === 'string') {
+                linkData = JSON.parse(cachedValue);
             } else {
-                linkData = data.result;
+                linkData = cachedValue;
             }
         } catch (parseError) {
             console.error('❌ [Redis] Error parsing cached data:', parseError);
@@ -1186,8 +1178,9 @@ async function handleUpdateRedisCache(request, env) {
 
         console.log('🔵 [RedisCache] Updating cache for:', domain, slug);
 
-        // Check Redis environment variables
-        if (!env.UPSTASH_REDIS_REST_URL || !env.UPSTASH_REDIS_REST_TOKEN) {
+        // Initialize Redis client
+        const redisClient = getRedisClient(env);
+        if (!redisClient) {
             console.error('❌ [RedisCache] Missing Redis configuration');
             return new Response(JSON.stringify({
                 success: false,
@@ -1210,8 +1203,7 @@ async function handleUpdateRedisCache(request, env) {
         const success = await updateLinkCacheInRedis(
             cacheKey,
             cacheData,
-            env.UPSTASH_REDIS_REST_URL,
-            env.UPSTASH_REDIS_REST_TOKEN
+            redisClient
         );
 
         if (!success) {
@@ -1614,11 +1606,14 @@ export default {
                     let linkData = null;
                     
                     // Try Redis first if slug and domain are available
-                    if (slug && domain && env.UPSTASH_REDIS_REST_URL && env.UPSTASH_REDIS_REST_TOKEN) {
+                    if (slug && domain) {
                         try {
-                            linkData = await getLinkFromRedis(slug, domain, env.UPSTASH_REDIS_REST_URL, env.UPSTASH_REDIS_REST_TOKEN);
-                            if (linkData) {
-                                console.log('✅ [Redis] Link data fetched from Redis for tracking');
+                            const redisClient = getRedisClient(env);
+                            if (redisClient) {
+                                linkData = await getLinkFromRedis(slug, domain, redisClient);
+                                if (linkData) {
+                                    console.log('✅ [Redis] Link data fetched from Redis for tracking');
+                                }
                             }
                         } catch (err) {
                             console.error('❌ [Redis] Error fetching link data from Redis:', err);
@@ -1800,8 +1795,9 @@ export default {
 
             // Try to get link from Redis first, fallback to Supabase
             let linkData = null;
-            if (env.UPSTASH_REDIS_REST_URL && env.UPSTASH_REDIS_REST_TOKEN) {
-                linkData = await getLinkFromRedis(slug, domain, env.UPSTASH_REDIS_REST_URL, env.UPSTASH_REDIS_REST_TOKEN);
+            const redisClient = getRedisClient(env);
+            if (redisClient) {
+                linkData = await getLinkFromRedis(slug, domain, redisClient);
                 console.log('🔵 Link data from Redis:', linkData ? 'Found' : 'Not found');
             }
             

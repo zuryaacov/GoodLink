@@ -65,7 +65,19 @@ export async function updateLinkInRedis(linkData, supabase) {
 
     // Call the worker endpoint to update Redis
     // This endpoint should be created in goodlink-backend worker
-    const workerUrl = import.meta.env.VITE_WORKER_URL || window.location.origin.replace(/:\d+$/, '');
+    // Try to get worker URL from env, otherwise try to construct it
+    let workerUrl = import.meta.env.VITE_WORKER_URL;
+    
+    if (!workerUrl) {
+      // If no env var, try to construct from current origin
+      // This assumes the worker is on the same domain
+      workerUrl = window.location.origin.replace(/:\d+$/, '');
+      
+      // Check if we're on a custom domain that might have a different worker URL
+      // For Cloudflare Workers, the URL is usually: https://<worker-name>.<account>.workers.dev
+      // Or if it's on a custom domain, it might be the same domain
+      console.warn('⚠️ [RedisCache] VITE_WORKER_URL not set, using:', workerUrl);
+    }
     
     console.log('🔄 [RedisCache] Updating Redis cache...');
     console.log('🔄 [RedisCache] Worker URL:', workerUrl);
