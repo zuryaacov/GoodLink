@@ -3,6 +3,7 @@
 ## 📌 הערות חשובות
 
 **Upstash Redis זה לא database עם טבלאות** - זה **key-value store**!
+
 - אין צורך ליצור טבלאות
 - אין צורך להגדיר סכמה (schema)
 - פשוט יוצרים Redis database ב-Upstash Console והכל מוכן
@@ -16,6 +17,7 @@ link:{domain}:{slug}
 ```
 
 **דוגמאות:**
+
 - `link:glynk.to:abc123`
 - `link:mydomain.com:test-link`
 - `link:example.co:promo-2024`
@@ -35,14 +37,14 @@ link:{domain}:{slug}
   "short_url": "https://glynk.to/abc123",
   "status": "active",
   "parameter_pass_through": true,
-  
+
   // UTM Parameters
   "utm_source": "facebook",
   "utm_medium": "cpc",
   "utm_campaign": "{{campaign.name}}",
   "utm_content": null,
   "utm_term": null,
-  
+
   // UTM Presets (full objects, not just IDs)
   "utm_presets": [
     {
@@ -59,7 +61,7 @@ link:{domain}:{slug}
       "updated_at": "2024-01-01T00:00:00Z"
     }
   ],
-  
+
   // Pixels (full objects, not just IDs)
   "pixels": [
     {
@@ -73,14 +75,14 @@ link:{domain}:{slug}
       "updated_at": "2024-01-01T00:00:00Z"
     }
   ],
-  
+
   // Additional Settings
   "server_side_tracking": false,
   "custom_script": null,
   "fraud_shield": "none",
   "bot_action": "block",
   "geo_rules": [],
-  
+
   // Timestamps
   "created_at": "2024-01-01T00:00:00Z",
   "updated_at": "2024-01-01T12:00:00Z"
@@ -92,6 +94,7 @@ link:{domain}:{slug}
 ### 1. יצירת/עדכון לינק
 
 כשיוזר יוצר או מעדכן לינק:
+
 1. הנתונים נשמרים ב-Supabase (כרגיל)
 2. הנתונים גם נשלחים ל-worker endpoint: `/api/update-redis-cache`
 3. ה-worker שולח את הנתונים ל-Redis עם המפתח `link:{domain}:{slug}`
@@ -99,6 +102,7 @@ link:{domain}:{slug}
 ### 2. קריאת לינק
 
 כשמגיע בקשת HTTP ל-worker:
+
 1. ה-worker מנסה לקרוא מ-Redis עם המפתח `link:{domain}:{slug}`
 2. אם נמצא → מחזיר את הנתונים מה-Redis (מהיר!)
 3. אם לא נמצא → קורא מ-Supabase (fallback)
@@ -106,6 +110,7 @@ link:{domain}:{slug}
 ### 3. מחיקת לינק
 
 כשיוזר מוחק לינק:
+
 - עדיף למחוק גם מ-Redis (או לעדכן את ה-status ל-"deleted")
 - אפשר להוסיף logic למחיקת key מ-Redis
 
@@ -116,6 +121,7 @@ link:{domain}:{slug}
 - ✅ **אין צורך לבצע migrations**
 
 פשוט:
+
 1. יוצרים Redis database ב-Upstash Console
 2. לוקחים את ה-URL וה-Token
 3. מגדירים אותם כ-secrets ב-worker
