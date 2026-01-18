@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
+import { updateLinkInRedis } from '../../lib/redisCache';
 import { ArrowLeft } from 'lucide-react';
 import Step1FastTrack from '../../components/dashboard/wizard/Step1FastTrack';
 import Step2Optimization from '../../components/dashboard/wizard/Step2Optimization';
@@ -231,6 +232,18 @@ const LinkBuilderPage = () => {
 
         if (error) throw error;
 
+        // Fetch the updated link to get full data for Redis cache
+        const { data: updatedLink, error: fetchError } = await supabase
+          .from('links')
+          .select('*')
+          .eq('id', id)
+          .single();
+
+        if (!fetchError && updatedLink) {
+          // Update Redis cache
+          await updateLinkInRedis(updatedLink, supabase);
+        }
+
         setModalState({
           isOpen: true,
           type: 'success',
@@ -272,6 +285,22 @@ const LinkBuilderPage = () => {
           });
 
         if (error) throw error;
+
+        // Fetch the created link to get full data for Redis cache
+        const { data: newLinks, error: fetchError } = await supabase
+          .from('links')
+          .select('*')
+          .eq('user_id', user.id)
+          .eq('slug', finalSlug)
+          .eq('domain', baseUrl)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .single();
+
+        if (!fetchError && newLinks) {
+          // Update Redis cache
+          await updateLinkInRedis(newLinks, supabase);
+        }
 
         try {
           await navigator.clipboard.writeText(fullUtmString);

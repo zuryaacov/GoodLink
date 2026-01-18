@@ -45,7 +45,101 @@ function buildTargetUrl(targetUrl, linkData, requestUrl) {
 }
 
 /**
- * Query Supabase for link
+ * Update link cache in Upstash Redis
+ */
+async function updateLinkCacheInRedis(cacheKey, cacheData, redisUrl, redisToken) {
+    if (!redisUrl || !redisToken) {
+        console.error('❌ [Redis] Missing Redis configuration');
+        return false;
+    }
+    
+    try {
+        console.log('📝 [Redis] Updating cache for key:', cacheKey);
+        
+        // Upstash Redis REST API: POST with command array ["SET", "key", "value"]
+        const value = JSON.stringify(cacheData);
+        const response = await fetch(`${redisUrl}`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${redisToken}`,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(['SET', cacheKey, value]),
+        });
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('❌ [Redis] Error updating cache:', response.status, errorText);
+            return false;
+        }
+
+        const data = await response.json();
+        console.log('✅ [Redis] Cache updated successfully');
+        return true;
+    } catch (error) {
+        console.error('❌ [Redis] Error updating cache:', error);
+        return false;
+    }
+}
+
+/**
+ * Get link from Upstash Redis
+ * Upstash Redis REST API format: POST with command array
+ */
+async function getLinkFromRedis(slug, domain, redisUrl, redisToken) {
+    try {
+        const cacheKey = `link:${domain}:${slug}`;
+        
+        // Upstash Redis REST API: POST with command array ["GET", "key"]
+        const response = await fetch(`${redisUrl}`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${redisToken}`,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(['GET', cacheKey]),
+        });
+
+        if (!response.ok) {
+            console.log('⚠️ [Redis] Cache miss or error:', response.status);
+            return null;
+        }
+
+        const data = await response.json();
+        if (!data || data.result === null || data.result === undefined) {
+            console.log('⚠️ [Redis] Cache miss - key not found:', cacheKey);
+            return null;
+        }
+
+        // Parse the cached link data (Redis returns the value as string)
+        let linkData;
+        try {
+            if (typeof data.result === 'string') {
+                linkData = JSON.parse(data.result);
+            } else {
+                linkData = data.result;
+            }
+        } catch (parseError) {
+            console.error('❌ [Redis] Error parsing cached data:', parseError);
+            return null;
+        }
+        
+        // Only return active links
+        if (linkData.status !== undefined && linkData.status !== 'active') {
+            console.log(`⚠️ [Redis] Link found in cache but status is "${linkData.status}" (not active)`);
+            return null;
+        }
+
+        console.log('✅ [Redis] Link found in cache');
+        return linkData;
+    } catch (error) {
+        console.error('❌ [Redis] Error querying Redis:', error);
+        return null;
+    }
+}
+
+/**
+ * Query Supabase for link (fallback - kept for backward compatibility)
  */
 async function getLinkFromSupabase(slug, domain, supabaseUrl, supabaseKey) {
     try {
@@ -307,8 +401,16 @@ async function saveTelemetryOnly(telemetryId, linkId, userId, slug, domain, targ
         clicked_at: new Date().toISOString()
     };
 
-    await saveToSupabase(logData, env);
-    console.log("✅ [Stytch] Telemetry ID saved (fallback mode)");
+    // Save to QStash instead of directly to Supabase
+    if (env.QSTASH_URL && env.QSTASH_TOKEN) {
+        await saveClickToQueue(logData, env.QSTASH_URL, env.QSTASH_TOKEN);
+        console.log("✅ [Stytch] Telemetry ID queued (fallback mode)");
+    } else {
+        // Fallback to direct Supabase save if Queue not configured
+        console.warn("⚠️ [Queue] QStash not configured, falling back to direct Supabase save");
+        await saveToSupabase(logData, env);
+        console.log("✅ [Stytch] Telemetry ID saved to Supabase (fallback mode)");
+    }
 }
 
 /**
@@ -343,7 +445,40 @@ async function checkDuplicateClick(telemetryId, linkId, supabaseUrl, supabaseKey
 }
 
 /**
- * Save data to Supabase
+ * Save click data to QStash (Upstash Queue)
+ */
+async function saveClickToQueue(logData, qstashUrl, qstashToken) {
+    try {
+        console.log('📤 [QStash] Sending click data to QStash...');
+        
+        // QStash REST API format: POST to /publish endpoint
+        const response = await fetch(`${qstashUrl}/publish`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${qstashToken}`,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(logData),
+        });
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error("❌ [QStash] Error:", response.status, errorText);
+            throw new Error(`QStash error: ${errorText}`);
+        }
+
+        const result = await response.json();
+        console.log('✅ [QStash] Click data sent to queue successfully');
+        return result;
+    } catch (error) {
+        console.error('❌ [QStash] Failed to send click to queue:', error);
+        throw error;
+    }
+}
+
+/**
+ * Save data to Supabase (deprecated - now using Queue)
+ * @deprecated Use saveClickToQueue instead
  */
 async function saveToSupabase(logData, env) {
     // Check for duplicate before saving
@@ -534,8 +669,16 @@ async function handleTracking(telemetryId, linkId, userId, slug, domain, targetU
             clicked_at: new Date().toISOString()
         };
 
-        await saveToSupabase(logData, env);
-        console.log("✅ [Stytch] Full data saved successfully");
+        // Save to QStash instead of directly to Supabase
+        if (env.QSTASH_URL && env.QSTASH_TOKEN) {
+            await saveClickToQueue(logData, env.QSTASH_URL, env.QSTASH_TOKEN);
+            console.log("✅ [Stytch] Full data queued successfully");
+        } else {
+            // Fallback to direct Supabase save if Queue not configured
+            console.warn("⚠️ [Queue] QStash not configured, falling back to direct Supabase save");
+            await saveToSupabase(logData, env);
+            console.log("✅ [Stytch] Full data saved to Supabase (fallback)");
+        }
 
         // Return Stytch data for bot detection
         return {
@@ -1280,6 +1423,12 @@ export default {
             return await handleVerifyCustomDomain(request, env);
         }
 
+        // Handle /api/update-redis-cache endpoint (POST)
+        if (pathname === '/api/update-redis-cache' && request.method === 'POST') {
+            console.log('🔵 Handling /api/update-redis-cache endpoint');
+            return await handleUpdateRedisCache(request, env);
+        }
+
         // Only process GET requests for other endpoints
         if (request.method !== 'GET') {
             console.log(`🔵 Skipping ${request.method} request (only GET supported)`);
@@ -1362,8 +1511,23 @@ export default {
 
                     // Fetch link data for tracking
                     let linkData = null;
-                    if (linkId && env.SUPABASE_URL && env.SUPABASE_SERVICE_ROLE_KEY) {
+                    
+                    // Try Redis first if slug and domain are available
+                    if (slug && domain && env.UPSTASH_REDIS_REST_URL && env.UPSTASH_REDIS_REST_TOKEN) {
                         try {
+                            linkData = await getLinkFromRedis(slug, domain, env.UPSTASH_REDIS_REST_URL, env.UPSTASH_REDIS_REST_TOKEN);
+                            if (linkData) {
+                                console.log('✅ [Redis] Link data fetched from Redis for tracking');
+                            }
+                        } catch (err) {
+                            console.error('❌ [Redis] Error fetching link data from Redis:', err);
+                        }
+                    }
+                    
+                    // Fallback to Supabase if Redis not configured or cache miss
+                    if (!linkData && linkId && env.SUPABASE_URL && env.SUPABASE_SERVICE_ROLE_KEY) {
+                        try {
+                            console.log('⚠️ [Redis] Falling back to Supabase for link data');
                             const linkQueryUrl = `${env.SUPABASE_URL}/rest/v1/links?id=eq.${encodeURIComponent(linkId)}&select=id,user_id,target_url,parameter_pass_through,utm_source,utm_medium,utm_campaign,utm_content,status`;
                             const linkResponse = await fetch(linkQueryUrl, {
                                 method: 'GET',
@@ -1377,10 +1541,11 @@ export default {
                                 const linkDataArray = await linkResponse.json();
                                 if (linkDataArray && linkDataArray.length > 0) {
                                     linkData = linkDataArray[0];
+                                    console.log('✅ [Supabase] Link data fetched from Supabase for tracking');
                                 }
                             }
                         } catch (err) {
-                            console.error('❌ Error fetching link data:', err);
+                            console.error('❌ [Supabase] Error fetching link data:', err);
                         }
                     }
 
@@ -1532,8 +1697,21 @@ export default {
             console.log('🔵 Domain:', domain);
             console.log('🔵 Querying Supabase for link...');
 
-            const linkData = await getLinkFromSupabase(slug, domain, env.SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY);
-            console.log('🔵 Link data from Supabase:', JSON.stringify(linkData, null, 2));
+            // Try to get link from Redis first, fallback to Supabase
+            let linkData = null;
+            if (env.UPSTASH_REDIS_REST_URL && env.UPSTASH_REDIS_REST_TOKEN) {
+                linkData = await getLinkFromRedis(slug, domain, env.UPSTASH_REDIS_REST_URL, env.UPSTASH_REDIS_REST_TOKEN);
+                console.log('🔵 Link data from Redis:', linkData ? 'Found' : 'Not found');
+            }
+            
+            // Fallback to Supabase if Redis not configured or cache miss
+            if (!linkData) {
+                console.log('⚠️ [Redis] Cache miss or not configured, falling back to Supabase');
+                linkData = await getLinkFromSupabase(slug, domain, env.SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY);
+                console.log('🔵 Link data from Supabase:', linkData ? 'Found' : 'Not found');
+            }
+            
+            console.log('🔵 Final link data:', JSON.stringify(linkData, null, 2));
 
             if (!linkData || !linkData.target_url) {
                 console.log('❌ Link not found in database');
