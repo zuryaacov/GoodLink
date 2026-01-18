@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts';
+import Modal from '../../components/common/Modal';
 
 const StatCard = ({ title, value, change, icon, trend }) => (
   <div className="bg-[#101622] border border-[#232f48] rounded-2xl p-6 relative overflow-hidden group hover:border-[#324467] transition-colors">
@@ -97,6 +98,10 @@ const Analytics = () => {
     deviceOS: [],
     geographic: [],
   });
+  const [trafficData, setTrafficData] = useState([]);
+  const [loadingTraffic, setLoadingTraffic] = useState(false);
+  const [selectedClick, setSelectedClick] = useState(null);
+  const [modalOpen, setModalOpen] = useState(false);
 
   useEffect(() => {
     fetchStats();
@@ -113,8 +118,9 @@ const Analytics = () => {
       // Fetch all clicks data for charts
       const { data: allClicks, error: clicksError } = await supabase
         .from('clicks')
-        .select('is_bot, verdict, fraud_score, is_vpn, is_proxy, device_type, os, os_version, country, city')
-        .eq('user_id', user.id);
+        .select('*')
+        .eq('user_id', user.id)
+        .order('clicked_at', { ascending: false });
 
       if (clicksError) {
         console.error('Error fetching clicks:', clicksError);
@@ -149,11 +155,50 @@ const Analytics = () => {
       // Process chart data
       processChartData(allClicks || []);
 
+      // Set traffic data (for table)
+      setTrafficData(allClicks || []);
+
     } catch (error) {
       console.error('Error fetching stats:', error);
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleExpandClick = async (clickId) => {
+    try {
+      setLoadingTraffic(true);
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data, error } = await supabase
+        .from('clicks')
+        .select('*')
+        .eq('id', clickId)
+        .eq('user_id', user.id)
+        .single();
+
+      if (error) throw error;
+      setSelectedClick(data);
+      setModalOpen(true);
+    } catch (error) {
+      console.error('Error fetching click details:', error);
+    } finally {
+      setLoadingTraffic(false);
+    }
+  };
+
+  const formatDateTime = (dateString) => {
+    if (!dateString) return '—';
+    const date = new Date(dateString);
+    return date.toLocaleString('he-IL', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+    });
   };
 
   const processChartData = (clicks) => {
@@ -340,6 +385,143 @@ const Analytics = () => {
           </BarChart>
         </ResponsiveContainer>
       </div>
+
+      {/* Traffic Table */}
+      <div className="bg-[#101622] border border-[#232f48] rounded-2xl p-6">
+        <h3 className="text-lg font-bold text-white mb-4">Traffic Log</h3>
+        {trafficData.length === 0 ? (
+          <div className="text-center py-12">
+            <span className="material-symbols-outlined text-6xl text-slate-600 mb-4">traffic</span>
+            <p className="text-slate-400 text-lg mb-2">No traffic data yet</p>
+            <p className="text-slate-500 text-sm">Traffic will appear here once users click your links</p>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-[#232f48]">
+                  <th className="text-left py-3 px-4 text-sm font-bold text-slate-400">תאריך ושעה</th>
+                  <th className="text-left py-3 px-4 text-sm font-bold text-slate-400">דומיין</th>
+                  <th className="text-left py-3 px-4 text-sm font-bold text-slate-400">SLUG</th>
+                  <th className="text-left py-3 px-4 text-sm font-bold text-slate-400">פעולה</th>
+                </tr>
+              </thead>
+              <tbody>
+                {trafficData.map((click) => (
+                  <tr key={click.id} className="border-b border-[#232f48] hover:bg-white/5 transition-colors">
+                    <td className="py-3 px-4 text-sm text-white">{formatDateTime(click.clicked_at || click.created_at)}</td>
+                    <td className="py-3 px-4 text-sm text-slate-300">{click.domain || '—'}</td>
+                    <td className="py-3 px-4 text-sm text-slate-300 font-mono">{click.slug || '—'}</td>
+                    <td className="py-3 px-4">
+                      <button
+                        onClick={() => handleExpandClick(click.id)}
+                        className="px-4 py-2 bg-primary hover:bg-primary/90 text-white text-sm font-bold rounded-lg transition-colors"
+                      >
+                        הרחבה
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+
+      {/* Click Details Modal */}
+      <Modal
+        isOpen={modalOpen}
+        onClose={() => {
+          setModalOpen(false);
+          setSelectedClick(null);
+        }}
+        title="Click Details"
+        message={
+          selectedClick ? (
+            <div className="space-y-4 text-left">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-xs text-slate-500 mb-1">תאריך ושעה</p>
+                  <p className="text-sm text-white font-mono">{formatDateTime(selectedClick.clicked_at || selectedClick.created_at)}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-slate-500 mb-1">דומיין</p>
+                  <p className="text-sm text-white">{selectedClick.domain || '—'}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-slate-500 mb-1">SLUG</p>
+                  <p className="text-sm text-white font-mono">{selectedClick.slug || '—'}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-slate-500 mb-1">IP Address</p>
+                  <p className="text-sm text-white font-mono">{selectedClick.ip_address || '—'}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-slate-500 mb-1">User Agent</p>
+                  <p className="text-sm text-white break-all">{selectedClick.user_agent || '—'}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-slate-500 mb-1">Referrer</p>
+                  <p className="text-sm text-white break-all">{selectedClick.referer || selectedClick.referrer || '—'}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-slate-500 mb-1">Country</p>
+                  <p className="text-sm text-white">{selectedClick.country || '—'}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-slate-500 mb-1">City</p>
+                  <p className="text-sm text-white">{selectedClick.city || '—'}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-slate-500 mb-1">Device Type</p>
+                  <p className="text-sm text-white">{selectedClick.device_type || '—'}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-slate-500 mb-1">OS</p>
+                  <p className="text-sm text-white">{selectedClick.os || '—'} {selectedClick.os_version || ''}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-slate-500 mb-1">Browser</p>
+                  <p className="text-sm text-white">{selectedClick.browser || '—'}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-slate-500 mb-1">Is Bot</p>
+                  <p className={`text-sm font-bold ${selectedClick.is_bot ? 'text-red-400' : 'text-green-400'}`}>
+                    {selectedClick.is_bot ? 'Yes' : 'No'}
+                  </p>
+                </div>
+                {selectedClick.fraud_score !== null && (
+                  <div>
+                    <p className="text-xs text-slate-500 mb-1">Fraud Score</p>
+                    <p className={`text-sm font-bold ${selectedClick.fraud_score > 80 ? 'text-red-400' : selectedClick.fraud_score > 50 ? 'text-yellow-400' : 'text-green-400'}`}>
+                      {selectedClick.fraud_score}
+                    </p>
+                  </div>
+                )}
+                <div>
+                  <p className="text-xs text-slate-500 mb-1">VPN</p>
+                  <p className={`text-sm font-bold ${selectedClick.is_vpn ? 'text-yellow-400' : 'text-slate-400'}`}>
+                    {selectedClick.is_vpn ? 'Yes' : 'No'}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-xs text-slate-500 mb-1">Proxy</p>
+                  <p className={`text-sm font-bold ${selectedClick.is_proxy ? 'text-yellow-400' : 'text-slate-400'}`}>
+                    {selectedClick.is_proxy ? 'Yes' : 'No'}
+                  </p>
+                </div>
+                {selectedClick.verdict && (
+                  <div className="col-span-2">
+                    <p className="text-xs text-slate-500 mb-1">Verdict</p>
+                    <p className="text-sm text-white">{selectedClick.verdict}</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          ) : null
+        }
+        type="info"
+      />
     </div>
   );
 };
