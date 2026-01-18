@@ -1161,6 +1161,14 @@ async function handleUpdateRedisCache(request, env) {
         const body = await request.json();
         const { domain, slug, cacheData } = body;
 
+        // CORS headers - allow requests from goodlink.ai
+        const corsHeaders = {
+            'Access-Control-Allow-Origin': 'https://www.goodlink.ai',
+            'Access-Control-Allow-Methods': 'POST, OPTIONS',
+            'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+            'Access-Control-Allow-Credentials': 'true'
+        };
+
         if (!domain || !slug || !cacheData) {
             return new Response(JSON.stringify({
                 success: false,
@@ -1169,9 +1177,7 @@ async function handleUpdateRedisCache(request, env) {
                 status: 400,
                 headers: {
                     'Content-Type': 'application/json',
-                    'Access-Control-Allow-Origin': '*',
-                    'Access-Control-Allow-Methods': 'POST, OPTIONS',
-                    'Access-Control-Allow-Headers': 'Content-Type, Authorization'
+                    ...corsHeaders
                 }
             });
         }
@@ -1189,9 +1195,7 @@ async function handleUpdateRedisCache(request, env) {
                 status: 500,
                 headers: {
                     'Content-Type': 'application/json',
-                    'Access-Control-Allow-Origin': '*',
-                    'Access-Control-Allow-Methods': 'POST, OPTIONS',
-                    'Access-Control-Allow-Headers': 'Content-Type, Authorization'
+                    ...corsHeaders
                 }
             });
         }
@@ -1214,30 +1218,39 @@ async function handleUpdateRedisCache(request, env) {
                 status: 500,
                 headers: {
                     'Content-Type': 'application/json',
-                    'Access-Control-Allow-Origin': '*',
-                    'Access-Control-Allow-Methods': 'POST, OPTIONS',
-                    'Access-Control-Allow-Headers': 'Content-Type, Authorization'
+                    ...corsHeaders
                 }
             });
         }
 
         console.log('✅ [RedisCache] Cache updated successfully');
 
+        // CORS headers - allow requests from goodlink.ai
+        const corsHeaders = {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': 'https://www.goodlink.ai',
+            'Access-Control-Allow-Methods': 'POST, OPTIONS',
+            'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+            'Access-Control-Allow-Credentials': 'true'
+        };
+
         return new Response(JSON.stringify({
             success: true,
             message: 'Redis cache updated successfully'
         }), {
             status: 200,
-            headers: {
-                'Content-Type': 'application/json',
-                'Access-Control-Allow-Origin': '*',
-                'Access-Control-Allow-Methods': 'POST, OPTIONS',
-                'Access-Control-Allow-Headers': 'Content-Type, Authorization'
-            }
+            headers: corsHeaders
         });
 
     } catch (error) {
         console.error('❌ [RedisCache] Error:', error);
+        // CORS headers - allow requests from goodlink.ai
+        const corsHeaders = {
+            'Access-Control-Allow-Origin': 'https://www.goodlink.ai',
+            'Access-Control-Allow-Methods': 'POST, OPTIONS',
+            'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+            'Access-Control-Allow-Credentials': 'true'
+        };
         return new Response(JSON.stringify({
             success: false,
             error: error.message || 'Internal server error'
@@ -1245,9 +1258,7 @@ async function handleUpdateRedisCache(request, env) {
             status: 500,
             headers: {
                 'Content-Type': 'application/json',
-                'Access-Control-Allow-Origin': '*',
-                'Access-Control-Allow-Methods': 'POST, OPTIONS',
-                'Access-Control-Allow-Headers': 'Content-Type, Authorization'
+                ...corsHeaders
             }
         });
     }
@@ -1491,12 +1502,23 @@ export default {
         // Handle OPTIONS requests (CORS preflight) - must be first!
         if (request.method === 'OPTIONS') {
             console.log('🔵 Handling OPTIONS request (CORS preflight)');
+            // Allow requests from goodlink.ai to glynk.to
+            const origin = request.headers.get('Origin');
+            const allowedOrigins = [
+                'https://www.goodlink.ai',
+                'https://goodlink.ai',
+                'http://localhost:3000',
+                'http://localhost:5173'
+            ];
+            const allowOrigin = allowedOrigins.includes(origin) ? origin : 'https://www.goodlink.ai';
+            
             return new Response(null, {
                 status: 204,
                 headers: {
-                    'Access-Control-Allow-Origin': '*',
+                    'Access-Control-Allow-Origin': allowOrigin,
                     'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
                     'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+                    'Access-Control-Allow-Credentials': 'true',
                     'Access-Control-Max-Age': '86400'
                 }
             });
