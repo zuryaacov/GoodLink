@@ -66,6 +66,12 @@ export async function updateLinkInRedis(linkData, supabase) {
     // Call the worker endpoint to update Redis
     // This endpoint should be created in goodlink-backend worker
     const workerUrl = import.meta.env.VITE_WORKER_URL || window.location.origin.replace(/:\d+$/, '');
+    
+    console.log('🔄 [RedisCache] Updating Redis cache...');
+    console.log('🔄 [RedisCache] Worker URL:', workerUrl);
+    console.log('🔄 [RedisCache] Domain:', linkData.domain);
+    console.log('🔄 [RedisCache] Slug:', linkData.slug);
+    
     const response = await fetch(`${workerUrl}/api/update-redis-cache`, {
       method: 'POST',
       headers: {
@@ -80,12 +86,13 @@ export async function updateLinkInRedis(linkData, supabase) {
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('Failed to update Redis cache:', errorText);
+      console.error('❌ [RedisCache] Failed to update Redis cache:', response.status, errorText);
       // Don't throw - cache update is not critical
       return false;
     }
 
-    console.log('✅ Redis cache updated successfully');
+    const result = await response.json();
+    console.log('✅ [RedisCache] Redis cache updated successfully:', result);
     return true;
   } catch (error) {
     console.error('Error updating Redis cache:', error);

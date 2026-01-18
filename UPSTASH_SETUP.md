@@ -36,13 +36,77 @@ wrangler secret put QSTASH_URL
 wrangler secret put QSTASH_TOKEN
 ```
 
-## Redis Cache Key Format
+## Redis Cache Structure
 
-Links are cached in Redis with the following key format:
-- Key: `link:{domain}:{slug}`
-- Example: `link:glynk.to:abc123`
+Upstash Redis is a **key-value store** (not a relational database), so there are no tables to create. Data is stored as simple key-value pairs.
 
-The value is a JSON string containing the full link data from the `links` table.
+### Key Format
+
+- **Key Pattern**: `link:{domain}:{slug}`
+- **Example**: `link:glynk.to:abc123`
+
+### Value Format
+
+The value is a **JSON string** containing the complete link data:
+
+```json
+{
+  "id": "uuid-of-link",
+  "user_id": "uuid-of-user",
+  "name": "Link Name",
+  "target_url": "https://example.com",
+  "domain": "glynk.to",
+  "slug": "abc123",
+  "short_url": "https://glynk.to/abc123",
+  "status": "active",
+  "parameter_pass_through": true,
+  "utm_source": "facebook",
+  "utm_medium": "cpc",
+  "utm_campaign": "{{campaign.name}}",
+  "utm_content": null,
+  "utm_term": null,
+  "utm_presets": [
+    {
+      "id": "preset-id",
+      "name": "Preset Name",
+      "platform": "meta",
+      "utm_source": "facebook_ads",
+      "utm_medium": "cpm",
+      "utm_campaign": "...",
+      "utm_content": "...",
+      "utm_term": "..."
+    }
+  ],
+  "pixels": [
+    {
+      "id": "pixel-id",
+      "name": "Pixel Name",
+      "platform": "meta",
+      "code": "..."
+    }
+  ],
+  "server_side_tracking": false,
+  "custom_script": null,
+  "fraud_shield": "none",
+  "bot_action": "block",
+  "geo_rules": [],
+  "created_at": "2024-01-01T00:00:00Z",
+  "updated_at": "2024-01-01T00:00:00Z"
+}
+```
+
+### How It Works
+
+1. **No Setup Required**: Redis doesn't need any schema or table creation. Just create the Redis database in Upstash console.
+
+2. **Automatic Storage**: When a link is created/updated, the system automatically:
+   - Creates the key: `link:{domain}:{slug}`
+   - Stores the JSON object as the value
+
+3. **Automatic Retrieval**: When a link is requested:
+   - Worker tries to get from Redis using key: `link:{domain}:{slug}`
+   - If found, returns cached data
+   - If not found (cache miss), falls back to Supabase
 
 ## Queue Message Format
 

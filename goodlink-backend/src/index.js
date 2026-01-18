@@ -1161,6 +1161,107 @@ async function handleVerifyCustomDomain(request, env) {
 }
 
 /**
+ * Handle update Redis cache endpoint
+ */
+async function handleUpdateRedisCache(request, env) {
+    try {
+        // Parse request body
+        const body = await request.json();
+        const { domain, slug, cacheData } = body;
+
+        if (!domain || !slug || !cacheData) {
+            return new Response(JSON.stringify({
+                success: false,
+                error: 'Missing domain, slug, or cacheData'
+            }), {
+                status: 400,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Access-Control-Allow-Origin': '*',
+                    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+                    'Access-Control-Allow-Headers': 'Content-Type, Authorization'
+                }
+            });
+        }
+
+        console.log('🔵 [RedisCache] Updating cache for:', domain, slug);
+
+        // Check Redis environment variables
+        if (!env.UPSTASH_REDIS_REST_URL || !env.UPSTASH_REDIS_REST_TOKEN) {
+            console.error('❌ [RedisCache] Missing Redis configuration');
+            return new Response(JSON.stringify({
+                success: false,
+                error: 'Redis configuration missing'
+            }), {
+                status: 500,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Access-Control-Allow-Origin': '*',
+                    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+                    'Access-Control-Allow-Headers': 'Content-Type, Authorization'
+                }
+            });
+        }
+
+        // Build cache key: link:{domain}:{slug}
+        const cacheKey = `link:${domain}:${slug}`;
+
+        // Update Redis cache
+        const success = await updateLinkCacheInRedis(
+            cacheKey,
+            cacheData,
+            env.UPSTASH_REDIS_REST_URL,
+            env.UPSTASH_REDIS_REST_TOKEN
+        );
+
+        if (!success) {
+            return new Response(JSON.stringify({
+                success: false,
+                error: 'Failed to update Redis cache'
+            }), {
+                status: 500,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Access-Control-Allow-Origin': '*',
+                    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+                    'Access-Control-Allow-Headers': 'Content-Type, Authorization'
+                }
+            });
+        }
+
+        console.log('✅ [RedisCache] Cache updated successfully');
+
+        return new Response(JSON.stringify({
+            success: true,
+            message: 'Redis cache updated successfully'
+        }), {
+            status: 200,
+            headers: {
+                'Content-Type': 'application/json',
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Methods': 'POST, OPTIONS',
+                'Access-Control-Allow-Headers': 'Content-Type, Authorization'
+            }
+        });
+
+    } catch (error) {
+        console.error('❌ [RedisCache] Error:', error);
+        return new Response(JSON.stringify({
+            success: false,
+            error: error.message || 'Internal server error'
+        }), {
+            status: 500,
+            headers: {
+                'Content-Type': 'application/json',
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Methods': 'POST, OPTIONS',
+                'Access-Control-Allow-Headers': 'Content-Type, Authorization'
+            }
+        });
+    }
+}
+
+/**
  * Generate bridging HTML page
  */
 function getBridgingPage(destUrl, linkId, slug, domain) {
