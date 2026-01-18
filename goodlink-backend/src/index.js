@@ -1488,15 +1488,16 @@ export default {
         console.log('🔵 Request Method:', request.method);
         console.log('🔵 Request Headers:', JSON.stringify(Object.fromEntries(request.headers.entries()), null, 2));
 
-        // Skip OPTIONS requests (CORS preflight) - don't track these
+        // Handle OPTIONS requests (CORS preflight) - must be first!
         if (request.method === 'OPTIONS') {
-            console.log('🔵 Skipping OPTIONS request (CORS preflight)');
+            console.log('🔵 Handling OPTIONS request (CORS preflight)');
             return new Response(null, {
                 status: 204,
                 headers: {
                     'Access-Control-Allow-Origin': '*',
                     'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-                    'Access-Control-Allow-Headers': '*'
+                    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+                    'Access-Control-Max-Age': '86400'
                 }
             });
         }
