@@ -439,98 +439,98 @@ const Analytics = () => {
         message={
           selectedClick ? (
             <div className="space-y-3 text-left">
-              <div className="flex items-center justify-between py-2 border-b border-[#232f48]">
-                <span className="text-xs font-medium text-slate-400">Date & Time</span>
-                <span className="text-sm text-white font-mono">{formatDateTime(selectedClick.clicked_at || selectedClick.created_at)}</span>
+              <div className="flex items-center justify-between py-2 border-b border-gray-200">
+                <span className="text-xs font-medium text-gray-500">Date & Time</span>
+                <span className="text-sm text-gray-900 font-mono">{formatDateTime(selectedClick.clicked_at || selectedClick.created_at)}</span>
               </div>
-              <div className="flex items-center justify-between py-2 border-b border-[#232f48]">
-                <span className="text-xs font-medium text-slate-400">Domain</span>
-                <span className="text-sm text-white">{selectedClick.domain || '—'}</span>
+              <div className="flex items-center justify-between py-2 border-b border-gray-200">
+                <span className="text-xs font-medium text-gray-500">Domain</span>
+                <span className="text-sm text-gray-900">{selectedClick.domain || '—'}</span>
               </div>
-              <div className="flex items-center justify-between py-2 border-b border-[#232f48]">
-                <span className="text-xs font-medium text-slate-400">SLUG</span>
-                <span className="text-sm text-white font-mono">{selectedClick.slug || '—'}</span>
+              <div className="flex items-center justify-between py-2 border-b border-gray-200">
+                <span className="text-xs font-medium text-gray-500">SLUG</span>
+                <span className="text-sm text-gray-900 font-mono">{selectedClick.slug || '—'}</span>
               </div>
-              <div className="flex items-center justify-between py-2 border-b border-[#232f48]">
-                <span className="text-xs font-medium text-slate-400">IP Address</span>
-                <span className="text-sm text-white font-mono">{selectedClick.ip_address || '—'}</span>
+              <div className="flex items-center justify-between py-2 border-b border-gray-200">
+                <span className="text-xs font-medium text-gray-500">IP Address</span>
+                <span className="text-sm text-gray-900 font-mono">{selectedClick.ip_address || '—'}</span>
               </div>
-              <div className="flex items-start justify-between py-2 border-b border-[#232f48]">
-                <span className="text-xs font-medium text-slate-400">User Agent</span>
-                <span className="text-sm text-white break-all text-right max-w-[70%]">{selectedClick.user_agent || '—'}</span>
+              <div className="flex items-start justify-between py-2 border-b border-gray-200">
+                <span className="text-xs font-medium text-gray-500">User Agent</span>
+                <span className="text-sm text-gray-900 break-all text-right max-w-[70%]">{selectedClick.user_agent || '—'}</span>
               </div>
-              <div className="flex items-start justify-between py-2 border-b border-[#232f48]">
-                <span className="text-xs font-medium text-slate-400">Referrer</span>
-                <span className="text-sm text-white break-all text-right max-w-[70%]">{selectedClick.referer || selectedClick.referrer || '—'}</span>
+              <div className="flex items-start justify-between py-2 border-b border-gray-200">
+                <span className="text-xs font-medium text-gray-500">Referrer</span>
+                <span className="text-sm text-gray-900 break-all text-right max-w-[70%]">{selectedClick.referer || selectedClick.referrer || '—'}</span>
               </div>
-              <div className="flex items-center justify-between py-2 border-b border-[#232f48]">
-                <span className="text-xs font-medium text-slate-400">Country</span>
-                <span className="text-sm text-white">{selectedClick.country || '—'}</span>
+              <div className="flex items-center justify-between py-2 border-b border-gray-200">
+                <span className="text-xs font-medium text-gray-500">Country</span>
+                <span className="text-sm text-gray-900">{selectedClick.country || '—'}</span>
               </div>
-              <div className="flex items-center justify-between py-2 border-b border-[#232f48]">
-                <span className="text-xs font-medium text-slate-400">City</span>
-                <span className="text-sm text-white">{selectedClick.city || '—'}</span>
+              <div className="flex items-center justify-between py-2 border-b border-gray-200">
+                <span className="text-xs font-medium text-gray-500">City</span>
+                <span className="text-sm text-gray-900">{selectedClick.city || '—'}</span>
               </div>
-              <div className="flex items-center justify-between py-2 border-b border-[#232f48]">
-                <span className="text-xs font-medium text-slate-400">Device Type</span>
-                <span className="text-sm text-white">{selectedClick.device_type || '—'}</span>
+              <div className="flex items-center justify-between py-2 border-b border-gray-200">
+                <span className="text-xs font-medium text-gray-500">Device Type</span>
+                <span className="text-sm text-gray-900">{selectedClick.device_type || '—'}</span>
               </div>
-              <div className="flex items-center justify-between py-2 border-b border-[#232f48]">
-                <span className="text-xs font-medium text-slate-400">OS</span>
-                <span className="text-sm text-white">{selectedClick.os || '—'} {selectedClick.os_version || ''}</span>
+              <div className="flex items-center justify-between py-2 border-b border-gray-200">
+                <span className="text-xs font-medium text-gray-500">OS</span>
+                <span className="text-sm text-gray-900">{selectedClick.os || '—'} {selectedClick.os_version || ''}</span>
               </div>
-              <div className="flex items-center justify-between py-2 border-b border-[#232f48]">
-                <span className="text-xs font-medium text-slate-400">Browser</span>
-                <span className="text-sm text-white">{selectedClick.browser || '—'}</span>
+              <div className="flex items-center justify-between py-2 border-b border-gray-200">
+                <span className="text-xs font-medium text-gray-500">Browser</span>
+                <span className="text-sm text-gray-900">{selectedClick.browser || '—'}</span>
               </div>
-              <div className="flex items-center justify-between py-2 border-b border-[#232f48]">
-                <span className="text-xs font-medium text-slate-400">Is Bot</span>
-                <span className={`text-sm font-bold ${selectedClick.is_bot ? 'text-red-400' : 'text-green-400'}`}>
+              <div className="flex items-center justify-between py-2 border-b border-gray-200">
+                <span className="text-xs font-medium text-gray-500">Is Bot</span>
+                <span className={`text-sm font-bold ${selectedClick.is_bot ? 'text-red-600' : 'text-green-600'}`}>
                   {selectedClick.is_bot ? 'Yes' : 'No'}
                 </span>
               </div>
               {selectedClick.fraud_score !== null && selectedClick.fraud_score !== undefined && (
-                <div className="flex items-center justify-between py-2 border-b border-[#232f48]">
-                  <span className="text-xs font-medium text-slate-400">Fraud Score</span>
-                  <span className={`text-sm font-bold ${selectedClick.fraud_score > 80 ? 'text-red-400' : selectedClick.fraud_score > 50 ? 'text-yellow-400' : 'text-green-400'}`}>
+                <div className="flex items-center justify-between py-2 border-b border-gray-200">
+                  <span className="text-xs font-medium text-gray-500">Fraud Score</span>
+                  <span className={`text-sm font-bold ${selectedClick.fraud_score > 80 ? 'text-red-600' : selectedClick.fraud_score > 50 ? 'text-yellow-600' : 'text-green-600'}`}>
                     {selectedClick.fraud_score}
                   </span>
                 </div>
               )}
-              <div className="flex items-center justify-between py-2 border-b border-[#232f48]">
-                <span className="text-xs font-medium text-slate-400">VPN</span>
-                <span className={`text-sm font-bold ${selectedClick.is_vpn ? 'text-yellow-400' : 'text-slate-400'}`}>
+              <div className="flex items-center justify-between py-2 border-b border-gray-200">
+                <span className="text-xs font-medium text-gray-500">VPN</span>
+                <span className={`text-sm font-bold ${selectedClick.is_vpn ? 'text-yellow-600' : 'text-gray-600'}`}>
                   {selectedClick.is_vpn ? 'Yes' : 'No'}
                 </span>
               </div>
-              <div className="flex items-center justify-between py-2 border-b border-[#232f48]">
-                <span className="text-xs font-medium text-slate-400">Proxy</span>
-                <span className={`text-sm font-bold ${selectedClick.is_proxy ? 'text-yellow-400' : 'text-slate-400'}`}>
+              <div className="flex items-center justify-between py-2 border-b border-gray-200">
+                <span className="text-xs font-medium text-gray-500">Proxy</span>
+                <span className={`text-sm font-bold ${selectedClick.is_proxy ? 'text-yellow-600' : 'text-gray-600'}`}>
                   {selectedClick.is_proxy ? 'Yes' : 'No'}
                 </span>
               </div>
               {selectedClick.verdict && (
-                <div className="flex items-start justify-between py-2 border-b border-[#232f48]">
-                  <span className="text-xs font-medium text-slate-400">Verdict</span>
-                  <span className="text-sm text-white text-right max-w-[70%]">{selectedClick.verdict}</span>
+                <div className="flex items-start justify-between py-2 border-b border-gray-200">
+                  <span className="text-xs font-medium text-gray-500">Verdict</span>
+                  <span className="text-sm text-gray-900 text-right max-w-[70%]">{selectedClick.verdict}</span>
                 </div>
               )}
               {selectedClick.target_url && (
-                <div className="flex items-start justify-between py-2 border-b border-[#232f48]">
-                  <span className="text-xs font-medium text-slate-400">Target URL</span>
-                  <span className="text-sm text-white break-all text-right max-w-[70%] font-mono">{selectedClick.target_url}</span>
+                <div className="flex items-start justify-between py-2 border-b border-gray-200">
+                  <span className="text-xs font-medium text-gray-500">Target URL</span>
+                  <span className="text-sm text-gray-900 break-all text-right max-w-[70%] font-mono">{selectedClick.target_url}</span>
                 </div>
               )}
               {selectedClick.query_params && (
-                <div className="flex items-start justify-between py-2 border-b border-[#232f48]">
-                  <span className="text-xs font-medium text-slate-400">Query Params</span>
-                  <span className="text-sm text-white break-all text-right max-w-[70%] font-mono">{typeof selectedClick.query_params === 'string' ? selectedClick.query_params : JSON.stringify(selectedClick.query_params)}</span>
+                <div className="flex items-start justify-between py-2 border-b border-gray-200">
+                  <span className="text-xs font-medium text-gray-500">Query Params</span>
+                  <span className="text-sm text-gray-900 break-all text-right max-w-[70%] font-mono">{typeof selectedClick.query_params === 'string' ? selectedClick.query_params : JSON.stringify(selectedClick.query_params)}</span>
                 </div>
               )}
               {selectedClick.session_id && (
-                <div className="flex items-center justify-between py-2 border-b border-[#232f48]">
-                  <span className="text-xs font-medium text-slate-400">Session ID</span>
-                  <span className="text-sm text-white font-mono">{selectedClick.session_id}</span>
+                <div className="flex items-center justify-between py-2 border-b border-gray-200">
+                  <span className="text-xs font-medium text-gray-500">Session ID</span>
+                  <span className="text-sm text-gray-900 font-mono">{selectedClick.session_id}</span>
                 </div>
               )}
             </div>

@@ -75,8 +75,8 @@ html {
 }
 
 .modal-box {
-  background: #101622;
-  border: 1px solid #232f48;
+  background: white;
+  border: 1px solid #e5e7eb;
   padding: 32px;
   border-radius: 16px;
   max-width: 600px;
@@ -88,7 +88,7 @@ html {
 }
 
 .modal-box h2 {
-  color: #ffffff;
+  color: #0A1128;
   margin-top: 16px;
   font-family: sans-serif;
   font-size: 1.5rem;
@@ -97,14 +97,14 @@ html {
 }
 
 .modal-box p {
-  color: #cbd5e1;
+  color: #374151;
   line-height: 1.5;
   margin-top: 8px;
   font-size: 0.95rem;
 }
 
 .modal-box > div {
-  color: #cbd5e1;
+  color: #374151;
 }
 
 .icon-circle {
@@ -127,18 +127,18 @@ html {
 .btn-secondary {
   flex: 1;
   padding: 12px;
-  border: 1px solid #232f48;
-  background: #232f48;
+  border: 1px solid #E5E7EB;
+  background: white;
   border-radius: 8px;
   cursor: pointer;
-  color: #ffffff;
+  color: #0A1128;
   font-weight: 600;
   transition: all 0.2s;
 }
 
 .btn-secondary:hover:not(:disabled) {
-  background: #324467;
-  border-color: #324467;
+  background: #F9FAFB;
+  border-color: #D1D5DB;
 }
 
 .btn-secondary:disabled {
