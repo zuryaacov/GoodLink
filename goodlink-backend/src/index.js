@@ -2118,6 +2118,16 @@ export default {
                 console.log('🚫 [Bot Detection] Bot detected before bridging page - redirecting to www.google.com');
                 console.log('🔵 ========== WORKER FINISHED ==========');
 
+                // --- DEBUG: BOT REDIRECT DISABLED (PRE-CHECK) ---
+                return new Response(JSON.stringify({
+                    success: true,
+                    message: "Bot detected (Pre-check), redirect disabled for debug",
+                    destination: 'https://www.google.com'
+                }), {
+                    status: 200,
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                /*
                 return new Response(null, {
                     status: 302,
                     headers: {
@@ -2127,12 +2137,24 @@ export default {
                         'Expires': '0'
                     }
                 });
+                */
             }
 
-            // Serve bridging page instead of direct redirect
-            console.log('🔵 Serving bridging page...');
+            // --- DEBUG: BRIDGING PAGE DISABLED ---
+            console.log('🔵 Bridging page disabled for debug');
             console.log('🔵 ========== WORKER FINISHED ==========');
 
+            return new Response(JSON.stringify({
+                success: true,
+                message: "Bridging page disabled for debug",
+                target: finalUrl,
+                slug: slug,
+                domain: domain
+            }), {
+                status: 200,
+                headers: { 'Content-Type': 'application/json' }
+            });
+            /*
             const bridgingHtml = getBridgingPage(finalUrl, linkData.id, slug, domain);
             return new Response(bridgingHtml, {
                 status: 200,
@@ -2143,6 +2165,7 @@ export default {
                     'Expires': '0'
                 }
             });
+            */
 
         } catch (error) {
             console.error('❌ Worker error:', error);
