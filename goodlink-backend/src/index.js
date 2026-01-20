@@ -1465,7 +1465,7 @@ function getBridgingPage(destUrl, linkId, slug, domain) {
     let turnstileToken = null;
     let telemetryId = crypto.randomUUID(); // Generate local ID since Stytch is disabled
     let redirectReady = true; // Ready immediately
-    let turnstileTimeout = false;
+    // turnstileTimeout removed logic
     
     // Callback כאשר Turnstile מסתיים
     function onTurnstileSuccess(token) {
@@ -1476,7 +1476,7 @@ function getBridgingPage(destUrl, linkId, slug, domain) {
     
     // בדוק אם אפשר לעשות redirect (צריך גם telemetry ID וגם Turnstile token)
     function checkAndRedirect() {
-        if (turnstileToken || turnstileTimeout) {
+        if (turnstileToken) {
             const dest = '${encodedDest}';
             const linkId = '${encodedLinkId}';
             const slug = '${encodedSlug}';
@@ -1502,12 +1502,14 @@ function getBridgingPage(destUrl, linkId, slug, domain) {
             // No Stytch telemetry needed anymore.
             // We just wait for onTurnstileSuccess callback.
             
-            // Timeout - if Turnstile takes too long, proceed without it
+            // Timeout removed - we MUST wait for Turnstile because the server requires the token.
+            // If Turnstile fails to load, the user stays on the loading page (better than a 403 error).
             setTimeout(() => {
-                console.log('⏱️ [Turnstile] Timeout - continuing regardless of token');
-                turnstileTimeout = true;
-                checkAndRedirect();
-            }, 2000);
+                if (!turnstileToken) {
+                    console.log('⏱️ [Turnstile] Taking longer than expected...');
+                    // Optional: Show a "Reload" button or message here if it takes too long
+                }
+            }, 5000);
             
         } catch (e) {
             console.error("Verification failed", e);
