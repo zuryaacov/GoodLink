@@ -1531,24 +1531,34 @@ function get404Page(slug, domain) {
             display: flex;
             justify-content: center;
             align-items: center;
+            width: 100%;
             min-height: 100vh;
             background-color: var(--bg);
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
             color: var(--text);
             overflow: hidden;
+            position: relative;
         }
 
         .container {
             text-align: center;
             background: var(--card);
-            padding: 4rem;
-            border-radius: 32px;
+            padding: 2.5rem;
+            border-radius: 24px;
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-            max-width: 500px;
-            width: 90%;
+            max-width: 400px;
+            width: 85%;
             border: 1px solid rgba(255, 255, 255, 0.05);
             position: relative;
             z-index: 10;
+            margin: auto;
+        }
+
+        @media (min-width: 640px) {
+            .container {
+                padding: 4rem;
+                max-width: 500px;
+            }
         }
 
         .logo {
@@ -1564,16 +1574,13 @@ function get404Page(slug, domain) {
             font-size: 8rem;
             font-weight: 900;
             line-height: 1;
-            margin: 0;
+            margin: 1.5rem 0;
             background: linear-gradient(to bottom, #38bdf8, #0ea5e9);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            opacity: 0.2;
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            z-index: -1;
+            opacity: 0.3;
+            position: relative;
+            z-index: 1;
         }
 
         h1 {
@@ -1655,9 +1662,8 @@ function get404Page(slug, domain) {
     <div class="circle circle-2"></div>
 
     <div class="container">
-        <div class="error-code">404</div>
-        
         <h1>Link Not Found</h1>
+        <div class="error-code">404</div>
         <p style="margin-bottom: 0;">Sorry, the link you're looking for doesn't exist or has been moved.</p>
     </div>
 </body>
