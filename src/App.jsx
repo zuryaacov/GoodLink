@@ -165,14 +165,14 @@ function App() {
           </ProtectedRoute>
         }
       />
-      <Route
+        <Route
         path="/dashboard/links/edit/:id"
-        element={
+          element={
           <ProtectedRoute>
             <LinkBuilderPage />
           </ProtectedRoute>
-        }
-      />
+          }
+        />
     </Routes>
   );
 }

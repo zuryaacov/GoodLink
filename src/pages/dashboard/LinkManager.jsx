@@ -16,6 +16,10 @@ const LinkManager = () => {
   const [links, setLinks] = useState([]);
   const [presetsMap, setPresetsMap] = useState({}); // Map of preset ID to preset data
   const [loading, setLoading] = useState(true);
+  const [utmPresetsModal, setUtmPresetsModal] = useState({
+    isOpen: false,
+    link: null,
+  });
   
   // Modal states
   const [modalState, setModalState] = useState({
@@ -80,13 +84,13 @@ const LinkManager = () => {
     }
   };
 
-  const handleCopy = async (url, presetId = null) => {
+  const handleCopy = async (url, copyBtnId = null) => {
     try {
       await navigator.clipboard.writeText(url);
       // You could add a toast notification here
-      if (presetId) {
+      if (copyBtnId) {
         // Visual feedback for preset copy
-        const element = document.getElementById(`copy-btn-${presetId}`);
+        const element = document.getElementById(copyBtnId);
         if (element) {
           const originalText = element.innerHTML;
           element.innerHTML = '<span class="material-symbols-outlined text-base">check</span>';
@@ -112,6 +116,67 @@ const LinkManager = () => {
     if (preset.utm_term) params.push(`utm_term=${preset.utm_term}`);
 
     return params.length > 0 ? `${baseUrl}?${params.join('&')}` : baseUrl;
+  };
+
+  const renderUtmPresetsList = (link) => {
+    if (!link?.utm_presets || !Array.isArray(link.utm_presets) || link.utm_presets.length === 0) {
+      return null;
+    }
+
+    return (
+      <div className="space-y-2">
+        {link.utm_presets.map((presetId) => {
+          const preset = presetsMap[presetId];
+          if (!preset) return null;
+
+          const platformInfo = PLATFORMS[preset.platform] || {
+            name: preset.platform,
+            colorClass: 'text-slate-400 bg-slate-400/10'
+          };
+
+          const presetUrl = buildPresetUrl(link, preset);
+          const copyBtnId = `copy-btn-${link.id}-${presetId}`;
+
+          return (
+            <div
+              key={presetId}
+              className="p-3 bg-[#0b0f19] rounded-lg border border-[#232f48] space-y-2"
+            >
+              {/* Preset Header */}
+              <div className="flex items-center gap-2">
+                <div className={`px-2 py-1 rounded text-xs font-bold ${platformInfo.colorClass}`}>
+                  {platformInfo.name}
+                </div>
+                <span className="text-xs text-slate-500">•</span>
+                <span className="text-xs text-slate-300 font-medium truncate flex-1" title={preset.name}>
+                  {preset.name}
+                </span>
+                <span className="text-xs text-slate-500">({link.domain})</span>
+              </div>
+
+              {/* Preset URL */}
+              <div className="flex items-start gap-2 min-w-0">
+                <span
+                  className="font-mono text-base font-bold text-emerald-400 flex-1 min-w-0 break-all whitespace-normal"
+                  title={presetUrl}
+                  style={{ fontWeight: '700' }}
+                >
+                  {presetUrl}
+                </span>
+                <button
+                  id={copyBtnId}
+                  onClick={() => handleCopy(presetUrl, copyBtnId)}
+                  className="text-slate-400 hover:text-primary transition-colors p-1.5 rounded flex-shrink-0 mt-0.5"
+                  title="Copy Preset URL"
+                >
+                  <span className="material-symbols-outlined text-base">content_copy</span>
+                </button>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    );
   };
 
   const truncateText = (text, maxLength = 40) => {
@@ -217,62 +282,26 @@ const LinkManager = () => {
               </div>
 
               {/* UTM Presets */}
-              {link.utm_presets && Array.isArray(link.utm_presets) && link.utm_presets.length > 0 && (
-                <div className="space-y-3 pt-2 border-t border-[#232f48]">
+              <div className="pt-2 border-t border-[#232f48]">
+                <div className="flex items-center justify-between gap-3">
                   <div className="text-xs text-slate-500 font-medium">UTM Preset Links:</div>
-                  <div className="space-y-2">
-                    {link.utm_presets.map((presetId) => {
-                      const preset = presetsMap[presetId];
-                      if (!preset) return null;
-                      
-                      const platformInfo = PLATFORMS[preset.platform] || { 
-                        name: preset.platform, 
-                        colorClass: 'text-slate-400 bg-slate-400/10' 
-                      };
-                      
-                      const presetUrl = buildPresetUrl(link, preset);
-                      
-                      return (
-                        <div
-                          key={presetId}
-                          className="p-3 bg-[#0b0f19] rounded-lg border border-[#232f48] space-y-2"
-                        >
-                          {/* Preset Header */}
-                          <div className="flex items-center gap-2">
-                            <div className={`px-2 py-1 rounded text-xs font-bold ${platformInfo.colorClass}`}>
-                              {platformInfo.name}
-                            </div>
-                            <span className="text-xs text-slate-500">•</span>
-                            <span className="text-xs text-slate-300 font-medium truncate flex-1" title={preset.name}>
-                              {preset.name}
-                            </span>
-                            <span className="text-xs text-slate-500">({link.domain})</span>
-                          </div>
-                          
-                          {/* Preset URL */}
-                          <div className="flex items-start gap-2 min-w-0">
-                            <span 
-                              className="font-mono text-base font-bold text-emerald-400 flex-1 min-w-0 break-all whitespace-normal" 
-                              title={presetUrl}
-                              style={{ fontWeight: '700' }}
-                            >
-                              {presetUrl}
-                            </span>
-                            <button
-                              id={`copy-btn-${presetId}`}
-                              onClick={() => handleCopy(presetUrl, presetId)}
-                              className="text-slate-400 hover:text-primary transition-colors p-1.5 rounded flex-shrink-0 mt-0.5"
-                              title="Copy Preset URL"
-                            >
-                              <span className="material-symbols-outlined text-base">content_copy</span>
-                            </button>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
+                  {link.utm_presets && Array.isArray(link.utm_presets) && link.utm_presets.length > 0 && (
+                    <button
+                      onClick={() => setUtmPresetsModal({ isOpen: true, link })}
+                      className="px-3 py-1.5 rounded-lg text-xs font-bold bg-white/5 border border-[#232f48] text-white hover:bg-white/10 transition-colors"
+                      title="Open UTM preset links"
+                    >
+                      לפתוח
+                    </button>
+                  )}
                 </div>
-              )}
+
+                {(!link.utm_presets || !Array.isArray(link.utm_presets) || link.utm_presets.length === 0) && (
+                  <div className="pt-2 text-xs text-slate-400">
+                    NO UTM Preset
+                  </div>
+                )}
+              </div>
 
               {/* Status & Actions */}
               <div className="flex items-center justify-between gap-3 pt-2 border-t border-[#232f48]">
@@ -328,6 +357,31 @@ const LinkManager = () => {
         type={modalState.type}
         onConfirm={modalState.onConfirm}
         isLoading={modalState.isLoading}
+      />
+
+      {/* UTM Presets Modal */}
+      <Modal
+        isOpen={utmPresetsModal.isOpen}
+        onClose={() => setUtmPresetsModal({ isOpen: false, link: null })}
+        title="UTM Preset Links"
+        message={
+          <div className="space-y-3">
+            {utmPresetsModal.link ? (
+              <>
+                <div className="text-sm text-slate-700">
+                  <span className="font-semibold">Link:</span>{' '}
+                  <span className="font-mono break-all">{utmPresetsModal.link.short_url}</span>
+                </div>
+                <div className="max-h-[55vh] overflow-auto pr-1">
+                  {renderUtmPresetsList(utmPresetsModal.link)}
+                </div>
+              </>
+            ) : (
+              <div className="text-sm text-slate-700">No data.</div>
+            )}
+          </div>
+        }
+        type="info"
       />
     </div>
   );
