@@ -1569,37 +1569,6 @@ export default {
             return new Response('Method not allowed', { status: 405 });
         }
 
-        // --- DEBUG ALERT (Requested by User) ---
-        // We return an HTML page with a script because alert() doesn't exist on the server (Worker)
-        if (!url.searchParams.has('skip_debug')) {
-            return new Response(`
-                <html>
-                <body style="background: #0f172a; color: white; font-family: sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0;">
-                    <div style="text-align: center; padding: 40px; border: 1px solid #334155; border-radius: 16px; background: #1e293b; box-shadow: 0 10px 25px rgba(0,0,0,0.5); max-width: 80%;">
-                        <h1 style="color: #38bdf8; margin-bottom: 20px;">Worker Debug Alert</h1>
-                        <p style="font-size: 1.2rem;">The Worker received the following URL:</p>
-                        <div style="background: #0f172a; padding: 15px; border-radius: 8px; margin: 20px 0; word-break: break-all; border: 1px solid #38bdf8;">
-                            <code style="color: #fbbf24; font-size: 1.1rem;">${request.url}</code>
-                        </div>
-                        <p>Pathname: <code style="color: #38bdf8;">${pathname}</code></p>
-                        <button onclick="proceed()" style="background: #38bdf8; color: #0f172a; border: none; padding: 12px 24px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 1rem; margin-top: 20px;">
-                            Click to Continue Tracking
-                        </button>
-                    </div>
-                    <script>
-                        alert("WORKER RECEIVED URL:\\n" + window.location.href);
-                        function proceed() {
-                            const currentUrl = new URL(window.location.href);
-                            currentUrl.searchParams.set('skip_debug', 'true');
-                            window.location.href = currentUrl.toString();
-                        }
-                    </script>
-                </body>
-                </html>
-            `, { headers: { 'Content-Type': 'text/html' } });
-        }
-        // --- END DEBUG ALERT ---
-
         try {
             // Check environment variables
             console.log('🔵 Checking environment variables...');
