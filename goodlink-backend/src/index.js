@@ -1463,8 +1463,9 @@ function getBridgingPage(destUrl, linkId, slug, domain) {
 
 <script>
     let turnstileToken = null;
-    let telemetryId = null;
-    let redirectReady = false;
+    let turnstileToken = null;
+    let telemetryId = crypto.randomUUID(); // Generate local ID since Stytch is disabled
+    let redirectReady = true; // Ready immediately
     let turnstileTimeout = false;
     
     // Callback כאשר Turnstile מסתיים
@@ -1476,7 +1477,9 @@ function getBridgingPage(destUrl, linkId, slug, domain) {
     
     // בדוק אם אפשר לעשות redirect (צריך גם telemetry ID וגם Turnstile token)
     function checkAndRedirect() {
-        if (redirectReady && telemetryId && (turnstileToken || turnstileTimeout)) {
+        // Unified check logic
+    function checkAndRedirect() {
+        if (turnstileToken || turnstileTimeout) {
             const dest = '${encodedDest}';
             const linkId = '${encodedLinkId}';
             const slug = '${encodedSlug}';
@@ -1498,23 +1501,16 @@ function getBridgingPage(destUrl, linkId, slug, domain) {
     
     async function redirect() {
         try {
-            // קריאה לסטיץ'
-            telemetryId = await GetTelemetryID();
-            console.log('✅ [Stytch] Telemetry ID received:', telemetryId ? 'Present' : 'Missing');
+            console.log('🔵 [Redirect] Started. Waiting for Turnstile...');
+            // No Stytch telemetry needed anymore.
+            // We just wait for onTurnstileSuccess callback.
             
-            // Start redirect process immediately (Turnstile will still be waited for if needed)
-            setTimeout(() => {
-                redirectReady = true;
-                console.log('🔵 [Redirect] Ready to redirect, waiting for Turnstile...');
-                checkAndRedirect();
-            }, 0);
-            
-            // Timeout - אם Turnstile לא מסתיים תוך 3 שניות, ממשיכים בלי token
+            // Timeout - if Turnstile takes too long, proceed without it
             setTimeout(() => {
                 console.log('⏱️ [Turnstile] Timeout - continuing regardless of token');
                 turnstileTimeout = true;
                 checkAndRedirect();
-            }, 3000);
+            }, 2000);
             
         } catch (e) {
             console.error("Verification failed", e);
