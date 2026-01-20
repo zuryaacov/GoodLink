@@ -284,14 +284,22 @@ const LinkManager = () => {
               {/* UTM Presets */}
               <div className="pt-2 border-t border-[#232f48]">
                 <div className="flex items-center justify-between gap-3">
-                  <div className="text-xs text-slate-500 font-medium">UTM Preset Links:</div>
+                  <div
+                    className={`text-xs font-medium ${
+                      link.utm_presets && Array.isArray(link.utm_presets) && link.utm_presets.length > 0
+                        ? 'text-emerald-400 font-bold'
+                        : 'text-slate-500'
+                    }`}
+                  >
+                    UTM Preset Links:
+                  </div>
                   {link.utm_presets && Array.isArray(link.utm_presets) && link.utm_presets.length > 0 && (
                     <button
                       onClick={() => setUtmPresetsModal({ isOpen: true, link })}
-                      className="px-3 py-1.5 rounded-lg text-xs font-bold bg-white/5 border border-[#232f48] text-white hover:bg-white/10 transition-colors"
+                      className="p-2 rounded-lg border border-[#232f48] bg-[#FF10F0] hover:bg-[#e00ed0] text-white transition-colors shadow-lg"
                       title="Open UTM preset links"
                     >
-                      לפתוח
+                      <span className="material-symbols-outlined text-base leading-none">open_in_new</span>
                     </button>
                   )}
                 </div>
@@ -372,9 +380,7 @@ const LinkManager = () => {
                   <span className="font-semibold">Link:</span>{' '}
                   <span className="font-mono break-all">{utmPresetsModal.link.short_url}</span>
                 </div>
-                <div className="max-h-[55vh] overflow-auto pr-1">
-                  {renderUtmPresetsList(utmPresetsModal.link)}
-                </div>
+                {renderUtmPresetsList(utmPresetsModal.link)}
               </>
             ) : (
               <div className="text-sm text-slate-700">No data.</div>
