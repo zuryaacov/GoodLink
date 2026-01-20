@@ -490,7 +490,6 @@ async function saveClickToQueue(logData, qstashUrl, qstashToken, env) {
 
         console.log(`📤 [QStash] Attempting to publish click for ID: ${logData.link_id}`);
         console.log(`🔗 [QStash] Forwarding to: ${targetUrl} via ${urlToUse}`);
-        console.log(`🔑 [QStash] Token: ${cleanToken.substring(0, 5)}...${cleanToken.substring(cleanToken.length - 5)} (Length: ${cleanToken.length})`);
 
         const response = await fetch(`${urlToUse}/${targetUrl}`, {
             method: 'POST',
@@ -643,8 +642,6 @@ async function handleTracking(telemetryId, linkId, userId, slug, domain, targetU
         const secret = cleanSecretValue(env.STYTCH_SECRET);
 
         console.log("🔵 [Stytch] Trying Consumer endpoint:", stytchUrl);
-        console.log(`🔍 [Stytch] Project ID: ${projId.substring(0, 12)}... (Total: ${projId.length})`);
-        console.log(`🔍 [Stytch] Secret starts with: ${secret.substring(0, 4)}...`);
 
         let stytchResponse = await fetch(stytchUrl, {
             method: "POST",
