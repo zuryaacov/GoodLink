@@ -473,15 +473,16 @@ async function saveClickToQueue(logData, qstashUrl, qstashToken, env) {
     try {
         const urlToUse = qstashUrl || "https://qstash.upstash.io/v2/publish";
         const targetUrl = `${env.SUPABASE_URL}/rest/v1/clicks`;
+        const cleanToken = qstashToken ? qstashToken.trim() : "";
 
         console.log(`📤 [QStash] Attempting to publish click for ID: ${logData.link_id}`);
         console.log(`🔗 [QStash] Forwarding to: ${targetUrl} via ${urlToUse}`);
-        console.log(`🔑 [QStash] Token length: ${qstashToken ? qstashToken.length : 0}`);
+        console.log(`🔑 [QStash] Token length: ${cleanToken.length} (Starts with: ${cleanToken.substring(0, 5)}...)`);
 
         const response = await fetch(`${urlToUse}/${targetUrl}`, {
             method: 'POST',
             headers: {
-                'Authorization': `Bearer ${qstashToken}`,
+                'Authorization': `Bearer ${cleanToken}`,
                 'Content-Type': 'application/json',
                 'Upstash-Forward-apikey': env.SUPABASE_SERVICE_ROLE_KEY,
                 'Upstash-Forward-Authorization': `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}`,
@@ -625,12 +626,16 @@ async function handleTracking(telemetryId, linkId, userId, slug, domain, targetU
     try {
         // נסה קודם Consumer endpoint - Using telemetry subdomain which is required for Fingerprinting
         let stytchUrl = `https://telemetry.stytch.com/v1/fingerprint/lookup`;
+        const projId = env.STYTCH_PROJECT_ID ? env.STYTCH_PROJECT_ID.trim() : "";
+        const secret = env.STYTCH_SECRET ? env.STYTCH_SECRET.trim() : "";
+
         console.log("🔵 [Stytch] Trying Consumer endpoint:", stytchUrl);
+        console.log(`🔍 [Stytch] Project ID starts with: ${projId.substring(0, 12)}...`);
 
         let stytchResponse = await fetch(stytchUrl, {
             method: "POST",
             headers: {
-                "Authorization": "Basic " + btoa(`${env.STYTCH_PROJECT_ID}:${env.STYTCH_SECRET}`),
+                "Authorization": "Basic " + btoa(`${projId}:${secret}`),
                 "Content-Type": "application/json"
             },
             body: JSON.stringify({
@@ -647,7 +652,7 @@ async function handleTracking(telemetryId, linkId, userId, slug, domain, targetU
             stytchResponse = await fetch(stytchUrl, {
                 method: "POST",
                 headers: {
-                    "Authorization": "Basic " + btoa(`${env.STYTCH_PROJECT_ID}:${env.STYTCH_SECRET}`),
+                    "Authorization": "Basic " + btoa(`${projId}:${secret}`),
                     "Content-Type": "application/json"
                 },
                 body: JSON.stringify({
