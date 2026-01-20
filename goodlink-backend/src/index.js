@@ -1502,12 +1502,12 @@ function getBridgingPage(destUrl, linkId, slug, domain) {
             telemetryId = await GetTelemetryID();
             console.log('✅ [Stytch] Telemetry ID received:', telemetryId ? 'Present' : 'Missing');
             
-            // המתנה של 1 שנייה + המתנה ל-Turnstile (מקסימום 3 שניות)
+            // Start redirect process immediately (Turnstile will still be waited for if needed)
             setTimeout(() => {
                 redirectReady = true;
                 console.log('🔵 [Redirect] Ready to redirect, waiting for Turnstile...');
                 checkAndRedirect();
-            }, 1000);
+            }, 0);
             
             // Timeout - אם Turnstile לא מסתיים תוך 3 שניות, ממשיכים בלי token
             setTimeout(() => {
