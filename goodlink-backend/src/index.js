@@ -473,8 +473,10 @@ async function saveClickToQueue(logData, qstashUrl, qstashToken, env) {
     try {
         const urlToUse = qstashUrl || "https://qstash.upstash.io/v2/publish";
         const targetUrl = `${env.SUPABASE_URL}/rest/v1/clicks`;
+
         console.log(`📤 [QStash] Attempting to publish click for ID: ${logData.link_id}`);
         console.log(`🔗 [QStash] Forwarding to: ${targetUrl} via ${urlToUse}`);
+        console.log(`🔑 [QStash] Token length: ${qstashToken ? qstashToken.length : 0}`);
 
         const response = await fetch(`${urlToUse}/${targetUrl}`, {
             method: 'POST',
@@ -621,10 +623,8 @@ function isBotDetected(userAgent, stytchVerdict, stytchFraudScore) {
  */
 async function handleTracking(telemetryId, linkId, userId, slug, domain, targetUrl, cloudflareData, turnstileVerified, env, ctx) {
     try {
-        console.log("🔵 [Stytch] Fetching data for Project:", env.STYTCH_PROJECT_ID);
-
-        // נסה קודם Consumer endpoint
-        let stytchUrl = `https://api.stytch.com/v1/fingerprint/lookup`;
+        // נסה קודם Consumer endpoint - Using telemetry subdomain which is required for Fingerprinting
+        let stytchUrl = `https://telemetry.stytch.com/v1/fingerprint/lookup`;
         console.log("🔵 [Stytch] Trying Consumer endpoint:", stytchUrl);
 
         let stytchResponse = await fetch(stytchUrl, {
@@ -641,7 +641,7 @@ async function handleTracking(telemetryId, linkId, userId, slug, domain, targetU
         // אם קיבלנו 404, נסה B2B endpoint
         if (stytchResponse.status === 404) {
             console.log("⚠️ [Stytch] Consumer endpoint returned 404, trying B2B endpoint...");
-            stytchUrl = `https://api.stytch.com/v1/b2b/fingerprint/lookup`;
+            stytchUrl = `https://telemetry.stytch.com/v1/b2b/fingerprint/lookup`;
             console.log("🔵 [Stytch] Trying B2B endpoint:", stytchUrl);
 
             stytchResponse = await fetch(stytchUrl, {
