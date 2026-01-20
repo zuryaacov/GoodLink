@@ -390,7 +390,7 @@ async function trackClick(clickData, supabaseUrl, supabaseKey, maxRetries = 2) {
 /**
  * Save telemetry ID only (fallback when Stytch API is not available)
  */
-async function saveTelemetryOnly(telemetryId, linkId, userId, slug, domain, targetUrl, cloudflareData, turnstileVerified, env) {
+async function saveTelemetryOnly(telemetryId, linkId, userId, slug, domain, targetUrl, cloudflareData, turnstileVerified, env, ctx) {
     console.log("🔵 [Stytch] Saving telemetry_id only (fallback mode)");
 
     const logData = {
@@ -412,15 +412,23 @@ async function saveTelemetryOnly(telemetryId, linkId, userId, slug, domain, targ
         clicked_at: new Date().toISOString()
     };
 
-    // Save to QStash instead of directly to Supabase
-    if (env.QSTASH_URL && env.QSTASH_TOKEN) {
-        await saveClickToQueue(logData, env.QSTASH_URL, env.QSTASH_TOKEN);
-        console.log("✅ [Stytch] Telemetry ID queued (fallback mode)");
+    // Save to QStash instead of directly to Supabase - Use waitUntil to not block the redirect
+    const saveTask = (async () => {
+        if (env.QSTASH_URL && env.QSTASH_TOKEN) {
+            try {
+                await saveClickToQueue(logData, env.QSTASH_URL, env.QSTASH_TOKEN, env);
+            } catch (qErr) {
+                await saveToSupabase(logData, env);
+            }
+        } else {
+            await saveToSupabase(logData, env);
+        }
+    })();
+
+    if (ctx && ctx.waitUntil) {
+        ctx.waitUntil(saveTask);
     } else {
-        // Fallback to direct Supabase save if Queue not configured
-        console.warn("⚠️ [Queue] QStash not configured, falling back to direct Supabase save");
-        await saveToSupabase(logData, env);
-        console.log("✅ [Stytch] Telemetry ID saved to Supabase (fallback mode)");
+        await saveTask;
     }
 }
 
@@ -458,31 +466,37 @@ async function checkDuplicateClick(telemetryId, linkId, supabaseUrl, supabaseKey
 /**
  * Save click data to QStash (Upstash Queue)
  */
-async function saveClickToQueue(logData, qstashUrl, qstashToken) {
+async function saveClickToQueue(logData, qstashUrl, qstashToken, env) {
     try {
-        console.log('📤 [QStash] Sending click data to QStash...');
+        const targetUrl = `${env.SUPABASE_URL}/rest/v1/clicks`;
+        console.log(`📤 [QStash] Attempting to publish click for ID: ${logData.link_id}`);
+        console.log(`🔗 [QStash] Forwarding to: ${targetUrl}`);
 
-        // QStash REST API format: POST to /publish endpoint
-        const response = await fetch(`${qstashUrl}/publish`, {
+        const response = await fetch(`https://qstash.upstash.io/v2/publish/${targetUrl}`, {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${qstashToken}`,
                 'Content-Type': 'application/json',
+                'Upstash-Forward-Header-apikey': env.SUPABASE_SERVICE_ROLE_KEY,
+                'Upstash-Forward-Header-Authorization': `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}`,
+                'Upstash-Forward-Header-Content-Type': 'application/json',
+                'Upstash-Forward-Header-Prefer': 'return=minimal'
             },
             body: JSON.stringify(logData),
         });
 
         if (!response.ok) {
             const errorText = await response.text();
-            console.error("❌ [QStash] Error:", response.status, errorText);
+            console.error(`❌ [QStash] API Error Status: ${response.status}`);
+            console.error(`❌ [QStash] API Error Body: ${errorText}`);
             throw new Error(`QStash error: ${errorText}`);
         }
 
         const result = await response.json();
-        console.log('✅ [QStash] Click data sent to queue successfully');
+        console.log(`✅ [QStash] Success! MessageId: ${result.messageId}`);
         return result;
     } catch (error) {
-        console.error('❌ [QStash] Failed to send click to queue:', error);
+        console.error('❌ [QStash] Exception caught:', error.message);
         throw error;
     }
 }
@@ -600,7 +614,7 @@ function isBotDetected(userAgent, stytchVerdict, stytchFraudScore) {
  * Handle Stytch tracking - Updated Endpoint for 2026
  * Returns Stytch data for bot detection, or null if API failed
  */
-async function handleTracking(telemetryId, linkId, userId, slug, domain, targetUrl, cloudflareData, turnstileVerified, env) {
+async function handleTracking(telemetryId, linkId, userId, slug, domain, targetUrl, cloudflareData, turnstileVerified, env, ctx) {
     try {
         console.log("🔵 [Stytch] Fetching data for Project:", env.STYTCH_PROJECT_ID);
 
@@ -680,15 +694,27 @@ async function handleTracking(telemetryId, linkId, userId, slug, domain, targetU
             clicked_at: new Date().toISOString()
         };
 
-        // Save to QStash instead of directly to Supabase
-        if (env.QSTASH_URL && env.QSTASH_TOKEN) {
-            await saveClickToQueue(logData, env.QSTASH_URL, env.QSTASH_TOKEN);
-            console.log("✅ [Stytch] Full data queued successfully");
+        // Save to QStash instead of directly to Supabase - Use waitUntil to not block the redirect
+        const saveTask = (async () => {
+            if (env.QSTASH_URL && env.QSTASH_TOKEN) {
+                try {
+                    await saveClickToQueue(logData, env.QSTASH_URL, env.QSTASH_TOKEN, env);
+                    console.log("✅ [QStash] Data queued successfully");
+                } catch (qErr) {
+                    console.error("❌ [QStash] Queue failed, falling back to direct Supabase save:", qErr);
+                    await saveToSupabase(logData, env);
+                }
+            } else {
+                console.warn("⚠️ [Queue] QStash not configured, falling back to direct Supabase save");
+                await saveToSupabase(logData, env);
+            }
+        })();
+
+        if (ctx && ctx.waitUntil) {
+            ctx.waitUntil(saveTask);
         } else {
-            // Fallback to direct Supabase save if Queue not configured
-            console.warn("⚠️ [Queue] QStash not configured, falling back to direct Supabase save");
-            await saveToSupabase(logData, env);
-            console.log("✅ [Stytch] Full data saved to Supabase (fallback)");
+            // If ctx is not available, we must await to ensure data is not lost (though this shouldn't happen in Workers)
+            await saveTask;
         }
 
         // Return Stytch data for bot detection
@@ -699,7 +725,7 @@ async function handleTracking(telemetryId, linkId, userId, slug, domain, targetU
 
     } catch (err) {
         console.error("❌ [Stytch] Critical Error:", err);
-        await saveTelemetryOnly(telemetryId, linkId, userId, slug, domain, targetUrl, cloudflareData, turnstileVerified, env);
+        await saveTelemetryOnly(telemetryId, linkId, userId, slug, domain, targetUrl, cloudflareData, turnstileVerified, env, ctx);
         return null;
     }
 }
@@ -1687,7 +1713,7 @@ function get404Page(slug, domain) {
  * Main worker handler
  */
 export default {
-    async fetch(request, env) {
+    async fetch(request, env, ctx) {
         console.log('🔵 ========== WORKER STARTED ==========');
         console.log('🔵 Request URL:', request.url);
         console.log('🔵 Request Method:', request.method);
@@ -1908,7 +1934,7 @@ export default {
                         console.log('🔵 ========== TURNSTILE VERIFICATION COMPLETE ==========');
 
                         // Run tracking - use await to ensure it completes (with timeout)
-                        const trackingPromise = handleTracking(verifyId, linkData.id, linkData.user_id, slug, domain, decodedDest, cloudflareData, turnstileVerified, env);
+                        const trackingPromise = handleTracking(verifyId, linkData.id, linkData.user_id, slug, domain, decodedDest, cloudflareData, turnstileVerified, env, ctx);
 
                         // Set a timeout to not block redirect too long (max 3 seconds)
                         const timeoutPromise = new Promise((resolve) => {
