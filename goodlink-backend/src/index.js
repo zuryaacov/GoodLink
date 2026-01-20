@@ -636,6 +636,7 @@ function isBotDetected(userAgent, stytchVerdict, stytchFraudScore) {
  */
 async function handleTracking(telemetryId, linkId, userId, slug, domain, targetUrl, cloudflareData, turnstileVerified, env, ctx) {
     try {
+        /*
         // נסה קודם Consumer endpoint - Using telemetry subdomain which is required for Fingerprinting
         let stytchUrl = `https://telemetry.stytch.com/v1/fingerprint/lookup`;
         const projId = cleanSecretValue(env.STYTCH_PROJECT_ID);
@@ -644,7 +645,7 @@ async function handleTracking(telemetryId, linkId, userId, slug, domain, targetU
         console.log("🔵 [Stytch] Trying Consumer endpoint:", stytchUrl);
 
         let stytchResponse = await fetch(stytchUrl, {
-            method: "POST",
+            method: "POST", 
             headers: {
                 "Authorization": "Basic " + btoa(`${projId}:${secret}`),
                 "Content-Type": "application/json"
@@ -654,36 +655,18 @@ async function handleTracking(telemetryId, linkId, userId, slug, domain, targetU
             })
         });
 
-        // אם קיבלנו 404, נסה B2B endpoint
-        if (stytchResponse.status === 404) {
-            console.log("⚠️ [Stytch] Consumer endpoint returned 404, trying B2B endpoint...");
-            stytchUrl = `https://telemetry.stytch.com/v1/b2b/fingerprint/lookup`;
-            console.log("🔵 [Stytch] Trying B2B endpoint:", stytchUrl);
-
-            stytchResponse = await fetch(stytchUrl, {
-                method: "POST",
-                headers: {
-                    "Authorization": "Basic " + btoa(`${projId}:${secret}`),
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    telemetry_id: telemetryId
-                })
-            });
-        }
-
         if (!stytchResponse.ok) {
-            const errorText = await stytchResponse.text();
-            console.error("❌ [Stytch] API error details:", errorText);
-            console.error("❌ [Stytch] Tried endpoint:", stytchUrl);
-            await saveTelemetryOnly(telemetryId, linkId, userId, slug, domain, targetUrl, cloudflareData, turnstileVerified, env, ctx);
-            return null; // Return null if Stytch API failed
+            console.log("⚠️ [Stytch] API failed, skipping Stytch data");
         }
+        
+        const res = stytchResponse.ok ? await stytchResponse.json() : {};
+        */
 
-        const res = await stytchResponse.json();
+        console.log("⚠️ [Stytch] Disabled by user request - relying on Turnstile");
+        const res = {}; // Empty object since Stytch is disabled
 
         // חילוץ המידע המלא (ווידוא קיום אובייקטים)
-        // שימוש בנתוני Stytch אם קיימים, אחרת בנתוני Cloudflare
+        // שימוש בנתוני Stytch אם קיימים (currently disabled), אחרת בנתוני Cloudflare
         const logData = {
             link_id: linkId,
             user_id: userId,
@@ -691,24 +674,24 @@ async function handleTracking(telemetryId, linkId, userId, slug, domain, targetU
             domain: domain,
             target_url: targetUrl,
             telemetry_id: telemetryId,
-            visitor_id: res.visitor_id || null,
-            verdict: res.verdict || null,
-            fraud_score: res.fraud_score || 0,
+            visitor_id: null,
+            verdict: null,
+            fraud_score: 0,
             // נתוני רשת - Stytch אם קיים, אחרת Cloudflare
-            ip_address: res.ip_address || cloudflareData.ipAddress || null,
+            ip_address: cloudflareData.ipAddress || null,
             country: cloudflareData.country || null,
             city: cloudflareData.city || null,
             // נתוני רשת עמוקים מ-Stytch
-            is_vpn: res.network_info?.is_vpn || false,
-            is_proxy: res.network_info?.is_proxy || false,
-            isp: res.network_info?.asn_org || null,
+            is_vpn: false,
+            is_proxy: false,
+            isp: null,
             // נתוני מכשיר - Stytch אם קיים, אחרת Cloudflare
-            browser: res.telemetry?.browser_name || cloudflareData.browser || null,
-            os: res.telemetry?.os_name || cloudflareData.os || null,
-            device_type: res.telemetry?.device_type || cloudflareData.deviceType || null,
-            battery_level: res.telemetry?.battery_level || null,
-            screen_resolution: res.telemetry?.screen_width ? `${res.telemetry.screen_width}x${res.telemetry.screen_height}` : null,
-            is_incognito: res.telemetry?.is_incognito || false,
+            browser: cloudflareData.browser || null,
+            os: cloudflareData.os || null,
+            device_type: cloudflareData.deviceType || null,
+            battery_level: null,
+            screen_resolution: null,
+            is_incognito: false,
             user_agent: cloudflareData.userAgent || null,
             referer: cloudflareData.referer || null,
             turnstile_verified: turnstileVerified || false,
