@@ -467,17 +467,30 @@ async function checkDuplicateClick(telemetryId, linkId, supabaseUrl, supabaseKey
 }
 
 /**
+ * Clean secrets from potential quotes or whitespace
+ */
+function cleanSecretValue(val) {
+    if (!val) return "";
+    let s = val.trim();
+    // Remove surrounding quotes if they exist (common CLI issue)
+    if ((s.startsWith('"') && s.endsWith('"')) || (s.startsWith("'") && s.endsWith("'"))) {
+        s = s.substring(1, s.length - 1);
+    }
+    return s.trim();
+}
+
+/**
  * Save click data to QStash (Upstash Queue)
  */
 async function saveClickToQueue(logData, qstashUrl, qstashToken, env) {
     try {
         const urlToUse = qstashUrl || "https://qstash.upstash.io/v2/publish";
         const targetUrl = `${env.SUPABASE_URL}/rest/v1/clicks`;
-        const cleanToken = qstashToken ? qstashToken.trim() : "";
+        const cleanToken = cleanSecretValue(qstashToken);
 
         console.log(`📤 [QStash] Attempting to publish click for ID: ${logData.link_id}`);
         console.log(`🔗 [QStash] Forwarding to: ${targetUrl} via ${urlToUse}`);
-        console.log(`🔑 [QStash] Token length: ${cleanToken.length} (Starts with: ${cleanToken.substring(0, 5)}...)`);
+        console.log(`🔑 [QStash] Token: ${cleanToken.substring(0, 5)}...${cleanToken.substring(cleanToken.length - 5)} (Length: ${cleanToken.length})`);
 
         const response = await fetch(`${urlToUse}/${targetUrl}`, {
             method: 'POST',
