@@ -1924,41 +1924,14 @@ export default {
                         console.log('🔵 [Turnstile] Verified status:', turnstileVerified);
                         console.log('🔵 ========== TURNSTILE VERIFICATION COMPLETE ==========');
 
-                        // Run tracking - use await to ensure it completes (with timeout)
-                        const trackingPromise = handleTracking(verifyId, linkData.id, linkData.user_id, slug, domain, decodedDest, cloudflareData, turnstileVerified, env, ctx);
+                        // Run tracking in BACKGROUND - do not block redirect
+                        // Stytch is disabled internally, so this mainly handles QStash/Supabase saving
+                        const trackingTask = handleTracking(verifyId, linkData.id, linkData.user_id, slug, domain, decodedDest, cloudflareData, turnstileVerified, env, ctx);
+                        ctx.waitUntil(trackingTask);
 
-                        // Set a timeout to not block redirect too long (max 3 seconds)
-                        const timeoutPromise = new Promise((resolve) => {
-                            setTimeout(() => {
-                                console.log('⏱️ [Stytch] Tracking timeout - continuing with redirect');
-                                resolve(null);
-                            }, 3000);
-                        });
-
-                        // Wait for either tracking to complete or timeout
-                        const stytchData = await Promise.race([trackingPromise, timeoutPromise]);
-
-                        // Check if this is a bot (from any source)
-                        const isBot = isBotDetected(
-                            cloudflareData.userAgent,
-                            stytchData?.verdict || null,
-                            stytchData?.fraud_score || null
-                        );
-
-                        if (isBot) {
-                            console.log('🚫 [Bot Detection] Bot detected - redirecting to www.google.com');
-                            console.log('🔵 ========== WORKER FINISHED ==========');
-
-                            return new Response(null, {
-                                status: 302,
-                                headers: {
-                                    'Location': 'https://www.google.com',
-                                    'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
-                                    'Pragma': 'no-cache',
-                                    'Expires': '0'
-                                }
-                            });
-                        }
+                        // Since tracking is async, we can't use its result for bot blocking here.
+                        // We rely on Turnstile (checked above) and basic User-Agent check below.
+                        console.log('� [Async] Tracking started in background');
                     } else {
                         console.log('⚠️ [Stytch] Skipping tracking - missing data:', {
                             verifyId: !!verifyId,
