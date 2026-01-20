@@ -51,6 +51,7 @@ const LinkBuilderPage = () => {
   });
 
   const [formData, setFormData] = useState(getInitialFormData());
+  const [originalLinkData, setOriginalLinkData] = useState(null); // Store original domain/slug for Redis key updates
   const [isSubmitting, setIsSubmitting] = useState(false);
   
   const [modalState, setModalState] = useState({
@@ -98,6 +99,14 @@ const LinkBuilderPage = () => {
       const modifiedSlug = isDuplicate && data.slug 
         ? `${data.slug}-copy` 
         : data.slug || '';
+
+      // Store original domain/slug for Redis key updates (only in edit mode, not duplicate)
+      if (!isDuplicate) {
+        setOriginalLinkData({
+          domain: data.domain || 'glynk.to',
+          slug: data.slug || '',
+        });
+      }
 
       setFormData({
         linkId: isDuplicate ? null : data.id, // Remove ID for duplicate
@@ -244,9 +253,22 @@ const LinkBuilderPage = () => {
           console.error('❌ [LinkBuilder] Error fetching updated link:', fetchError);
         } else if (updatedLink) {
           console.log('✅ [LinkBuilder] Link fetched, updating Redis cache...');
-          // Update Redis cache
+          console.log('🔵 [LinkBuilder] Original link data:', originalLinkData);
+          console.log('🔵 [LinkBuilder] New link data:', { domain: updatedLink.domain, slug: updatedLink.slug });
+          
+          // Update Redis cache - pass old domain/slug to delete old key if changed
           try {
-            const redisResult = await updateLinkInRedis(updatedLink, supabase);
+            const oldDomain = originalLinkData?.domain || null;
+            const oldSlug = originalLinkData?.slug || null;
+            
+            console.log('🔵 [LinkBuilder] Sending to Redis - oldDomain:', oldDomain, 'oldSlug:', oldSlug);
+            
+            const redisResult = await updateLinkInRedis(
+              updatedLink, 
+              supabase,
+              oldDomain,
+              oldSlug
+            );
             if (redisResult) {
               console.log('✅ [LinkBuilder] Redis cache updated successfully');
             } else {

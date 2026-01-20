@@ -1,19 +1,14 @@
 /**
  * Update Redis cache for a link with all its related data
  * This function is called when a link is created, updated, or when UTM presets/pixels are associated
+ * 
+ * @param {Object} linkData - The link data to cache
+ * @param {Object} supabase - Supabase client
+ * @param {string} oldDomain - (optional) Old domain before update, for key cleanup
+ * @param {string} oldSlug - (optional) Old slug before update, for key cleanup
  */
-export async function updateLinkInRedis(linkData, supabase) {
+export async function updateLinkInRedis(linkData, supabase, oldDomain = null, oldSlug = null) {
   try {
-    // Get Upstash Redis credentials from environment
-    // Note: In a client-side app, we'll need to create an API endpoint or use a serverless function
-    // For now, we'll use a Cloudflare Worker endpoint or similar
-    
-    // Check if we have the Redis URL and token (these should be available in the worker)
-    // Since this is client-side, we'll need to create an API endpoint in the worker
-    
-    // For now, let's create a function that prepares the data structure
-    // and will be sent to the worker endpoint
-    
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
       throw new Error('User not authenticated');
@@ -83,6 +78,10 @@ export async function updateLinkInRedis(linkData, supabase) {
     console.log('🔄 [RedisCache] Worker URL:', workerUrl);
     console.log('🔄 [RedisCache] Domain:', linkData.domain);
     console.log('🔄 [RedisCache] Slug:', linkData.slug);
+    if (oldDomain || oldSlug) {
+      console.log('🔄 [RedisCache] Old Domain:', oldDomain);
+      console.log('🔄 [RedisCache] Old Slug:', oldSlug);
+    }
     
     const response = await fetch(`${workerUrl}/api/update-redis-cache`, {
       method: 'POST',
@@ -92,6 +91,8 @@ export async function updateLinkInRedis(linkData, supabase) {
       body: JSON.stringify({
         domain: linkData.domain,
         slug: linkData.slug,
+        oldDomain: oldDomain || null,
+        oldSlug: oldSlug || null,
         cacheData: cacheData,
       }),
     });

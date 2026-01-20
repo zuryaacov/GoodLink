@@ -1154,6 +1154,7 @@ async function handleVerifyCustomDomain(request, env) {
 
 /**
  * Handle update Redis cache endpoint
+ * Update by domain+slug (full overwrite of the same record)
  */
 async function handleUpdateRedisCache(request, env) {
     // CORS headers - allow requests from goodlink.ai
@@ -1167,7 +1168,7 @@ async function handleUpdateRedisCache(request, env) {
     try {
         // Parse request body
         const body = await request.json();
-        const { domain, slug, cacheData } = body;
+        const { domain, slug, oldDomain, oldSlug, cacheData } = body;
 
         if (!domain || !slug || !cacheData) {
             return new Response(JSON.stringify({
@@ -1200,34 +1201,45 @@ async function handleUpdateRedisCache(request, env) {
             });
         }
 
-        // Build cache key: link:{domain}:{slug}
-        const cacheKey = `link:${domain}:${slug}`;
-
-        // Update Redis cache
-        const success = await updateLinkCacheInRedis(
-            cacheKey,
-            cacheData,
-            redisClient
-        );
-
-        if (!success) {
-            return new Response(JSON.stringify({
-                success: false,
-                error: 'Failed to update Redis cache'
-            }), {
-                status: 500,
-                headers: {
-                    'Content-Type': 'application/json',
-                    ...corsHeaders
+        // New key for the updated record
+        const newKey = `link:${domain}:${slug}`;
+        
+        console.log('🔵 [RedisCache] Received oldDomain:', oldDomain, 'oldSlug:', oldSlug);
+        console.log('🔵 [RedisCache] New key will be:', newKey);
+        
+        // Check if domain/slug changed - if so, delete the old key first
+        let deletedOld = false;
+        if (oldDomain && oldSlug) {
+            const oldKey = `link:${oldDomain}:${oldSlug}`;
+            console.log('🔵 [RedisCache] Old key would be:', oldKey);
+            if (oldKey !== newKey) {
+                console.log('🧹 [RedisCache] Domain/slug changed! Deleting old key:', oldKey);
+                try {
+                    const delResult = await redisClient.del(oldKey);
+                    console.log('🧹 [RedisCache] Delete result:', delResult);
+                    deletedOld = true;
+                } catch (delError) {
+                    console.error('❌ [RedisCache] Error deleting old key:', delError);
                 }
-            });
+            } else {
+                console.log('🔵 [RedisCache] Keys are the same, no delete needed');
+            }
+        } else {
+            console.log('🔵 [RedisCache] No oldDomain/oldSlug provided (new link or same key)');
         }
 
-        console.log('✅ [RedisCache] Cache updated successfully');
+        // Set the new/updated key with full data (overwrites if key exists)
+        await redisClient.set(newKey, JSON.stringify(cacheData));
+        console.log('✅ [RedisCache] Cache updated:', newKey);
 
         return new Response(JSON.stringify({
             success: true,
-            message: 'Redis cache updated successfully'
+            message: 'Redis cache updated successfully',
+            cacheKey: newKey,
+            receivedOldDomain: oldDomain,
+            receivedOldSlug: oldSlug,
+            deletedOld: deletedOld,
+            deletedOldKey: deletedOld ? `link:${oldDomain}:${oldSlug}` : null
         }), {
             status: 200,
             headers: {
