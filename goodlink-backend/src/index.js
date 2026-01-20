@@ -639,11 +639,12 @@ async function handleTracking(telemetryId, linkId, userId, slug, domain, targetU
     try {
         // נסה קודם Consumer endpoint - Using telemetry subdomain which is required for Fingerprinting
         let stytchUrl = `https://telemetry.stytch.com/v1/fingerprint/lookup`;
-        const projId = env.STYTCH_PROJECT_ID ? env.STYTCH_PROJECT_ID.trim() : "";
-        const secret = env.STYTCH_SECRET ? env.STYTCH_SECRET.trim() : "";
+        const projId = cleanSecretValue(env.STYTCH_PROJECT_ID);
+        const secret = cleanSecretValue(env.STYTCH_SECRET);
 
         console.log("🔵 [Stytch] Trying Consumer endpoint:", stytchUrl);
-        console.log(`🔍 [Stytch] Project ID starts with: ${projId.substring(0, 12)}...`);
+        console.log(`🔍 [Stytch] Project ID: ${projId.substring(0, 12)}... (Total: ${projId.length})`);
+        console.log(`🔍 [Stytch] Secret starts with: ${secret.substring(0, 4)}...`);
 
         let stytchResponse = await fetch(stytchUrl, {
             method: "POST",
