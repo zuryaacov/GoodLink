@@ -1958,6 +1958,16 @@ export default {
                             console.log('🚫 [Bot Detection] Bot detected - redirecting to www.google.com');
                             console.log('🔵 ========== WORKER FINISHED ==========');
 
+                            // --- DEBUG: BOT REDIRECT DISABLED ---
+                            return new Response(JSON.stringify({
+                                success: true,
+                                message: "Bot detected, redirect to Google disabled for debug",
+                                destination: 'https://www.google.com'
+                            }), {
+                                status: 200,
+                                headers: { 'Content-Type': 'application/json' }
+                            });
+                            /*
                             return new Response(null, {
                                 status: 302,
                                 headers: {
@@ -1967,6 +1977,7 @@ export default {
                                     'Expires': '0'
                                 }
                             });
+                            */
                         }
                     } else {
                         console.log('⚠️ [Stytch] Skipping tracking - missing data:', {
@@ -1982,6 +1993,16 @@ export default {
                             console.log('🚫 [Bot Detection] Bot detected (User-Agent only) - redirecting to www.google.com');
                             console.log('🔵 ========== WORKER FINISHED ==========');
 
+                            // --- DEBUG: BOT REDIRECT DISABLED (UA) ---
+                            return new Response(JSON.stringify({
+                                success: true,
+                                message: "Bot detected (UA), redirect to Google disabled for debug",
+                                destination: 'https://www.google.com'
+                            }), {
+                                status: 200,
+                                headers: { 'Content-Type': 'application/json' }
+                            });
+                            /*
                             return new Response(null, {
                                 status: 302,
                                 headers: {
@@ -1991,6 +2012,7 @@ export default {
                                     'Expires': '0'
                                 }
                             });
+                            */
                         }
                     }
 
@@ -2004,6 +2026,16 @@ export default {
                         console.log('🔧 [Verify] Added protocol to final location:', finalLocation);
                     }
 
+                    // --- DEBUG: REDIRECT DISABLED ---
+                    return new Response(JSON.stringify({
+                        success: true,
+                        message: "Redirect disabled for debug",
+                        destination: finalLocation
+                    }), {
+                        status: 200,
+                        headers: { 'Content-Type': 'application/json' }
+                    });
+                    /*
                     return new Response(null, {
                         status: 302,
                         headers: {
@@ -2013,6 +2045,7 @@ export default {
                             'Expires': '0'
                         }
                     });
+                    */
                 } catch (error) {
                     console.error('❌ Error in /verify endpoint:', error);
                     return new Response(JSON.stringify({
