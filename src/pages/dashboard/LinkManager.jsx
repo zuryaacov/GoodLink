@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import Modal from '../../components/common/Modal';
+import { updateLinkInRedis } from '../../lib/redisCache';
 
 const PLATFORMS = {
   meta: { name: 'Meta (FB/IG)', colorClass: 'text-blue-400 bg-blue-400/10' },
@@ -200,6 +201,17 @@ const LinkManager = () => {
       if (error) {
         throw error;
       }
+
+      // Best-effort: keep Redis in sync as well
+      try {
+        const linkToUpdate = links.find((l) => l.id === linkId);
+        if (linkToUpdate) {
+          await updateLinkInRedis({ ...linkToUpdate, status: newStatus }, supabase);
+        }
+      } catch (redisError) {
+        console.warn('⚠️ [LinkManager] Failed to sync Redis after status toggle:', redisError);
+      }
+
       fetchLinks(); // Refresh the list
     } catch (error) {
       console.error('Error updating link status:', error);
@@ -402,15 +414,26 @@ const LinkActionsMenu = ({ link, onRefresh, onEdit, onDuplicate, onShowModal }) 
   const handleDelete = async () => {
     setIsDeleting(true);
     try {
+      const deletedAt = new Date().toISOString();
       const { error } = await supabase
         .from('links')
         .update({ 
           status: 'deleted',
-          deleted_at: new Date().toISOString()
+          deleted_at: deletedAt
         })
         .eq('id', link.id);
 
       if (error) throw error;
+
+      // Best-effort: keep Redis in sync as well (so redirects stop immediately)
+      try {
+        await updateLinkInRedis(
+          { ...link, status: 'deleted', deleted_at: deletedAt },
+          supabase
+        );
+      } catch (redisError) {
+        console.warn('⚠️ [LinkManager] Failed to sync Redis after delete:', redisError);
+      }
       
       setDeleteModalOpen(false);
       setIsOpen(false);
