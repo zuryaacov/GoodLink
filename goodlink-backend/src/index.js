@@ -414,13 +414,16 @@ async function saveTelemetryOnly(telemetryId, linkId, userId, slug, domain, targ
 
     // Save to QStash instead of directly to Supabase - Use waitUntil to not block the redirect
     const saveTask = (async () => {
-        if (env.QSTASH_URL && env.QSTASH_TOKEN) {
+        if (env.QSTASH_TOKEN) {
             try {
                 await saveClickToQueue(logData, env.QSTASH_URL, env.QSTASH_TOKEN, env);
+                console.log("✅ [QStash] Data queued successfully");
             } catch (qErr) {
+                console.error("❌ [QStash] Queue failed, falling back to direct Supabase save:", qErr);
                 await saveToSupabase(logData, env);
             }
         } else {
+            console.warn("⚠️ [Queue] QStash token not configured, falling back to direct Supabase save");
             await saveToSupabase(logData, env);
         }
     })();
@@ -468,11 +471,12 @@ async function checkDuplicateClick(telemetryId, linkId, supabaseUrl, supabaseKey
  */
 async function saveClickToQueue(logData, qstashUrl, qstashToken, env) {
     try {
+        const urlToUse = qstashUrl || "https://qstash.upstash.io/v2/publish";
         const targetUrl = `${env.SUPABASE_URL}/rest/v1/clicks`;
         console.log(`📤 [QStash] Attempting to publish click for ID: ${logData.link_id}`);
-        console.log(`🔗 [QStash] Forwarding to: ${targetUrl}`);
+        console.log(`🔗 [QStash] Forwarding to: ${targetUrl} via ${urlToUse}`);
 
-        const response = await fetch(`https://qstash.upstash.io/v2/publish/${targetUrl}`, {
+        const response = await fetch(`${urlToUse}/${targetUrl}`, {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${qstashToken}`,
@@ -531,6 +535,7 @@ async function saveToSupabase(logData, env) {
         console.error("❌ [Supabase] Error:", supabaseResponse.status, errorText);
         throw new Error(`Supabase error: ${errorText}`);
     }
+    console.log("✅ [Supabase] Data saved successfully");
 }
 
 /**
@@ -619,7 +624,7 @@ async function handleTracking(telemetryId, linkId, userId, slug, domain, targetU
         console.log("🔵 [Stytch] Fetching data for Project:", env.STYTCH_PROJECT_ID);
 
         // נסה קודם Consumer endpoint
-        let stytchUrl = `https://api.stytch.com/v1/fingerprints/lookup`;
+        let stytchUrl = `https://api.stytch.com/v1/fingerprint/lookup`;
         console.log("🔵 [Stytch] Trying Consumer endpoint:", stytchUrl);
 
         let stytchResponse = await fetch(stytchUrl, {
@@ -636,7 +641,7 @@ async function handleTracking(telemetryId, linkId, userId, slug, domain, targetU
         // אם קיבלנו 404, נסה B2B endpoint
         if (stytchResponse.status === 404) {
             console.log("⚠️ [Stytch] Consumer endpoint returned 404, trying B2B endpoint...");
-            stytchUrl = `https://api.stytch.com/v1/b2b/fingerprints/lookup`;
+            stytchUrl = `https://api.stytch.com/v1/b2b/fingerprint/lookup`;
             console.log("🔵 [Stytch] Trying B2B endpoint:", stytchUrl);
 
             stytchResponse = await fetch(stytchUrl, {
@@ -696,7 +701,7 @@ async function handleTracking(telemetryId, linkId, userId, slug, domain, targetU
 
         // Save to QStash instead of directly to Supabase - Use waitUntil to not block the redirect
         const saveTask = (async () => {
-            if (env.QSTASH_URL && env.QSTASH_TOKEN) {
+            if (env.QSTASH_TOKEN) {
                 try {
                     await saveClickToQueue(logData, env.QSTASH_URL, env.QSTASH_TOKEN, env);
                     console.log("✅ [QStash] Data queued successfully");
@@ -705,7 +710,7 @@ async function handleTracking(telemetryId, linkId, userId, slug, domain, targetU
                     await saveToSupabase(logData, env);
                 }
             } else {
-                console.warn("⚠️ [Queue] QStash not configured, falling back to direct Supabase save");
+                console.warn("⚠️ [Queue] QStash token not configured, falling back to direct Supabase save");
                 await saveToSupabase(logData, env);
             }
         })();
@@ -1772,17 +1777,7 @@ export default {
         }
 
         try {
-            // Check environment variables
-            console.log('🔵 Checking environment variables...');
-            console.log('🔵 SUPABASE_URL exists:', !!env.SUPABASE_URL);
-            console.log('🔵 SUPABASE_URL value:', env.SUPABASE_URL || 'MISSING');
-            console.log('🔵 SUPABASE_SERVICE_ROLE_KEY exists:', !!env.SUPABASE_SERVICE_ROLE_KEY);
-            console.log('🔵 SUPABASE_SERVICE_ROLE_KEY length:', env.SUPABASE_SERVICE_ROLE_KEY ? env.SUPABASE_SERVICE_ROLE_KEY.length : 0);
-            console.log('🔵 QSTASH_URL exists:', !!env.QSTASH_URL);
-            console.log('🔵 QSTASH_TOKEN exists:', !!env.QSTASH_TOKEN);
-            console.log('🔵 STYTCH_PROJECT_ID exists:', !!env.STYTCH_PROJECT_ID);
-            console.log('🔵 STYTCH_SECRET exists:', !!env.STYTCH_SECRET);
-
+            // Essential Config Check
             if (!env.SUPABASE_URL || !env.SUPABASE_SERVICE_ROLE_KEY) {
                 console.error('❌ Missing Supabase configuration');
                 return new Response(JSON.stringify({
@@ -1962,16 +1957,6 @@ export default {
                             console.log('🚫 [Bot Detection] Bot detected - redirecting to www.google.com');
                             console.log('🔵 ========== WORKER FINISHED ==========');
 
-                            // --- DEBUG: BOT REDIRECT DISABLED ---
-                            return new Response(JSON.stringify({
-                                success: true,
-                                message: "Bot detected, redirect to Google disabled for debug",
-                                destination: 'https://www.google.com'
-                            }), {
-                                status: 200,
-                                headers: { 'Content-Type': 'application/json' }
-                            });
-                            /*
                             return new Response(null, {
                                 status: 302,
                                 headers: {
@@ -1981,7 +1966,6 @@ export default {
                                     'Expires': '0'
                                 }
                             });
-                            */
                         }
                     } else {
                         console.log('⚠️ [Stytch] Skipping tracking - missing data:', {
@@ -1997,16 +1981,6 @@ export default {
                             console.log('🚫 [Bot Detection] Bot detected (User-Agent only) - redirecting to www.google.com');
                             console.log('🔵 ========== WORKER FINISHED ==========');
 
-                            // --- DEBUG: BOT REDIRECT DISABLED (UA) ---
-                            return new Response(JSON.stringify({
-                                success: true,
-                                message: "Bot detected (UA), redirect to Google disabled for debug",
-                                destination: 'https://www.google.com'
-                            }), {
-                                status: 200,
-                                headers: { 'Content-Type': 'application/json' }
-                            });
-                            /*
                             return new Response(null, {
                                 status: 302,
                                 headers: {
@@ -2016,7 +1990,6 @@ export default {
                                     'Expires': '0'
                                 }
                             });
-                            */
                         }
                     }
 
@@ -2030,16 +2003,6 @@ export default {
                         console.log('🔧 [Verify] Added protocol to final location:', finalLocation);
                     }
 
-                    // --- DEBUG: REDIRECT DISABLED ---
-                    return new Response(JSON.stringify({
-                        success: true,
-                        message: "Redirect disabled for debug",
-                        destination: finalLocation
-                    }), {
-                        status: 200,
-                        headers: { 'Content-Type': 'application/json' }
-                    });
-                    /*
                     return new Response(null, {
                         status: 302,
                         headers: {
@@ -2049,7 +2012,6 @@ export default {
                             'Expires': '0'
                         }
                     });
-                    */
                 } catch (error) {
                     console.error('❌ Error in /verify endpoint:', error);
                     return new Response(JSON.stringify({
@@ -2123,15 +2085,6 @@ export default {
                 console.log('🔵 ========== WORKER FINISHED ==========');
 
                 // --- DEBUG: BOT REDIRECT DISABLED (PRE-CHECK) ---
-                return new Response(JSON.stringify({
-                    success: true,
-                    message: "Bot detected (Pre-check), redirect disabled for debug",
-                    destination: 'https://www.google.com'
-                }), {
-                    status: 200,
-                    headers: { 'Content-Type': 'application/json' }
-                });
-                /*
                 return new Response(null, {
                     status: 302,
                     headers: {
@@ -2141,7 +2094,6 @@ export default {
                         'Expires': '0'
                     }
                 });
-                */
             }
 
             // Serve bridging page instead of direct redirect
