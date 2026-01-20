@@ -1656,23 +1656,9 @@ function get404Page(slug, domain) {
 
     <div class="container">
         <div class="error-code">404</div>
-        <div class="logo">Good<span>Link</span></div>
         
         <h1>Link Not Found</h1>
-        <p>Sorry, the link you're looking for doesn't exist or has been moved.</p>
-
-        <div class="details">
-            <div class="detail-item">
-                <span class="detail-label">Slug:</span>
-                <span class="detail-value">${slug}</span>
-            </div>
-            <div class="detail-item">
-                <span class="detail-label">Domain:</span>
-                <span class="detail-value">${domain}</span>
-            </div>
-        </div>
-
-        <a href="https://goodlink.ai" class="btn">Back to GoodLink</a>
+        <p style="margin-bottom: 0;">Sorry, the link you're looking for doesn't exist or has been moved.</p>
     </div>
 </body>
 </html>`;
