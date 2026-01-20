@@ -1463,7 +1463,6 @@ function getBridgingPage(destUrl, linkId, slug, domain) {
 
 <script>
     let turnstileToken = null;
-    let turnstileToken = null;
     let telemetryId = crypto.randomUUID(); // Generate local ID since Stytch is disabled
     let redirectReady = true; // Ready immediately
     let turnstileTimeout = false;
@@ -1476,8 +1475,6 @@ function getBridgingPage(destUrl, linkId, slug, domain) {
     }
     
     // בדוק אם אפשר לעשות redirect (צריך גם telemetry ID וגם Turnstile token)
-    function checkAndRedirect() {
-        // Unified check logic
     function checkAndRedirect() {
         if (turnstileToken || turnstileTimeout) {
             const dest = '${encodedDest}';
