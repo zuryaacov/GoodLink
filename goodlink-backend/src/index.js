@@ -1879,87 +1879,43 @@ export default {
                         }
                     }
 
-                    // Handle Stytch tracking if telemetry ID is provided
-                    if (verifyId && linkData && slug && domain) {
-                        console.log('🔵 ========== STARTING STYTCH TRACKING ==========');
-                        console.log('🔵 Verify ID provided:', !!verifyId);
-                        console.log('🔵 Link data exists:', !!linkData);
-                        console.log('🔵 Slug:', slug);
-                        console.log('🔵 Domain:', domain);
-
-                        // Verify Cloudflare Turnstile before Stytch tracking
-                        console.log('🔵 ========== STARTING TURNSTILE VERIFICATION ==========');
-                        const turnstileToken = url.searchParams.get('cf-turnstile-response');
-                        const TURNSTILE_SITE_KEY = '0x4AAAAAACL1UvTFIr6R2-Xe';
-                        const TURNSTILE_SECRET_KEY = env.TURNSTILE_SECRET_KEY; // צריך להוסיף כ-secret
-
-                        console.log('🔵 [Turnstile] Site Key:', TURNSTILE_SITE_KEY);
-                        console.log('🔵 [Turnstile] Token from URL:', turnstileToken ? 'Present (length: ' + turnstileToken.length + ')' : 'Not provided');
-                        console.log('🔵 [Turnstile] Secret Key exists:', !!TURNSTILE_SECRET_KEY);
-
-                        let turnstileVerified = false;
-
-                        if (turnstileToken) {
-                            console.log('🔵 [Turnstile] Token found, starting verification...');
-                            const isTurnstileValid = await verifyTurnstile(turnstileToken, cloudflareData.ipAddress, TURNSTILE_SECRET_KEY);
-
-                            if (!isTurnstileValid) {
-                                console.error('❌ [Turnstile] Verification failed - blocking request');
-                                return new Response(JSON.stringify({
-                                    error: 'Turnstile verification failed',
-                                    details: 'The security check failed. Please try again.'
-                                }), {
-                                    status: 403,
-                                    headers: { 'Content-Type': 'application/json' }
-                                });
-                            }
-                            turnstileVerified = true;
-                            console.log('✅ [Turnstile] Verification passed - continuing to Stytch tracking');
-                        } else {
-                            console.log('⚠️ [Turnstile] No token provided in URL');
-                            console.log('⚠️ [Turnstile] Available query params:', Array.from(url.searchParams.keys()));
-                            console.log('⚠️ [Turnstile] Continuing without verification (allow mode)');
-                            turnstileVerified = false;
-                        }
-                        console.log('🔵 [Turnstile] Verified status:', turnstileVerified);
-                        console.log('🔵 ========== TURNSTILE VERIFICATION COMPLETE ==========');
-
-                        // Run tracking in BACKGROUND - do not block redirect
-                        // Stytch is disabled internally, so this mainly handles QStash/Supabase saving
-                        const trackingTask = handleTracking(verifyId, linkData.id, linkData.user_id, slug, domain, decodedDest, cloudflareData, turnstileVerified, env, ctx);
-                        ctx.waitUntil(trackingTask);
-
-                        // Since tracking is async, we can't use its result for bot blocking here.
-                        // We rely on Turnstile (checked above) and basic User-Agent check below.
-                        console.log('� [Async] Tracking started in background');
-                    } else {
-                        console.log('⚠️ [Stytch] Skipping tracking - missing data:', {
-                            verifyId: !!verifyId,
-                            linkData: !!linkData,
-                            slug: !!slug,
-                            domain: !!domain
-                        });
-
-                        // Even without Stytch data, check User-Agent for bot detection
-                        const isBot = isBotDetected(cloudflareData.userAgent, null, null);
-                        if (isBot) {
-                            console.log('🚫 [Bot Detection] Bot detected (User-Agent only) - redirecting to www.google.com');
-                            console.log('🔵 ========== WORKER FINISHED ==========');
-
-                            return new Response(null, {
-                                status: 302,
-                                headers: {
-                                    'Location': 'https://www.google.com',
-                                    'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
-                                    'Pragma': 'no-cache',
-                                    'Expires': '0'
-                                }
-                            });
-                        }
+                    // 1. Strict Turnstile Guard
+                    // If we don't have a token, or if validation fails, we BLOCK immediately.
+                    let turnstileToken = url.searchParams.get('cf-turnstile-response');
+                    if (!turnstileToken) {
+                        console.error('❌ [Turnstile] No token provided - blocking request');
+                        return new Response("Missing anti-bot token", { status: 403 });
                     }
 
+                    console.log('🔵 [Turnstile] Token found, verifying...');
+                    let isHuman = await verifyTurnstile(turnstileToken, cloudflareData.ipAddress, env.TURNSTILE_SECRET_KEY);
+
+                    if (!isHuman) {
+                        console.error('❌ [Turnstile] Verification failed - blocking request');
+                        return new Response("Bot detection failed", { status: 403 });
+                    }
+
+                    console.log('✅ [Turnstile] Human verified!');
+
+                    // 2. Tracking in Background (ctx.waitUntil)
+                    // User does not wait for this.
+                    console.log('🔵 [Async] Starting background tracking...');
+                    const trackingTask = handleTracking(
+                        verifyId,
+                        linkData.id,
+                        linkData.user_id,
+                        slug,
+                        domain,
+                        decodedDest,
+                        cloudflareData,
+                        true, // Verified is always true here because we blocked otherwise
+                        env,
+                        ctx
+                    );
+                    ctx.waitUntil(trackingTask);
+
+                    // 3. Immediate Redirect
                     console.log('🔵 Redirecting to final destination');
-                    console.log('🔵 ========== WORKER FINISHED ==========');
 
                     // ENSURE ABSOLUTE URL
                     let finalLocation = decodedDest;
