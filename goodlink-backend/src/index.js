@@ -24,7 +24,14 @@ function extractSlug(pathname) {
  */
 function buildTargetUrl(targetUrl, linkData, requestUrl) {
     try {
-        const target = new URL(targetUrl);
+        // Ensure protocol exists
+        let finalTarget = targetUrl;
+        if (!/^https?:\/\//i.test(finalTarget)) {
+            finalTarget = 'https://' + finalTarget;
+            console.log('🔧 [URL] Added missing protocol to target:', finalTarget);
+        }
+
+        const target = new URL(finalTarget);
         const requestParams = new URLSearchParams(requestUrl.search);
 
         if (linkData.utm_source) target.searchParams.set('utm_source', linkData.utm_source);
@@ -42,6 +49,10 @@ function buildTargetUrl(targetUrl, linkData, requestUrl) {
         return target.toString();
     } catch (error) {
         console.error('Error building target URL:', error);
+        // Fallback: If still not absolute, force it
+        if (!/^https?:\/\//i.test(targetUrl)) {
+            return 'https://' + targetUrl;
+        }
         return targetUrl;
     }
 }
@@ -1815,10 +1826,17 @@ export default {
                     console.log('🔵 Redirecting to final destination');
                     console.log('🔵 ========== WORKER FINISHED ==========');
 
+                    // ENSURE ABSOLUTE URL
+                    let finalLocation = decodedDest;
+                    if (!/^https?:\/\//i.test(finalLocation)) {
+                        finalLocation = 'https://' + finalLocation;
+                        console.log('🔧 [Verify] Added protocol to final location:', finalLocation);
+                    }
+
                     return new Response(null, {
                         status: 302,
                         headers: {
-                            'Location': decodedDest,
+                            'Location': finalLocation,
                             'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
                             'Pragma': 'no-cache',
                             'Expires': '0'
