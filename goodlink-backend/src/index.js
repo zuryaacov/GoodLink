@@ -1508,6 +1508,177 @@ function getBridgingPage(destUrl, linkId, slug, domain) {
 }
 
 /**
+ * Generate a beautiful 404 page
+ */
+function get404Page(slug, domain) {
+    return `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>404 - Link Not Found | GoodLink</title>
+    <style>
+        :root {
+            --bg: #0f172a;
+            --primary: #38bdf8;
+            --text: #f1f5f9;
+            --card: #1e293b;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: var(--bg);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            color: var(--text);
+            overflow: hidden;
+        }
+
+        .container {
+            text-align: center;
+            background: var(--card);
+            padding: 4rem;
+            border-radius: 32px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            max-width: 500px;
+            width: 90%;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            position: relative;
+            z-index: 10;
+        }
+
+        .logo {
+            font-size: 28px;
+            font-weight: 800;
+            letter-spacing: -1px;
+            margin-bottom: 3rem;
+            color: var(--primary);
+        }
+        .logo span { color: #fff; }
+
+        .error-code {
+            font-size: 8rem;
+            font-weight: 900;
+            line-height: 1;
+            margin: 0;
+            background: linear-gradient(to bottom, #38bdf8, #0ea5e9);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            opacity: 0.2;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: -1;
+        }
+
+        h1 {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        p {
+            color: #94a3b8;
+            font-size: 1.1rem;
+            line-height: 1.6;
+            margin-bottom: 2.5rem;
+        }
+
+        .details {
+            background: rgba(15, 23, 42, 0.5);
+            padding: 1.5rem;
+            border-radius: 16px;
+            margin-bottom: 2.5rem;
+            border: 1px solid rgba(56, 189, 248, 0.1);
+            text-align: left;
+        }
+
+        .detail-item {
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .detail-label { color: #64748b; }
+        .detail-value { color: var(--primary); font-family: monospace; }
+
+        .btn {
+            display: inline-block;
+            background: var(--primary);
+            color: #0f172a;
+            text-decoration: none;
+            padding: 1rem 2rem;
+            border-radius: 12px;
+            font-weight: 700;
+            transition: all 0.2s;
+            box-shadow: 0 10px 15px -3px rgba(56, 189, 248, 0.3);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 20px 25px -5px rgba(56, 189, 248, 0.4);
+            filter: brightness(1.1);
+        }
+
+        /* Abstract Background Elements */
+        .circle {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            z-index: 1;
+        }
+        .circle-1 {
+            width: 300px;
+            height: 300px;
+            background: rgba(56, 189, 248, 0.1);
+            top: -100px;
+            left: -100px;
+        }
+        .circle-2 {
+            width: 400px;
+            height: 400px;
+            background: rgba(14, 165, 233, 0.05);
+            bottom: -150px;
+            right: -150px;
+        }
+    </style>
+</head>
+<body>
+    <div class="circle circle-1"></div>
+    <div class="circle circle-2"></div>
+
+    <div class="container">
+        <div class="error-code">404</div>
+        <div class="logo">Good<span>Link</span></div>
+        
+        <h1>Link Not Found</h1>
+        <p>Sorry, the link you're looking for doesn't exist or has been moved.</p>
+
+        <div class="details">
+            <div class="detail-item">
+                <span class="detail-label">Slug:</span>
+                <span class="detail-value">${slug}</span>
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">Domain:</span>
+                <span class="detail-value">${domain}</span>
+            </div>
+        </div>
+
+        <a href="https://goodlink.ai" class="btn">Back to GoodLink</a>
+    </div>
+</body>
+</html>`;
+}
+
+/**
  * Main worker handler
  */
 export default {
@@ -1828,18 +1999,9 @@ export default {
             if (!slug) {
                 const debugPath = pathname.replace(/^\//, '').split('?')[0].split('#')[0];
                 console.log('❌ No valid slug found');
-                return new Response(JSON.stringify({
-                    error: 'Link not found',
-                    details: {
-                        pathname,
-                        slug: null,
-                        debugPath: debugPath,
-                        regexMatch: /^[a-z0-9-._]{1,50}$/i.test(debugPath),
-                        regexSource: /^[a-z0-9-._]{1,50}$/i.source
-                    }
-                }), {
+                return new Response(get404Page(debugPath || 'unknown', url.hostname), {
                     status: 404,
-                    headers: { 'Content-Type': 'application/json' }
+                    headers: { 'Content-Type': 'text/html; charset=UTF-8' }
                 });
             }
 
@@ -1869,18 +2031,9 @@ export default {
 
             if (!linkData || !linkData.target_url) {
                 console.log('❌ Link not found in database');
-                return new Response(JSON.stringify({
-                    error: 'Link not found',
-                    details: {
-                        slug,
-                        domain,
-                        pathname,
-                        triedKeys: [`link:${domain}:${slug}`, `${domain}:${slug}`],
-                        linkData: null
-                    }
-                }), {
+                return new Response(get404Page(slug, domain), {
                     status: 404,
-                    headers: { 'Content-Type': 'application/json' }
+                    headers: { 'Content-Type': 'text/html; charset=UTF-8' }
                 });
             }
 
