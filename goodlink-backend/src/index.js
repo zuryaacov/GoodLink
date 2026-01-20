@@ -1522,9 +1522,13 @@ function getBridgingPage(destUrl, linkId, slug, domain) {
             const dest = '${encodedDest}';
             try {
                 const decoded = atob(dest);
-            console.log('--- DEBUG: Client-side fallback redirect disabled ---');
-            // window.location.href = decoded;
-            alert('DEBUG: Fallback redirect disabled. Check console.');
+                console.log('--- DEBUG: Client-side fallback redirect disabled ---');
+                // window.location.href = decoded;
+                alert('DEBUG: Fallback redirect disabled. Check console.');
+            } catch (innerError) {
+                console.error('Inner decode failed', innerError);
+                // window.location.href = "https://goodlink.ai"; 
+            }
         }
     }
 
