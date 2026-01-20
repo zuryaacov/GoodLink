@@ -1529,29 +1529,35 @@ function get404Page(slug, domain) {
             margin: 0;
             padding: 0;
             display: flex;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
-            width: 100%;
             min-height: 100vh;
+            min-height: 100dvh; /* Use dynamic viewport height for mobile browsers */
+            width: 100%;
             background-color: var(--bg);
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
             color: var(--text);
-            overflow: hidden;
+            overflow-x: hidden;
             position: relative;
         }
 
         .container {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
             text-align: center;
             background: var(--card);
-            padding: 2.5rem;
+            padding: 2rem;
             border-radius: 24px;
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-            max-width: 400px;
             width: 85%;
+            max-width: 320px;
             border: 1px solid rgba(255, 255, 255, 0.05);
             position: relative;
             z-index: 10;
-            margin: auto;
+            box-sizing: border-box;
         }
 
         @media (min-width: 640px) {
@@ -1571,16 +1577,23 @@ function get404Page(slug, domain) {
         .logo span { color: #fff; }
 
         .error-code {
-            font-size: 8rem;
+            font-size: 5rem;
             font-weight: 900;
             line-height: 1;
-            margin: 1.5rem 0;
+            margin: 1rem 0;
             background: linear-gradient(to bottom, #38bdf8, #0ea5e9);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             opacity: 0.3;
             position: relative;
             z-index: 1;
+        }
+
+        @media (min-width: 640px) {
+            .error-code {
+                font-size: 8rem;
+                margin: 1.5rem 0;
+            }
         }
 
         h1 {
