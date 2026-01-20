@@ -477,10 +477,10 @@ async function saveClickToQueue(logData, qstashUrl, qstashToken, env) {
             headers: {
                 'Authorization': `Bearer ${qstashToken}`,
                 'Content-Type': 'application/json',
-                'Upstash-Forward-Header-apikey': env.SUPABASE_SERVICE_ROLE_KEY,
-                'Upstash-Forward-Header-Authorization': `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}`,
-                'Upstash-Forward-Header-Content-Type': 'application/json',
-                'Upstash-Forward-Header-Prefer': 'return=minimal'
+                'Upstash-Forward-apikey': env.SUPABASE_SERVICE_ROLE_KEY,
+                'Upstash-Forward-Authorization': `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}`,
+                'Upstash-Forward-Content-Type': 'application/json',
+                'Upstash-Forward-Prefer': 'return=minimal'
             },
             body: JSON.stringify(logData),
         });
@@ -655,7 +655,7 @@ async function handleTracking(telemetryId, linkId, userId, slug, domain, targetU
             const errorText = await stytchResponse.text();
             console.error("❌ [Stytch] API error details:", errorText);
             console.error("❌ [Stytch] Tried endpoint:", stytchUrl);
-            await saveTelemetryOnly(telemetryId, linkId, userId, slug, domain, targetUrl, cloudflareData, turnstileVerified, env);
+            await saveTelemetryOnly(telemetryId, linkId, userId, slug, domain, targetUrl, cloudflareData, turnstileVerified, env, ctx);
             return null; // Return null if Stytch API failed
         }
 
@@ -1487,10 +1487,7 @@ function getBridgingPage(destUrl, linkId, slug, domain) {
                 console.log('⚠️ [Turnstile] No token available - continuing without it');
             }
             
-            console.log('--- DEBUG: Client-side redirect to verify disabled ---');
-            console.log('Target Verify URL:', verifyUrl);
-            alert('DEBUG: Redirect to /verify disabled. Check console.');
-            // window.location.href = verifyUrl;
+            window.location.href = verifyUrl;
         }
     }
     
@@ -1522,9 +1519,7 @@ function getBridgingPage(destUrl, linkId, slug, domain) {
             const dest = '${encodedDest}';
             try {
                 const decoded = atob(dest);
-                console.log('--- DEBUG: Client-side fallback redirect disabled ---');
-                // window.location.href = decoded;
-                alert('DEBUG: Fallback redirect disabled. Check console.');
+                window.location.href = decoded;
             } catch (innerError) {
                 console.error('Inner decode failed', innerError);
                 // window.location.href = "https://goodlink.ai"; 
