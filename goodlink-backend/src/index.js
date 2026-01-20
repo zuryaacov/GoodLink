@@ -1487,7 +1487,10 @@ function getBridgingPage(destUrl, linkId, slug, domain) {
                 console.log('⚠️ [Turnstile] No token available - continuing without it');
             }
             
-            window.location.href = verifyUrl;
+            console.log('--- DEBUG: Client-side redirect to verify disabled ---');
+            console.log('Target Verify URL:', verifyUrl);
+            alert('DEBUG: Redirect to /verify disabled. Check console.');
+            // window.location.href = verifyUrl;
         }
     }
     
@@ -1519,10 +1522,9 @@ function getBridgingPage(destUrl, linkId, slug, domain) {
             const dest = '${encodedDest}';
             try {
                 const decoded = atob(dest);
-                window.location.href = decoded;
-            } catch {
-                window.location.href = "https://goodlink.ai"; 
-            }
+            console.log('--- DEBUG: Client-side fallback redirect disabled ---');
+            // window.location.href = decoded;
+            alert('DEBUG: Fallback redirect disabled. Check console.');
         }
     }
 
