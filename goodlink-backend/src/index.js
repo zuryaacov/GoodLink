@@ -619,11 +619,11 @@ async function handleTracking(telemetryId, linkId, userId, slug, domain, targetU
         console.log("🔵 [Stytch] Fetching data for Project:", env.STYTCH_PROJECT_ID);
 
         // נסה קודם Consumer endpoint
-        let stytchUrl = `https://api.stytch.com/v1/fingerprint/lookup`;
+        let stytchUrl = `https://api.stytch.com/v1/fingerprints/lookup`;
         console.log("🔵 [Stytch] Trying Consumer endpoint:", stytchUrl);
 
         let stytchResponse = await fetch(stytchUrl, {
-            method: "POST", // זה חייב להיות POST (לא GET!) - GET יחזיר 404
+            method: "POST",
             headers: {
                 "Authorization": "Basic " + btoa(`${env.STYTCH_PROJECT_ID}:${env.STYTCH_SECRET}`),
                 "Content-Type": "application/json"
@@ -636,7 +636,7 @@ async function handleTracking(telemetryId, linkId, userId, slug, domain, targetU
         // אם קיבלנו 404, נסה B2B endpoint
         if (stytchResponse.status === 404) {
             console.log("⚠️ [Stytch] Consumer endpoint returned 404, trying B2B endpoint...");
-            stytchUrl = `https://api.stytch.com/v1/b2b/fingerprint/lookup`;
+            stytchUrl = `https://api.stytch.com/v1/b2b/fingerprints/lookup`;
             console.log("🔵 [Stytch] Trying B2B endpoint:", stytchUrl);
 
             stytchResponse = await fetch(stytchUrl, {
@@ -1461,6 +1461,7 @@ function getBridgingPage(destUrl, linkId, slug, domain) {
     let turnstileToken = null;
     let telemetryId = null;
     let redirectReady = false;
+    let turnstileTimeout = false;
     
     // Callback כאשר Turnstile מסתיים
     function onTurnstileSuccess(token) {
@@ -1471,7 +1472,7 @@ function getBridgingPage(destUrl, linkId, slug, domain) {
     
     // בדוק אם אפשר לעשות redirect (צריך גם telemetry ID וגם Turnstile token)
     function checkAndRedirect() {
-        if (redirectReady && telemetryId) {
+        if (redirectReady && telemetryId && (turnstileToken || turnstileTimeout)) {
             const dest = '${encodedDest}';
             const linkId = '${encodedLinkId}';
             const slug = '${encodedSlug}';
@@ -1506,11 +1507,9 @@ function getBridgingPage(destUrl, linkId, slug, domain) {
             
             // Timeout - אם Turnstile לא מסתיים תוך 3 שניות, ממשיכים בלי token
             setTimeout(() => {
-                if (!turnstileToken) {
-                    console.log('⏱️ [Turnstile] Timeout - continuing without token');
-                    redirectReady = true;
-                    checkAndRedirect();
-                }
+                console.log('⏱️ [Turnstile] Timeout - continuing regardless of token');
+                turnstileTimeout = true;
+                checkAndRedirect();
             }, 3000);
             
         } catch (e) {
@@ -1779,6 +1778,10 @@ export default {
             console.log('🔵 SUPABASE_URL value:', env.SUPABASE_URL || 'MISSING');
             console.log('🔵 SUPABASE_SERVICE_ROLE_KEY exists:', !!env.SUPABASE_SERVICE_ROLE_KEY);
             console.log('🔵 SUPABASE_SERVICE_ROLE_KEY length:', env.SUPABASE_SERVICE_ROLE_KEY ? env.SUPABASE_SERVICE_ROLE_KEY.length : 0);
+            console.log('🔵 QSTASH_URL exists:', !!env.QSTASH_URL);
+            console.log('🔵 QSTASH_TOKEN exists:', !!env.QSTASH_TOKEN);
+            console.log('🔵 STYTCH_PROJECT_ID exists:', !!env.STYTCH_PROJECT_ID);
+            console.log('🔵 STYTCH_SECRET exists:', !!env.STYTCH_SECRET);
 
             if (!env.SUPABASE_URL || !env.SUPABASE_SERVICE_ROLE_KEY) {
                 console.error('❌ Missing Supabase configuration');
