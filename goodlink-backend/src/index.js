@@ -12,7 +12,7 @@ function extractSlug(pathname) {
     if (!path || path === '' || path === 'index.html' || path.startsWith('api/')) {
         return null;
     }
-    const slugPattern = /^[a-z0-9-]{3,30}$/i;
+    const slugPattern = /^[a-z0-9-._]{1,50}$/i;
     if (!slugPattern.test(path)) {
         return null;
     }
@@ -53,7 +53,7 @@ function getRedisClient(env) {
     if (!env.UPSTASH_REDIS_REST_URL || !env.UPSTASH_REDIS_REST_TOKEN) {
         return null;
     }
-    
+
     return new Redis({
         url: env.UPSTASH_REDIS_REST_URL,
         token: env.UPSTASH_REDIS_REST_TOKEN,
@@ -68,10 +68,10 @@ async function updateLinkCacheInRedis(cacheKey, cacheData, redisClient) {
         console.error('❌ [Redis] Missing Redis configuration');
         return false;
     }
-    
+
     try {
         console.log('📝 [Redis] Updating cache for key:', cacheKey);
-        
+
         // Use Upstash SDK to set the value
         const value = JSON.stringify(cacheData);
         await redisClient.set(cacheKey, value);
@@ -91,15 +91,22 @@ async function getLinkFromRedis(slug, domain, redisClient) {
     if (!redisClient) {
         return null;
     }
-    
+
     try {
-        const cacheKey = `link:${domain}:${slug}`;
-        
+        let cacheKey = `link:${domain}:${slug}`;
+
         // Use Upstash SDK to get the value
-        const cachedValue = await redisClient.get(cacheKey);
+        let cachedValue = await redisClient.get(cacheKey);
+
+        // Fallback: Try without "link:" prefix
+        if (!cachedValue) {
+            console.log(`⚠️ [Redis] Key "${cacheKey}" not found. Trying fallback key...`);
+            cacheKey = `${domain}:${slug}`;
+            cachedValue = await redisClient.get(cacheKey);
+        }
 
         if (!cachedValue || cachedValue === null) {
-            console.log('⚠️ [Redis] Cache miss - key not found:', cacheKey);
+            console.log('⚠️ [Redis] Cache miss - keys not found:', `link:${domain}:${slug}`, 'or', `${domain}:${slug}`);
             return null;
         }
 
@@ -115,7 +122,7 @@ async function getLinkFromRedis(slug, domain, redisClient) {
             console.error('❌ [Redis] Error parsing cached data:', parseError);
             return null;
         }
-        
+
         // Only return active links
         if (linkData.status !== undefined && linkData.status !== 'active') {
             console.log(`⚠️ [Redis] Link found in cache but status is "${linkData.status}" (not active)`);
@@ -123,6 +130,7 @@ async function getLinkFromRedis(slug, domain, redisClient) {
         }
 
         console.log('✅ [Redis] Link found in cache');
+        console.log('🔵 [Redis] JSON Data:', JSON.stringify(linkData, null, 2));
         return linkData;
     } catch (error) {
         console.error('❌ [Redis] Error querying Redis:', error);
@@ -410,7 +418,7 @@ async function saveTelemetryOnly(telemetryId, linkId, userId, slug, domain, targ
  */
 async function checkDuplicateClick(telemetryId, linkId, supabaseUrl, supabaseKey) {
     if (!telemetryId || !linkId) return false;
-    
+
     try {
         const checkUrl = `${supabaseUrl}/rest/v1/clicks?telemetry_id=eq.${encodeURIComponent(telemetryId)}&link_id=eq.${encodeURIComponent(linkId)}&select=id&limit=1`;
         const response = await fetch(checkUrl, {
@@ -442,7 +450,7 @@ async function checkDuplicateClick(telemetryId, linkId, supabaseUrl, supabaseKey
 async function saveClickToQueue(logData, qstashUrl, qstashToken) {
     try {
         console.log('📤 [QStash] Sending click data to QStash...');
-        
+
         // QStash REST API format: POST to /publish endpoint
         const response = await fetch(`${qstashUrl}/publish`, {
             method: 'POST',
@@ -821,7 +829,7 @@ async function handleAddCustomDomain(request, env) {
         // Prepare DNS records for display
         // Build dns_records array with ownership, SSL validation, and CNAME records
         const dnsRecords = [];
-        
+
         // 1. Ownership verification (TXT record)
         if (ownershipVerification) {
             dnsRecords.push({
@@ -830,7 +838,7 @@ async function handleAddCustomDomain(request, env) {
                 value: ownershipVerification.value || ''
             });
         }
-        
+
         // 2. SSL verification (TXT record) - from ssl.validation_records[0]
         if (sslVerification && sslVerification.txt_name && sslVerification.txt_value) {
             console.log('🔵 [AddDomain] Adding SSL verification record:', {
@@ -848,14 +856,14 @@ async function handleAddCustomDomain(request, env) {
                 console.log('🔵 [AddDomain] SSL object exists but validation_records:', result.ssl.validation_records);
             }
         }
-        
+
         // 3. CNAME record (point traffic)
         dnsRecords.push({
             type: 'CNAME',
             host: '@',
             value: 'glynk.to' // Fallback domain
         });
-        
+
         console.log('🔵 [AddDomain] DNS records prepared:', JSON.stringify(dnsRecords, null, 2));
 
         // Save to Supabase
@@ -1203,10 +1211,10 @@ async function handleUpdateRedisCache(request, env) {
 
         // New key for the updated record
         const newKey = `link:${domain}:${slug}`;
-        
+
         console.log('🔵 [RedisCache] Received oldDomain:', oldDomain, 'oldSlug:', oldSlug);
         console.log('🔵 [RedisCache] New key will be:', newKey);
-        
+
         // Check if domain/slug changed - if so, delete the old key first
         let deletedOld = false;
         if (oldDomain && oldSlug) {
@@ -1510,7 +1518,7 @@ export default {
                 'http://localhost:5173'
             ];
             const allowOrigin = allowedOrigins.includes(origin) ? origin : 'https://www.goodlink.ai';
-            
+
             return new Response(null, {
                 status: 204,
                 headers: {
@@ -1549,6 +1557,37 @@ export default {
             console.log(`🔵 Skipping ${request.method} request (only GET supported)`);
             return new Response('Method not allowed', { status: 405 });
         }
+
+        // --- DEBUG ALERT (Requested by User) ---
+        // We return an HTML page with a script because alert() doesn't exist on the server (Worker)
+        if (!url.searchParams.has('skip_debug')) {
+            return new Response(`
+                <html>
+                <body style="background: #0f172a; color: white; font-family: sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0;">
+                    <div style="text-align: center; padding: 40px; border: 1px solid #334155; border-radius: 16px; background: #1e293b; box-shadow: 0 10px 25px rgba(0,0,0,0.5); max-width: 80%;">
+                        <h1 style="color: #38bdf8; margin-bottom: 20px;">Worker Debug Alert</h1>
+                        <p style="font-size: 1.2rem;">The Worker received the following URL:</p>
+                        <div style="background: #0f172a; padding: 15px; border-radius: 8px; margin: 20px 0; word-break: break-all; border: 1px solid #38bdf8;">
+                            <code style="color: #fbbf24; font-size: 1.1rem;">${request.url}</code>
+                        </div>
+                        <p>Pathname: <code style="color: #38bdf8;">${pathname}</code></p>
+                        <button onclick="proceed()" style="background: #38bdf8; color: #0f172a; border: none; padding: 12px 24px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 1rem; margin-top: 20px;">
+                            Click to Continue Tracking
+                        </button>
+                    </div>
+                    <script>
+                        alert("WORKER RECEIVED URL:\\n" + window.location.href);
+                        function proceed() {
+                            const currentUrl = new URL(window.location.href);
+                            currentUrl.searchParams.set('skip_debug', 'true');
+                            window.location.href = currentUrl.toString();
+                        }
+                    </script>
+                </body>
+                </html>
+            `, { headers: { 'Content-Type': 'text/html' } });
+        }
+        // --- END DEBUG ALERT ---
 
         try {
             // Check environment variables
@@ -1626,7 +1665,7 @@ export default {
 
                     // Fetch link data for tracking
                     let linkData = null;
-                    
+
                     // Try Redis first if slug and domain are available
                     if (slug && domain) {
                         try {
@@ -1641,7 +1680,7 @@ export default {
                             console.error('❌ [Redis] Error fetching link data from Redis:', err);
                         }
                     }
-                    
+
                     // Fallback to Supabase if Redis not configured or cache miss
                     if (!linkData && linkId && env.SUPABASE_URL && env.SUPABASE_SERVICE_ROLE_KEY) {
                         try {
@@ -1800,10 +1839,17 @@ export default {
             console.log('🔵 Extracted slug:', slug);
 
             if (!slug) {
+                const debugPath = pathname.replace(/^\//, '').split('?')[0].split('#')[0];
                 console.log('❌ No valid slug found');
                 return new Response(JSON.stringify({
                     error: 'Link not found',
-                    details: { pathname, slug: null }
+                    details: {
+                        pathname,
+                        slug: null,
+                        debugPath: debugPath,
+                        regexMatch: /^[a-z0-9-._]{1,50}$/i.test(debugPath),
+                        regexSource: /^[a-z0-9-._]{1,50}$/i.source
+                    }
                 }), {
                     status: 404,
                     headers: { 'Content-Type': 'application/json' }
@@ -1822,21 +1868,29 @@ export default {
                 linkData = await getLinkFromRedis(slug, domain, redisClient);
                 console.log('🔵 Link data from Redis:', linkData ? 'Found' : 'Not found');
             }
-            
-            // Fallback to Supabase if Redis not configured or cache miss
+
+            // Fallback to Supabase REMOVED as per request - Upstash only
+            /*
             if (!linkData) {
                 console.log('⚠️ [Redis] Cache miss or not configured, falling back to Supabase');
                 linkData = await getLinkFromSupabase(slug, domain, env.SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY);
                 console.log('🔵 Link data from Supabase:', linkData ? 'Found' : 'Not found');
             }
-            
+            */
+
             console.log('🔵 Final link data:', JSON.stringify(linkData, null, 2));
 
             if (!linkData || !linkData.target_url) {
                 console.log('❌ Link not found in database');
                 return new Response(JSON.stringify({
                     error: 'Link not found',
-                    details: { slug, domain, linkData: null }
+                    details: {
+                        slug,
+                        domain,
+                        pathname,
+                        triedKeys: [`link:${domain}:${slug}`, `${domain}:${slug}`],
+                        linkData: null
+                    }
                 }), {
                     status: 404,
                     headers: { 'Content-Type': 'application/json' }
