@@ -1324,7 +1324,8 @@ function getBridgingPage(slug, domain) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Secure Redirect | GoodLink</title>
-    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+    <link rel="preconnect" href="https://challenges.cloudflare.com">
+    <link rel="dns-prefetch" href="https://challenges.cloudflare.com">
     <style>
         :root {
             --bg: #0f172a;
@@ -1488,28 +1489,17 @@ function getBridgingPage(slug, domain) {
     }
     
     async function redirect() {
-        try {
-            console.log('🔵 [Redirect] Started. Waiting for Turnstile...');
-            // No Stytch telemetry needed anymore.
-            // We just wait for onTurnstileSuccess callback.
-            
-            // Timeout removed - we MUST wait for Turnstile because the server requires the token.
-            // If Turnstile fails to load, the user stays on the loading page (better than a 403 error).
-            setTimeout(() => {
-                if (!turnstileToken) {
-                    console.log('⏱️ [Turnstile] Taking longer than expected...');
-                    // Optional: Show a "Reload" button or message here if it takes too long
-                }
-            }, 5000);
-            
-        } catch (e) {
-            console.error("Verification failed", e);
-            // Without a destination, we can't redirect in case of error.
-        }
+        console.log('🔵 [Redirect] Started. Waiting for Turnstile token...');
+        // Handled by onTurnstileSuccess callback
     }
 
-    window.onload = redirect;
+    // Start execution
+    (function() {
+        console.log('🔵 [Redirect] Execution context ready.');
+        // The Turnstile widget is auto-rendered by the class .cf-turnstile
+    })();
 </script>
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 
 </body>
 </html>`;
