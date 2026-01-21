@@ -230,12 +230,14 @@ export default {
         const domain = url.hostname.replace(/^www\./, '');
 
         // --- אופטימיזציית "דילוג מהיר" ---
-        // אם המשתמש כבר עבר אימות בעבר (Cookie) או שהוא בוט מאומת או משתמש ביתי
         const userAgent = request.headers.get('user-agent') || '';
         const cf = request.cf || {};
-        const isLikelyHuman = cf.botManagement?.score > 20 || cf.verifiedBot || (!isBot(userAgent) && cf.asOrganization && !/amazon|google|cloud|data/i.test(cf.asOrganization));
+        const isBotRequest = isBot(userAgent);
 
-        if (isLikelyHuman) {
+        // מדלגים אם: זה בוט (בשביל Preview), או ציון בוטים גבוה, או מקור מאומת, או ספק ביתי
+        const isLikelyHuman = cf.botManagement?.score > 20 || cf.verifiedBot || (!isBotRequest && cf.asOrganization && !/amazon|google|cloud|data/i.test(cf.asOrganization));
+
+        if (isLikelyHuman || isBotRequest) {
             const linkData = await getLinkFromRedis(slug, domain, getRedisClient(env));
             if (linkData) {
                 const finalUrl = buildTargetUrl(linkData.target_url, linkData, request.url);
@@ -245,7 +247,8 @@ export default {
                     country: cf.country,
                     city: cf.city
                 };
-                ctx.waitUntil(handleTracking(crypto.randomUUID(), linkData.id, linkData.user_id, slug, domain, finalUrl, trackingData, true, env, ctx));
+                // בבוטים אנחנו מסמנים Turnstile כ-false כי הם לא עברו אותו (הם דלגו)
+                ctx.waitUntil(handleTracking(crypto.randomUUID(), linkData.id, linkData.user_id, slug, domain, finalUrl, trackingData, isBotRequest ? false : true, env, ctx));
                 return Response.redirect(finalUrl, 302);
             }
         }
