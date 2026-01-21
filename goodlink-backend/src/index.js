@@ -139,10 +139,14 @@ async function handleTracking(telemetryId, eventLabel, userId, slug, domain, tar
         const ip = cloudflareData.ipAddress || "unknown";
         const redis = getRedisClient(env);
 
-        // 1. מניעת כפילויות אטומית (10 שניות)
+        // 1. מניעת רעש - אל תרשום בקשות לקבצי מערכת נפוצים
+        const noiseFiles = ['.ico', '.png', '.jpg', '.txt', '.xml', '.map', '.env', '.php', '.js', '.css'];
+        if (noiseFiles.some(ext => (slug || "").toLowerCase().endsWith(ext))) return;
+
+        // 2. מנגנון Deduplication (Lock) - מונע כפל רשומות לאותו IP ולינק ל-30 שניות
         if (redis) {
             const lockKey = `lock:${domain}:${slug || 'none'}:${ip}`;
-            const isNew = await redis.set(lockKey, "1", { nx: true, ex: 10 });
+            const isNew = await redis.set(lockKey, "1", { nx: true, ex: 30 });
             if (!isNew) {
                 console.log("🚫 [Deduplication] Rapid click detected - skipping log");
                 return;
@@ -300,9 +304,11 @@ export default {
         const domain = url.hostname.replace(/^www\./, '');
         const redisClient = getRedisClient(env);
 
-        // 1. אם אין סלאג (למשל דף הבית)
+        // 1. אם אין סלאג (דף הבית או נתיב לא מזוהה)
         if (!slug) {
-            if (pathname !== '/favicon.ico') {
+            // אל תרשום Tracking אם זה קובץ מערכת או סריקה של בוטים לכתובות ארוכות
+            const isStaticFile = pathname.includes('.') || pathname.length > 20;
+            if (!isStaticFile) {
                 ctx.waitUntil(handleTracking(crypto.randomUUID(), 'invalid-path', null, pathname, domain, url.href, trackingData, false, env, ctx));
             }
             return new Response(get404Page(), { status: 404, headers: { 'Content-Type': 'text/html; charset=UTF-8' } });
