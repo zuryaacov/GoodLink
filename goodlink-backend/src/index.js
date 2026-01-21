@@ -134,30 +134,33 @@ async function verifyTurnstile(token, ipAddress, secretKey) {
     }
 }
 
-async function handleTracking(telemetryId, linkId, userId, slug, domain, targetUrl, cloudflareData, turnstileVerified, env, ctx) {
+async function handleTracking(telemetryId, eventLabel, userId, slug, domain, targetUrl, cloudflareData, turnstileVerified, env, ctx) {
     try {
         const ip = cloudflareData.ipAddress || "unknown";
         const redis = getRedisClient(env);
 
-        // 1. מניעת כפילויות (Deduplication) - 5 שניות לאותו IP וסלאג
+        // 1. מניעת כפילויות (Deduplication) - 10 שניות לאותו IP וסלאג
         if (redis) {
-            const lockKey = `lock:click:${slug}:${ip}`;
-            const isNew = await redis.set(lockKey, "1", { nx: true, ex: 5 });
-            if (!isNew) return; // קליק מהיר מדי - מתעלמים
+            const lockKey = `lock:${domain}:${slug || 'none'}:${ip}`;
+            const isLocked = await redis.get(lockKey);
+            if (isLocked) return; // כבר רשמנו קליק כזה לאחרונה, מתעלמים
+            await redis.set(lockKey, "1", { ex: 10 });
         }
 
-        // 2. הכנת האובייקט לרישום
-        // בדיקה אם linkId הוא UUID תקין (עבור סופבייס)
-        const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(linkId);
+        // 2. וידוא שה-telemetryId הוא תמיד UUID תקין עבור Supabase
+        // אם telemetryId שהתקבל אינו UUID, ניצור אחד חדש
+        const isUUID = (id) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+        const finalTelemetryId = isUUID(telemetryId) ? telemetryId : crypto.randomUUID();
 
+        // 3. הכנת האובייקט לרישום
         const logData = {
-            link_id: isUUID ? linkId : null,
+            link_id: isUUID(eventLabel) ? eventLabel : null, // link_id יקבל UUID רק אם זה קליק אמיתי
+            event_type: isUUID(eventLabel) ? 'click' : eventLabel, // כאן נשמור 'bot-blocked', '404' וכו'
             user_id: userId || null,
-            slug: slug,
+            slug: slug || 'none',
             domain: domain,
             target_url: targetUrl || null,
-            // משתמשים ב-telemetryId כמזהה גלובלי או מוסיפים לו קידומת לאירועי מערכת
-            telemetry_id: isUUID ? telemetryId : `${linkId}:${telemetryId}`,
+            telemetry_id: finalTelemetryId,
             ip_address: ip,
             country: cloudflareData.country || null,
             city: cloudflareData.city || null,
@@ -166,7 +169,7 @@ async function handleTracking(telemetryId, linkId, userId, slug, domain, targetU
             clicked_at: new Date().toISOString()
         };
 
-        // 3. כתיבה ל-Supabase
+        // 4. כתיבה מקבילית ל-Supabase ול-Redis
         const supabasePromise = fetch(`${env.SUPABASE_URL}/rest/v1/clicks`, {
             method: "POST",
             headers: {
@@ -181,17 +184,15 @@ async function handleTracking(telemetryId, linkId, userId, slug, domain, targetU
             return res;
         });
 
-        // 4. כתיבה ל-Upstash Redis
-        // משתמשים במפתח ייחודי המבוסס על ה-telemetryId כדי למנוע כפילויות
         let redisPromise = Promise.resolve();
         if (redis) {
-            const clickKey = `log:${domain}:${slug}:${telemetryId}`;
-            redisPromise = redis.set(clickKey, JSON.stringify(logData), { ex: 86400 })
-                .catch(err => console.error("❌ [Redis] Logging failed:", err));
+            // שומרים תמיד תחת מפתח קבוע שמבוסס על ה-UUID
+            const clickKey = `log:${finalTelemetryId}`;
+            redisPromise = redis.set(clickKey, JSON.stringify(logData), { ex: 604800 }); // נשמר לשבוע
         }
 
-        // מחכים לשניהם
-        await Promise.all([supabasePromise, redisPromise]);
+        // שימוש ב-ctx.waitUntil כדי לוודא שהוורקר לא נסגר לפני הכתיבה
+        ctx.waitUntil(Promise.all([supabasePromise, redisPromise]));
 
     } catch (err) {
         console.error("Tracking error:", err);
@@ -274,46 +275,44 @@ export default {
         }
 
         const slug = extractSlug(pathname);
+        const domain = url.hostname.replace(/^www\./, '');
+        const redisClient = getRedisClient(env);
+
+        // 1. אם אין סלאג (למשל דף הבית)
         if (!slug) {
-            // מעקב אחרי נתיבים לא קיימים (כמו /favicon.ico או סריקות)
             if (pathname !== '/favicon.ico') {
-                ctx.waitUntil(handleTracking(crypto.randomUUID(), 'invalid-path', null, pathname, url.hostname, url.href, trackingData, false, env, ctx));
+                ctx.waitUntil(handleTracking(crypto.randomUUID(), 'invalid-path', null, pathname, domain, url.href, trackingData, false, env, ctx));
             }
             return new Response(get404Page(), { status: 404, headers: { 'Content-Type': 'text/html; charset=UTF-8' } });
         }
 
-        const domain = url.hostname.replace(/^www\./, '');
-
-        // --- בדיקת בוטים אגרסיבית ---
+        // 2. בדיקת בוטים
         const isBotRequest = isBot(ua);
-
         if (isBotRequest || cf.verifiedBot) {
             console.log('🚫 [Bot Detection] Bot detected - tracking and returning 404');
-            // רישום הבוט ברקע עם כל פרטי ה-IP שלו
             ctx.waitUntil(handleTracking(crypto.randomUUID(), 'bot-blocked', null, slug, domain, url.href, trackingData, false, env, ctx));
-
             return new Response(get404Page(), {
                 status: 404,
                 headers: { 'Content-Type': 'text/html; charset=UTF-8' }
             });
         }
 
-        // --- אופטימיזציית "דילוג מהיר" לבני אדם ---
-        const isLikelyHuman = cf.botManagement?.score > 20 || (cf.asOrganization && !/amazon|google|cloud|data/i.test(cf.asOrganization));
-
-        let linkData = await getLinkFromRedis(slug, domain, getRedisClient(env));
-
-        // Fallback לסופבייס אם אין ב-Redis
+        // 3. שליפת הלינק (פעם אחת)
+        let linkData = await getLinkFromRedis(slug, domain, redisClient);
         if (!linkData && env.SUPABASE_URL && env.SUPABASE_SERVICE_ROLE_KEY) {
             console.log('🔍 [Fallback] Redis miss, checking Supabase');
             linkData = await getLinkFromSupabase(slug, domain, env.SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY);
         }
 
+        // 4. אם הלינק לא נמצא סופית
         if (!linkData) {
             console.log('⚠️ [404] Link not found - tracking');
             ctx.waitUntil(handleTracking(crypto.randomUUID(), 'link-not-found', null, slug, domain, url.href, trackingData, false, env, ctx));
             return new Response(get404Page(), { status: 404, headers: { 'Content-Type': 'text/html; charset=UTF-8' } });
         }
+
+        // --- אופטימיזציית "דילוג מהיר" לבני אדם ---
+        const isLikelyHuman = cf.botManagement?.score > 20 || (cf.asOrganization && !/amazon|google|cloud|data/i.test(cf.asOrganization));
 
         if (isLikelyHuman) {
             const finalUrl = buildTargetUrl(linkData.target_url, linkData, request.url);
