@@ -1315,9 +1315,7 @@ async function handleUpdateRedisCache(request, env) {
 /**
  * Generate bridging HTML page
  */
-function getBridgingPage(destUrl, linkId, slug, domain) {
-    const encodedDest = btoa(destUrl);
-    const encodedLinkId = btoa(linkId);
+function getBridgingPage(slug, domain) {
     const encodedSlug = btoa(slug);
     const encodedDomain = btoa(domain);
     return `<!DOCTYPE html>
@@ -1474,22 +1472,16 @@ function getBridgingPage(destUrl, linkId, slug, domain) {
         checkAndRedirect();
     }
     
-    // בדוק אם אפשר לעשות redirect (צריך גם telemetry ID וגם Turnstile token)
+    // הבדיקה והעברה - עכשיו בלי ידיעת היעד מראש
     function checkAndRedirect() {
         if (turnstileToken) {
-            const dest = '${encodedDest}';
-            const linkId = '${encodedLinkId}';
             const slug = '${encodedSlug}';
             const domain = '${encodedDomain}';
             
-            let verifyUrl = '/verify?id=' + telemetryId + '&dest=' + dest + '&link_id=' + linkId + '&slug=' + slug + '&domain=' + domain;
+            let verifyUrl = '/verify?id=' + telemetryId + '&slug=' + slug + '&domain=' + domain;
             
-            // הוסף Turnstile token אם קיים
             if (turnstileToken) {
                 verifyUrl += '&cf-turnstile-response=' + encodeURIComponent(turnstileToken);
-                console.log('🔵 [Turnstile] Adding token to URL (length: ' + turnstileToken.length + ')');
-            } else {
-                console.log('⚠️ [Turnstile] No token available - continuing without it');
             }
             
             window.location.href = verifyUrl;
@@ -1809,14 +1801,10 @@ export default {
 
                 try {
                     // Decode parameters
-                    const decodedDest = atob(dest);
-                    const linkId = linkIdParam ? atob(linkIdParam) : null;
                     const slug = slugParam ? atob(slugParam) : null;
                     const domain = domainParam ? atob(domainParam) : null;
 
-                    console.log('🔵 Decoded destination:', decodedDest);
                     console.log('🔵 Telemetry ID:', verifyId || 'not provided');
-                    console.log('🔵 Link ID:', linkId || 'not provided');
                     console.log('🔵 Slug:', slug || 'not provided');
                     console.log('🔵 Domain:', domain || 'not provided');
 
@@ -1881,60 +1869,44 @@ export default {
                         }
                     }
 
+                    if (!linkData) {
+                        console.log('❌ Link not found in Upstash during /verify');
+                        return new Response(get404Page(slug, domain), {
+                            status: 404,
+                            headers: { 'Content-Type': 'text/html; charset=UTF-8' }
+                        });
+                    }
+
                     // 1. Strict Turnstile Guard
-                    // If we don't have a token, or if validation fails, we BLOCK immediately.
                     let turnstileToken = url.searchParams.get('cf-turnstile-response');
                     if (!turnstileToken) {
-                        console.error('❌ [Turnstile] No token provided - blocking request');
                         return new Response("Missing anti-bot token", { status: 403 });
                     }
 
-                    console.log('🔵 [Turnstile] Token found, verifying...');
                     let isHuman = await verifyTurnstile(turnstileToken, cloudflareData.ipAddress, env.TURNSTILE_SECRET_KEY);
-
                     if (!isHuman) {
-                        console.error('❌ [Turnstile] Verification failed - blocking request');
                         return new Response("Bot detection failed", { status: 403 });
                     }
 
-                    console.log('✅ [Turnstile] Human verified!');
+                    // Prepare final URL and tracking
+                    const finalUrl = buildTargetUrl(linkData.target_url, linkData, request.url);
 
-                    // 2. Tracking in Background (ctx.waitUntil)
-                    // User does not wait for this.
-                    console.log('🔵 [Async] Starting background tracking...');
                     const trackingTask = handleTracking(
                         verifyId,
                         linkData.id,
                         linkData.user_id,
                         slug,
                         domain,
-                        decodedDest,
+                        finalUrl,
                         cloudflareData,
-                        true, // Verified is always true here because we blocked otherwise
+                        true,
                         env,
                         ctx
                     );
                     ctx.waitUntil(trackingTask);
 
-                    // 3. Immediate Redirect
-                    console.log('🔵 Redirecting to final destination');
-
-                    // ENSURE ABSOLUTE URL
-                    let finalLocation = decodedDest;
-                    if (!/^https?:\/\//i.test(finalLocation)) {
-                        finalLocation = 'https://' + finalLocation;
-                        console.log('🔧 [Verify] Added protocol to final location:', finalLocation);
-                    }
-
-                    return new Response(null, {
-                        status: 302,
-                        headers: {
-                            'Location': finalLocation,
-                            'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
-                            'Pragma': 'no-cache',
-                            'Expires': '0'
-                        }
-                    });
+                    console.log('🔵 Redirecting to final destination:', finalUrl);
+                    return Response.redirect(finalUrl, 302);
                 } catch (error) {
                     console.error('❌ Error in /verify endpoint:', error);
                     return new Response(JSON.stringify({
@@ -1960,70 +1932,9 @@ export default {
 
             const hostname = url.hostname;
             const domain = hostname.replace(/^www\./, '');
-            console.log('🔵 Domain:', domain);
-            console.log('🔵 Querying Supabase for link...');
 
-            // Try to get link from Redis first, fallback to Supabase
-            let linkData = null;
-            const redisClient = getRedisClient(env);
-            if (redisClient) {
-                linkData = await getLinkFromRedis(slug, domain, redisClient);
-                console.log('🔵 Link data from Redis:', linkData ? 'Found' : 'Not found');
-            }
-
-            // Fallback to Supabase REMOVED as per request - Upstash only
-            /*
-            if (!linkData) {
-                console.log('⚠️ [Redis] Cache miss or not configured, falling back to Supabase');
-                linkData = await getLinkFromSupabase(slug, domain, env.SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY);
-                console.log('🔵 Link data from Supabase:', linkData ? 'Found' : 'Not found');
-            }
-            */
-
-            console.log('🔵 Final link data:', JSON.stringify(linkData, null, 2));
-
-            if (!linkData || !linkData.target_url) {
-                console.log('❌ Link not found in database');
-                return new Response(get404Page(slug, domain), {
-                    status: 404,
-                    headers: { 'Content-Type': 'text/html; charset=UTF-8' }
-                });
-            }
-
-            console.log('✅ Link found! ID:', linkData.id, 'User ID:', linkData.user_id);
-
-            // Note: Click tracking is now handled via Stytch tracking in /verify endpoint
-            // We don't track here to avoid duplicate entries - Stytch tracking handles all click tracking
-
-            // Build final URL
-            const finalUrl = buildTargetUrl(linkData.target_url, linkData, url);
-            console.log('🔵 Final URL:', finalUrl);
-
-            // Check for bot before serving bridging page (bots can't execute JavaScript)
-            const userAgent = request.headers.get('user-agent') || '';
-            console.log('🔍 [Bot Detection] Pre-check User-Agent:', userAgent);
-
-            if (isBot(userAgent)) {
-                console.log('🚫 [Bot Detection] Bot detected before bridging page - redirecting to www.google.com');
-                console.log('🔵 ========== WORKER FINISHED ==========');
-
-                // --- DEBUG: BOT REDIRECT DISABLED (PRE-CHECK) ---
-                return new Response(null, {
-                    status: 302,
-                    headers: {
-                        'Location': 'https://www.google.com',
-                        'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
-                        'Pragma': 'no-cache',
-                        'Expires': '0'
-                    }
-                });
-            }
-
-            // Serve bridging page instead of direct redirect
-            console.log('🔵 Serving bridging page...');
-            console.log('🔵 ========== WORKER FINISHED ==========');
-
-            const bridgingHtml = getBridgingPage(finalUrl, linkData.id, slug, domain);
+            console.log('🔵 Serving bridging page immediately for slug:', slug);
+            const bridgingHtml = getBridgingPage(slug, domain);
             return new Response(bridgingHtml, {
                 status: 200,
                 headers: {
