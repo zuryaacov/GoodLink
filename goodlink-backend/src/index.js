@@ -139,19 +139,15 @@ async function handleTracking(telemetryId, linkId, userId, slug, domain, targetU
         const ip = cloudflareData.ipAddress || "unknown";
         const redis = getRedisClient(env);
 
+        // 1. מניעת כפילויות (Deduplication) - 5 שניות לאותו IP וסלאג
         if (redis) {
-            // --- Atomic Redis Deduplication ---
-            // We use a setnx (Set if Not Exists) with a 5-second TTL
-            const lockKey = `lock:click:${linkId}:${ip}`;
+            const lockKey = `lock:click:${slug}:${ip}`;
             const isNew = await redis.set(lockKey, "1", { nx: true, ex: 5 });
-
-            if (!isNew) {
-                console.log("🚫 [Deduplication] Rapid click detected via Redis - skipping log");
-                return;
-            }
+            if (!isNew) return; // קליק מהיר מדי - מתעלמים
         }
 
-        // --- בדיקה אם המזהה הוא UUID דאטה-בייס תקין ---
+        // 2. הכנת האובייקט לרישום
+        // בדיקה אם linkId הוא UUID תקין (עבור סופבייס)
         const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(linkId);
 
         const logData = {
@@ -159,16 +155,19 @@ async function handleTracking(telemetryId, linkId, userId, slug, domain, targetU
             user_id: userId || null,
             slug: slug,
             domain: domain,
-            target_url: targetUrl,
-            // עבור בוטים/404 אנחנו מוסיפים קידומת לזיהוי קל
+            target_url: targetUrl || null,
+            // משתמשים ב-telemetryId כמזהה גלובלי או מוסיפים לו קידומת לאירועי מערכת
             telemetry_id: isUUID ? telemetryId : `${linkId}:${telemetryId}`,
             ip_address: ip,
-            country: cloudflareData.country || null, city: cloudflareData.city || null,
-            user_agent: cloudflareData.userAgent, turnstile_verified: turnstileVerified,
+            country: cloudflareData.country || null,
+            city: cloudflareData.city || null,
+            user_agent: cloudflareData.userAgent || null,
+            turnstile_verified: !!turnstileVerified,
             clicked_at: new Date().toISOString()
         };
 
-        const res = await fetch(`${env.SUPABASE_URL}/rest/v1/clicks`, {
+        // 3. כתיבה ל-Supabase
+        const supabasePromise = fetch(`${env.SUPABASE_URL}/rest/v1/clicks`, {
             method: "POST",
             headers: {
                 "apikey": env.SUPABASE_SERVICE_ROLE_KEY,
@@ -177,24 +176,25 @@ async function handleTracking(telemetryId, linkId, userId, slug, domain, targetU
                 "Prefer": "return=minimal"
             },
             body: JSON.stringify(logData)
+        }).then(async res => {
+            if (!res.ok) console.error(`❌ [Supabase] Tracking failed: ${res.status} ${await res.text()}`);
+            return res;
         });
 
-        // --- בנוסף לסופבייס, רושמים את הקליק גם ב-Redis ---
+        // 4. כתיבה ל-Upstash Redis
+        // משתמשים במפתח ייחודי המבוסס על ה-telemetryId כדי למנוע כפילויות
+        let redisPromise = Promise.resolve();
         if (redis) {
-            try {
-                const clickKey = `click_log:${linkId || 'sys'}:${Date.now()}:${telemetryId}`;
-                await redis.set(clickKey, JSON.stringify(logData), { ex: 86400 }); // שמירה ל-24 שעות
-                console.log(`✅ [Redis] Click logged: ${clickKey}`);
-            } catch (rErr) {
-                console.error("❌ [Redis] Click logging failed:", rErr);
-            }
+            const clickKey = `log:${domain}:${slug}:${telemetryId}`;
+            redisPromise = redis.set(clickKey, JSON.stringify(logData), { ex: 86400 })
+                .catch(err => console.error("❌ [Redis] Logging failed:", err));
         }
 
-        if (!res.ok) {
-            console.error(`❌ [Supabase] Tracking failed: ${res.status} ${await res.text()}`);
-        }
+        // מחכים לשניהם
+        await Promise.all([supabasePromise, redisPromise]);
+
     } catch (err) {
-        console.error("Tracking exception:", err);
+        console.error("Tracking error:", err);
     }
 }
 
