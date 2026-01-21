@@ -152,20 +152,45 @@ async function handleTracking(telemetryId, linkId, userId, slug, domain, targetU
         }
 
         const logData = {
-            link_id: linkId, user_id: userId, slug: slug, domain: domain,
-            target_url: targetUrl, telemetry_id: telemetryId, ip_address: ip,
+            link_id: (typeof linkId === 'string' && linkId.includes('-')) ? linkId : null,
+            user_id: userId || null,
+            slug: slug,
+            domain: domain,
+            target_url: targetUrl,
+            telemetry_id: (linkId && !linkId.includes('-')) ? `${linkId}:${telemetryId}` : telemetryId,
+            ip_address: ip,
             country: cloudflareData.country || null, city: cloudflareData.city || null,
             user_agent: cloudflareData.userAgent, turnstile_verified: turnstileVerified,
             clicked_at: new Date().toISOString()
         };
 
-        await fetch(`${env.SUPABASE_URL}/rest/v1/clicks`, {
+        const res = await fetch(`${env.SUPABASE_URL}/rest/v1/clicks`, {
             method: "POST",
-            headers: { "apikey": env.SUPABASE_SERVICE_ROLE_KEY, "Authorization": `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}`, "Content-Type": "application/json", "Prefer": "return=minimal" },
+            headers: {
+                "apikey": env.SUPABASE_SERVICE_ROLE_KEY,
+                "Authorization": `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}`,
+                "Content-Type": "application/json",
+                "Prefer": "return=minimal"
+            },
             body: JSON.stringify(logData)
         });
+
+        // --- בנוסף לסופבייס, רושמים את הקליק גם ב-Redis ---
+        if (redis) {
+            try {
+                const clickKey = `click_log:${linkId || 'sys'}:${Date.now()}:${telemetryId}`;
+                await redis.set(clickKey, JSON.stringify(logData), { ex: 86400 }); // שמירה ל-24 שעות
+                console.log(`✅ [Redis] Click logged: ${clickKey}`);
+            } catch (rErr) {
+                console.error("❌ [Redis] Click logging failed:", rErr);
+            }
+        }
+
+        if (!res.ok) {
+            console.error(`❌ [Supabase] Tracking failed: ${res.status} ${await res.text()}`);
+        }
     } catch (err) {
-        console.error("Tracking error:", err);
+        console.error("Tracking exception:", err);
     }
 }
 
@@ -272,10 +297,16 @@ export default {
         // --- אופטימיזציית "דילוג מהיר" לבני אדם ---
         const isLikelyHuman = cf.botManagement?.score > 20 || (cf.asOrganization && !/amazon|google|cloud|data/i.test(cf.asOrganization));
 
-        const linkData = await getLinkFromRedis(slug, domain, getRedisClient(env));
+        let linkData = await getLinkFromRedis(slug, domain, getRedisClient(env));
+
+        // Fallback לסופבייס אם אין ב-Redis
+        if (!linkData && env.SUPABASE_URL && env.SUPABASE_SERVICE_ROLE_KEY) {
+            console.log('🔍 [Fallback] Redis miss, checking Supabase');
+            linkData = await getLinkFromSupabase(slug, domain, env.SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY);
+        }
 
         if (!linkData) {
-            console.log('⚠️ [404] Link not found in Redis - tracking');
+            console.log('⚠️ [404] Link not found - tracking');
             ctx.waitUntil(handleTracking(crypto.randomUUID(), 'link-not-found', null, slug, domain, url.href, trackingData, false, env, ctx));
             return new Response(get404Page(), { status: 404, headers: { 'Content-Type': 'text/html; charset=UTF-8' } });
         }
