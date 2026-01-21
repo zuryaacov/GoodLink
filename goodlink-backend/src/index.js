@@ -1505,15 +1505,7 @@ function getBridgingPage(slug, domain) {
             
         } catch (e) {
             console.error("Verification failed", e);
-            // במקרה של שגיאה - עדיין מעבירים כדי לא לאבד את המשתמש
-            const dest = '${encodedDest}';
-            try {
-                const decoded = atob(dest);
-                window.location.href = decoded;
-            } catch (innerError) {
-                console.error('Inner decode failed', innerError);
-                // window.location.href = "https://goodlink.ai"; 
-            }
+            // Without a destination, we can't redirect in case of error.
         }
     }
 
