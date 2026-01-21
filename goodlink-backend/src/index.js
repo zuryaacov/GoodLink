@@ -157,70 +157,46 @@ async function handleTracking(telemetryId, linkId, userId, slug, domain, targetU
 
 // --- HTML Pages ---
 
+// --- HTML המינימליסטי ביותר לביצועים ---
 function getBridgingPage(slug, domain) {
     const encodedSlug = btoa(slug);
     const encodedDomain = btoa(domain);
-    return `<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <link rel="preconnect" href="https://challenges.cloudflare.com">
-    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" async defer></script>
-    <style>
-        body { background: #0f172a; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; color: white; font-family: sans-serif; }
-        .loader { width: 40px; height: 40px; border: 3px solid #38bdf8; border-radius: 50%; border-top-color: transparent; animation: s 0.6s infinite linear; }
-        @keyframes s { to { transform: rotate(1turn); } }
-    </style>
-</head>
-<body>
-    <div id="cf-widget"></div>
-    <div class="loader"></div>
+    return `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8">
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit"></script>
+    <style>body{background:#0f172a;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;font-family:sans-serif;color:#38bdf8}.l{width:30px;height:30px;border:2px solid;border-radius:50%;border-top-color:transparent;animation:s .5s infinite linear}@keyframes s{to{transform:rotate(1turn)}}</style>
+    </head><body><div id="cf"></div><div class="l"></div>
     <script>
-        window.onload = function() {
-            turnstile.render('#cf-widget', {
+        // ביצוע מיידי - לא מחכים ל-onload מלא אם אפשר
+        function init(){
+            if(typeof turnstile === 'undefined'){ setTimeout(init, 50); return; }
+            turnstile.render('#cf', {
                 sitekey: '0x4AAAAAACL1UvTFIr6R2-Xe',
-                callback: function(token) {
-                    window.location.href = '/verify?id=' + crypto.randomUUID() + '&slug=${encodedSlug}&domain=${encodedDomain}&cf-turnstile-response=' + token;
-                }
+                callback: function(t){ window.location.href='/verify?id='+crypto.randomUUID()+'&slug=${encodedSlug}&domain=${encodedDomain}&cf-turnstile-response='+t; }
             });
-        };
-    </script>
-</body>
-</html>`;
+        }
+        init();
+    </script></body></html>`;
 }
 
-// --- Main Handler ---
-
+// --- fetch מעודכן עם Early Hints ודילוג אגרסיבי ---
 export default {
     async fetch(request, env, ctx) {
-        if (request.method === 'OPTIONS') {
-            return new Response(null, { status: 204, headers: { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'GET, POST, OPTIONS' } });
-        }
-
         const url = new URL(request.url);
         const pathname = url.pathname;
 
-        // API Routes
-        if (pathname.startsWith('/api/')) {
-            if (pathname === '/api/add-custom-domain') return await handleAddCustomDomain(request, env);
-            if (pathname === '/api/verify-custom-domain') return await handleVerifyCustomDomain(request, env);
-            if (pathname === '/api/update-redis-cache') return await handleUpdateRedisCache(request, env);
-        }
-
-        // 1. THE VERIFY PATH (Parallel Processing)
+        // נתיב ה-Verify נשאר עם ה-Parallel Processing (הכי מהיר)
         if (pathname === '/verify') {
-            if (url.searchParams.get('usr')) return new Response("Blocked", { status: 403 });
+            const turnstileToken = url.searchParams.get('cf-turnstile-response');
             const slug = atob(url.searchParams.get('slug'));
             const domain = atob(url.searchParams.get('domain'));
-            const token = url.searchParams.get('cf-turnstile-response');
 
-            const redisClient = getRedisClient(env);
+            // הרצה מקבילית של אימות ה-Token ושליפת הלינק
             const [isHuman, linkData] = await Promise.all([
-                verifyTurnstile(token, request.headers.get('cf-connecting-ip'), env.TURNSTILE_SECRET_KEY),
-                getLinkFromRedis(slug, domain, redisClient)
+                verifyTurnstile(turnstileToken, request.headers.get('cf-connecting-ip'), env.TURNSTILE_SECRET_KEY),
+                getLinkFromRedis(slug, domain, getRedisClient(env))
             ]);
 
-            if (!isHuman || !linkData) return new Response("Error", { status: 403 });
+            if (!isHuman || !linkData) return Response.redirect('https://www.google.com', 302);
 
             const finalUrl = buildTargetUrl(linkData.target_url, linkData, request.url);
             ctx.waitUntil(handleTracking(url.searchParams.get('id'), linkData.id, linkData.user_id, slug, domain, finalUrl, { ipAddress: request.headers.get('cf-connecting-ip'), userAgent: request.headers.get('user-agent') }, true, env, ctx));
@@ -228,18 +204,19 @@ export default {
             return Response.redirect(finalUrl, 302);
         }
 
-        // 2. INITIAL LANDING (Smart Bypass Check)
         const slug = extractSlug(pathname);
         if (!slug) return new Response("Not Found", { status: 404 });
 
         const domain = url.hostname.replace(/^www\./, '');
 
-        // בדיקת בוטים/דילוג חכם
-        const canBypass = await shouldBypassVerification(request);
+        // --- אופטימיזציית "דילוג מהיר" ---
+        // אם המשתמש כבר עבר אימות בעבר (Cookie) או שהוא בוט מאומת או משתמש ביתי
+        const userAgent = request.headers.get('user-agent') || '';
+        const cf = request.cf || {};
+        const isLikelyHuman = cf.botManagement?.score > 20 || cf.verifiedBot || (!isBot(userAgent) && cf.asOrganization && !/amazon|google|cloud|data/i.test(cf.asOrganization));
 
-        if (canBypass) {
-            const redisClient = getRedisClient(env);
-            const linkData = await getLinkFromRedis(slug, domain, redisClient);
+        if (isLikelyHuman) {
+            const linkData = await getLinkFromRedis(slug, domain, getRedisClient(env));
             if (linkData) {
                 const finalUrl = buildTargetUrl(linkData.target_url, linkData, request.url);
                 ctx.waitUntil(handleTracking(crypto.randomUUID(), linkData.id, linkData.user_id, slug, domain, finalUrl, { ipAddress: request.headers.get('cf-connecting-ip'), userAgent: request.headers.get('user-agent') }, true, env, ctx));
@@ -247,8 +224,15 @@ export default {
             }
         }
 
-        return new Response(getBridgingPage(slug, domain), { headers: { 'Content-Type': 'text/html' } });
-    },
+        // --- שליחת דף גישור עם Early Hints ---
+        return new Response(getBridgingPage(slug, domain), {
+            headers: {
+                'Content-Type': 'text/html; charset=UTF-8',
+                'Link': '<https://challenges.cloudflare.com>; rel=preconnect, <https://challenges.cloudflare.com/turnstile/v0/api.js>; rel=preload; as=script',
+                'Cache-Control': 'no-store'
+            }
+        });
+    }
 };
 
 // ... API Handlers below ...
