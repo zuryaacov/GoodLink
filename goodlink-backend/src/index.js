@@ -139,10 +139,9 @@ async function handleTracking(telemetryId, eventLabel, userId, slug, domain, tar
         const ip = cloudflareData.ipAddress || "unknown";
         const redis = getRedisClient(env);
 
-        // 1. מניעת כפילויות (Deduplication) - 10 שניות לאותו IP וסלאג
+        // 1. מניעת כפילויות אטומית (10 שניות)
         if (redis) {
             const lockKey = `lock:${domain}:${slug || 'none'}:${ip}`;
-            // שימוש ב-set עם nx:true הופך את הפעולה לאטומית (Atomic)
             const isNew = await redis.set(lockKey, "1", { nx: true, ex: 10 });
             if (!isNew) {
                 console.log("🚫 [Deduplication] Rapid click detected - skipping log");
@@ -150,32 +149,42 @@ async function handleTracking(telemetryId, eventLabel, userId, slug, domain, tar
             }
         }
 
-        // 2. וידוא שה-telemetryId הוא תמיד UUID תקין עבור Supabase
-        const isUUID = (id) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+        const isUUID = (id) => typeof id === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
         const finalTelemetryId = isUUID(telemetryId) ? telemetryId : crypto.randomUUID();
 
-        // 3. הגדרת סוג האירוע והמזהה
         const systemEvents = ['bot-blocked', 'link-not-found', 'invalid-path', 'verify-failed'];
         const isSystem = systemEvents.includes(eventLabel);
 
+        // התאמה למבנה הטבלה שלך
         const logData = {
-            link_id: isSystem ? null : eventLabel,
-            event_type: isSystem ? eventLabel : 'click',
-            user_id: userId || null,
-            slug: slug || 'none',
-            domain: domain,
-            target_url: targetUrl || null,
-            telemetry_id: finalTelemetryId,
+            link_id: (isSystem || !isUUID(eventLabel)) ? null : eventLabel,
+            user_id: isUUID(userId) ? userId : null,
             ip_address: ip,
+            user_agent: cloudflareData.userAgent || null,
             country: cloudflareData.country || null,
             city: cloudflareData.city || null,
-            user_agent: cloudflareData.userAgent || null,
+            slug: slug || 'none',
+            domain: domain,
+            target_url: targetUrl || "none", // לשים לב: אם ב-DB זה NOT NULL, חייב ערך
+            clicked_at: new Date().toISOString(),
+            is_bot: isSystem && eventLabel === 'bot-blocked',
+            telemetry_id: finalTelemetryId,
             turnstile_verified: !!turnstileVerified,
-            clicked_at: new Date().toISOString()
+            verdict: isSystem ? eventLabel : 'human-click' // משתמשים בעמודת verdict הקיימת בטבלה
         };
 
-        // 4. כתיבה לסופבייס (דרך QStash אם הוגדר, אחרת ישירות)
+        // 2. כתיבה ל-Upstash Redis
+        let redisPromise = redis ? redis.set(`log:${finalTelemetryId}`, JSON.stringify(logData), { ex: 604800 }) : Promise.resolve();
+
+        // 3. כתיבה לסופבייס (דרך QStash אם הוגדר, אחרת ישירות)
         let supabasePromise;
+        const supabaseHeaders = {
+            "apikey": env.SUPABASE_SERVICE_ROLE_KEY,
+            "Authorization": `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}`,
+            "Content-Type": "application/json",
+            "Prefer": "return=minimal"
+        };
+
         if (env.QSTASH_TOKEN) {
             const qstashUrl = `https://qstash.upstash.io/v1/publish/${env.SUPABASE_URL}/rest/v1/clicks`;
             supabasePromise = fetch(qstashUrl, {
@@ -183,9 +192,7 @@ async function handleTracking(telemetryId, eventLabel, userId, slug, domain, tar
                 headers: {
                     "Authorization": `Bearer ${env.QSTASH_TOKEN}`,
                     "Content-Type": "application/json",
-                    "Upstash-Forward-apikey": env.SUPABASE_SERVICE_ROLE_KEY,
-                    "Upstash-Forward-Authorization": `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}`,
-                    "Upstash-Forward-Prefer": "return=minimal"
+                    ...Object.fromEntries(Object.entries(supabaseHeaders).map(([k, v]) => [`Upstash-Forward-${k}`, v]))
                 },
                 body: JSON.stringify(logData)
             }).then(async res => {
@@ -195,27 +202,16 @@ async function handleTracking(telemetryId, eventLabel, userId, slug, domain, tar
         } else {
             supabasePromise = fetch(`${env.SUPABASE_URL}/rest/v1/clicks`, {
                 method: "POST",
-                headers: {
-                    "apikey": env.SUPABASE_SERVICE_ROLE_KEY,
-                    "Authorization": `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}`,
-                    "Content-Type": "application/json",
-                    "Prefer": "return=minimal"
-                },
+                headers: supabaseHeaders,
                 body: JSON.stringify(logData)
             }).then(async res => {
                 if (!res.ok) {
                     const errText = await res.text();
-                    console.error(`❌ [Supabase] Insert failed (${res.status}):`, errText);
+                    console.error(`❌ [Supabase] Failed: ${res.status}`, errText);
                     console.log("Payload sent:", JSON.stringify(logData));
                 }
                 return res;
             });
-        }
-
-        let redisPromise = Promise.resolve();
-        if (redis) {
-            const clickKey = `log:${finalTelemetryId}`;
-            redisPromise = redis.set(clickKey, JSON.stringify(logData), { ex: 604800 });
         }
 
         await Promise.all([supabasePromise, redisPromise]);
