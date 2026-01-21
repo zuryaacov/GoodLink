@@ -142,20 +142,25 @@ async function handleTracking(telemetryId, eventLabel, userId, slug, domain, tar
         // 1. מניעת כפילויות (Deduplication) - 10 שניות לאותו IP וסלאג
         if (redis) {
             const lockKey = `lock:${domain}:${slug || 'none'}:${ip}`;
-            const isLocked = await redis.get(lockKey);
-            if (isLocked) return; // כבר רשמנו קליק כזה לאחרונה, מתעלמים
-            await redis.set(lockKey, "1", { ex: 10 });
+            // שימוש ב-set עם nx:true הופך את הפעולה לאטומית (Atomic)
+            const isNew = await redis.set(lockKey, "1", { nx: true, ex: 10 });
+            if (!isNew) {
+                console.log("🚫 [Deduplication] Rapid click detected - skipping log");
+                return;
+            }
         }
 
         // 2. וידוא שה-telemetryId הוא תמיד UUID תקין עבור Supabase
-        // אם telemetryId שהתקבל אינו UUID, ניצור אחד חדש
         const isUUID = (id) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
         const finalTelemetryId = isUUID(telemetryId) ? telemetryId : crypto.randomUUID();
 
-        // 3. הכנת האובייקט לרישום
+        // 3. הגדרת סוג האירוע והמזהה
+        const systemEvents = ['bot-blocked', 'link-not-found', 'invalid-path', 'verify-failed'];
+        const isSystem = systemEvents.includes(eventLabel);
+
         const logData = {
-            link_id: isUUID(eventLabel) ? eventLabel : null, // link_id יקבל UUID רק אם זה קליק אמיתי
-            event_type: isUUID(eventLabel) ? 'click' : eventLabel, // כאן נשמור 'bot-blocked', '404' וכו'
+            link_id: isSystem ? null : eventLabel,
+            event_type: isSystem ? eventLabel : 'click',
             user_id: userId || null,
             slug: slug || 'none',
             domain: domain,
@@ -170,6 +175,9 @@ async function handleTracking(telemetryId, eventLabel, userId, slug, domain, tar
         };
 
         // 4. כתיבה מקבילית ל-Supabase ול-Redis
+        // אנחנו מבצעים await כאן כדי שה-Promise שחוזר מ-handleTracking 
+        // יסתיים רק כשהעבודה באמת נגמרה (חשוב עבור ctx.waitUntil חיצוני)
+
         const supabasePromise = fetch(`${env.SUPABASE_URL}/rest/v1/clicks`, {
             method: "POST",
             headers: {
@@ -180,19 +188,21 @@ async function handleTracking(telemetryId, eventLabel, userId, slug, domain, tar
             },
             body: JSON.stringify(logData)
         }).then(async res => {
-            if (!res.ok) console.error(`❌ [Supabase] Tracking failed: ${res.status} ${await res.text()}`);
+            if (!res.ok) {
+                const errText = await res.text();
+                console.error(`❌ [Supabase] Insert failed (${res.status}):`, errText);
+                console.log("Payload sent to Supabase:", JSON.stringify(logData));
+            }
             return res;
         });
 
         let redisPromise = Promise.resolve();
         if (redis) {
-            // שומרים תמיד תחת מפתח קבוע שמבוסס על ה-UUID
             const clickKey = `log:${finalTelemetryId}`;
-            redisPromise = redis.set(clickKey, JSON.stringify(logData), { ex: 604800 }); // נשמר לשבוע
+            redisPromise = redis.set(clickKey, JSON.stringify(logData), { ex: 604800 });
         }
 
-        // שימוש ב-ctx.waitUntil כדי לוודא שהוורקר לא נסגר לפני הכתיבה
-        ctx.waitUntil(Promise.all([supabasePromise, redisPromise]));
+        await Promise.all([supabasePromise, redisPromise]);
 
     } catch (err) {
         console.error("Tracking error:", err);
