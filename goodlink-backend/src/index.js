@@ -1,5 +1,5 @@
 /**
- * Cloudflare Worker for Link Redirect (Optimized for Speed)
+ * Cloudflare Worker for Link Redirect (Best UX + Speed)
  */
 
 import { Redis } from "@upstash/redis/cloudflare";
@@ -39,7 +39,7 @@ function buildTargetUrl(targetUrl, linkData, requestUrl) {
     }
 }
 
-// Optimized Redis Client Getter
+// Optimized Redis Client
 function getRedisClient(env) {
     if (!env.UPSTASH_REDIS_REST_URL || !env.UPSTASH_REDIS_REST_TOKEN) return null;
     return new Redis({
@@ -96,11 +96,10 @@ async function getLinkFromSupabase(slug, domain, supabaseUrl, supabaseKey) {
     }
 }
 
-// --- Security & Bot Detection ---
+// --- Bot Detection ---
 
 function isBot(userAgent) {
     if (!userAgent) return true;
-    // Common bot strings - quick check
     return /bot|crawler|spider|scraper|curl|wget|facebookexternalhit|whatsapp/i.test(userAgent);
 }
 
@@ -142,12 +141,11 @@ async function verifyTurnstile(token, ipAddress, secretKey) {
         const result = await verifyResponse.json();
         return result.success === true;
     } catch (err) {
-        console.error('Turnstile Error:', err);
         return false;
     }
 }
 
-// --- Tracking & Storage ---
+// --- Tracking ---
 
 function cleanSecretValue(val) {
     if (!val) return "";
@@ -232,45 +230,73 @@ async function handleTracking(telemetryId, linkId, userId, slug, domain, targetU
     }
 }
 
-// --- HTML Generators (Kept lightweight) ---
-// Note: Code removed for brevity, assume getBridgingPage and get404Page exist as in original
-// ... (Your original HTML functions here) ...
+// --- HTML Pages (Restored Beautiful Design + Preconnect) ---
+
 function getBridgingPage(slug, domain) {
     const encodedSlug = btoa(slug);
     const encodedDomain = btoa(domain);
     return `<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Security Check</title>
-<style>body{margin:0;display:flex;justify-content:center;align-items:center;height:100vh;background:#0f172a;color:#f1f5f9;font-family:sans-serif}.loader{border:3px solid rgba(56,189,248,0.1);border-top:3px solid #38bdf8;border-radius:50%;width:50px;height:50px;animation:spin 1s linear infinite}@keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}</style>
-<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Redirect | GoodLink</title>
+    <link rel="preconnect" href="https://challenges.cloudflare.com">
+    <link rel="dns-prefetch" href="https://challenges.cloudflare.com">
+    <style>
+        :root { --bg: #0f172a; --primary: #38bdf8; --text: #f1f5f9; --card: #1e293b; }
+        body { margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; background-color: var(--bg); font-family: 'Inter', system-ui, sans-serif; color: var(--text); }
+        .container { text-align: center; background: var(--card); padding: 3rem; border-radius: 24px; box-shadow: 0 20px 50px rgba(0,0,0,0.3); max-width: 400px; width: 90%; border: 1px solid rgba(255,255,255,0.05); }
+        .logo { font-size: 24px; font-weight: 800; letter-spacing: -1px; margin-bottom: 2rem; color: var(--primary); }
+        .logo span { color: #fff; }
+        .loader-wrapper { position: relative; width: 80px; height: 80px; margin: 0 auto 2rem; }
+        .loader { position: absolute; width: 100%; height: 100%; border: 3px solid rgba(56, 189, 248, 0.1); border-top: 3px solid var(--primary); border-radius: 50%; animation: spin 1s cubic-bezier(0.76, 0, 0.24, 1) infinite; }
+        .shield-icon { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 30px; fill: var(--primary); }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        h1 { font-size: 1.25rem; margin-bottom: 0.5rem; font-weight: 600; }
+        p { color: #94a3b8; font-size: 0.9rem; line-height: 1.5; }
+        .status-bar { margin-top: 2rem; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: #64748b; }
+        .progress-container { width: 100%; height: 4px; background: rgba(255,255,255,0.05); margin-top: 10px; border-radius: 2px; overflow: hidden; }
+        .progress-bar { width: 30%; height: 100%; background: var(--primary); animation: progress 2s ease-in-out infinite; }
+        @keyframes progress { 0% { width: 0%; transform: translateX(-100%); } 50% { width: 50%; } 100% { width: 100%; transform: translateX(200%); } }
+    </style>
 </head>
 <body>
-<div style="text-align:center"><div class="loader" style="margin:0 auto 20px"></div><p>Verifying...</p>
-<div class="cf-turnstile" data-sitekey="0x4AAAAAACL1UvTFIr6R2-Xe" data-callback="oS" data-size="invisible"></div>
-<input type="text" id="hp" style="display:none;position:absolute;left:-9999px">
+<div class="container">
+    <div class="logo">Good<span>Link</span></div>
+    <div class="loader-wrapper"><div class="loader"></div><svg class="shield-icon" viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/></svg></div>
+    <h1>Security Check</h1>
+    <p>Verifying secure connection...</p>
+    <div class="status-bar">Analyzing<div class="progress-container"><div class="progress-bar"></div></div></div>
+    
+    <div class="cf-turnstile" data-sitekey="0x4AAAAAACL1UvTFIr6R2-Xe" data-callback="onTurnstileSuccess" data-size="invisible"></div>
+    
+    <div style="position: absolute; opacity: 0; pointer-events: none; height: 0; overflow: hidden;">
+        <input type="text" id="user_secondary_recovery" name="user_secondary_recovery" tabindex="-1" autocomplete="off">
+    </div>
 </div>
 <script>
-function oS(t){
-    const hp = document.getElementById('hp')?.value || "";
-    window.location.href = '/verify?id=' + crypto.randomUUID() + '&slug=${encodedSlug}&domain=${encodedDomain}&cf-turnstile-response=' + encodeURIComponent(t) + (hp ? '&usr='+encodeURIComponent(hp) : '');
-}
+    function onTurnstileSuccess(token) {
+        const hp = document.getElementById('user_secondary_recovery')?.value || "";
+        window.location.href = '/verify?id=' + crypto.randomUUID() + '&slug=${encodedSlug}&domain=${encodedDomain}&cf-turnstile-response=' + encodeURIComponent(token) + (hp ? '&usr='+encodeURIComponent(hp) : '');
+    }
 </script>
-</body></html>`;
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+</body>
+</html>`;
 }
 
 function get404Page() {
-    return `<!DOCTYPE html><html lang="en"><head><title>404</title></head><body style="background:#0f172a;color:#fff;display:flex;height:100vh;justify-content:center;align-items:center"><h1>Link Not Found</h1></body></html>`;
+    return `<!DOCTYPE html><html lang="en"><head><title>404 Not Found</title><style>body{background:#0f172a;color:#fff;font-family:sans-serif;display:flex;justify-content:center;align-items:center;height:100vh}h1{font-size:3rem}</style></head><body><h1>404 | Link Not Found</h1></body></html>`;
 }
 
 // --- Main Handler ---
 
 export default {
     async fetch(request, env, ctx) {
-        // 1. CORS Preflight - Fail Fast
+        // 1. CORS Preflight
         if (request.method === 'OPTIONS') {
             const origin = request.headers.get('Origin');
-            // Simplified logic: Allow if origin matches list, else default
             const allowed = ['https://www.goodlink.ai', 'https://goodlink.ai', 'http://localhost:3000'].includes(origin);
             return new Response(null, {
                 status: 204,
@@ -286,37 +312,22 @@ export default {
         const url = new URL(request.url);
         const pathname = url.pathname;
 
-        // 2. API Handlers (Keep original logic here if needed, keeping it minimal for this example)
-        if (pathname.startsWith('/api/')) {
-            // ... (Your existing API handlers for add/verify custom domain)
-            // Handle /api/add-custom-domain endpoint (POST)
-            if (pathname === '/api/add-custom-domain' && request.method === 'POST') {
-                return await handleAddCustomDomain(request, env);
-            }
-            // Handle /api/verify-custom-domain endpoint (POST)
-            if (pathname === '/api/verify-custom-domain' && request.method === 'POST') {
-                return await handleVerifyCustomDomain(request, env);
-            }
-            // Handle /api/update-redis-cache endpoint (POST)
-            if (pathname === '/api/update-redis-cache' && request.method === 'POST') {
-                return await handleUpdateRedisCache(request, env);
-            }
-        }
+        // 2. API Handlers
+        if (pathname === '/api/add-custom-domain' && request.method === 'POST') return await handleAddCustomDomain(request, env);
+        if (pathname === '/api/verify-custom-domain' && request.method === 'POST') return await handleVerifyCustomDomain(request, env);
+        if (pathname === '/api/update-redis-cache' && request.method === 'POST') return await handleUpdateRedisCache(request, env);
 
         if (request.method !== 'GET') return new Response('Method not allowed', { status: 405 });
 
-        // 3. THE HOT PATH: /verify
+        // 3. THE HOT PATH: /verify (Parallel Processing)
         if (pathname === '/verify') {
+            // A. Honeypot - Instant Block
+            if (url.searchParams.get('usr')) return new Response("Security Block", { status: 403 });
+
             const slugParam = url.searchParams.get('slug');
             const domainParam = url.searchParams.get('domain');
-
-            // A. Honeypot Check - INSTANT REJECTION
-            if (url.searchParams.get('usr')) {
-                return new Response("Security check failed", { status: 403 });
-            }
-
-            // B. Extract Tokens & Params
             const turnstileToken = url.searchParams.get('cf-turnstile-response');
+
             if (!slugParam || !domainParam || !turnstileToken) {
                 return new Response("Missing parameters", { status: 400 });
             }
@@ -326,33 +337,27 @@ export default {
             const verifyId = url.searchParams.get('id');
             const ipAddress = request.headers.get('cf-connecting-ip');
 
-            // C. PARALLEL EXECUTION - This is the speed booster!
-            // Run Turnstile verification AND Redis lookup simultaneously
+            // B. Parallel Execution (Turnstile + Redis)
             const redisClient = getRedisClient(env);
 
             const turnstilePromise = verifyTurnstile(turnstileToken, ipAddress, env.TURNSTILE_SECRET_KEY);
             const redisPromise = getLinkFromRedis(slug, domain, redisClient);
 
-            // Wait for both
+            // Wait for both results
             const [isHuman, linkDataResult] = await Promise.all([turnstilePromise, redisPromise]);
 
-            // D. Decisions based on results
-            if (!isHuman) {
-                return new Response("Bot detected", { status: 403 });
-            }
+            if (!isHuman) return new Response("Bot verification failed", { status: 403 });
 
             let linkData = linkDataResult;
 
-            // E. Fallback to Supabase ONLY if Redis failed/missed
+            // C. Fallback to Supabase
             if (!linkData && env.SUPABASE_URL) {
                 linkData = await getLinkFromSupabase(slug, domain, env.SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY);
             }
 
-            if (!linkData) {
-                return new Response(get404Page(), { status: 404, headers: { 'Content-Type': 'text/html' } });
-            }
+            if (!linkData) return new Response(get404Page(), { status: 404, headers: { 'Content-Type': 'text/html' } });
 
-            // F. Prepare Data & Background Tracking
+            // D. Background Tracking
             const finalUrl = buildTargetUrl(linkData.target_url, linkData, request.url);
 
             const cloudflareData = {
@@ -364,45 +369,38 @@ export default {
                 ...parseUserAgent(request.headers.get('user-agent'))
             };
 
-            // Fire and forget - don't await this
             ctx.waitUntil(handleTracking(
                 verifyId, linkData.id, linkData.user_id, slug, domain,
                 finalUrl, cloudflareData, true, env, ctx
             ));
 
-            // G. IMMEDIATE REDIRECT
+            // E. Redirect
             return Response.redirect(finalUrl, 302);
         }
 
-        // 4. Initial Request Path (The Bridging Page)
+        // 4. Initial Landing (Bridging Page)
         const slug = extractSlug(pathname);
-        if (!slug) {
-            // Handle 404 for root/invalid
-            return new Response(get404Page(), { status: 404, headers: { 'Content-Type': 'text/html' } });
-        }
+        if (!slug) return new Response(get404Page(), { status: 404, headers: { 'Content-Type': 'text/html' } });
 
         const hostname = url.hostname;
         const domain = hostname.replace(/^www\./, '');
         const userAgent = request.headers.get('user-agent');
 
-        // Bot Check on Entry
         if (isBot(userAgent)) {
             return Response.redirect('https://www.google.com', 302);
         }
 
-        // Return Bridging HTML
         return new Response(getBridgingPage(slug, domain), {
             status: 200,
             headers: {
                 'Content-Type': 'text/html; charset=UTF-8',
-                'Cache-Control': 'no-store', // Important for security pages
+                'Cache-Control': 'no-store',
             }
         });
     },
 };
 
-// ... Include the helper functions handleAddCustomDomain, handleVerifyCustomDomain, handleUpdateRedisCache below ...
-// (Copy them from your original code, they are fine as they are not on the "hot path" of the user redirect)
-async function handleAddCustomDomain(request, env) { /* ... Your existing code ... */ }
-async function handleVerifyCustomDomain(request, env) { /* ... Your existing code ... */ }
-async function handleUpdateRedisCache(request, env) { /* ... Your existing code ... */ }
+// ... (Add your API handler functions here: handleAddCustomDomain, handleVerifyCustomDomain, handleUpdateRedisCache) ...
+async function handleAddCustomDomain(request, env) { /* paste your existing code */ }
+async function handleVerifyCustomDomain(request, env) { /* paste your existing code */ }
+async function handleUpdateRedisCache(request, env) { /* paste your existing code */ }
