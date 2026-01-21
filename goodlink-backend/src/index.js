@@ -239,49 +239,31 @@ function getBridgingPage(slug, domain) {
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Secure Redirect | GoodLink</title>
     <link rel="preconnect" href="https://challenges.cloudflare.com">
-    <link rel="dns-prefetch" href="https://challenges.cloudflare.com">
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit"></script>
     <style>
-        :root { --bg: #0f172a; --primary: #38bdf8; --text: #f1f5f9; --card: #1e293b; }
-        body { margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; background-color: var(--bg); font-family: 'Inter', system-ui, sans-serif; color: var(--text); }
-        .container { text-align: center; background: var(--card); padding: 3rem; border-radius: 24px; box-shadow: 0 20px 50px rgba(0,0,0,0.3); max-width: 400px; width: 90%; border: 1px solid rgba(255,255,255,0.05); }
-        .logo { font-size: 24px; font-weight: 800; letter-spacing: -1px; margin-bottom: 2rem; color: var(--primary); }
-        .logo span { color: #fff; }
-        .loader-wrapper { position: relative; width: 80px; height: 80px; margin: 0 auto 2rem; }
-        .loader { position: absolute; width: 100%; height: 100%; border: 3px solid rgba(56, 189, 248, 0.1); border-top: 3px solid var(--primary); border-radius: 50%; animation: spin 1s cubic-bezier(0.76, 0, 0.24, 1) infinite; }
-        .shield-icon { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 30px; fill: var(--primary); }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        h1 { font-size: 1.25rem; margin-bottom: 0.5rem; font-weight: 600; }
-        p { color: #94a3b8; font-size: 0.9rem; line-height: 1.5; }
-        .status-bar { margin-top: 2rem; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: #64748b; }
-        .progress-container { width: 100%; height: 4px; background: rgba(255,255,255,0.05); margin-top: 10px; border-radius: 2px; overflow: hidden; }
-        .progress-bar { width: 30%; height: 100%; background: var(--primary); animation: progress 2s ease-in-out infinite; }
-        @keyframes progress { 0% { width: 0%; transform: translateX(-100%); } 50% { width: 50%; } 100% { width: 100%; transform: translateX(200%); } }
+        /* עיצוב מינימליסטי כדי שהדף ירונדר ב-0.1 שניות */
+        body { background: #0f172a; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; color: white; font-family: sans-serif; }
+        .loader { width: 40px; height: 40px; border: 3px solid #38bdf8; border-radius: 50%; border-top-color: transparent; animation: s 0.6s infinite linear; }
+        @keyframes s { to { transform: rotate(1turn); } }
     </style>
 </head>
 <body>
-<div class="container">
-    <div class="logo">Good<span>Link</span></div>
-    <div class="loader-wrapper"><div class="loader"></div><svg class="shield-icon" viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/></svg></div>
-    <h1>Security Check</h1>
-    <p>Verifying secure connection...</p>
-    <div class="status-bar">Analyzing<div class="progress-container"><div class="progress-bar"></div></div></div>
-    
-    <div class="cf-turnstile" data-sitekey="0x4AAAAAACL1UvTFIr6R2-Xe" data-callback="onTurnstileSuccess" data-size="invisible"></div>
-    
-    <div style="position: absolute; opacity: 0; pointer-events: none; height: 0; overflow: hidden;">
-        <input type="text" id="user_secondary_recovery" name="user_secondary_recovery" tabindex="-1" autocomplete="off">
-    </div>
-</div>
-<script>
-    function onTurnstileSuccess(token) {
-        const hp = document.getElementById('user_secondary_recovery')?.value || "";
-        window.location.href = '/verify?id=' + crypto.randomUUID() + '&slug=${encodedSlug}&domain=${encodedDomain}&cf-turnstile-response=' + encodeURIComponent(token) + (hp ? '&usr='+encodeURIComponent(hp) : '');
-    }
-</script>
-<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+    <div id="cf-widget"></div>
+    <script>
+        // ביצוע האימות מיד עם טעינת ה-DOM
+        window.onload = function() {
+            turnstile.render('#cf-widget', {
+                sitekey: '0x4AAAAAACL1UvTFIr6R2-Xe',
+                callback: function(token) {
+                    window.location.href = '/verify?id=' + crypto.randomUUID() + '&slug=${encodedSlug}&domain=${encodedDomain}&cf-turnstile-response=' + token;
+                },
+                'error-callback': function() {
+                    window.location.reload(); // ניסיון חוזר מהיר במקרה של שגיאה
+                }
+            });
+        };
+    </script>
 </body>
 </html>`;
 }
