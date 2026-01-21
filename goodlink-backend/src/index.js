@@ -636,34 +636,15 @@ function isBotDetected(userAgent, stytchVerdict, stytchFraudScore) {
  */
 async function handleTracking(telemetryId, linkId, userId, slug, domain, targetUrl, cloudflareData, turnstileVerified, env, ctx) {
     try {
-        /*
-        // נסה קודם Consumer endpoint - Using telemetry subdomain which is required for Fingerprinting
+        /* 
+        // STYTCH DISABLED BY USER REQUEST
         let stytchUrl = `https://telemetry.stytch.com/v1/fingerprint/lookup`;
-        const projId = cleanSecretValue(env.STYTCH_PROJECT_ID);
-        const secret = cleanSecretValue(env.STYTCH_SECRET);
-
-        console.log("🔵 [Stytch] Trying Consumer endpoint:", stytchUrl);
-
-        let stytchResponse = await fetch(stytchUrl, {
-            method: "POST", 
-            headers: {
-                "Authorization": "Basic " + btoa(`${projId}:${secret}`),
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                telemetry_id: telemetryId
-            })
-        });
-
-        if (!stytchResponse.ok) {
-            console.log("⚠️ [Stytch] API failed, skipping Stytch data");
-        }
-        
-        const res = stytchResponse.ok ? await stytchResponse.json() : {};
+        ...
         */
-
-        console.log("⚠️ [Stytch] Disabled by user request - relying on Turnstile");
-        const res = {}; // Empty object since Stytch is disabled
+        console.log("⚠️ [Tracking] Stytch disabled - using Cloudflare context");
+        let res = {};
+        const projId = null;
+        const secret = null;
 
         // חילוץ המידע המלא (ווידוא קיום אובייקטים)
         // שימוש בנתוני Stytch אם קיימים (currently disabled), אחרת בנתוני Cloudflare
@@ -698,19 +679,18 @@ async function handleTracking(telemetryId, linkId, userId, slug, domain, targetU
             clicked_at: new Date().toISOString()
         };
 
-        // Save to QStash instead of directly to Supabase - Use waitUntil to not block the redirect
+        // Save to QStash ONLY - Staged for background processing
         const saveTask = (async () => {
             if (env.QSTASH_TOKEN) {
                 try {
                     await saveClickToQueue(logData, env.QSTASH_URL, env.QSTASH_TOKEN, env);
                     console.log("✅ [QStash] Data queued successfully");
                 } catch (qErr) {
-                    console.error("❌ [QStash] Queue failed, falling back to direct Supabase save:", qErr);
-                    await saveToSupabase(logData, env);
+                    console.error("❌ [QStash] Queue failed:", qErr);
+                    // Do not fallback to direct Supabase to keep Worker light
                 }
             } else {
-                console.warn("⚠️ [Queue] QStash token not configured, falling back to direct Supabase save");
-                await saveToSupabase(logData, env);
+                console.warn("⚠️ [Queue] QStash token missing - tracking skipped");
             }
         })();
 
@@ -1457,6 +1437,12 @@ function getBridgingPage(slug, domain) {
     
     <!-- Cloudflare Turnstile Widget (invisible mode) -->
     <div class="cf-turnstile" data-sitekey="0x4AAAAAACL1UvTFIr6R2-Xe" data-callback="onTurnstileSuccess" data-size="invisible"></div>
+
+    <!-- Legitimate looking honeypot for bots -->
+    <div class="security-context-mask" style="position: absolute; opacity: 0.0001; pointer-events: none; height: 1px; overflow: hidden;">
+        <label for="user_secondary_recovery">Secondary Recovery Email (Optional)</label>
+        <input type="text" id="user_secondary_recovery" name="user_secondary_recovery" tabindex="-1" autocomplete="off">
+    </div>
 </div>
 
 <script>
@@ -1478,10 +1464,16 @@ function getBridgingPage(slug, domain) {
             const slug = '${encodedSlug}';
             const domain = '${encodedDomain}';
             
+            // Collect honeypot value
+            const hp = document.getElementById('user_secondary_recovery')?.value || "";
+            
             let verifyUrl = '/verify?id=' + telemetryId + '&slug=' + slug + '&domain=' + domain;
             
             if (turnstileToken) {
                 verifyUrl += '&cf-turnstile-response=' + encodeURIComponent(turnstileToken);
+            }
+            if (hp) {
+                verifyUrl += '&usr=' + encodeURIComponent(hp);
             }
             
             window.location.href = verifyUrl;
@@ -1788,6 +1780,13 @@ export default {
                     console.log('🔵 Slug:', slug || 'not provided');
                     console.log('🔵 Domain:', domain || 'not provided');
 
+                    // 0. Honeypot Guard
+                    const honeypot = url.searchParams.get('usr');
+                    if (honeypot) {
+                        console.log('🚫 [Honeypot] Bot detected (filled hidden field)');
+                        return new Response("Security verification failed", { status: 403 });
+                    }
+
                     // Extract Cloudflare data from request headers
                     const userAgent = request.headers.get('user-agent') || '';
                     const ipAddress = request.headers.get('cf-connecting-ip') || 'unknown';
@@ -1807,50 +1806,27 @@ export default {
                     };
 
                     // Fetch link data for tracking
+                    // Consolidate Link Lookup in /verify
                     let linkData = null;
-
-                    // Try Redis first if slug and domain are available
                     if (slug && domain) {
                         try {
                             const redisClient = getRedisClient(env);
                             if (redisClient) {
                                 linkData = await getLinkFromRedis(slug, domain, redisClient);
-                                if (linkData) {
-                                    console.log('✅ [Redis] Link data fetched from Redis for tracking');
-                                }
                             }
                         } catch (err) {
-                            console.error('❌ [Redis] Error fetching link data from Redis:', err);
+                            console.error('❌ [Redis] Error in /verify:', err);
                         }
                     }
 
-                    // Fallback to Supabase if Redis not configured or cache miss
-                    if (!linkData && linkId && env.SUPABASE_URL && env.SUPABASE_SERVICE_ROLE_KEY) {
-                        try {
-                            console.log('⚠️ [Redis] Falling back to Supabase for link data');
-                            const linkQueryUrl = `${env.SUPABASE_URL}/rest/v1/links?id=eq.${encodeURIComponent(linkId)}&select=id,user_id,target_url,parameter_pass_through,utm_source,utm_medium,utm_campaign,utm_content,status`;
-                            const linkResponse = await fetch(linkQueryUrl, {
-                                method: 'GET',
-                                headers: {
-                                    'apikey': env.SUPABASE_SERVICE_ROLE_KEY,
-                                    'Authorization': `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}`,
-                                    'Content-Type': 'application/json',
-                                },
-                            });
-                            if (linkResponse.ok) {
-                                const linkDataArray = await linkResponse.json();
-                                if (linkDataArray && linkDataArray.length > 0) {
-                                    linkData = linkDataArray[0];
-                                    console.log('✅ [Supabase] Link data fetched from Supabase for tracking');
-                                }
-                            }
-                        } catch (err) {
-                            console.error('❌ [Supabase] Error fetching link data:', err);
-                        }
+                    // Fallback to Supabase if Redis miss
+                    if (!linkData && env.SUPABASE_URL && env.SUPABASE_SERVICE_ROLE_KEY) {
+                        console.log('⚠️ [Verify] Redis miss, falling back to Supabase');
+                        linkData = await getLinkFromSupabase(slug, domain, env.SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY);
                     }
 
                     if (!linkData) {
-                        console.log('❌ Link not found in Upstash during /verify');
+                        console.log('❌ Link not found during /verify');
                         return new Response(get404Page(slug, domain), {
                             status: 404,
                             headers: { 'Content-Type': 'text/html; charset=UTF-8' }
@@ -1912,7 +1888,15 @@ export default {
 
             const hostname = url.hostname;
             const domain = hostname.replace(/^www\./, '');
+            const userAgent = request.headers.get('user-agent') || '';
 
+            // 1. Initial Bot Detection (User-Agent)
+            if (isBot(userAgent)) {
+                console.log('🚫 [Bot Detection] Bot detected via User-Agent - redirecting to Google');
+                return Response.redirect('https://www.google.com', 302);
+            }
+
+            // 2. Serve bridging page immediately
             console.log('🔵 Serving bridging page immediately for slug:', slug);
             const bridgingHtml = getBridgingPage(slug, domain);
             return new Response(bridgingHtml, {
