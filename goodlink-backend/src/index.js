@@ -192,6 +192,17 @@ function getBridgingPage(slug, domain) {
     </script></body></html>`;
 }
 
+function get404Page() {
+    return `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>404 - Link Not Found</title><style>
+    :root { --bg: #0f172a; --primary: #38bdf8; --text: #f1f5f9; --card: #1e293b; }
+    body { margin: 0; padding: 2rem; display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 100vh; background: var(--bg); font-family: sans-serif; color: var(--text); text-align: center; }
+    .c { background: var(--card); padding: 3rem; border-radius: 24px; box-shadow: 0 20px 50px rgba(0,0,0,0.3); max-width: 400px; width: 100%; border: 1px solid rgba(255,255,255,0.05); }
+    h1 { font-size: 5rem; margin: 0; color: var(--primary); opacity: 0.5; }
+    p { color: #94a3b8; font-size: 1.1rem; margin: 1rem 0 2rem; }
+    </style></head><body><div class="c"><h1>404</h1><p>Sorry, the link you're looking for doesn't exist or has been moved.</p></div></body></html>`;
+}
+
 // --- fetch מעודכן עם Early Hints ודילוג אגרסיבי ---
 export default {
     async fetch(request, env, ctx) {
@@ -237,7 +248,10 @@ export default {
         // אם זה בוט - מחזירים 404 מיד (לפי בקשת המשתמש)
         if (isBotRequest || cf.verifiedBot) {
             console.log('🚫 [Bot Detection] Bot detected - returning 404');
-            return new Response("Not Found", { status: 404 });
+            return new Response(get404Page(), {
+                status: 404,
+                headers: { 'Content-Type': 'text/html; charset=UTF-8' }
+            });
         }
 
         // --- אופטימיזציית "דילוג מהיר" לבני אדם ---
