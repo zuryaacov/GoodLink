@@ -143,10 +143,10 @@ async function handleTracking(telemetryId, eventLabel, userId, slug, domain, tar
         const noiseFiles = ['.ico', '.png', '.jpg', '.txt', '.xml', '.map', '.env', '.php', '.js', '.css'];
         if (noiseFiles.some(ext => (slug || "").toLowerCase().endsWith(ext))) return;
 
-        // 2. מנגנון Deduplication (Lock) - מונע כפל רשומות לאותו IP ולינק ל-30 שניות
+        // 2. מנגנון Deduplication (Lock) - מונע כפל רשומות לאותו IP ולינק ל-60 שניות
         if (redis) {
             const lockKey = `lock:${domain}:${slug || 'none'}:${ip}`;
-            const isNew = await redis.set(lockKey, "1", { nx: true, ex: 30 });
+            const isNew = await redis.set(lockKey, "1", { nx: true, ex: 60 });
             if (!isNew) {
                 console.log("🚫 [Deduplication] Rapid click detected - skipping log");
                 return;
@@ -263,9 +263,19 @@ function get404Page() {
 export default {
     async fetch(request, env, ctx) {
         const url = new URL(request.url);
-        const pathname = url.pathname;
+        const pathname = url.pathname.toLowerCase();
 
-        // 1. איסוף נתונים גלובלי (זמין לכל הנתיבים, כולל 404 ובוטים)
+        // 1. סינון רעשים אגרסיבי (בוטים, קבצים, נתיבי מערכת)
+        const ignoredPaths = ['/', '/favicon.ico', '/robots.txt', '/sitemap.xml', '/admin', '/wp-admin', '/.env'];
+        const isNoise = ignoredPaths.includes(pathname) ||
+            pathname.includes('.') ||
+            pathname.startsWith('/api/');
+
+        if (isNoise) {
+            return new Response("Not Found", { status: 404 });
+        }
+
+        // 2. איסוף נתונים גלובלי (רק עבור בקשות לגיטימיות)
         const cf = request.cf || {};
         const ip = request.headers.get('cf-connecting-ip') || 'unknown';
         const ua = request.headers.get('user-agent') || '';
@@ -277,7 +287,7 @@ export default {
             city: request.headers.get('cf-ipcity') || cf.city || null
         };
 
-        // נתיב ה-Verify נשאר עם ה-Parallel Processing (הכי מהיר)
+        // 3. נתיב ה-Verify ( Turnstile Callback )
         if (pathname === '/verify') {
             const turnstileToken = url.searchParams.get('cf-turnstile-response');
             const slug = atob(url.searchParams.get('slug'));
@@ -289,7 +299,6 @@ export default {
             ]);
 
             if (!isHuman || !linkData) {
-                // רישום כשל אימות ברקע
                 ctx.waitUntil(handleTracking(url.searchParams.get('id'), 'verify-failed', null, slug, domain, url.href, trackingData, false, env, ctx));
                 return Response.redirect('https://www.google.com', 302);
             }
@@ -304,13 +313,8 @@ export default {
         const domain = url.hostname.replace(/^www\./, '');
         const redisClient = getRedisClient(env);
 
-        // 1. אם אין סלאג (דף הבית או נתיב לא מזוהה)
+        // 4. אם אין סלאג תקין (דף הבית או נתיב לא מזוהה)
         if (!slug) {
-            // אל תרשום Tracking אם זה קובץ מערכת או סריקה של בוטים לכתובות ארוכות
-            const isStaticFile = pathname.includes('.') || pathname.length > 20;
-            if (!isStaticFile) {
-                ctx.waitUntil(handleTracking(crypto.randomUUID(), 'invalid-path', null, pathname, domain, url.href, trackingData, false, env, ctx));
-            }
             return new Response(get404Page(), { status: 404, headers: { 'Content-Type': 'text/html; charset=UTF-8' } });
         }
 
