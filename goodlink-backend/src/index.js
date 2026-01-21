@@ -203,11 +203,23 @@ function get404Page() {
     </style></head><body><div class="c"><h1>404</h1><p>Sorry, the link you're looking for doesn't exist or has been moved.</p></div></body></html>`;
 }
 
-// --- fetch מעודכן עם Early Hints ודילוג אגרסיבי ---
+// --- fetch מעודכן עם Early Hints ומרכז איסוף נתונים ---
 export default {
     async fetch(request, env, ctx) {
         const url = new URL(request.url);
         const pathname = url.pathname;
+
+        // 1. איסוף נתונים גלובלי (זמין לכל הנתיבים, כולל 404 ובוטים)
+        const cf = request.cf || {};
+        const ip = request.headers.get('cf-connecting-ip') || 'unknown';
+        const ua = request.headers.get('user-agent') || '';
+
+        const trackingData = {
+            ipAddress: ip,
+            userAgent: ua,
+            country: request.headers.get('cf-ipcountry') || cf.country || null,
+            city: request.headers.get('cf-ipcity') || cf.city || null
+        };
 
         // נתיב ה-Verify נשאר עם ה-Parallel Processing (הכי מהיר)
         if (pathname === '/verify') {
@@ -215,39 +227,42 @@ export default {
             const slug = atob(url.searchParams.get('slug'));
             const domain = atob(url.searchParams.get('domain'));
 
-            // הרצה מקבילית של אימות ה-Token ושליפת הלינק
             const [isHuman, linkData] = await Promise.all([
-                verifyTurnstile(turnstileToken, request.headers.get('cf-connecting-ip'), env.TURNSTILE_SECRET_KEY),
+                verifyTurnstile(turnstileToken, ip, env.TURNSTILE_SECRET_KEY),
                 getLinkFromRedis(slug, domain, getRedisClient(env))
             ]);
 
-            if (!isHuman || !linkData) return Response.redirect('https://www.google.com', 302);
+            if (!isHuman || !linkData) {
+                // רישום כשל אימות ברקע
+                ctx.waitUntil(handleTracking(url.searchParams.get('id'), 'verify-failed', null, slug, domain, url.href, trackingData, false, env, ctx));
+                return Response.redirect('https://www.google.com', 302);
+            }
 
             const finalUrl = buildTargetUrl(linkData.target_url, linkData, request.url);
-            const trackingData = {
-                ipAddress: request.headers.get('cf-connecting-ip'),
-                userAgent: request.headers.get('user-agent'),
-                country: request.headers.get('cf-ipcountry'),
-                city: request.headers.get('cf-ipcity')
-            };
             ctx.waitUntil(handleTracking(url.searchParams.get('id'), linkData.id, linkData.user_id, slug, domain, finalUrl, trackingData, true, env, ctx));
 
             return Response.redirect(finalUrl, 302);
         }
 
         const slug = extractSlug(pathname);
-        if (!slug) return new Response("Not Found", { status: 404 });
+        if (!slug) {
+            // מעקב אחרי נתיבים לא קיימים (כמו /favicon.ico או סריקות)
+            if (pathname !== '/favicon.ico') {
+                ctx.waitUntil(handleTracking(crypto.randomUUID(), 'invalid-path', null, pathname, url.hostname, url.href, trackingData, false, env, ctx));
+            }
+            return new Response(get404Page(), { status: 404, headers: { 'Content-Type': 'text/html; charset=UTF-8' } });
+        }
 
         const domain = url.hostname.replace(/^www\./, '');
 
         // --- בדיקת בוטים אגרסיבית ---
-        const userAgent = request.headers.get('user-agent') || '';
-        const cf = request.cf || {};
-        const isBotRequest = isBot(userAgent);
+        const isBotRequest = isBot(ua);
 
-        // אם זה בוט - מחזירים 404 מיד (לפי בקשת המשתמש)
         if (isBotRequest || cf.verifiedBot) {
-            console.log('🚫 [Bot Detection] Bot detected - returning 404');
+            console.log('🚫 [Bot Detection] Bot detected - tracking and returning 404');
+            // רישום הבוט ברקע עם כל פרטי ה-IP שלו
+            ctx.waitUntil(handleTracking(crypto.randomUUID(), 'bot-blocked', null, slug, domain, url.href, trackingData, false, env, ctx));
+
             return new Response(get404Page(), {
                 status: 404,
                 headers: { 'Content-Type': 'text/html; charset=UTF-8' }
@@ -255,22 +270,20 @@ export default {
         }
 
         // --- אופטימיזציית "דילוג מהיר" לבני אדם ---
-        // ציון בוטים גבוה או ספק ביתי (AS Organization) נחשבים בטוחים
         const isLikelyHuman = cf.botManagement?.score > 20 || (cf.asOrganization && !/amazon|google|cloud|data/i.test(cf.asOrganization));
 
+        const linkData = await getLinkFromRedis(slug, domain, getRedisClient(env));
+
+        if (!linkData) {
+            console.log('⚠️ [404] Link not found in Redis - tracking');
+            ctx.waitUntil(handleTracking(crypto.randomUUID(), 'link-not-found', null, slug, domain, url.href, trackingData, false, env, ctx));
+            return new Response(get404Page(), { status: 404, headers: { 'Content-Type': 'text/html; charset=UTF-8' } });
+        }
+
         if (isLikelyHuman) {
-            const linkData = await getLinkFromRedis(slug, domain, getRedisClient(env));
-            if (linkData) {
-                const finalUrl = buildTargetUrl(linkData.target_url, linkData, request.url);
-                const trackingData = {
-                    ipAddress: request.headers.get('cf-connecting-ip'),
-                    userAgent: userAgent,
-                    country: cf.country,
-                    city: cf.city
-                };
-                ctx.waitUntil(handleTracking(crypto.randomUUID(), linkData.id, linkData.user_id, slug, domain, finalUrl, trackingData, true, env, ctx));
-                return Response.redirect(finalUrl, 302);
-            }
+            const finalUrl = buildTargetUrl(linkData.target_url, linkData, request.url);
+            ctx.waitUntil(handleTracking(crypto.randomUUID(), linkData.id, linkData.user_id, slug, domain, finalUrl, trackingData, true, env, ctx));
+            return Response.redirect(finalUrl, 302);
         }
 
         // --- שליחת דף גישור עם Early Hints ---
