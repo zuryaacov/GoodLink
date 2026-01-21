@@ -186,7 +186,7 @@ async function handleTracking(telemetryId, eventLabel, userId, slug, domain, tar
         };
 
         if (env.QSTASH_TOKEN) {
-            const qstashUrl = `https://qstash.upstash.io/v1/publish/${env.SUPABASE_URL}/rest/v1/clicks`;
+            const qstashUrl = `https://qstash.upstash.io/v2/publish/${env.SUPABASE_URL}/rest/v1/clicks`;
             supabasePromise = fetch(qstashUrl, {
                 method: "POST",
                 headers: {
