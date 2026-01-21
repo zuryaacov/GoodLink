@@ -151,13 +151,17 @@ async function handleTracking(telemetryId, linkId, userId, slug, domain, targetU
             }
         }
 
+        // --- בדיקה אם המזהה הוא UUID דאטה-בייס תקין ---
+        const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(linkId);
+
         const logData = {
-            link_id: (typeof linkId === 'string' && linkId.includes('-')) ? linkId : null,
+            link_id: isUUID ? linkId : null,
             user_id: userId || null,
             slug: slug,
             domain: domain,
             target_url: targetUrl,
-            telemetry_id: (linkId && !linkId.includes('-')) ? `${linkId}:${telemetryId}` : telemetryId,
+            // עבור בוטים/404 אנחנו מוסיפים קידומת לזיהוי קל
+            telemetry_id: isUUID ? telemetryId : `${linkId}:${telemetryId}`,
             ip_address: ip,
             country: cloudflareData.country || null, city: cloudflareData.city || null,
             user_agent: cloudflareData.userAgent, turnstile_verified: turnstileVerified,
