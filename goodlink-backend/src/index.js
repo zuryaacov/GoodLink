@@ -136,32 +136,30 @@ async function verifyTurnstile(token, ipAddress, secretKey) {
 
 async function handleTracking(telemetryId, linkId, userId, slug, domain, targetUrl, cloudflareData, turnstileVerified, env, ctx) {
     try {
-        const ip = cloudflareData.ipAddress;
+        const ip = cloudflareData.ipAddress || "unknown";
+        const redis = getRedisClient(env);
 
-        // --- Deduplication Check (Prevent double writes from Pre-fetch/Double-clicks) ---
-        // We check if this exact link was clicked by this IP in the last 2 seconds
-        const twoSecondsAgo = new Date(Date.now() - 2000).toISOString();
-        const checkUrl = `${env.SUPABASE_URL}/rest/v1/clicks?link_id=eq.${linkId}&ip_address=eq.${encodeURIComponent(ip)}&clicked_at=gte.${twoSecondsAgo}&select=id&limit=1`;
+        if (redis) {
+            // --- Atomic Redis Deduplication ---
+            // We use a setnx (Set if Not Exists) with a 5-second TTL
+            const lockKey = `lock:click:${linkId}:${ip}`;
+            const isNew = await redis.set(lockKey, "1", { nx: true, ex: 5 });
 
-        const checkRes = await fetch(checkUrl, {
-            headers: { "apikey": env.SUPABASE_SERVICE_ROLE_KEY, "Authorization": `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}` }
-        });
-
-        if (checkRes.ok) {
-            const existing = await checkRes.json();
-            if (existing && existing.length > 0) return; // Duplicate detected, skip
+            if (!isNew) {
+                console.log("🚫 [Deduplication] Rapid click detected via Redis - skipping log");
+                return;
+            }
         }
 
         const logData = {
             link_id: linkId, user_id: userId, slug: slug, domain: domain,
             target_url: targetUrl, telemetry_id: telemetryId, ip_address: ip,
-            country: cloudflareData.country, city: cloudflareData.city,
+            country: cloudflareData.country || null, city: cloudflareData.city || null,
             user_agent: cloudflareData.userAgent, turnstile_verified: turnstileVerified,
             clicked_at: new Date().toISOString()
         };
 
-        const saveUrl = `${env.SUPABASE_URL}/rest/v1/clicks`;
-        await fetch(saveUrl, {
+        await fetch(`${env.SUPABASE_URL}/rest/v1/clicks`, {
             method: "POST",
             headers: { "apikey": env.SUPABASE_SERVICE_ROLE_KEY, "Authorization": `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}`, "Content-Type": "application/json", "Prefer": "return=minimal" },
             body: JSON.stringify(logData)
@@ -215,7 +213,13 @@ export default {
             if (!isHuman || !linkData) return Response.redirect('https://www.google.com', 302);
 
             const finalUrl = buildTargetUrl(linkData.target_url, linkData, request.url);
-            ctx.waitUntil(handleTracking(url.searchParams.get('id'), linkData.id, linkData.user_id, slug, domain, finalUrl, { ipAddress: request.headers.get('cf-connecting-ip'), userAgent: request.headers.get('user-agent') }, true, env, ctx));
+            const trackingData = {
+                ipAddress: request.headers.get('cf-connecting-ip'),
+                userAgent: request.headers.get('user-agent'),
+                country: request.headers.get('cf-ipcountry'),
+                city: request.headers.get('cf-ipcity')
+            };
+            ctx.waitUntil(handleTracking(url.searchParams.get('id'), linkData.id, linkData.user_id, slug, domain, finalUrl, trackingData, true, env, ctx));
 
             return Response.redirect(finalUrl, 302);
         }
@@ -235,7 +239,13 @@ export default {
             const linkData = await getLinkFromRedis(slug, domain, getRedisClient(env));
             if (linkData) {
                 const finalUrl = buildTargetUrl(linkData.target_url, linkData, request.url);
-                ctx.waitUntil(handleTracking(crypto.randomUUID(), linkData.id, linkData.user_id, slug, domain, finalUrl, { ipAddress: request.headers.get('cf-connecting-ip'), userAgent: request.headers.get('user-agent') }, true, env, ctx));
+                const trackingData = {
+                    ipAddress: request.headers.get('cf-connecting-ip'),
+                    userAgent: userAgent,
+                    country: cf.country,
+                    city: cf.city
+                };
+                ctx.waitUntil(handleTracking(crypto.randomUUID(), linkData.id, linkData.user_id, slug, domain, finalUrl, trackingData, true, env, ctx));
                 return Response.redirect(finalUrl, 302);
             }
         }
