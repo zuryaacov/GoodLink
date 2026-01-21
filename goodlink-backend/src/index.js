@@ -174,27 +174,43 @@ async function handleTracking(telemetryId, eventLabel, userId, slug, domain, tar
             clicked_at: new Date().toISOString()
         };
 
-        // 4. כתיבה מקבילית ל-Supabase ול-Redis
-        // אנחנו מבצעים await כאן כדי שה-Promise שחוזר מ-handleTracking 
-        // יסתיים רק כשהעבודה באמת נגמרה (חשוב עבור ctx.waitUntil חיצוני)
-
-        const supabasePromise = fetch(`${env.SUPABASE_URL}/rest/v1/clicks`, {
-            method: "POST",
-            headers: {
-                "apikey": env.SUPABASE_SERVICE_ROLE_KEY,
-                "Authorization": `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}`,
-                "Content-Type": "application/json",
-                "Prefer": "return=minimal"
-            },
-            body: JSON.stringify(logData)
-        }).then(async res => {
-            if (!res.ok) {
-                const errText = await res.text();
-                console.error(`❌ [Supabase] Insert failed (${res.status}):`, errText);
-                console.log("Payload sent to Supabase:", JSON.stringify(logData));
-            }
-            return res;
-        });
+        // 4. כתיבה לסופבייס (דרך QStash אם הוגדר, אחרת ישירות)
+        let supabasePromise;
+        if (env.QSTASH_TOKEN) {
+            const qstashUrl = `https://qstash.upstash.io/v1/publish/${env.SUPABASE_URL}/rest/v1/clicks`;
+            supabasePromise = fetch(qstashUrl, {
+                method: "POST",
+                headers: {
+                    "Authorization": `Bearer ${env.QSTASH_TOKEN}`,
+                    "Content-Type": "application/json",
+                    "Upstash-Forward-apikey": env.SUPABASE_SERVICE_ROLE_KEY,
+                    "Upstash-Forward-Authorization": `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}`,
+                    "Upstash-Forward-Prefer": "return=minimal"
+                },
+                body: JSON.stringify(logData)
+            }).then(async res => {
+                if (!res.ok) console.error("❌ [QStash] Failed to queue message:", await res.text());
+                return res;
+            });
+        } else {
+            supabasePromise = fetch(`${env.SUPABASE_URL}/rest/v1/clicks`, {
+                method: "POST",
+                headers: {
+                    "apikey": env.SUPABASE_SERVICE_ROLE_KEY,
+                    "Authorization": `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}`,
+                    "Content-Type": "application/json",
+                    "Prefer": "return=minimal"
+                },
+                body: JSON.stringify(logData)
+            }).then(async res => {
+                if (!res.ok) {
+                    const errText = await res.text();
+                    console.error(`❌ [Supabase] Insert failed (${res.status}):`, errText);
+                    console.log("Payload sent:", JSON.stringify(logData));
+                }
+                return res;
+            });
+        }
 
         let redisPromise = Promise.resolve();
         if (redis) {
