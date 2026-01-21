@@ -136,23 +136,39 @@ async function verifyTurnstile(token, ipAddress, secretKey) {
 
 async function handleTracking(telemetryId, linkId, userId, slug, domain, targetUrl, cloudflareData, turnstileVerified, env, ctx) {
     try {
+        const ip = cloudflareData.ipAddress;
+
+        // --- Deduplication Check (Prevent double writes from Pre-fetch/Double-clicks) ---
+        // We check if this exact link was clicked by this IP in the last 2 seconds
+        const twoSecondsAgo = new Date(Date.now() - 2000).toISOString();
+        const checkUrl = `${env.SUPABASE_URL}/rest/v1/clicks?link_id=eq.${linkId}&ip_address=eq.${encodeURIComponent(ip)}&clicked_at=gte.${twoSecondsAgo}&select=id&limit=1`;
+
+        const checkRes = await fetch(checkUrl, {
+            headers: { "apikey": env.SUPABASE_SERVICE_ROLE_KEY, "Authorization": `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}` }
+        });
+
+        if (checkRes.ok) {
+            const existing = await checkRes.json();
+            if (existing && existing.length > 0) return; // Duplicate detected, skip
+        }
+
         const logData = {
             link_id: linkId, user_id: userId, slug: slug, domain: domain,
-            target_url: targetUrl, telemetry_id: telemetryId, ip_address: cloudflareData.ipAddress,
+            target_url: targetUrl, telemetry_id: telemetryId, ip_address: ip,
             country: cloudflareData.country, city: cloudflareData.city,
             user_agent: cloudflareData.userAgent, turnstile_verified: turnstileVerified,
             clicked_at: new Date().toISOString()
         };
-        const saveTask = (async () => {
-            const saveUrl = `${env.SUPABASE_URL}/rest/v1/clicks`;
-            await fetch(saveUrl, {
-                method: "POST",
-                headers: { "apikey": env.SUPABASE_SERVICE_ROLE_KEY, "Authorization": `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}`, "Content-Type": "application/json", "Prefer": "return=minimal" },
-                body: JSON.stringify(logData)
-            });
-        })();
-        ctx.waitUntil(saveTask);
-    } catch (err) { }
+
+        const saveUrl = `${env.SUPABASE_URL}/rest/v1/clicks`;
+        await fetch(saveUrl, {
+            method: "POST",
+            headers: { "apikey": env.SUPABASE_SERVICE_ROLE_KEY, "Authorization": `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}`, "Content-Type": "application/json", "Prefer": "return=minimal" },
+            body: JSON.stringify(logData)
+        });
+    } catch (err) {
+        console.error("Tracking error:", err);
+    }
 }
 
 // --- HTML Pages ---
