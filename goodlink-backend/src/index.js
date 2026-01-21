@@ -1999,6 +1999,7 @@ export default {
             const finalUrl = buildTargetUrl(linkData.target_url, linkData, url);
             console.log('🔵 Final URL:', finalUrl);
 
+            /*
             // Check for bot before serving bridging page (bots can't execute JavaScript)
             const userAgent = request.headers.get('user-agent') || '';
             console.log('🔍 [Bot Detection] Pre-check User-Agent:', userAgent);
@@ -2028,6 +2029,19 @@ export default {
                 status: 200,
                 headers: {
                     'Content-Type': 'text/html; charset=UTF-8',
+                    'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+                    'Pragma': 'no-cache',
+                    'Expires': '0'
+                }
+            });
+            */
+
+            // DEBUG STAGE 1: Direct redirect after Redis lookup
+            console.log('🚀 [Debug-Stage1] Direct redirect to:', finalUrl);
+            return new Response(null, {
+                status: 302,
+                headers: {
+                    'Location': finalUrl,
                     'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
                     'Pragma': 'no-cache',
                     'Expires': '0'
