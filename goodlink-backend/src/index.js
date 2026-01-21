@@ -1324,7 +1324,6 @@ function getBridgingPage(slug, domain) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Secure Redirect | GoodLink</title>
-    <script src="https://elements.stytch.com/telemetry.js"></script>
     <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
     <style>
         :root {
@@ -1775,16 +1774,15 @@ export default {
             // Handle /verify endpoint
             if (pathname === '/verify') {
                 console.log('🔵 Handling /verify endpoint');
+                // dest and linkIdParam are no longer required here as they are fetched from Redis via slug/domain
                 const verifyId = url.searchParams.get('id');
-                const dest = url.searchParams.get('dest');
-                const linkIdParam = url.searchParams.get('link_id');
                 const slugParam = url.searchParams.get('slug');
                 const domainParam = url.searchParams.get('domain');
 
-                if (!dest) {
-                    console.log('❌ No destination provided in /verify');
+                if (!slugParam || !domainParam) {
+                    console.log('❌ Missing slug or domain in /verify');
                     return new Response(JSON.stringify({
-                        error: 'Missing destination parameter'
+                        error: 'Missing required parameters'
                     }), {
                         status: 400,
                         headers: { 'Content-Type': 'application/json' }
