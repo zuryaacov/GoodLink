@@ -229,15 +229,22 @@ export default {
 
         const domain = url.hostname.replace(/^www\./, '');
 
-        // --- אופטימיזציית "דילוג מהיר" ---
+        // --- בדיקת בוטים אגרסיבית ---
         const userAgent = request.headers.get('user-agent') || '';
         const cf = request.cf || {};
         const isBotRequest = isBot(userAgent);
 
-        // מדלגים אם: זה בוט (בשביל Preview), או ציון בוטים גבוה, או מקור מאומת, או ספק ביתי
-        const isLikelyHuman = cf.botManagement?.score > 20 || cf.verifiedBot || (!isBotRequest && cf.asOrganization && !/amazon|google|cloud|data/i.test(cf.asOrganization));
+        // אם זה בוט - מחזירים 404 מיד (לפי בקשת המשתמש)
+        if (isBotRequest || cf.verifiedBot) {
+            console.log('🚫 [Bot Detection] Bot detected - returning 404');
+            return new Response("Not Found", { status: 404 });
+        }
 
-        if (isLikelyHuman || isBotRequest) {
+        // --- אופטימיזציית "דילוג מהיר" לבני אדם ---
+        // ציון בוטים גבוה או ספק ביתי (AS Organization) נחשבים בטוחים
+        const isLikelyHuman = cf.botManagement?.score > 20 || (cf.asOrganization && !/amazon|google|cloud|data/i.test(cf.asOrganization));
+
+        if (isLikelyHuman) {
             const linkData = await getLinkFromRedis(slug, domain, getRedisClient(env));
             if (linkData) {
                 const finalUrl = buildTargetUrl(linkData.target_url, linkData, request.url);
@@ -247,8 +254,7 @@ export default {
                     country: cf.country,
                     city: cf.city
                 };
-                // בבוטים אנחנו מסמנים Turnstile כ-false כי הם לא עברו אותו (הם דלגו)
-                ctx.waitUntil(handleTracking(crypto.randomUUID(), linkData.id, linkData.user_id, slug, domain, finalUrl, trackingData, isBotRequest ? false : true, env, ctx));
+                ctx.waitUntil(handleTracking(crypto.randomUUID(), linkData.id, linkData.user_id, slug, domain, finalUrl, trackingData, true, env, ctx));
                 return Response.redirect(finalUrl, 302);
             }
         }
