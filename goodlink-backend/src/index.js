@@ -23,17 +23,24 @@ function ensureValidUrl(url) {
 }
 
 /**
- * פונקציית לוגינג המשתמשת ב-Ray ID כדי למנוע כפל רישום של אותה בקשה (Idempotency)
+ * פונקציית לוגינג משודרגת עם הגנה כפולה: Ray ID ו-IP Deduplication
  */
 async function logClick(env, p, redis) {
     try {
-        const dedupKey = `log:${p.rayId}:${p.slug}`;
+        const rayDedupKey = `log:${p.rayId}:${p.slug}`;
+        const ipDedupKey = `ip_limit:${p.ip}:${p.slug}`;
 
-        // שימוש בפקודה אטומית אחת (NX) כדי לוודא שרק הריצה הראשונה של ה-Ray ID הספציפי נרשמת
-        const result = await redis.set(dedupKey, "1", { nx: true, ex: 120 });
+        // 1. הגנה מפני Retry טכני (אותה בקשה בדיוק)
+        const isNewRay = await redis.set(rayDedupKey, "1", { nx: true, ex: 120 });
+        if (isNewRay === null) {
+            console.log(`⏭️ Duplicate Ray ID detected (${p.rayId}) - skipping`);
+            return;
+        }
 
-        if (result === null) {
-            console.log(`⏭️ Duplicate log for Ray ID: ${p.rayId} - skipping QStash`);
+        // 2. הגנה מפני קליקים כפולים מהדפדפן (אותו IP לאותו Slug תוך 10 שניות)
+        const isNewClick = await redis.set(ipDedupKey, "1", { nx: true, ex: 10 });
+        if (isNewClick === null) {
+            console.log(`⏭️ Rate limit: Same IP click within 10s (${p.ip}) - skipping DB write`);
             return;
         }
 
@@ -77,7 +84,7 @@ export default {
         const rayId = request.headers.get("cf-ray") || crypto.randomUUID();
         const path = url.pathname.toLowerCase();
 
-        // 1. Noise Filter: סינון שקט של דפים לא רלוונטיים, שירותי ניטור ובוטים של מערכת
+        // 1. Noise Filter: סינון שקט ללא לוג
         const noisePaths = ['/favicon.ico', '/robots.txt', '/index.php', '/.env', '/wp-login.php', '/admin', '/api', '/root'];
         if (path === '/' || noisePaths.some(p => path === p || path.startsWith(p + '/')) || /uptimerobot|pingdom/i.test(userAgent)) {
             return new Response(null, { status: 204 });
@@ -92,7 +99,6 @@ export default {
             status, headers: { "Content-Type": "text/html;charset=UTF-8" }
         });
 
-        // פונקציית עזר לסיום עם לוג במקרים של שגיאה או חסימה
         const terminateWithLog = (verdict, linkData = null) => {
             const p = {
                 rayId, ip, slug: slug || "root", domain, userAgent,
@@ -106,10 +112,9 @@ export default {
             return htmlResponse(get404Page());
         };
 
-        // סינון קבצים עם סיומות
         if (!slug || slug.includes('.')) return terminateWithLog(slug ? 'invalid_slug' : 'home_page_access');
 
-        // 2. Zero Latency: בדיקות Blacklist ושליפת לינק מהיר מרדיס
+        // 2. Zero Latency Checks
         const isBlacklisted = await redis.get(`blacklist:${ip}`);
         if (isBlacklisted) return terminateWithLog('blacklisted');
 
@@ -120,14 +125,13 @@ export default {
             });
             const data = await sbRes.json();
             linkData = data?.[0];
-            // עדכון רדיס בנתוני הלינק (TTL שעה) לביצועים מהירים בקליקים הבאים
             if (linkData) ctx.waitUntil(redis.set(`link:${domain}:${slug}`, JSON.stringify(linkData), { ex: 3600 }));
         }
 
         if (!linkData) return terminateWithLog('link_not_found');
         if (linkData.status !== 'active') return terminateWithLog('link_inactive', linkData);
 
-        // 3. Bot Analysis (Zero Latency - Based on Cloudflare Context)
+        // 3. Bot Analysis
         const botScore = request.cf?.botManagement?.score || 100;
         const isVerifiedBot = request.cf?.verifiedBot || false;
         const isBotUA = /bot|crawler|spider|googlebot/i.test(userAgent);
@@ -140,7 +144,6 @@ export default {
 
         if (isBot) {
             verdict = isImpersonator ? "bot_impersonator" : (botScore <= 10 ? "bot_certain" : "bot_likely");
-            // הוספה אוטומטית ל-Blacklist ל-24 שעות אם זוהה בוט עוין או מתחזה
             if (botScore <= 20 || isImpersonator) ctx.waitUntil(redis.set(`blacklist:${ip}`, "1", { ex: 86400 }));
             const fallback = ensureValidUrl(linkData.fallback_url);
             if (fallback) targetUrl = fallback; else shouldBlock = true;
@@ -148,14 +151,12 @@ export default {
             verdict = "suspicious";
         }
 
-        // 4. Final Processing & Logging
         const p = {
             rayId, ip, slug, domain, userAgent, botScore, isVerifiedBot, verdict,
             linkData: { id: linkData.id, user_id: linkData.user_id, target_url: linkData.target_url },
             queryParams: url.search
         };
 
-        // שליחת הלוג ל-QStash (בצורה אסינכרונית עם הגנת כפילויות)
         ctx.waitUntil(logClick(env, p, redis));
 
         if (shouldBlock) return htmlResponse(get404Page());
