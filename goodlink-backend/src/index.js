@@ -2,7 +2,6 @@ import { Redis } from "@upstash/redis/cloudflare";
 
 // --- Utility Functions ---
 
-// פונקציה להחזרת דף ה-404 המעוצב
 function get404Page() {
     return `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>404 - Link Not Found</title><style>
@@ -57,6 +56,52 @@ async function getLinkFromSupabase(slug, domain, env) {
     }
 }
 
+// פונקציית העזר הועברה אל מחוץ לאובייקט כדי להבטיח זמינות
+async function sendLogToQStash(env, clickId, ip, slug, domain, userAgent, botScore, isVerifiedBot, linkData, url, forceVerdict) {
+    try {
+        const redis = new Redis({ url: env.UPSTASH_REDIS_REST_URL, token: env.UPSTASH_REDIS_REST_TOKEN });
+
+        // מניעת כפילויות: בוטים תמיד מתועדים, משתמשים נקיים רק פעם ב-3 שניות
+        const dedupeKey = `sent:${ip}:${slug}`;
+        if (forceVerdict !== "blocked_bot") {
+            const alreadySent = await redis.get(dedupeKey);
+            if (alreadySent) return;
+            await redis.set(dedupeKey, "1", { ex: 3 });
+        }
+
+        const cleanWorkerUrl = env.LOGGER_WORKER_URL.replace(/^https?:\/\//, '');
+        const qstashUrl = `https://qstash.upstash.io/v2/publish/https://${cleanWorkerUrl}`;
+
+        await fetch(qstashUrl, {
+            method: "POST",
+            headers: {
+                "Authorization": `Bearer ${env.QSTASH_TOKEN}`,
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                id: clickId,
+                ip: ip,
+                slug: slug,
+                domain: domain,
+                userAgent: userAgent,
+                referer: "",
+                botScore: botScore,
+                isVerifiedBot: isVerifiedBot,
+                verdict: forceVerdict,
+                linkData: {
+                    id: linkData.id,
+                    user_id: linkData.user_id,
+                    target_url: linkData.target_url
+                },
+                queryParams: url.search,
+                timestamp: new Date().toISOString()
+            })
+        });
+    } catch (err) {
+        console.error("QStash Logging Error:", err);
+    }
+}
+
 // --- Main Worker Logic ---
 
 export default {
@@ -68,7 +113,6 @@ export default {
         const userAgent = request.headers.get("user-agent") || "";
         const clickId = crypto.randomUUID();
 
-        // החזרת דף 404 מעוצב אם אין סלאג
         if (!slug) {
             return new Response(get404Page(), {
                 status: 404,
@@ -87,12 +131,6 @@ export default {
 
         const isCertainBot = isVerifiedBot || isBotUA || (botScore < 10);
 
-        const uniqueKey = `limit:${ip}:${slug}`;
-        const isRepeatClick = await redis.get(uniqueKey);
-        if (isRepeatClick && botScore < 30 && !isVerifiedBot) {
-            return new Response("Rate Limit Exceeded", { status: 429 });
-        }
-
         let linkData = null;
         try {
             linkData = await redis.get(`link:${domain}:${slug}`);
@@ -103,7 +141,6 @@ export default {
             linkData = await getLinkFromSupabase(slug, domain, env);
         }
 
-        // החזרת דף 404 מעוצב אם הקישור לא נמצא או לא פעיל
         if (!linkData || linkData.status !== 'active') {
             return new Response(get404Page(), {
                 status: 404,
@@ -111,68 +148,30 @@ export default {
             });
         }
 
+        // חסימת בוטים
         if (isCertainBot) {
-            ctx.waitUntil(this.sendLogToQStash(env, clickId, ip, slug, domain, userAgent, botScore, isVerifiedBot, linkData, url, "blocked_bot"));
+            // קריאה ישירה לפונקציה (ללא this) כדי להבטיח ביצוע
+            ctx.waitUntil(sendLogToQStash(env, clickId, ip, slug, domain, userAgent, botScore, isVerifiedBot, linkData, url, "blocked_bot"));
 
             if (linkData.fallback_url) {
                 return Response.redirect(linkData.fallback_url, 302);
             }
 
-            // החזרת דף 404 מעוצב עבור בוטים (אם אין fallback)
             return new Response(get404Page(), {
                 status: 404,
                 headers: { "Content-Type": "text/html" }
             });
         }
 
+        // משתמש רגיל
         const finalUrl = mergeQueryParams(linkData.target_url, url.search);
+        const uniqueKey = `limit:${ip}:${slug}`;
 
         ctx.waitUntil((async () => {
             await redis.set(uniqueKey, "1", { ex: 60 });
-            await this.sendLogToQStash(env, clickId, ip, slug, domain, userAgent, botScore, isVerifiedBot, linkData, url, "clean");
+            await sendLogToQStash(env, clickId, ip, slug, domain, userAgent, botScore, isVerifiedBot, linkData, url, "clean");
         })());
 
         return Response.redirect(finalUrl, 302);
-    },
-
-    async sendLogToQStash(env, clickId, ip, slug, domain, userAgent, botScore, isVerifiedBot, linkData, url, forceVerdict) {
-        try {
-            const dedupeKey = `sent:${ip}:${slug}`;
-            const alreadySent = await new Redis({ url: env.UPSTASH_REDIS_REST_URL, token: env.UPSTASH_REDIS_REST_TOKEN }).get(dedupeKey);
-            if (alreadySent && forceVerdict !== "blocked_bot") return;
-
-            await new Redis({ url: env.UPSTASH_REDIS_REST_URL, token: env.UPSTASH_REDIS_REST_TOKEN }).set(dedupeKey, "1", { ex: 3 });
-
-            const cleanWorkerUrl = env.LOGGER_WORKER_URL.replace(/^https?:\/\//, '');
-            const qstashUrl = `https://qstash.upstash.io/v2/publish/https://${cleanWorkerUrl}`;
-
-            await fetch(qstashUrl, {
-                method: "POST",
-                headers: {
-                    "Authorization": `Bearer ${env.QSTASH_TOKEN}`,
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    id: clickId,
-                    ip: ip,
-                    slug: slug,
-                    domain: domain,
-                    userAgent: userAgent,
-                    referer: "",
-                    botScore: botScore,
-                    isVerifiedBot: isVerifiedBot,
-                    verdict: forceVerdict,
-                    linkData: {
-                        id: linkData.id,
-                        user_id: linkData.user_id,
-                        target_url: linkData.target_url
-                    },
-                    queryParams: url.search,
-                    timestamp: new Date().toISOString()
-                })
-            });
-        } catch (err) {
-            console.error("QStash Logging Error:", err);
-        }
     }
 };
