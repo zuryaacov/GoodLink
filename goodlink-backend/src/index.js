@@ -84,7 +84,7 @@ export default {
         });
 
         // פונקציית עזר: לוג + 404
-        const logAndBlock = (verdict, linkData = null) => {
+        const logAndBlock = (verdict, linkData = null, redis = null, useDedupe = false) => {
             const p = {
                 ip, slug, domain, userAgent,
                 botScore: request.cf?.botManagement?.score || 100,
@@ -93,7 +93,7 @@ export default {
                 linkData: linkData ? { id: linkData.id, user_id: linkData.user_id, target_url: linkData.target_url } : null,
                 queryParams: url.search
             };
-            ctx.waitUntil(logClick(env, p, null, false)); // ללא Redis, ללא דה-דופליקציה
+            ctx.waitUntil(logClick(env, p, redis, useDedupe));
             return htmlResponse(get404Page());
         };
 
@@ -107,7 +107,7 @@ export default {
         const isBlacklisted = await redis.get(`blacklist:${ip}`);
         if (isBlacklisted) {
             console.log(`🚫 IP Blacklisted: ${ip}`);
-            return logAndBlock('blacklisted');
+            return logAndBlock('blacklisted', null, redis, true); // עם דה-דופליקציה!
         }
 
         // 3. Cloudflare Bot Score & User-Agent
@@ -133,11 +133,11 @@ export default {
         }
 
         if (!linkData) {
-            return logAndBlock('link_not_found');
+            return logAndBlock('link_not_found', null, redis, true);
         }
 
         if (linkData.status !== 'active') {
-            return logAndBlock('link_inactive', linkData);
+            return logAndBlock('link_inactive', linkData, redis, true);
         }
 
         let targetUrl = ensureValidUrl(linkData.target_url);
