@@ -22,6 +22,53 @@ function ensureValidUrl(url) {
     return cleanUrl;
 }
 
+// פונקציה ישירה לשליחה ל-QStash ללא בדיקת כפילויות (לבוטים)
+async function sendToQStashDirect(env, p) {
+    try {
+        let loggerUrl = env.LOGGER_WORKER_URL || "https://logger-worker.fancy-sky-7888.workers.dev";
+
+        if (!loggerUrl.startsWith('http://') && !loggerUrl.startsWith('https://')) {
+            loggerUrl = 'https://' + loggerUrl;
+        }
+
+        console.log(`📤 [BOT] Sending to QStash -> ${loggerUrl}`);
+
+        const qstashUrl = `https://qstash.upstash.io/v2/publish/${loggerUrl}`;
+
+        const response = await fetch(qstashUrl, {
+            method: "POST",
+            headers: {
+                "Authorization": `Bearer ${env.QSTASH_TOKEN}`,
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                ip: p.ip,
+                slug: p.slug,
+                domain: p.domain,
+                userAgent: p.userAgent,
+                botScore: p.botScore,
+                isVerifiedBot: p.isVerifiedBot,
+                verdict: p.verdict,
+                linkData: {
+                    id: p.linkData.id,
+                    user_id: p.linkData.user_id,
+                    target_url: p.linkData.target_url
+                },
+                queryParams: p.queryParams,
+                timestamp: new Date().toISOString()
+            })
+        });
+
+        console.log(`📬 [BOT] QStash response: ${response.status}`);
+        if (!response.ok) {
+            const errText = await response.text();
+            console.error(`❌ [BOT] QStash Error: ${errText}`);
+        }
+    } catch (e) {
+        console.error("[BOT] QStash Error:", e);
+    }
+}
+
 // הוצאת הפונקציה החוצה כדי למנוע בעיות Context (this) ב-waitUntil
 async function sendToQStash(env, p, redis) {
     try {
@@ -148,9 +195,15 @@ export default {
             queryParams: url.search
         };
 
-        // שימוש בפונקציה החיצונית כדי להבטיח עבודה בבוטים ובמשימות רקע
-        // מעבירים את redis כדי לבדוק כפילויות
-        ctx.waitUntil(sendToQStash(env, logPayload, redis));
+        // לוגיקה מיוחדת לבוטים: שולחים ישירות בלי הגנת כפילויות אגרסיבית
+        if (isCertainBot) {
+            console.log(`🤖 Bot detected - logging without deduplication: ${verdict}`);
+            // שליחה ישירה ל-QStash בלי בדיקת כפילויות
+            ctx.waitUntil(sendToQStashDirect(env, logPayload));
+        } else {
+            // משתמשים רגילים - עם הגנת כפילויות
+            ctx.waitUntil(sendToQStash(env, logPayload, redis));
+        }
 
         if (shouldBlock) return htmlResponse(get404Page());
 
