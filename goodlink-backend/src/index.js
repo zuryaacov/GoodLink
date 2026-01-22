@@ -266,7 +266,7 @@ export default {
         const pathname = url.pathname.toLowerCase();
 
         // 1. סינון רעשים אגרסיבי (בוטים, קבצים, נתיבי מערכת)
-        const ignoredPaths = ['/', '/favicon.ico', '/robots.txt', '/sitemap.xml', '/admin', '/wp-admin', '/.env'];
+        const ignoredPaths = ['/', '/favicon.ico', '/robots.txt', '/sitemap.xml', '/admin', '/wp-admin', '/.env', '/verify', '/verify-failed', '/api', '/api/'];
         const isNoise = ignoredPaths.includes(pathname) ||
             pathname.includes('.') ||
             pathname.startsWith('/api/');
