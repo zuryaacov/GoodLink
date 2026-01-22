@@ -32,10 +32,9 @@ async function logClick(env, p, redis, useDedupe = true) {
             await redis.set(dedupKey, "1", { ex: 10 });
         }
 
-        // וידוא פורמט URL עבור QStash
         let loggerUrl = env.LOGGER_WORKER_URL || "";
         if (!loggerUrl.startsWith('http')) loggerUrl = `https://${loggerUrl}`;
-        loggerUrl = loggerUrl.replace(/\/$/, ""); // הסרת סלאש סופי
+        loggerUrl = loggerUrl.replace(/\/$/, "");
 
         const qstashUrl = `https://qstash.upstash.io/v2/publish/${loggerUrl}`;
 
@@ -68,16 +67,26 @@ async function logClick(env, p, redis, useDedupe = true) {
 export default {
     async fetch(request, env, ctx) {
         const url = new URL(request.url);
+        const userAgent = request.headers.get("user-agent") || "";
+        const path = url.pathname.toLowerCase();
 
-        // 1. Zero Latency: פילטר קבצים מיותרים
-        if (url.pathname === '/favicon.ico' || url.pathname === '/robots.txt') {
+        // 1. Noise Filter: קבצי מערכת, סורקים, שירותי Uptime וניתובים אסורים
+        const noisePaths = [
+            '/favicon.ico', '/robots.txt', '/index.php', '/.env',
+            '/wp-login.php', '/xmlrpc.php', '/wp-admin', '/admin',
+            '/api', '/api/'
+        ];
+        const noiseUA = /uptimerobot|pingdom|uptime|monitoring|healthcheck/i;
+
+        // בדיקה אם הנתיב הוא אחד מנתיבי ה"רעש" או שה-UA הוא שירות ניטור
+        if (noisePaths.some(p => path === p || path.startsWith(p + '/')) || noiseUA.test(userAgent)) {
             return new Response(null, { status: 204 });
         }
 
-        const slug = url.pathname.replace(/^\//, '').split('?')[0].toLowerCase();
+        // חילוץ ה-Slug
+        const slug = path.replace(/^\//, '').split('?')[0];
         const domain = url.hostname.replace(/^www\./, '');
         const ip = request.headers.get("cf-connecting-ip");
-        const userAgent = request.headers.get("user-agent") || "";
 
         const htmlResponse = (html, status = 404) => new Response(html, {
             status, headers: { "Content-Type": "text/html;charset=UTF-8" }
@@ -86,7 +95,7 @@ export default {
         // פונקציית עזר: לוג + 404
         const logAndBlock = (verdict, linkData = null, redis = null, useDedupe = false) => {
             const p = {
-                ip, slug, domain, userAgent,
+                ip, slug: slug || "root", domain, userAgent,
                 botScore: request.cf?.botManagement?.score || 100,
                 isVerifiedBot: request.cf?.verifiedBot || false,
                 verdict,
@@ -97,13 +106,14 @@ export default {
             return htmlResponse(get404Page());
         };
 
+        // בדיקה אם אין Slug (דף הבית) או שיש נקודה (ניסיון גישה לקובץ)
         if (!slug || slug.includes('.')) {
-            return logAndBlock('invalid_slug');
+            return logAndBlock(slug ? 'invalid_slug' : 'home_page_access');
         }
 
         const redis = new Redis({ url: env.UPSTASH_REDIS_REST_URL, token: env.UPSTASH_REDIS_REST_TOKEN });
 
-        // 2. שליפת נתוני לינק (לפני בדיקת Blacklist כדי שיהיו נתונים מלאים)
+        // 2. שליפת נתוני לינק (Redis -> Supabase)
         let linkData = await redis.get(`link:${domain}:${slug}`);
         if (!linkData) {
             const query = new URLSearchParams({ slug: `eq.${slug}`, domain: `eq.${domain}`, select: '*' });
@@ -112,44 +122,40 @@ export default {
             });
             const data = await sbRes.json();
             linkData = data?.[0];
+
+            // שמירה ב-Redis לשיפור ביצועים להבא
+            if (linkData) {
+                ctx.waitUntil(redis.set(`link:${domain}:${slug}`, JSON.stringify(linkData), { ex: 3600 }));
+            }
         }
 
-        // בדיקה מוקדמת אם הלינק קיים
-        if (!linkData) {
-            return logAndBlock('link_not_found', null, redis, true);
-        }
+        // בדיקה אם הלינק קיים ופעיל
+        if (!linkData) return logAndBlock('link_not_found', null, redis, true);
+        if (linkData.status !== 'active') return logAndBlock('link_inactive', linkData, redis, true);
 
-        if (linkData.status !== 'active') {
-            return logAndBlock('link_inactive', linkData, redis, true);
-        }
-
-        // 3. Redis Blacklist Check (עכשיו עם נתוני לינק מלאים!)
+        // 3. Redis Blacklist Check
         const isBlacklisted = await redis.get(`blacklist:${ip}`);
         if (isBlacklisted) {
-            console.log(`🚫 IP Blacklisted: ${ip} trying to access ${domain}/${slug}`);
-            return logAndBlock('blacklisted', linkData, redis, true); // עם נתוני לינק מלאים!
+            console.log(`🚫 IP Blacklisted: ${ip}`);
+            return logAndBlock('blacklisted', linkData, redis, true);
         }
 
-        // 4. Cloudflare Bot Score & User-Agent
+        // 4. Cloudflare Bot Score & User-Agent Analysis
         const botScore = request.cf?.botManagement?.score || 100;
         const isVerifiedBot = request.cf?.verifiedBot || false;
         const isBotUA = /bot|crawler|spider|googlebot|bingbot|yandexbot|facebookexternalhit/i.test(userAgent);
-
-        // זיהוי מתחזה: טוען שהוא בוט ב-UA אבל קלאודפלייר לא אימתה אותו כבוט רשמי שלהם
         const isImpersonator = isBotUA && !isVerifiedBot;
-
-        // בוט לצורך חסימה: ציון נמוך מאוד, או בוט מאומת, או מתחזה
         const isBot = botScore <= 29 || isVerifiedBot || isImpersonator;
 
         let targetUrl = ensureValidUrl(linkData.target_url);
         let verdict = "clean";
         let shouldBlock = false;
 
-        // קביעת Verdict וטיפול בבוטים
+        // טיפול בבוטים
         if (isBot) {
             verdict = isImpersonator ? "bot_impersonator" : (botScore <= 10 ? "bot_certain" : "bot_likely");
 
-            // הוספה ל-Blacklist ל-24 שעות אם הוא בוט ודאי או מתחזה
+            // הוספה ל-Blacklist ל-24 שעות במקרים חמורים
             if (botScore <= 20 || isImpersonator) {
                 ctx.waitUntil(redis.set(`blacklist:${ip}`, "1", { ex: 86400 }));
             }
@@ -160,19 +166,18 @@ export default {
             verdict = "suspicious";
         }
 
-        // הכנת Payload ללוג
+        // הכנת Payload ושליחת לוג
         const p = {
             ip, slug, domain, userAgent, botScore, isVerifiedBot, verdict,
             linkData: { id: linkData.id, user_id: linkData.user_id, target_url: linkData.target_url },
             queryParams: url.search
         };
 
-        // שליחת לוג (בוטים ללא דה-דופליקציה כדי לוודא תיעוד)
         ctx.waitUntil(logClick(env, p, redis, !isBot));
 
         if (shouldBlock) return htmlResponse(get404Page());
 
-        // Redirect סופי עם שמירה על Query Params
+        // Redirect סופי
         try {
             const finalUrl = new URL(targetUrl);
             new URLSearchParams(url.search).forEach((v, k) => finalUrl.searchParams.set(k, v));
