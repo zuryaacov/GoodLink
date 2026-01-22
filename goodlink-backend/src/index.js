@@ -103,25 +103,7 @@ export default {
 
         const redis = new Redis({ url: env.UPSTASH_REDIS_REST_URL, token: env.UPSTASH_REDIS_REST_TOKEN });
 
-        // 2. Zero Latency: Redis Blacklist Check (הכי מהיר)
-        const isBlacklisted = await redis.get(`blacklist:${ip}`);
-        if (isBlacklisted) {
-            console.log(`🚫 IP Blacklisted: ${ip}`);
-            return logAndBlock('blacklisted', null, redis, true); // עם דה-דופליקציה!
-        }
-
-        // 3. Cloudflare Bot Score & User-Agent
-        const botScore = request.cf?.botManagement?.score || 100;
-        const isVerifiedBot = request.cf?.verifiedBot || false;
-        const isBotUA = /bot|crawler|spider|googlebot|bingbot|yandexbot|facebookexternalhit/i.test(userAgent);
-
-        // זיהוי מתחזה: טוען שהוא בוט ב-UA אבל קלאודפלייר לא אימתה אותו כבוט רשמי שלהם
-        const isImpersonator = isBotUA && !isVerifiedBot;
-
-        // בוט לצורך חסימה: ציון נמוך מאוד, או בוט מאומת, או מתחזה
-        const isBot = botScore <= 29 || isVerifiedBot || isImpersonator;
-
-        // שליפת לינק (Redis -> Supabase)
+        // 2. שליפת נתוני לינק (לפני בדיקת Blacklist כדי שיהיו נתונים מלאים)
         let linkData = await redis.get(`link:${domain}:${slug}`);
         if (!linkData) {
             const query = new URLSearchParams({ slug: `eq.${slug}`, domain: `eq.${domain}`, select: '*' });
@@ -132,6 +114,7 @@ export default {
             linkData = data?.[0];
         }
 
+        // בדיקה מוקדמת אם הלינק קיים
         if (!linkData) {
             return logAndBlock('link_not_found', null, redis, true);
         }
@@ -139,6 +122,24 @@ export default {
         if (linkData.status !== 'active') {
             return logAndBlock('link_inactive', linkData, redis, true);
         }
+
+        // 3. Redis Blacklist Check (עכשיו עם נתוני לינק מלאים!)
+        const isBlacklisted = await redis.get(`blacklist:${ip}`);
+        if (isBlacklisted) {
+            console.log(`🚫 IP Blacklisted: ${ip} trying to access ${domain}/${slug}`);
+            return logAndBlock('blacklisted', linkData, redis, true); // עם נתוני לינק מלאים!
+        }
+
+        // 4. Cloudflare Bot Score & User-Agent
+        const botScore = request.cf?.botManagement?.score || 100;
+        const isVerifiedBot = request.cf?.verifiedBot || false;
+        const isBotUA = /bot|crawler|spider|googlebot|bingbot|yandexbot|facebookexternalhit/i.test(userAgent);
+
+        // זיהוי מתחזה: טוען שהוא בוט ב-UA אבל קלאודפלייר לא אימתה אותו כבוט רשמי שלהם
+        const isImpersonator = isBotUA && !isVerifiedBot;
+
+        // בוט לצורך חסימה: ציון נמוך מאוד, או בוט מאומת, או מתחזה
+        const isBot = botScore <= 29 || isVerifiedBot || isImpersonator;
 
         let targetUrl = ensureValidUrl(linkData.target_url);
         let verdict = "clean";
