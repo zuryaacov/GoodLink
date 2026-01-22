@@ -21,38 +21,49 @@ export default {
                 }
             }
 
-            // 2. קביעת ה-Verdict (סיבת הבוט) לצרכי סטטיסטיקה
-            let verdict = "clean";
-            if (data.botScore < 30 && !data.isVerifiedBot) {
-                verdict = "low_cf_score";
-            } else if (ipInfo.privacy?.vpn) {
-                verdict = "vpn_detected";
-            } else if (ipInfo.privacy?.proxy) {
-                verdict = "proxy_detected";
-            } else if (data.isVerifiedBot) {
-                verdict = "verified_bot";
+            // 2. קביעת ה-Verdict (סיבת הבוט) והחלטה סופית על Bot
+            const ua = (data.userAgent || "").toLowerCase();
+            const isBotUA = /bot|crawler|spider|google|bing|yandex|baidu|slurp|screenshot|facebook/i.test(ua);
+
+            // המשתנה verdict מקבל קודם כל את מה שהוורקר הראשון שלח (למשל "blocked_bot" או "clean")
+            let finalVerdict = data.verdict || "clean";
+
+            // אם הוורקר הראשון לא זיהה בוט, נבדוק שוב לפי IPinfo ופרמטרים נוספים
+            if (finalVerdict === "clean") {
+                if (data.isVerifiedBot) finalVerdict = "verified_bot";
+                else if (isBotUA) finalVerdict = "ua_bot_detected";
+                else if (data.botScore < 30) finalVerdict = "low_cf_score";
+                else if (ipInfo.privacy?.vpn) finalVerdict = "vpn_detected";
+                else if (ipInfo.privacy?.proxy) finalVerdict = "proxy_detected";
             }
 
+            // קביעה סופית לטבלה: האם זה בוט?
+            // זה נחשב בוט אם: נחסם בוורקר הראשון OR ציון נמוך OR בוט מאומת OR UA של בוט OR שימוש ב-VPN/Proxy
+            const isBotFinal =
+                finalVerdict !== "clean" ||
+                (data.botScore < 30) ||
+                ipInfo.privacy?.vpn ||
+                ipInfo.privacy?.proxy;
+
             // 3. הכנת האובייקט לטבלת CLICKS
-            // שים לב: אנחנו משתמשים ב-data.id שמגיע מהווקר הראשון למניעת כפילויות
             const clickRecord = {
-                id: data.id,
+                id: data.id, // UUID מהוורקר הראשון
                 link_id: data.linkData.id,
                 user_id: data.linkData.user_id,
                 ip_address: data.ip,
                 user_agent: data.userAgent,
-                referer: data.referer,
+                referer: data.referer || "",
                 country: data.country || ipInfo.country,
                 city: data.city || ipInfo.city,
                 slug: data.slug,
                 domain: data.domain,
                 target_url: data.linkData.target_url,
-                query_params: data.queryParams,
+                query_params: data.queryParams || "",
                 clicked_at: data.timestamp,
 
                 // לוגיקה לזיהוי בוטים
-                is_bot: (data.botScore < 30 && !data.isVerifiedBot) || (ipInfo.privacy?.vpn || ipInfo.privacy?.proxy),
-                verdict: verdict, // המידע שהיה אמור להיות ב-bot_reason נכנס לכאן
+                is_bot: isBotFinal,
+                verdict: finalVerdict,
 
                 // נתונים מ-IPinfo
                 isp: ipInfo.org || (data.asn ? `AS${data.asn}` : null),
@@ -71,7 +82,6 @@ export default {
                     "apikey": env.SUPABASE_SERVICE_ROLE_KEY,
                     "Authorization": `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}`,
                     "Content-Type": "application/json",
-                    // resolution=ignore-duplicates אומר שאם ה-ID כבר קיים, סופבייס פשוט יתעלם מהבקשה השנייה
                     "Prefer": "return=minimal, resolution=ignore-duplicates"
                 },
                 body: JSON.stringify(clickRecord)
