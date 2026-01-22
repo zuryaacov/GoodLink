@@ -19,17 +19,18 @@ export default {
 
             const isBotFinal = data.verdict === "blocked_bot" || (data.botScore < 30) || ipInfo.privacy?.vpn || ipInfo.privacy?.proxy;
 
+            // טיפול במקרים שבהם linkData הוא null (404, blacklist, invalid_slug)
             const clickRecord = {
                 id: data.id,
-                link_id: data.linkData.id,
-                user_id: data.linkData.user_id,
+                link_id: data.linkData?.id || null,
+                user_id: data.linkData?.user_id || null,
                 ip_address: data.ip,
                 user_agent: data.userAgent,
                 country: ipInfo.country || "Unknown",
                 city: ipInfo.city || "Unknown",
                 slug: data.slug,
                 domain: data.domain,
-                target_url: data.linkData.target_url,
+                target_url: data.linkData?.target_url || null,
                 query_params: data.queryParams || "",
                 clicked_at: data.timestamp,
                 is_bot: isBotFinal,
