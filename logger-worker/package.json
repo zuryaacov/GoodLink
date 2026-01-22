@@ -1,0 +1,20 @@
+{
+  "name": "logger-worker",
+  "version": "1.0.0",
+  "description": "Cloudflare Worker for logging - handles click tracking and analytics",
+  "main": "src/index.js",
+  "scripts": {
+    "deploy": "wrangler deploy",
+    "dev": "wrangler dev",
+    "tail": "wrangler tail"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@upstash/redis": "^1.30.0"
+  },
+  "devDependencies": {
+    "wrangler": "^4.54.0"
+  }
+}

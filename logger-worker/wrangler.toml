@@ -1,0 +1,6 @@
+name = "logger-worker"
+main = "src/index.js"
+compatibility_date = "2024-01-01"
+
+# Routes - configure in Cloudflare Dashboard if needed
+# Routes are configured in Cloudflare Dashboard → Workers & Pages → logger-worker → Settings → Triggers
