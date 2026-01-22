@@ -1,7 +1,8 @@
 name = "goodlink-backend"
 main = "src/index.js"
 compatibility_date = "2024-01-01"
+[vars]
+LOGGER_WORKER_URL = "logger-worker.fancy-sky-7888.workers.dev"
 
 # Routes - configure in Cloudflare Dashboard if needed
 # Routes are configured in Cloudflare Dashboard → Workers & Pages → goodlink-backend → Settings → Triggers
-
