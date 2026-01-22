@@ -109,15 +109,20 @@ export default {
         // 6. משימות רקע (Fire and Forget via QStash)
         // בתוך index.js - החלף את בלוק ה-ctx.waitUntil הקיים בזה:
 
+        // index.js
+
         ctx.waitUntil((async () => {
             try {
-                // א. סימון הקליק ברדיס
                 await redis.set(uniqueKey, "1", { ex: 60 });
 
-                console.log(`🚀 [QStash] Attempting to send log to: ${env.LOGGER_WORKER_URL}`);
+                // מוודאים שהכתובת מתחילה ב-https:// כדי ש-QStash יזהה אותה כ-URL
+                const targetWorkerUrl = env.LOGGER_WORKER_URL.startsWith('http')
+                    ? env.LOGGER_WORKER_URL
+                    : `https://${env.LOGGER_WORKER_URL}`;
 
-                // ב. שליחה ל-QStash
-                const qstashResponse = await fetch(`https://qstash.upstash.io/v2/publish/${env.LOGGER_WORKER_URL}`, {
+                console.log(`🚀 [QStash] Sending to URL: ${targetWorkerUrl}`);
+
+                const qstashResponse = await fetch(`https://qstash.upstash.io/v2/publish/${targetWorkerUrl}`, {
                     method: "POST",
                     headers: {
                         "Authorization": `Bearer ${env.QSTASH_TOKEN}`,
@@ -128,7 +133,17 @@ export default {
                         slug: slug,
                         domain: domain,
                         userAgent: request.headers.get("user-agent"),
-                        // ... שאר הנתונים ...
+                        referer: request.headers.get("referer"),
+                        country: request.cf?.country,
+                        city: request.cf?.city,
+                        botScore: botScore,
+                        isVerifiedBot: isVerifiedBot,
+                        linkData: {
+                            id: linkData.id,
+                            user_id: linkData.user_id,
+                            target_url: finalUrl
+                        },
+                        queryParams: url.search,
                         timestamp: new Date().toISOString()
                     })
                 });
@@ -137,11 +152,10 @@ export default {
                     const errorText = await qstashResponse.text();
                     console.error(`❌ [QStash Failed] Status: ${qstashResponse.status}, Error: ${errorText}`);
                 } else {
-                    const resJson = await qstashResponse.json();
-                    console.log(`✅ [QStash Success] Message ID: ${resJson.messageId}`);
+                    console.log(`✅ [QStash Success] Message sent to Logger`);
                 }
             } catch (err) {
-                console.error("💥 [Worker Error] Critical failure in background task:", err);
+                console.error("💥 [Worker Error] Background task failed:", err);
             }
         })());
         return response;
