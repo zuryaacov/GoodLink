@@ -3,9 +3,7 @@ import { Redis } from "@upstash/redis/cloudflare";
 // --- Utility Functions ---
 
 function extractSlug(pathname) {
-    // מנקה סלאשים, פרמטרים וסיומות
     const path = pathname.replace(/^\//, '').split('?')[0].split('#')[0];
-    // סינון קבצים ורעשים
     if (!path || path.includes('.') || path.startsWith('api/')) return null;
     return path.toLowerCase();
 }
@@ -14,14 +12,12 @@ function mergeQueryParams(targetUrl, incomingSearch) {
     try {
         const target = new URL(targetUrl.startsWith('http') ? targetUrl : `https://${targetUrl}`);
         const incomingParams = new URLSearchParams(incomingSearch);
-
-        // דריסת פרמטרים או הוספה שלהם (ה-URL הנכנס הוא הקובע)
         for (const [key, value] of incomingParams.entries()) {
             target.searchParams.set(key, value);
         }
         return target.toString();
     } catch (e) {
-        return targetUrl; // Fallback
+        return targetUrl;
     }
 }
 
@@ -58,7 +54,9 @@ export default {
         const domain = url.hostname.replace(/^www\./, '');
         const ip = request.headers.get("cf-connecting-ip");
 
-        // 1. סינון רעשים מהיר (Noise Filter)
+        // יצירת מזהה ייחודי לקליק הנוכחי למניעת כפילויות ב-DB
+        const clickId = crypto.randomUUID();
+
         if (!slug) return new Response("Not Found", { status: 404 });
 
         const redis = new Redis({
@@ -66,33 +64,23 @@ export default {
             token: env.UPSTASH_REDIS_REST_TOKEN,
         });
 
-        // 2. הגנת הצפות (Flood Guard) - בדיקה אם זה בוט שתוקף את אותו לינק
-        // אנו משתמשים בנתוני Cloudflare Native
         const botScore = request.cf?.botManagement?.score || 100;
         const isVerifiedBot = request.cf?.verifiedBot || false;
 
-        // מפתח ייחודי לבדיקת הצפה: IP + Slug
         const uniqueKey = `limit:${ip}:${slug}`;
         const isRepeatClick = await redis.get(uniqueKey);
 
-        // אם זה קליק חוזר (קיים ברדיס) + הציון בוט נמוך + לא בוט מאומת = חסימה
         if (isRepeatClick && botScore < 30 && !isVerifiedBot) {
             return new Response("Rate Limit Exceeded", { status: 429 });
         }
 
-        // 3. שליפת הלינק (Redis First -> Supabase Failover)
         let linkData = null;
         try {
-            // מנסים לשלוף מרדיס
             linkData = await redis.get(`link:${domain}:${slug}`);
-
-            // אם לא קיים ברדיס, מנסים בסופבייס (Failover)
             if (!linkData) {
                 linkData = await getLinkFromSupabase(slug, domain, env);
-                // אופציונלי: כאן אפשר לעדכן חזרה את הרדיס כדי לחסוך בפעם הבאה
             }
         } catch (e) {
-            // אם רדיס נפל לגמרי, מנסים ישירות סופבייס
             linkData = await getLinkFromSupabase(slug, domain, env);
         }
 
@@ -100,35 +88,38 @@ export default {
             return new Response("Link Not Found or Inactive", { status: 404 });
         }
 
-        // 4. בניית ה-URL הסופי (מיזוג UTM מהבקשה המקורית)
         const finalUrl = mergeQueryParams(linkData.target_url, url.search);
-
-        // 5. ניתוב מיידי (Redirect First Policy)
         const response = Response.redirect(finalUrl, 302);
 
-        // 6. משימות רקע (Fire and Forget via QStash)
-        // בתוך index.js - החלף את בלוק ה-ctx.waitUntil הקיים בזה:
-
-        // index.js
-
+        // משימות רקע
         ctx.waitUntil((async () => {
             try {
+                // א. הגנת הצפה (Flood Guard) ברמת ה-IP
                 await redis.set(uniqueKey, "1", { ex: 60 });
 
-                // מוודאים שהכתובת מתחילה ב-https:// כדי ש-QStash יזהה אותה כ-URL
-                const targetWorkerUrl = env.LOGGER_WORKER_URL.startsWith('http')
-                    ? env.LOGGER_WORKER_URL
-                    : `https://${env.LOGGER_WORKER_URL}`;
+                // ב. מניעת לוגים כפולים (Deduplication) - 3 שניות שקט לאותו IP ולינק
+                const dedupeKey = `sent:${ip}:${slug}`;
+                const alreadySent = await redis.get(dedupeKey);
+                if (alreadySent) {
+                    console.log("🚫 [Deduplication] Rapid click detected - skipping log");
+                    return;
+                }
+                await redis.set(dedupeKey, "1", { ex: 3 });
 
-                console.log(`🚀 [QStash] Sending to URL: ${targetWorkerUrl}`);
+                // ג. הכנת הכתובת ל-QStash
+                const cleanWorkerUrl = env.LOGGER_WORKER_URL.replace(/^https?:\/\//, '');
+                const qstashUrl = `https://qstash.upstash.io/v2/publish/https://${cleanWorkerUrl}`;
 
-                const qstashResponse = await fetch(`https://qstash.upstash.io/v2/publish/${targetWorkerUrl}`, {
+                console.log(`🚀 [QStash] Sending to: ${qstashUrl}`);
+
+                const qstashResponse = await fetch(qstashUrl, {
                     method: "POST",
                     headers: {
                         "Authorization": `Bearer ${env.QSTASH_TOKEN}`,
                         "Content-Type": "application/json"
                     },
                     body: JSON.stringify({
+                        id: clickId, // שליחת ה-ID הייחודי
                         ip: ip,
                         slug: slug,
                         domain: domain,
@@ -152,12 +143,13 @@ export default {
                     const errorText = await qstashResponse.text();
                     console.error(`❌ [QStash Failed] Status: ${qstashResponse.status}, Error: ${errorText}`);
                 } else {
-                    console.log(`✅ [QStash Success] Message sent to Logger`);
+                    console.log(`✅ [QStash Success] Message sent to Logger (ID: ${clickId})`);
                 }
             } catch (err) {
                 console.error("💥 [Worker Error] Background task failed:", err);
             }
         })());
+
         return response;
     }
 };
