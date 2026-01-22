@@ -22,15 +22,20 @@ function ensureValidUrl(url) {
     return cleanUrl;
 }
 
-// פונקציית לוגינג מאוחדת וחסינה
-async function logClick(env, p, redis, useDedupe = true) {
+// פונקציית לוגינג מאוחדת המשתמשת ב-Ray ID למניעת כפילויות
+async function logClick(env, p, redis) {
     try {
-        if (useDedupe && redis) {
-            const dedupKey = `click:${p.ip}:${p.domain}:${p.slug}`;
-            const alreadyLogged = await redis.get(dedupKey);
-            if (alreadyLogged) return;
-            await redis.set(dedupKey, "1", { ex: 10 });
+        // שימוש ב-Ray ID כמפתח למניעת כפילות של אותה בקשה בדיוק
+        const dedupKey = `req:${p.rayId}`;
+        const alreadyProcessed = await redis.get(dedupKey);
+
+        if (alreadyProcessed) {
+            console.log(`⏭️ Request ${p.rayId} already processed, skipping.`);
+            return;
         }
+
+        // סימון הבקשה כמעובדת למשך 60 שניות
+        await redis.set(dedupKey, "1", { ex: 60 });
 
         let loggerUrl = env.LOGGER_WORKER_URL || "";
         if (!loggerUrl.startsWith('http')) loggerUrl = `https://${loggerUrl}`;
@@ -46,6 +51,7 @@ async function logClick(env, p, redis, useDedupe = true) {
             },
             body: JSON.stringify({
                 id: crypto.randomUUID(),
+                rayId: p.rayId,
                 ip: p.ip,
                 slug: p.slug,
                 domain: p.domain,
@@ -58,7 +64,7 @@ async function logClick(env, p, redis, useDedupe = true) {
                 timestamp: new Date().toISOString()
             })
         });
-        console.log(`📡 Log sent to QStash (${p.verdict})`);
+        console.log(`📡 Log sent to QStash (${p.verdict}) for Ray: ${p.rayId}`);
     } catch (e) {
         console.error("❌ Logger Error:", e);
     }
@@ -68,22 +74,17 @@ export default {
     async fetch(request, env, ctx) {
         const url = new URL(request.url);
         const userAgent = request.headers.get("user-agent") || "";
+        const rayId = request.headers.get("cf-ray") || crypto.randomUUID(); // מזהה בקשה ייחודי
         const path = url.pathname.toLowerCase();
 
-        // 1. Noise Filter: קבצי מערכת, סורקים, שירותי Uptime וניתובים אסורים
-        const noisePaths = [
-            '/favicon.ico', '/robots.txt', '/index.php', '/.env',
-            '/wp-login.php', '/xmlrpc.php', '/wp-admin', '/admin',
-            '/api', '/api/'
-        ];
-        const noiseUA = /uptimerobot|pingdom|uptime|monitoring|healthcheck/i;
+        // 1. Noise Filter
+        const noisePaths = ['/favicon.ico', '/robots.txt', '/index.php', '/.env', '/wp-login.php', '/admin', '/api'];
+        const noiseUA = /uptimerobot|pingdom|uptime|healthcheck/i;
 
-        // בדיקה אם הנתיב הוא אחד מנתיבי ה"רעש" או שה-UA הוא שירות ניטור
         if (noisePaths.some(p => path === p || path.startsWith(p + '/')) || noiseUA.test(userAgent)) {
             return new Response(null, { status: 204 });
         }
 
-        // חילוץ ה-Slug
         const slug = path.replace(/^\//, '').split('?')[0];
         const domain = url.hostname.replace(/^www\./, '');
         const ip = request.headers.get("cf-connecting-ip");
@@ -92,28 +93,28 @@ export default {
             status, headers: { "Content-Type": "text/html;charset=UTF-8" }
         });
 
-        // פונקציית עזר: לוג + 404
-        const logAndBlock = (verdict, linkData = null, redis = null, useDedupe = false) => {
+        const redis = new Redis({ url: env.UPSTASH_REDIS_REST_URL, token: env.UPSTASH_REDIS_REST_TOKEN });
+
+        // פונקציית עזר לחסימה
+        const logAndBlock = (verdict, linkData = null) => {
             const p = {
-                ip, slug: slug || "root", domain, userAgent,
+                rayId, ip, slug: slug || "root", domain, userAgent,
                 botScore: request.cf?.botManagement?.score || 100,
                 isVerifiedBot: request.cf?.verifiedBot || false,
                 verdict,
                 linkData: linkData ? { id: linkData.id, user_id: linkData.user_id, target_url: linkData.target_url } : null,
                 queryParams: url.search
             };
-            ctx.waitUntil(logClick(env, p, redis, useDedupe));
+            ctx.waitUntil(logClick(env, p, redis));
             return htmlResponse(get404Page());
         };
 
-        // בדיקה אם אין Slug (דף הבית) או שיש נקודה (ניסיון גישה לקובץ)
-        if (!slug || slug.includes('.')) {
-            return logAndBlock(slug ? 'invalid_slug' : 'home_page_access');
-        }
+        if (!slug || slug.includes('.')) return logAndBlock(slug ? 'invalid_slug' : 'home_page_access');
 
-        const redis = new Redis({ url: env.UPSTASH_REDIS_REST_URL, token: env.UPSTASH_REDIS_REST_TOKEN });
+        // 2. Zero Latency Checks
+        const isBlacklisted = await redis.get(`blacklist:${ip}`);
+        if (isBlacklisted) return logAndBlock('blacklisted');
 
-        // 2. שליפת נתוני לינק (Redis -> Supabase)
         let linkData = await redis.get(`link:${domain}:${slug}`);
         if (!linkData) {
             const query = new URLSearchParams({ slug: `eq.${slug}`, domain: `eq.${domain}`, select: '*' });
@@ -122,28 +123,16 @@ export default {
             });
             const data = await sbRes.json();
             linkData = data?.[0];
-
-            // שמירה ב-Redis לשיפור ביצועים להבא
-            if (linkData) {
-                ctx.waitUntil(redis.set(`link:${domain}:${slug}`, JSON.stringify(linkData), { ex: 3600 }));
-            }
+            if (linkData) ctx.waitUntil(redis.set(`link:${domain}:${slug}`, JSON.stringify(linkData), { ex: 3600 }));
         }
 
-        // בדיקה אם הלינק קיים ופעיל
-        if (!linkData) return logAndBlock('link_not_found', null, redis, true);
-        if (linkData.status !== 'active') return logAndBlock('link_inactive', linkData, redis, true);
+        if (!linkData) return logAndBlock('link_not_found');
+        if (linkData.status !== 'active') return logAndBlock('link_inactive', linkData);
 
-        // 3. Redis Blacklist Check
-        const isBlacklisted = await redis.get(`blacklist:${ip}`);
-        if (isBlacklisted) {
-            console.log(`🚫 IP Blacklisted: ${ip}`);
-            return logAndBlock('blacklisted', linkData, redis, true);
-        }
-
-        // 4. Cloudflare Bot Score & User-Agent Analysis
+        // 3. Bot Analysis
         const botScore = request.cf?.botManagement?.score || 100;
         const isVerifiedBot = request.cf?.verifiedBot || false;
-        const isBotUA = /bot|crawler|spider|googlebot|bingbot|yandexbot|facebookexternalhit/i.test(userAgent);
+        const isBotUA = /bot|crawler|spider|googlebot|facebookexternalhit/i.test(userAgent);
         const isImpersonator = isBotUA && !isVerifiedBot;
         const isBot = botScore <= 29 || isVerifiedBot || isImpersonator;
 
@@ -151,33 +140,26 @@ export default {
         let verdict = "clean";
         let shouldBlock = false;
 
-        // טיפול בבוטים
         if (isBot) {
             verdict = isImpersonator ? "bot_impersonator" : (botScore <= 10 ? "bot_certain" : "bot_likely");
-
-            // הוספה ל-Blacklist ל-24 שעות במקרים חמורים
-            if (botScore <= 20 || isImpersonator) {
-                ctx.waitUntil(redis.set(`blacklist:${ip}`, "1", { ex: 86400 }));
-            }
-
+            if (botScore <= 20 || isImpersonator) ctx.waitUntil(redis.set(`blacklist:${ip}`, "1", { ex: 86400 }));
             const fallback = ensureValidUrl(linkData.fallback_url);
             if (fallback) targetUrl = fallback; else shouldBlock = true;
         } else if (botScore <= 59) {
             verdict = "suspicious";
         }
 
-        // הכנת Payload ושליחת לוג
+        // 4. Logging & Redirect
         const p = {
-            ip, slug, domain, userAgent, botScore, isVerifiedBot, verdict,
+            rayId, ip, slug, domain, userAgent, botScore, isVerifiedBot, verdict,
             linkData: { id: linkData.id, user_id: linkData.user_id, target_url: linkData.target_url },
             queryParams: url.search
         };
 
-        ctx.waitUntil(logClick(env, p, redis, !isBot));
+        ctx.waitUntil(logClick(env, p, redis));
 
         if (shouldBlock) return htmlResponse(get404Page());
 
-        // Redirect סופי
         try {
             const finalUrl = new URL(targetUrl);
             new URLSearchParams(url.search).forEach((v, k) => finalUrl.searchParams.set(k, v));
