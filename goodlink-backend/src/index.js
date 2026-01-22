@@ -22,7 +22,7 @@ function ensureValidUrl(url) {
     return cleanUrl;
 }
 
-// פונקציית לוגינג שמשתמשת ב-Ray ID כדי למנוע כפל רישום של אותה בקשה
+// פונקציית לוגינג משתמשת ב-Ray ID כדי למנוע כפל רישום של אותה בקשה
 async function logClick(env, p, redis) {
     try {
         const dedupKey = `req:${p.rayId}`;
@@ -91,16 +91,21 @@ export default {
         });
 
         // פונקציה לעצירת הריצה ושליחת לוג במקרה של חסימה/שגיאה
+        // ✅ FIX: הוספת דגל logged כדי למנוע לוגינג כפול
+        let logged = false;
         const terminateWithLog = (verdict, linkData = null) => {
-            const p = {
-                rayId, ip, slug: slug || "root", domain, userAgent,
-                botScore: request.cf?.botManagement?.score || 100,
-                isVerifiedBot: request.cf?.verifiedBot || false,
-                verdict,
-                linkData: linkData ? { id: linkData.id, user_id: linkData.user_id, target_url: linkData.target_url } : null,
-                queryParams: url.search
-            };
-            ctx.waitUntil(logClick(env, p, redis));
+            if (!logged) {
+                const p = {
+                    rayId, ip, slug: slug || "root", domain, userAgent,
+                    botScore: request.cf?.botManagement?.score || 100,
+                    isVerifiedBot: request.cf?.verifiedBot || false,
+                    verdict,
+                    linkData: linkData ? { id: linkData.id, user_id: linkData.user_id, target_url: linkData.target_url } : null,
+                    queryParams: url.search
+                };
+                ctx.waitUntil(logClick(env, p, redis));
+                logged = true;
+            }
             return htmlResponse(get404Page());
         };
 
@@ -144,13 +149,16 @@ export default {
         }
 
         // 4. Final Logging & Execution
-        const p = {
-            rayId, ip, slug, domain, userAgent, botScore, isVerifiedBot, verdict,
-            linkData: { id: linkData.id, user_id: linkData.user_id, target_url: linkData.target_url },
-            queryParams: url.search
-        };
-
-        ctx.waitUntil(logClick(env, p, redis));
+        // ✅ FIX: לוגינג רק אם עוד לא נרשם
+        if (!logged) {
+            const p = {
+                rayId, ip, slug, domain, userAgent, botScore, isVerifiedBot, verdict,
+                linkData: { id: linkData.id, user_id: linkData.user_id, target_url: linkData.target_url },
+                queryParams: url.search
+            };
+            ctx.waitUntil(logClick(env, p, redis));
+            logged = true;
+        }
 
         if (shouldBlock) return htmlResponse(get404Page());
 
