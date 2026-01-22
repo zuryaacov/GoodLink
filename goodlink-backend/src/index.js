@@ -28,14 +28,19 @@ async function sendToQStash(env, p) {
         const targetWorker = env.LOGGER_WORKER_URL.replace(/^https?:\/\//, '').replace(/\/$/, '');
         const qstashUrl = `https://qstash.upstash.io/v2/publish/https://${targetWorker}`;
 
+        // יצירת ID ייחודי למניעת כפילויות (Deduplication)
+        // משלב IP + slug + domain + timestamp מעוגל ל-5 שניות
+        const timeWindow = Math.floor(Date.now() / 5000); // חלון של 5 שניות
+        const deduplicationId = `${p.ip}-${p.domain}-${p.slug}-${timeWindow}`;
+
         await fetch(qstashUrl, {
             method: "POST",
             headers: {
                 "Authorization": `Bearer ${env.QSTASH_TOKEN}`,
-                "Content-Type": "application/json"
+                "Content-Type": "application/json",
+                "Upstash-Deduplication-Id": deduplicationId // מונע כפילויות ב-QStash
             },
             body: JSON.stringify({
-                id: crypto.randomUUID(),
                 ip: p.ip,
                 slug: p.slug,
                 domain: p.domain,
