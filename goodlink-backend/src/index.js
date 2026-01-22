@@ -38,10 +38,10 @@ async function logClick(env, p, redis) {
         }
 
         // 2. הגנה מפני קליקים כפולים מהדפדפן (אותו IP לאותו Slug תוך 3 שניות)
-        // הזמן עודכן מ-10 שניות ל-3 שניות כדי לאזן בין סינון רעש לדיוק בקליקים אנושיים
-        const isNewClick = await redis.set(ipDedupKey, "1", { nx: true, ex: 3 });
+        // הזמן עודכן ל-30 שניות כדי לאזן בין סינון רעש לדיוק בקליקים אנושיים
+        const isNewClick = await redis.set(ipDedupKey, "1", { nx: true, ex: 30 });
         if (isNewClick === null) {
-            console.log(`⏭️ Rate limit: Same IP click within 3s (${p.ip}) - skipping DB write`);
+            console.log(`⏭️ Rate limit: Same IP click within 30s (${p.ip}) - skipping DB write`);
             return;
         }
 
@@ -113,9 +113,17 @@ export default {
             return htmlResponse(get404Page());
         };
 
+        // 2. Slug Validation: רק אותיות אנגליות, מספרים, ומקפים
         if (!slug || slug.includes('.')) return terminateWithLog(slug ? 'invalid_slug' : 'home_page_access');
 
-        // 2. Zero Latency Checks: בדיקת רשימה שחורה ושליפת נתוני לינק מרדיס
+        // בדיקה קפדנית: רק a-z, 0-9, והמקף (-)
+        const isValidSlug = /^[a-z0-9-]+$/.test(slug);
+        if (!isValidSlug) {
+            console.log(`🚫 Invalid slug format: "${slug}" (contains forbidden characters)`);
+            return terminateWithLog('invalid_slug_format');
+        }
+
+        // 3. Zero Latency Checks: בדיקת רשימה שחורה ושליפת נתוני לינק מרדיס
         const isBlacklisted = await redis.get(`blacklist:${ip}`);
         if (isBlacklisted) return terminateWithLog('blacklisted');
 
@@ -132,7 +140,7 @@ export default {
         if (!linkData) return terminateWithLog('link_not_found');
         if (linkData.status !== 'active') return terminateWithLog('link_inactive', linkData);
 
-        // 3. Bot Analysis: ניתוח בוטים מבוסס Cloudflare
+        // 4. Bot Analysis: ניתוח בוטים מבוסס Cloudflare
         const botScore = request.cf?.botManagement?.score || 100;
         const isVerifiedBot = request.cf?.verifiedBot || false;
         const isBotUA = /bot|crawler|spider|googlebot/i.test(userAgent);
