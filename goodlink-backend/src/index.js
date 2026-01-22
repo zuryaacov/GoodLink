@@ -153,11 +153,34 @@ export default {
 
         const redis = new Redis({ url: env.UPSTASH_REDIS_REST_URL, token: env.UPSTASH_REDIS_REST_TOKEN });
 
-        // זיהוי בוטים
+        // זיהוי בוטים - 3 שלבים
+        // שלב 1: Cloudflare Bot Management Score
         const botScore = request.cf?.botManagement?.score || 100;
+        
+        // חלוקת הציונים לפי המלצות Cloudflare:
+        // 1-10: בוט ודאי - חסימה מוחלטת
+        // 11-29: בוט סביר - חסימה או Fallback
+        // 30-59: חשוד - לוג למעקב (אפשר VPN/Proxy)
+        // 60-99: בן אדם - אישור מעבר
+        const isCertainBot = botScore <= 29;      // 1-29: בוט ודאי/סביר
+        const isSuspicious = botScore >= 30 && botScore <= 59;  // 30-59: חשוד
+        const isHuman = botScore >= 60;           // 60-99: בן אדם
+        
+        // שלב 2: User-Agent Check
         const isVerifiedBot = request.cf?.verifiedBot || false;
         const isBotUA = /bot|crawler|spider|googlebot|bingbot|yandexbot|facebookexternalhit/i.test(userAgent);
-        const isCertainBot = isVerifiedBot || isBotUA || (botScore < 5);
+        
+        // שלב 3: Redis Blacklist Check (בדיקה אם ה-IP נחסם ב-24 שעות האחרונות)
+        const blacklistKey = `blacklist:${ip}`;
+        const isBlacklisted = await redis.get(blacklistKey);
+        
+        if (isBlacklisted) {
+            console.log(`🚫 IP in blacklist: ${ip} (score: ${botScore})`);
+            return htmlResponse(get404Page());
+        }
+        
+        // בוט אם: ציון נמוך (1-29) או UA מזוהה או בוט מאומת
+        const isBot = isCertainBot || isVerifiedBot || isBotUA;
 
         // שליפת לינק
         let linkData = await redis.get(`link:${domain}:${slug}`);
@@ -179,14 +202,20 @@ export default {
         let verdict = "clean";
         let shouldBlock = false;
 
-        if (isCertainBot) {
-            verdict = "blocked_bot";
+        // קביעת Verdict לפי רמת האיום
+        if (isBot) {
+            verdict = botScore <= 10 ? "bot_certain" : 
+                      botScore <= 29 ? "bot_likely" : "bot_verified";
             const fallback = ensureValidUrl(linkData.fallback_url);
             if (fallback) {
                 targetUrl = fallback;
             } else {
                 shouldBlock = true;
             }
+        } else if (isSuspicious) {
+            verdict = "suspicious"; // ציון 30-59: חשוד אבל לא חוסמים
+        } else {
+            verdict = "clean"; // ציון 60-99: בן אדם
         }
 
         // הכנת נתונים ללוג
@@ -195,13 +224,37 @@ export default {
             queryParams: url.search
         };
 
-        // לוגיקה מיוחדת לבוטים: שולחים ישירות בלי הגנת כפילויות אגרסיבית
-        if (isCertainBot) {
-            console.log(`🤖 Bot detected - logging without deduplication: ${verdict}`);
-            // שליחה ישירה ל-QStash בלי בדיקת כפילויות
+        // לוגיקה מיוחדת לפי רמת האיום
+        if (isBot) {
+            console.log(`🤖 Bot detected (score: ${botScore}) - verdict: ${verdict}`);
+            
+            // 1. הוספה ל-Blacklist רק לבוטים ודאיים (1-29)
+            if (botScore <= 29) {
+                const blacklistKey = `blacklist:${ip}`;
+                await redis.set(blacklistKey, JSON.stringify({
+                    ip,
+                    userAgent,
+                    botScore,
+                    isVerifiedBot,
+                    slug,
+                    domain,
+                    blockedAt: new Date().toISOString(),
+                    reason: botScore <= 10 ? 'bot_certain' : 
+                            botScore <= 29 ? 'bot_likely' : 
+                            (isBotUA ? 'bot_ua' : 'verified_bot')
+                }), { ex: 86400 }); // 24 hours
+                
+                console.log(`🚫 Added to blacklist: ${ip} (score: ${botScore}, 24h)`);
+            }
+            
+            // 2. שליחה ישירה ל-QStash בלי בדיקת כפילויות
             ctx.waitUntil(sendToQStashDirect(env, logPayload));
+        } else if (isSuspicious) {
+            // משתמשים חשודים (30-59) - לוגינג רגיל אבל ללא blacklist
+            console.log(`⚠️ Suspicious traffic (score: ${botScore})`);
+            ctx.waitUntil(sendToQStash(env, logPayload, redis));
         } else {
-            // משתמשים רגילים - עם הגנת כפילויות
+            // משתמשים רגילים (60-99) - עם הגנת כפילויות
             ctx.waitUntil(sendToQStash(env, logPayload, redis));
         }
 
