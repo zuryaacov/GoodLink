@@ -1,5 +1,15 @@
 export default {
     async fetch(request, env) {
+        // לוג לאבחון: נראה איזו שיטה הגיעה
+        console.log(`📩 Incoming request: ${request.method} to ${request.url}`);
+
+        if (request.method === "OPTIONS") {
+            return new Response(null, { headers: { "Access-Control-Allow-Origin": "*" } });
+        }
+
+        if (request.method !== "POST") {
+            return new Response(`Method ${request.method} not allowed. Please use POST.`, { status: 405 });
+        }
         // בדיקת אבטחה בסיסית - וידוא שהבקשה היא POST
         if (request.method !== "POST") {
             return new Response("Method not allowed", { status: 405 });
