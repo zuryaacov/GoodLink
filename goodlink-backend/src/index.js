@@ -37,10 +37,11 @@ async function logClick(env, p, redis) {
             return;
         }
 
-        // 2. הגנה מפני קליקים כפולים מהדפדפן (אותו IP לאותו Slug תוך 10 שניות)
-        const isNewClick = await redis.set(ipDedupKey, "1", { nx: true, ex: 10 });
+        // 2. הגנה מפני קליקים כפולים מהדפדפן (אותו IP לאותו Slug תוך 3 שניות)
+        // הזמן עודכן מ-10 שניות ל-3 שניות כדי לאזן בין סינון רעש לדיוק בקליקים אנושיים
+        const isNewClick = await redis.set(ipDedupKey, "1", { nx: true, ex: 3 });
         if (isNewClick === null) {
-            console.log(`⏭️ Rate limit: Same IP click within 10s (${p.ip}) - skipping DB write`);
+            console.log(`⏭️ Rate limit: Same IP click within 3s (${p.ip}) - skipping DB write`);
             return;
         }
 
@@ -84,7 +85,7 @@ export default {
         const rayId = request.headers.get("cf-ray") || crypto.randomUUID();
         const path = url.pathname.toLowerCase();
 
-        // 1. Noise Filter: סינון שקט ללא לוג
+        // 1. Noise Filter: סינון שקט ללא לוג עבור דפי מערכת ובוטים ידועים
         const noisePaths = ['/favicon.ico', '/robots.txt', '/index.php', '/.env', '/wp-login.php', '/admin', '/api', '/root'];
         if (path === '/' || noisePaths.some(p => path === p || path.startsWith(p + '/')) || /uptimerobot|pingdom/i.test(userAgent)) {
             return new Response(null, { status: 204 });
@@ -114,7 +115,7 @@ export default {
 
         if (!slug || slug.includes('.')) return terminateWithLog(slug ? 'invalid_slug' : 'home_page_access');
 
-        // 2. Zero Latency Checks
+        // 2. Zero Latency Checks: בדיקת רשימה שחורה ושליפת נתוני לינק מרדיס
         const isBlacklisted = await redis.get(`blacklist:${ip}`);
         if (isBlacklisted) return terminateWithLog('blacklisted');
 
@@ -131,7 +132,7 @@ export default {
         if (!linkData) return terminateWithLog('link_not_found');
         if (linkData.status !== 'active') return terminateWithLog('link_inactive', linkData);
 
-        // 3. Bot Analysis
+        // 3. Bot Analysis: ניתוח בוטים מבוסס Cloudflare
         const botScore = request.cf?.botManagement?.score || 100;
         const isVerifiedBot = request.cf?.verifiedBot || false;
         const isBotUA = /bot|crawler|spider|googlebot/i.test(userAgent);
