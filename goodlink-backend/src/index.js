@@ -22,26 +22,31 @@ function ensureValidUrl(url) {
     return cleanUrl;
 }
 
-// פונקציה ישירה לשליחה ל-QStash ללא בדיקת כפילויות (לבוטים)
-async function sendToQStashDirect(env, p) {
+// פונקציית לוגינג מאוחדת וחסינה
+async function logClick(env, p, redis, useDedupe = true) {
     try {
-        let loggerUrl = env.LOGGER_WORKER_URL || "https://logger-worker.fancy-sky-7888.workers.dev";
-
-        if (!loggerUrl.startsWith('http://') && !loggerUrl.startsWith('https://')) {
-            loggerUrl = 'https://' + loggerUrl;
+        if (useDedupe) {
+            const dedupKey = `click:${p.ip}:${p.domain}:${p.slug}`;
+            const alreadyLogged = await redis.get(dedupKey);
+            if (alreadyLogged) return;
+            await redis.set(dedupKey, "1", { ex: 10 });
         }
 
-        console.log(`📤 [BOT] Sending to QStash -> ${loggerUrl}`);
+        // וידוא פורמט URL עבור QStash
+        let loggerUrl = env.LOGGER_WORKER_URL || "";
+        if (!loggerUrl.startsWith('http')) loggerUrl = `https://${loggerUrl}`;
+        loggerUrl = loggerUrl.replace(/\/$/, ""); // הסרת סלאש סופי
 
         const qstashUrl = `https://qstash.upstash.io/v2/publish/${loggerUrl}`;
 
-        const response = await fetch(qstashUrl, {
+        await fetch(qstashUrl, {
             method: "POST",
             headers: {
                 "Authorization": `Bearer ${env.QSTASH_TOKEN}`,
                 "Content-Type": "application/json"
             },
             body: JSON.stringify({
+                id: crypto.randomUUID(),
                 ip: p.ip,
                 slug: p.slug,
                 domain: p.domain,
@@ -49,85 +54,14 @@ async function sendToQStashDirect(env, p) {
                 botScore: p.botScore,
                 isVerifiedBot: p.isVerifiedBot,
                 verdict: p.verdict,
-                linkData: {
-                    id: p.linkData.id,
-                    user_id: p.linkData.user_id,
-                    target_url: p.linkData.target_url
-                },
+                linkData: p.linkData,
                 queryParams: p.queryParams,
                 timestamp: new Date().toISOString()
             })
         });
-
-        console.log(`📬 [BOT] QStash response: ${response.status}`);
-        if (!response.ok) {
-            const errText = await response.text();
-            console.error(`❌ [BOT] QStash Error: ${errText}`);
-        }
+        console.log(`📡 Log sent to QStash (${p.verdict})`);
     } catch (e) {
-        console.error("[BOT] QStash Error:", e);
-    }
-}
-
-// הוצאת הפונקציה החוצה כדי למנוע בעיות Context (this) ב-waitUntil
-async function sendToQStash(env, p, redis) {
-    try {
-        // בדיקת כפילויות ברמת Redis - חלון של 10 שניות
-        const dedupKey = `click:${p.ip}:${p.domain}:${p.slug}`;
-        const alreadyLogged = await redis.get(dedupKey);
-
-        if (alreadyLogged) {
-            console.log(`⏭️ Skipping duplicate click: ${dedupKey}`);
-            return; // כבר רשמנו את הקליק הזה
-        }
-
-        // סימון שרשמנו את הקליק (פג תוקף אחרי 10 שניות)
-        await redis.set(dedupKey, "1", { ex: 10 });
-
-        // בניית URL ל-QStash
-        let loggerUrl = env.LOGGER_WORKER_URL || "https://logger-worker.fancy-sky-7888.workers.dev";
-
-        // וודא שיש פרוטוקול
-        if (!loggerUrl.startsWith('http://') && !loggerUrl.startsWith('https://')) {
-            loggerUrl = 'https://' + loggerUrl;
-        }
-
-        console.log(`📤 Sending to QStash -> ${loggerUrl}`);
-
-        // QStash דורש את ה-URL של היעד בנתיב עצמו
-        const qstashUrl = `https://qstash.upstash.io/v2/publish/${loggerUrl}`;
-
-        const response = await fetch(qstashUrl, {
-            method: "POST",
-            headers: {
-                "Authorization": `Bearer ${env.QSTASH_TOKEN}`,
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                ip: p.ip,
-                slug: p.slug,
-                domain: p.domain,
-                userAgent: p.userAgent,
-                botScore: p.botScore,
-                isVerifiedBot: p.isVerifiedBot,
-                verdict: p.verdict,
-                linkData: {
-                    id: p.linkData.id,
-                    user_id: p.linkData.user_id,
-                    target_url: p.linkData.target_url
-                },
-                queryParams: p.queryParams,
-                timestamp: new Date().toISOString()
-            })
-        });
-
-        console.log(`📬 QStash response: ${response.status}`);
-        if (!response.ok) {
-            const errText = await response.text();
-            console.error(`❌ QStash Error: ${errText}`);
-        }
-    } catch (e) {
-        console.error("QStash Error:", e);
+        console.error("❌ Logger Error:", e);
     }
 }
 
@@ -135,7 +69,7 @@ export default {
     async fetch(request, env, ctx) {
         const url = new URL(request.url);
 
-        // פילטר קריטי למניעת כפילויות: התעלמות מבוטים של דפדפנים המחפשים אייקון
+        // 1. Zero Latency: פילטר קבצים מיותרים
         if (url.pathname === '/favicon.ico' || url.pathname === '/robots.txt') {
             return new Response(null, { status: 204 });
         }
@@ -153,44 +87,30 @@ export default {
 
         const redis = new Redis({ url: env.UPSTASH_REDIS_REST_URL, token: env.UPSTASH_REDIS_REST_TOKEN });
 
-        // זיהוי בוטים - 3 שלבים
-        // שלב 1: Cloudflare Bot Management Score
-        const botScore = request.cf?.botManagement?.score || 100;
-        
-        // חלוקת הציונים לפי המלצות Cloudflare:
-        // 1-10: בוט ודאי - חסימה מוחלטת
-        // 11-29: בוט סביר - חסימה או Fallback
-        // 30-59: חשוד - לוג למעקב (אפשר VPN/Proxy)
-        // 60-99: בן אדם - אישור מעבר
-        const isCertainBot = botScore <= 29;      // 1-29: בוט ודאי/סביר
-        const isSuspicious = botScore >= 30 && botScore <= 59;  // 30-59: חשוד
-        const isHuman = botScore >= 60;           // 60-99: בן אדם
-        
-        // שלב 2: User-Agent Check
-        const isVerifiedBot = request.cf?.verifiedBot || false;
-        const isBotUA = /bot|crawler|spider|googlebot|bingbot|yandexbot|facebookexternalhit/i.test(userAgent);
-        
-        // שלב 3: Redis Blacklist Check (בדיקה אם ה-IP נחסם ב-24 שעות האחרונות)
-        const blacklistKey = `blacklist:${ip}`;
-        const isBlacklisted = await redis.get(blacklistKey);
-        
+        // 2. Zero Latency: Redis Blacklist Check (הכי מהיר)
+        const isBlacklisted = await redis.get(`blacklist:${ip}`);
         if (isBlacklisted) {
-            console.log(`🚫 IP in blacklist: ${ip} (score: ${botScore})`);
+            console.log(`🚫 IP Blacklisted: ${ip}`);
             return htmlResponse(get404Page());
         }
-        
-        // בוט אם: ציון נמוך (1-29) או UA מזוהה או בוט מאומת
-        const isBot = isCertainBot || isVerifiedBot || isBotUA;
 
-        // שליפת לינק
+        // 3. Cloudflare Bot Score & User-Agent
+        const botScore = request.cf?.botManagement?.score || 100;
+        const isVerifiedBot = request.cf?.verifiedBot || false;
+        const isBotUA = /bot|crawler|spider|googlebot|bingbot|yandexbot|facebookexternalhit/i.test(userAgent);
+
+        // זיהוי מתחזה: טוען שהוא בוט ב-UA אבל קלאודפלייר לא אימתה אותו כבוט רשמי שלהם
+        const isImpersonator = isBotUA && !isVerifiedBot;
+
+        // בוט לצורך חסימה: ציון נמוך מאוד, או בוט מאומת, או מתחזה
+        const isBot = botScore <= 29 || isVerifiedBot || isImpersonator;
+
+        // שליפת לינק (Redis -> Supabase)
         let linkData = await redis.get(`link:${domain}:${slug}`);
         if (!linkData) {
             const query = new URLSearchParams({ slug: `eq.${slug}`, domain: `eq.${domain}`, select: '*' });
             const sbRes = await fetch(`${env.SUPABASE_URL}/rest/v1/links?${query}`, {
-                headers: {
-                    'apikey': env.SUPABASE_SERVICE_ROLE_KEY,
-                    'Authorization': `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}`
-                }
+                headers: { 'apikey': env.SUPABASE_SERVICE_ROLE_KEY, 'Authorization': `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}` }
             });
             const data = await sbRes.json();
             linkData = data?.[0];
@@ -202,69 +122,37 @@ export default {
         let verdict = "clean";
         let shouldBlock = false;
 
-        // קביעת Verdict לפי רמת האיום
+        // קביעת Verdict וטיפול בבוטים
         if (isBot) {
-            verdict = botScore <= 10 ? "bot_certain" : 
-                      botScore <= 29 ? "bot_likely" : "bot_verified";
-            const fallback = ensureValidUrl(linkData.fallback_url);
-            if (fallback) {
-                targetUrl = fallback;
-            } else {
-                shouldBlock = true;
+            verdict = isImpersonator ? "bot_impersonator" : (botScore <= 10 ? "bot_certain" : "bot_likely");
+
+            // הוספה ל-Blacklist ל-24 שעות אם הוא בוט ודאי או מתחזה
+            if (botScore <= 20 || isImpersonator) {
+                ctx.waitUntil(redis.set(`blacklist:${ip}`, "1", { ex: 86400 }));
             }
-        } else if (isSuspicious) {
-            verdict = "suspicious"; // ציון 30-59: חשוד אבל לא חוסמים
-        } else {
-            verdict = "clean"; // ציון 60-99: בן אדם
+
+            const fallback = ensureValidUrl(linkData.fallback_url);
+            if (fallback) targetUrl = fallback; else shouldBlock = true;
+        } else if (botScore <= 59) {
+            verdict = "suspicious";
         }
 
-        // הכנת נתונים ללוג
-        const logPayload = {
-            ip, slug, domain, userAgent, botScore, isVerifiedBot, verdict, linkData,
+        // הכנת Payload ללוג
+        const p = {
+            ip, slug, domain, userAgent, botScore, isVerifiedBot, verdict,
+            linkData: { id: linkData.id, user_id: linkData.user_id, target_url: linkData.target_url },
             queryParams: url.search
         };
 
-        // לוגיקה מיוחדת לפי רמת האיום
-        if (isBot) {
-            console.log(`🤖 Bot detected (score: ${botScore}) - verdict: ${verdict}`);
-            
-            // 1. הוספה ל-Blacklist רק לבוטים ודאיים (1-29)
-            if (botScore <= 29) {
-                const blacklistKey = `blacklist:${ip}`;
-                await redis.set(blacklistKey, JSON.stringify({
-                    ip,
-                    userAgent,
-                    botScore,
-                    isVerifiedBot,
-                    slug,
-                    domain,
-                    blockedAt: new Date().toISOString(),
-                    reason: botScore <= 10 ? 'bot_certain' : 
-                            botScore <= 29 ? 'bot_likely' : 
-                            (isBotUA ? 'bot_ua' : 'verified_bot')
-                }), { ex: 86400 }); // 24 hours
-                
-                console.log(`🚫 Added to blacklist: ${ip} (score: ${botScore}, 24h)`);
-            }
-            
-            // 2. שליחה ישירה ל-QStash בלי בדיקת כפילויות
-            ctx.waitUntil(sendToQStashDirect(env, logPayload));
-        } else if (isSuspicious) {
-            // משתמשים חשודים (30-59) - לוגינג רגיל אבל ללא blacklist
-            console.log(`⚠️ Suspicious traffic (score: ${botScore})`);
-            ctx.waitUntil(sendToQStash(env, logPayload, redis));
-        } else {
-            // משתמשים רגילים (60-99) - עם הגנת כפילויות
-            ctx.waitUntil(sendToQStash(env, logPayload, redis));
-        }
+        // שליחת לוג (בוטים ללא דה-דופליקציה כדי לוודא תיעוד)
+        ctx.waitUntil(logClick(env, p, redis, !isBot));
 
         if (shouldBlock) return htmlResponse(get404Page());
 
-        // הוספת Query Params וביצוע Redirect
+        // Redirect סופי עם שמירה על Query Params
         try {
             const finalUrl = new URL(targetUrl);
-            const incomingParams = new URLSearchParams(url.search);
-            incomingParams.forEach((value, key) => finalUrl.searchParams.set(key, value));
+            new URLSearchParams(url.search).forEach((v, k) => finalUrl.searchParams.set(k, v));
             return Response.redirect(finalUrl.toString(), 302);
         } catch (e) {
             return Response.redirect(targetUrl, 302);
