@@ -123,10 +123,7 @@ export default {
             return terminateWithLog('invalid_slug_format');
         }
 
-        // 3. Zero Latency Checks: בדיקת רשימה שחורה ושליפת נתוני לינק מרדיס
-        const isBlacklisted = await redis.get(`blacklist:${ip}`);
-        if (isBlacklisted) return terminateWithLog('blacklisted');
-
+        // 3. Zero Latency: שליפת נתוני לינק (קודם!) כדי שיהיו נתונים מלאים גם לבוטים/Blacklist
         let linkData = await redis.get(`link:${domain}:${slug}`);
         if (!linkData) {
             const sbRes = await fetch(`${env.SUPABASE_URL}/rest/v1/links?slug=eq.${slug}&domain=eq.${domain}&select=*`, {
@@ -137,10 +134,20 @@ export default {
             if (linkData) ctx.waitUntil(redis.set(`link:${domain}:${slug}`, JSON.stringify(linkData), { ex: 3600 }));
         }
 
+        // אם הלינק לא קיים - 404 ללא נתוני לינק
         if (!linkData) return terminateWithLog('link_not_found');
+
+        // אם הלינק לא פעיל - 404 עם נתוני לינק
         if (linkData.status !== 'active') return terminateWithLog('link_inactive', linkData);
 
-        // 4. Bot Analysis: ניתוח בוטים מבוסס Cloudflare
+        // 4. בדיקת Blacklist (אחרי שליפת הלינק!) - עכשיו עם נתונים מלאים
+        const isBlacklisted = await redis.get(`blacklist:${ip}`);
+        if (isBlacklisted) {
+            console.log(`🚫 IP Blacklisted: ${ip} → ${domain}/${slug} (Link ID: ${linkData.id})`);
+            return terminateWithLog('blacklisted', linkData); // עם נתוני לינק מלאים!
+        }
+
+        // 5. Bot Analysis: ניתוח בוטים מבוסס Cloudflare
         const botScore = request.cf?.botManagement?.score || 100;
         const isVerifiedBot = request.cf?.verifiedBot || false;
         const isBotUA = /bot|crawler|spider|googlebot/i.test(userAgent);
