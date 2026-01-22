@@ -41,29 +41,34 @@ async function sendToQStash(env, p, redis) {
         const loggerUrl = env.LOGGER_WORKER_URL || "https://logger-worker.fancy-sky-7888.workers.dev";
         console.log(`📤 Sending to QStash -> ${loggerUrl}`);
 
-        const qstashUrl = `https://qstash.upstash.io/v2/publish/${loggerUrl}`;
-
-        const response = await fetch(qstashUrl, {
+        const response = await fetch("https://qstash.upstash.io/v2/publish", {
             method: "POST",
             headers: {
                 "Authorization": `Bearer ${env.QSTASH_TOKEN}`,
                 "Content-Type": "application/json"
             },
             body: JSON.stringify({
-                ip: p.ip,
-                slug: p.slug,
-                domain: p.domain,
-                userAgent: p.userAgent,
-                botScore: p.botScore,
-                isVerifiedBot: p.isVerifiedBot,
-                verdict: p.verdict,
-                linkData: {
-                    id: p.linkData.id,
-                    user_id: p.linkData.user_id,
-                    target_url: p.linkData.target_url
+                url: loggerUrl, // ה-URL של ה-logger worker
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
                 },
-                queryParams: p.queryParams,
-                timestamp: new Date().toISOString()
+                body: JSON.stringify({
+                    ip: p.ip,
+                    slug: p.slug,
+                    domain: p.domain,
+                    userAgent: p.userAgent,
+                    botScore: p.botScore,
+                    isVerifiedBot: p.isVerifiedBot,
+                    verdict: p.verdict,
+                    linkData: {
+                        id: p.linkData.id,
+                        user_id: p.linkData.user_id,
+                        target_url: p.linkData.target_url
+                    },
+                    queryParams: p.queryParams,
+                    timestamp: new Date().toISOString()
+                })
             })
         });
 
