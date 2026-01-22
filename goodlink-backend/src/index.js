@@ -25,7 +25,7 @@ function ensureValidUrl(url) {
 // פונקציית לוגינג מאוחדת וחסינה
 async function logClick(env, p, redis, useDedupe = true) {
     try {
-        if (useDedupe) {
+        if (useDedupe && redis) {
             const dedupKey = `click:${p.ip}:${p.domain}:${p.slug}`;
             const alreadyLogged = await redis.get(dedupKey);
             if (alreadyLogged) return;
@@ -83,7 +83,23 @@ export default {
             status, headers: { "Content-Type": "text/html;charset=UTF-8" }
         });
 
-        if (!slug || slug.includes('.')) return htmlResponse(get404Page());
+        // פונקציית עזר: לוג + 404
+        const logAndBlock = (verdict, linkData = null) => {
+            const p = {
+                ip, slug, domain, userAgent,
+                botScore: request.cf?.botManagement?.score || 100,
+                isVerifiedBot: request.cf?.verifiedBot || false,
+                verdict,
+                linkData: linkData ? { id: linkData.id, user_id: linkData.user_id, target_url: linkData.target_url } : null,
+                queryParams: url.search
+            };
+            ctx.waitUntil(logClick(env, p, null, false)); // ללא Redis, ללא דה-דופליקציה
+            return htmlResponse(get404Page());
+        };
+
+        if (!slug || slug.includes('.')) {
+            return logAndBlock('invalid_slug');
+        }
 
         const redis = new Redis({ url: env.UPSTASH_REDIS_REST_URL, token: env.UPSTASH_REDIS_REST_TOKEN });
 
@@ -91,7 +107,7 @@ export default {
         const isBlacklisted = await redis.get(`blacklist:${ip}`);
         if (isBlacklisted) {
             console.log(`🚫 IP Blacklisted: ${ip}`);
-            return htmlResponse(get404Page());
+            return logAndBlock('blacklisted');
         }
 
         // 3. Cloudflare Bot Score & User-Agent
@@ -116,7 +132,13 @@ export default {
             linkData = data?.[0];
         }
 
-        if (!linkData || linkData.status !== 'active') return htmlResponse(get404Page());
+        if (!linkData) {
+            return logAndBlock('link_not_found');
+        }
+
+        if (linkData.status !== 'active') {
+            return logAndBlock('link_inactive', linkData);
+        }
 
         let targetUrl = ensureValidUrl(linkData.target_url);
         let verdict = "clean";
