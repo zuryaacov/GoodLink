@@ -38,7 +38,13 @@ async function sendToQStash(env, p, redis) {
         await redis.set(dedupKey, "1", { ex: 10 });
 
         // בניית URL ל-QStash
-        const loggerUrl = env.LOGGER_WORKER_URL || "https://logger-worker.fancy-sky-7888.workers.dev";
+        let loggerUrl = env.LOGGER_WORKER_URL || "https://logger-worker.fancy-sky-7888.workers.dev";
+
+        // וודא שיש פרוטוקול
+        if (!loggerUrl.startsWith('http://') && !loggerUrl.startsWith('https://')) {
+            loggerUrl = 'https://' + loggerUrl;
+        }
+
         console.log(`📤 Sending to QStash -> ${loggerUrl}`);
 
         const response = await fetch("https://qstash.upstash.io/v2/publish", {
