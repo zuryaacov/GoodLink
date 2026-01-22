@@ -23,22 +23,31 @@ function ensureValidUrl(url) {
 }
 
 // הוצאת הפונקציה החוצה כדי למנוע בעיות Context (this) ב-waitUntil
-async function sendToQStash(env, p) {
+async function sendToQStash(env, p, redis) {
     try {
-        const targetWorker = env.LOGGER_WORKER_URL.replace(/^https?:\/\//, '').replace(/\/$/, '');
-        const qstashUrl = `https://qstash.upstash.io/v2/publish/https://${targetWorker}`;
+        // בדיקת כפילויות ברמת Redis - חלון של 10 שניות
+        const dedupKey = `click:${p.ip}:${p.domain}:${p.slug}`;
+        const alreadyLogged = await redis.get(dedupKey);
 
-        // יצירת ID ייחודי למניעת כפילויות (Deduplication)
-        // משלב IP + slug + domain + timestamp מעוגל ל-5 שניות
-        const timeWindow = Math.floor(Date.now() / 5000); // חלון של 5 שניות
-        const deduplicationId = `${p.ip}-${p.domain}-${p.slug}-${timeWindow}`;
+        if (alreadyLogged) {
+            console.log(`⏭️ Skipping duplicate click: ${dedupKey}`);
+            return; // כבר רשמנו את הקליק הזה
+        }
 
-        await fetch(qstashUrl, {
+        // סימון שרשמנו את הקליק (פג תוקף אחרי 10 שניות)
+        await redis.set(dedupKey, "1", { ex: 10 });
+
+        // בניית URL ל-QStash
+        const loggerUrl = env.LOGGER_WORKER_URL || "https://logger-worker.fancy-sky-7888.workers.dev";
+        console.log(`📤 Sending to QStash -> ${loggerUrl}`);
+
+        const qstashUrl = `https://qstash.upstash.io/v2/publish/${loggerUrl}`;
+
+        const response = await fetch(qstashUrl, {
             method: "POST",
             headers: {
                 "Authorization": `Bearer ${env.QSTASH_TOKEN}`,
-                "Content-Type": "application/json",
-                "Upstash-Deduplication-Id": deduplicationId // מונע כפילויות ב-QStash
+                "Content-Type": "application/json"
             },
             body: JSON.stringify({
                 ip: p.ip,
@@ -57,6 +66,12 @@ async function sendToQStash(env, p) {
                 timestamp: new Date().toISOString()
             })
         });
+
+        console.log(`📬 QStash response: ${response.status}`);
+        if (!response.ok) {
+            const errText = await response.text();
+            console.error(`❌ QStash Error: ${errText}`);
+        }
     } catch (e) {
         console.error("QStash Error:", e);
     }
@@ -127,7 +142,8 @@ export default {
         };
 
         // שימוש בפונקציה החיצונית כדי להבטיח עבודה בבוטים ובמשימות רקע
-        ctx.waitUntil(sendToQStash(env, logPayload));
+        // מעבירים את redis כדי לבדוק כפילויות
+        ctx.waitUntil(sendToQStash(env, logPayload, redis));
 
         if (shouldBlock) return htmlResponse(get404Page());
 
