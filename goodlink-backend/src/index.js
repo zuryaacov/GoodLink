@@ -25,13 +25,14 @@ function ensureValidUrl(url) {
 // פונקציית לוגינג משתמשת ב-Ray ID כדי למנוע כפל רישום של אותה בקשה
 async function logClick(env, p, redis) {
     try {
-        const dedupKey = `req:${p.rayId}`;
-        // ניסיון לקבוע מפתח ברדיס - אם הוא כבר קיים, הפונקציה תעצור
-        // nx: true מבטיח שהסט יצליח רק אם המפתח לא קיים
-        const isNewRequest = await redis.set(dedupKey, "1", { ex: 60, nx: true });
+        const dedupKey = `log:${p.rayId}:${p.slug}`;
 
-        if (!isNewRequest) {
-            console.log(`⏭️ Duplicate log detected for Ray ID: ${p.rayId} - skipping QStash`);
+        // ✅ FIX: פקודה אטומית אחת - SET with NX and EX
+        // תחזיר "OK" אם הצליח, null אם המפתח כבר קיים
+        const result = await redis.set(dedupKey, "1", { nx: true, ex: 120 });
+
+        if (result === null) {
+            console.log(`⏭️ Duplicate log for Ray ID: ${p.rayId} - already logged, skipping`);
             return;
         }
 
@@ -91,21 +92,16 @@ export default {
         });
 
         // פונקציה לעצירת הריצה ושליחת לוג במקרה של חסימה/שגיאה
-        // ✅ FIX: הוספת דגל logged כדי למנוע לוגינג כפול
-        let logged = false;
         const terminateWithLog = (verdict, linkData = null) => {
-            if (!logged) {
-                const p = {
-                    rayId, ip, slug: slug || "root", domain, userAgent,
-                    botScore: request.cf?.botManagement?.score || 100,
-                    isVerifiedBot: request.cf?.verifiedBot || false,
-                    verdict,
-                    linkData: linkData ? { id: linkData.id, user_id: linkData.user_id, target_url: linkData.target_url } : null,
-                    queryParams: url.search
-                };
-                ctx.waitUntil(logClick(env, p, redis));
-                logged = true;
-            }
+            const p = {
+                rayId, ip, slug: slug || "root", domain, userAgent,
+                botScore: request.cf?.botManagement?.score || 100,
+                isVerifiedBot: request.cf?.verifiedBot || false,
+                verdict,
+                linkData: linkData ? { id: linkData.id, user_id: linkData.user_id, target_url: linkData.target_url } : null,
+                queryParams: url.search
+            };
+            ctx.waitUntil(logClick(env, p, redis));
             return htmlResponse(get404Page());
         };
 
@@ -149,16 +145,13 @@ export default {
         }
 
         // 4. Final Logging & Execution
-        // ✅ FIX: לוגינג רק אם עוד לא נרשם
-        if (!logged) {
-            const p = {
-                rayId, ip, slug, domain, userAgent, botScore, isVerifiedBot, verdict,
-                linkData: { id: linkData.id, user_id: linkData.user_id, target_url: linkData.target_url },
-                queryParams: url.search
-            };
-            ctx.waitUntil(logClick(env, p, redis));
-            logged = true;
-        }
+        const p = {
+            rayId, ip, slug, domain, userAgent, botScore, isVerifiedBot, verdict,
+            linkData: { id: linkData.id, user_id: linkData.user_id, target_url: linkData.target_url },
+            queryParams: url.search
+        };
+
+        ctx.waitUntil(logClick(env, p, redis));
 
         if (shouldBlock) return htmlResponse(get404Page());
 
