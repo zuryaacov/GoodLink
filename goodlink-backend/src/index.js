@@ -1,5 +1,7 @@
 import { Redis } from "@upstash/redis/cloudflare";
 
+// --- Utility Functions ---
+
 function get404Page() {
     return `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>404 - Link Not Found</title><style>
@@ -11,7 +13,6 @@ function get404Page() {
     </style></head><body><div class="c"><h1>404</h1><p>Sorry, the link you're looking for doesn't exist or has been moved.</p></div></body></html>`;
 }
 
-// פונקציה קריטית: מוודאת שה-URL תקין ל-Redirect
 function ensureValidUrl(url) {
     if (!url) return null;
     let cleanUrl = url.trim();
@@ -21,9 +22,50 @@ function ensureValidUrl(url) {
     return cleanUrl;
 }
 
+// הוצאת הפונקציה החוצה כדי למנוע בעיות Context (this) ב-waitUntil
+async function sendToQStash(env, p) {
+    try {
+        const targetWorker = env.LOGGER_WORKER_URL.replace(/^https?:\/\//, '').replace(/\/$/, '');
+        const qstashUrl = `https://qstash.upstash.io/v2/publish/https://${targetWorker}`;
+
+        await fetch(qstashUrl, {
+            method: "POST",
+            headers: {
+                "Authorization": `Bearer ${env.QSTASH_TOKEN}`,
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                id: crypto.randomUUID(),
+                ip: p.ip,
+                slug: p.slug,
+                domain: p.domain,
+                userAgent: p.userAgent,
+                botScore: p.botScore,
+                isVerifiedBot: p.isVerifiedBot,
+                verdict: p.verdict,
+                linkData: {
+                    id: p.linkData.id,
+                    user_id: p.linkData.user_id,
+                    target_url: p.linkData.target_url
+                },
+                queryParams: p.queryParams,
+                timestamp: new Date().toISOString()
+            })
+        });
+    } catch (e) {
+        console.error("QStash Error:", e);
+    }
+}
+
 export default {
     async fetch(request, env, ctx) {
         const url = new URL(request.url);
+
+        // פילטר קריטי למניעת כפילויות: התעלמות מבוטים של דפדפנים המחפשים אייקון
+        if (url.pathname === '/favicon.ico' || url.pathname === '/robots.txt') {
+            return new Response(null, { status: 204 });
+        }
+
         const slug = url.pathname.replace(/^\//, '').split('?')[0].toLowerCase();
         const domain = url.hostname.replace(/^www\./, '');
         const ip = request.headers.get("cf-connecting-ip");
@@ -37,19 +79,21 @@ export default {
 
         const redis = new Redis({ url: env.UPSTASH_REDIS_REST_URL, token: env.UPSTASH_REDIS_REST_TOKEN });
 
-        // זיהוי בוטים - Regex שמרני כדי למנוע זיהוי שגוי של משתמשים
+        // זיהוי בוטים
         const botScore = request.cf?.botManagement?.score || 100;
         const isVerifiedBot = request.cf?.verifiedBot || false;
         const isBotUA = /bot|crawler|spider|googlebot|bingbot|yandexbot|facebookexternalhit/i.test(userAgent);
-
-        // הגדרת בוט ודאי
         const isCertainBot = isVerifiedBot || isBotUA || (botScore < 5);
 
+        // שליפת לינק
         let linkData = await redis.get(`link:${domain}:${slug}`);
         if (!linkData) {
             const query = new URLSearchParams({ slug: `eq.${slug}`, domain: `eq.${domain}`, select: '*' });
             const sbRes = await fetch(`${env.SUPABASE_URL}/rest/v1/links?${query}`, {
-                headers: { 'apikey': env.SUPABASE_SERVICE_ROLE_KEY, 'Authorization': `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}` }
+                headers: {
+                    'apikey': env.SUPABASE_SERVICE_ROLE_KEY,
+                    'Authorization': `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}`
+                }
             });
             const data = await sbRes.json();
             linkData = data?.[0];
@@ -71,45 +115,25 @@ export default {
             }
         }
 
-        // שליחת לוג אחד בלבד
-        ctx.waitUntil(this.postToQStash(env, { ip, slug, domain, userAgent, botScore, isVerifiedBot, verdict, linkData, url }));
+        // הכנת נתונים ללוג
+        const logPayload = {
+            ip, slug, domain, userAgent, botScore, isVerifiedBot, verdict, linkData,
+            queryParams: url.search
+        };
+
+        // שימוש בפונקציה החיצונית כדי להבטיח עבודה בבוטים ובמשימות רקע
+        ctx.waitUntil(sendToQStash(env, logPayload));
 
         if (shouldBlock) return htmlResponse(get404Page());
 
-        // הוספת Query Params ליעד הסופי
+        // הוספת Query Params וביצוע Redirect
         try {
             const finalUrl = new URL(targetUrl);
             const incomingParams = new URLSearchParams(url.search);
             incomingParams.forEach((value, key) => finalUrl.searchParams.set(key, value));
             return Response.redirect(finalUrl.toString(), 302);
         } catch (e) {
-            // אם ה-URL בבסיס הנתונים היה ממש שבור
             return Response.redirect(targetUrl, 302);
         }
-    },
-
-    async postToQStash(env, p) {
-        try {
-            let targetWorker = env.LOGGER_WORKER_URL.replace(/^https?:\/\//, '').replace(/\/$/, '');
-            const qstashUrl = `https://qstash.upstash.io/v2/publish/https://${targetWorker}`;
-
-            await fetch(qstashUrl, {
-                method: "POST",
-                headers: { "Authorization": `Bearer ${env.QSTASH_TOKEN}`, "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    id: crypto.randomUUID(),
-                    ip: p.ip,
-                    slug: p.slug,
-                    domain: p.domain,
-                    userAgent: p.userAgent,
-                    botScore: p.botScore,
-                    isVerifiedBot: p.isVerifiedBot,
-                    verdict: p.verdict,
-                    linkData: { id: p.linkData.id, user_id: p.linkData.user_id, target_url: p.linkData.target_url },
-                    queryParams: p.url.search,
-                    timestamp: new Date().toISOString()
-                })
-            });
-        } catch (e) { }
     }
 };
