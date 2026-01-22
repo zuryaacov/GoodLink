@@ -22,20 +22,18 @@ function ensureValidUrl(url) {
     return cleanUrl;
 }
 
-// פונקציית לוגינג מאוחדת המשתמשת ב-Ray ID למניעת כפילויות
+// פונקציית לוגינג שמשתמשת ב-Ray ID כדי למנוע כפל רישום של אותה בקשה
 async function logClick(env, p, redis) {
     try {
-        // שימוש ב-Ray ID כמפתח למניעת כפילות של אותה בקשה בדיוק
         const dedupKey = `req:${p.rayId}`;
-        const alreadyProcessed = await redis.get(dedupKey);
+        // ניסיון לקבוע מפתח ברדיס - אם הוא כבר קיים, הפונקציה תעצור
+        // nx: true מבטיח שהסט יצליח רק אם המפתח לא קיים
+        const isNewRequest = await redis.set(dedupKey, "1", { ex: 60, nx: true });
 
-        if (alreadyProcessed) {
-            console.log(`⏭️ Request ${p.rayId} already processed, skipping.`);
+        if (!isNewRequest) {
+            console.log(`⏭️ Duplicate log detected for Ray ID: ${p.rayId} - skipping QStash`);
             return;
         }
-
-        // סימון הבקשה כמעובדת למשך 60 שניות
-        await redis.set(dedupKey, "1", { ex: 60 });
 
         let loggerUrl = env.LOGGER_WORKER_URL || "";
         if (!loggerUrl.startsWith('http')) loggerUrl = `https://${loggerUrl}`;
@@ -64,7 +62,7 @@ async function logClick(env, p, redis) {
                 timestamp: new Date().toISOString()
             })
         });
-        console.log(`📡 Log sent to QStash (${p.verdict}) for Ray: ${p.rayId}`);
+        console.log(`📡 Log sent to QStash for Ray: ${p.rayId}`);
     } catch (e) {
         console.error("❌ Logger Error:", e);
     }
@@ -74,14 +72,12 @@ export default {
     async fetch(request, env, ctx) {
         const url = new URL(request.url);
         const userAgent = request.headers.get("user-agent") || "";
-        const rayId = request.headers.get("cf-ray") || crypto.randomUUID(); // מזהה בקשה ייחודי
+        const rayId = request.headers.get("cf-ray") || crypto.randomUUID();
         const path = url.pathname.toLowerCase();
 
         // 1. Noise Filter
         const noisePaths = ['/favicon.ico', '/robots.txt', '/index.php', '/.env', '/wp-login.php', '/admin', '/api'];
-        const noiseUA = /uptimerobot|pingdom|uptime|healthcheck/i;
-
-        if (noisePaths.some(p => path === p || path.startsWith(p + '/')) || noiseUA.test(userAgent)) {
+        if (noisePaths.some(p => path === p || path.startsWith(p + '/')) || /uptimerobot|pingdom/i.test(userAgent)) {
             return new Response(null, { status: 204 });
         }
 
@@ -89,14 +85,13 @@ export default {
         const domain = url.hostname.replace(/^www\./, '');
         const ip = request.headers.get("cf-connecting-ip");
 
+        const redis = new Redis({ url: env.UPSTASH_REDIS_REST_URL, token: env.UPSTASH_REDIS_REST_TOKEN });
         const htmlResponse = (html, status = 404) => new Response(html, {
             status, headers: { "Content-Type": "text/html;charset=UTF-8" }
         });
 
-        const redis = new Redis({ url: env.UPSTASH_REDIS_REST_URL, token: env.UPSTASH_REDIS_REST_TOKEN });
-
-        // פונקציית עזר לחסימה
-        const logAndBlock = (verdict, linkData = null) => {
+        // פונקציה לעצירת הריצה ושליחת לוג במקרה של חסימה/שגיאה
+        const terminateWithLog = (verdict, linkData = null) => {
             const p = {
                 rayId, ip, slug: slug || "root", domain, userAgent,
                 botScore: request.cf?.botManagement?.score || 100,
@@ -109,16 +104,15 @@ export default {
             return htmlResponse(get404Page());
         };
 
-        if (!slug || slug.includes('.')) return logAndBlock(slug ? 'invalid_slug' : 'home_page_access');
+        if (!slug || slug.includes('.')) return terminateWithLog(slug ? 'invalid_slug' : 'home_page_access');
 
         // 2. Zero Latency Checks
         const isBlacklisted = await redis.get(`blacklist:${ip}`);
-        if (isBlacklisted) return logAndBlock('blacklisted');
+        if (isBlacklisted) return terminateWithLog('blacklisted');
 
         let linkData = await redis.get(`link:${domain}:${slug}`);
         if (!linkData) {
-            const query = new URLSearchParams({ slug: `eq.${slug}`, domain: `eq.${domain}`, select: '*' });
-            const sbRes = await fetch(`${env.SUPABASE_URL}/rest/v1/links?${query}`, {
+            const sbRes = await fetch(`${env.SUPABASE_URL}/rest/v1/links?slug=eq.${slug}&domain=eq.${domain}&select=*`, {
                 headers: { 'apikey': env.SUPABASE_SERVICE_ROLE_KEY, 'Authorization': `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}` }
             });
             const data = await sbRes.json();
@@ -126,13 +120,13 @@ export default {
             if (linkData) ctx.waitUntil(redis.set(`link:${domain}:${slug}`, JSON.stringify(linkData), { ex: 3600 }));
         }
 
-        if (!linkData) return logAndBlock('link_not_found');
-        if (linkData.status !== 'active') return logAndBlock('link_inactive', linkData);
+        if (!linkData) return terminateWithLog('link_not_found');
+        if (linkData.status !== 'active') return terminateWithLog('link_inactive', linkData);
 
         // 3. Bot Analysis
         const botScore = request.cf?.botManagement?.score || 100;
         const isVerifiedBot = request.cf?.verifiedBot || false;
-        const isBotUA = /bot|crawler|spider|googlebot|facebookexternalhit/i.test(userAgent);
+        const isBotUA = /bot|crawler|spider|googlebot/i.test(userAgent);
         const isImpersonator = isBotUA && !isVerifiedBot;
         const isBot = botScore <= 29 || isVerifiedBot || isImpersonator;
 
@@ -149,7 +143,7 @@ export default {
             verdict = "suspicious";
         }
 
-        // 4. Logging & Redirect
+        // 4. Final Logging & Execution
         const p = {
             rayId, ip, slug, domain, userAgent, botScore, isVerifiedBot, verdict,
             linkData: { id: linkData.id, user_id: linkData.user_id, target_url: linkData.target_url },
