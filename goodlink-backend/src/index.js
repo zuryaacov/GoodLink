@@ -53,8 +53,7 @@ export default {
         const slug = extractSlug(url.pathname);
         const domain = url.hostname.replace(/^www\./, '');
         const ip = request.headers.get("cf-connecting-ip");
-
-        // יצירת מזהה ייחודי לקליק הנוכחי למניעת כפילויות ב-DB
+        const userAgent = request.headers.get("user-agent") || "";
         const clickId = crypto.randomUUID();
 
         if (!slug) return new Response("Not Found", { status: 404 });
@@ -64,16 +63,22 @@ export default {
             token: env.UPSTASH_REDIS_REST_TOKEN,
         });
 
+        // 1. זיהוי בוטים (Cloudflare + User Agent)
         const botScore = request.cf?.botManagement?.score || 100;
         const isVerifiedBot = request.cf?.verifiedBot || false;
+        const isBotUA = /bot|crawler|spider|google|bing|facebookexternalhit|adsbot-google|applebot/i.test(userAgent.toLowerCase());
 
+        // הגדרת בוט ודאי: בוט מאומת, UA חשוד, או ציון נמוך מאוד
+        const isCertainBot = isVerifiedBot || isBotUA || (botScore < 10);
+
+        // 2. בדיקת הצפה (Flood Guard)
         const uniqueKey = `limit:${ip}:${slug}`;
         const isRepeatClick = await redis.get(uniqueKey);
-
         if (isRepeatClick && botScore < 30 && !isVerifiedBot) {
             return new Response("Rate Limit Exceeded", { status: 429 });
         }
 
+        // 3. שליפת הנתונים
         let linkData = null;
         try {
             linkData = await redis.get(`link:${domain}:${slug}`);
@@ -85,71 +90,71 @@ export default {
         }
 
         if (!linkData || linkData.status !== 'active') {
-            return new Response("Link Not Found or Inactive", { status: 404 });
+            return new Response("Link Not Found", { status: 404 });
         }
 
-        const finalUrl = mergeQueryParams(linkData.target_url, url.search);
-        const response = Response.redirect(finalUrl, 302);
+        // 4. לוגיקת ניתוב לבוטים (אם מזוהה בוט, הוא לא מגיע ל-Target URL)
+        if (isCertainBot) {
+            // שולחים לוג בכל זאת כדי שהאפילייאט יראה שהיה בוט
+            ctx.waitUntil(this.sendLogToQStash(env, clickId, ip, slug, domain, userAgent, botScore, isVerifiedBot, linkData, url, "blocked_bot"));
 
-        // משימות רקע
-        ctx.waitUntil((async () => {
-            try {
-                // א. הגנת הצפה (Flood Guard) ברמת ה-IP
-                await redis.set(uniqueKey, "1", { ex: 60 });
-
-                // ב. מניעת לוגים כפולים (Deduplication) - 3 שניות שקט לאותו IP ולינק
-                const dedupeKey = `sent:${ip}:${slug}`;
-                const alreadySent = await redis.get(dedupeKey);
-                if (alreadySent) {
-                    console.log("🚫 [Deduplication] Rapid click detected - skipping log");
-                    return;
-                }
-                await redis.set(dedupeKey, "1", { ex: 3 });
-
-                // ג. הכנת הכתובת ל-QStash
-                const cleanWorkerUrl = env.LOGGER_WORKER_URL.replace(/^https?:\/\//, '');
-                const qstashUrl = `https://qstash.upstash.io/v2/publish/https://${cleanWorkerUrl}`;
-
-                console.log(`🚀 [QStash] Sending to: ${qstashUrl}`);
-
-                const qstashResponse = await fetch(qstashUrl, {
-                    method: "POST",
-                    headers: {
-                        "Authorization": `Bearer ${env.QSTASH_TOKEN}`,
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify({
-                        id: clickId, // שליחת ה-ID הייחודי
-                        ip: ip,
-                        slug: slug,
-                        domain: domain,
-                        userAgent: request.headers.get("user-agent"),
-                        referer: request.headers.get("referer"),
-                        country: request.cf?.country,
-                        city: request.cf?.city,
-                        botScore: botScore,
-                        isVerifiedBot: isVerifiedBot,
-                        linkData: {
-                            id: linkData.id,
-                            user_id: linkData.user_id,
-                            target_url: finalUrl
-                        },
-                        queryParams: url.search,
-                        timestamp: new Date().toISOString()
-                    })
-                });
-
-                if (!qstashResponse.ok) {
-                    const errorText = await qstashResponse.text();
-                    console.error(`❌ [QStash Failed] Status: ${qstashResponse.status}, Error: ${errorText}`);
-                } else {
-                    console.log(`✅ [QStash Success] Message sent to Logger (ID: ${clickId})`);
-                }
-            } catch (err) {
-                console.error("💥 [Worker Error] Background task failed:", err);
+            // ניתוב ל-Fallback או 404
+            if (linkData.fallback_url) {
+                return Response.redirect(linkData.fallback_url, 302);
             }
+            return new Response("Not Found", { status: 404 });
+        }
+
+        // 5. ניתוב משתמש תקין
+        const finalUrl = mergeQueryParams(linkData.target_url, url.search);
+
+        ctx.waitUntil((async () => {
+            await redis.set(uniqueKey, "1", { ex: 60 });
+            await this.sendLogToQStash(env, clickId, ip, slug, domain, userAgent, botScore, isVerifiedBot, linkData, url, "clean");
         })());
 
-        return response;
+        return Response.redirect(finalUrl, 302);
+    },
+
+    // פונקציית עזר לשליחה ל-QStash
+    async sendLogToQStash(env, clickId, ip, slug, domain, userAgent, botScore, isVerifiedBot, linkData, url, forceVerdict) {
+        try {
+            const dedupeKey = `sent:${ip}:${slug}`;
+            const alreadySent = await new Redis({ url: env.UPSTASH_REDIS_REST_URL, token: env.UPSTASH_REDIS_REST_TOKEN }).get(dedupeKey);
+            if (alreadySent && forceVerdict !== "blocked_bot") return;
+
+            await new Redis({ url: env.UPSTASH_REDIS_REST_URL, token: env.UPSTASH_REDIS_REST_TOKEN }).set(dedupeKey, "1", { ex: 3 });
+
+            const cleanWorkerUrl = env.LOGGER_WORKER_URL.replace(/^https?:\/\//, '');
+            const qstashUrl = `https://qstash.upstash.io/v2/publish/https://${cleanWorkerUrl}`;
+
+            await fetch(qstashUrl, {
+                method: "POST",
+                headers: {
+                    "Authorization": `Bearer ${env.QSTASH_TOKEN}`,
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    id: clickId,
+                    ip: ip,
+                    slug: slug,
+                    domain: domain,
+                    userAgent: userAgent,
+                    referer: "",
+                    botScore: botScore,
+                    isVerifiedBot: isVerifiedBot,
+                    verdict: forceVerdict, // מעביר ללוגר אם זה נחסם אקטיבית
+                    linkData: {
+                        id: linkData.id,
+                        user_id: linkData.user_id,
+                        target_url: linkData.target_url
+                    },
+                    queryParams: url.search,
+                    timestamp: new Date().toISOString()
+                })
+            });
+        } catch (err) {
+            console.error("QStash Logging Error:", err);
+        }
     }
 };
