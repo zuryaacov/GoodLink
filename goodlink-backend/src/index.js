@@ -27,13 +27,14 @@ export default {
 
         const redis = new Redis({ url: env.UPSTASH_REDIS_REST_URL, token: env.UPSTASH_REDIS_REST_TOKEN });
 
-        // זיהוי בוטים
+        // 1. זיהוי בוטים מדויק יותר (רק בוטים ודאיים)
         const botScore = request.cf?.botManagement?.score || 100;
         const isVerifiedBot = request.cf?.verifiedBot || false;
-        const isBotUA = /bot|crawler|spider|google|bing|facebook|apple/i.test(userAgent);
-        const isCertainBot = isVerifiedBot || isBotUA || (botScore < 10);
+        // צמצום הרשימה כדי לא לתפוס משתמשים רגילים בטעות
+        const isBotUA = /bot|crawler|spider|googlebot|bingbot|yandexbot|facebookexternalhit/i.test(userAgent);
+        const isCertainBot = isVerifiedBot || isBotUA || (botScore < 5); // סף מחמיר יותר של 5
 
-        // שליפת לינק
+        // 2. שליפת לינק
         let linkData = await redis.get(`link:${domain}:${slug}`);
         if (!linkData) {
             const sbRes = await fetch(`${env.SUPABASE_URL}/rest/v1/links?slug=eq.${slug}&domain=eq.${domain}&select=*`, {
@@ -45,33 +46,37 @@ export default {
 
         if (!linkData || linkData.status !== 'active') return htmlResponse(get404Page());
 
+        // 3. קביעת היעד והסטטוס (ללא כפילות קוד)
         let finalRedirectUrl = linkData.target_url;
-        let verdict = isCertainBot ? "blocked_bot" : "clean";
+        let verdict = "clean";
+        let shouldBlock = false;
 
-        // אם בוט - חוסמים או מעבירים ל-Fallback
         if (isCertainBot) {
+            verdict = "blocked_bot";
             if (linkData.fallback_url) {
                 finalRedirectUrl = linkData.fallback_url;
             } else {
-                ctx.waitUntil(this.postToQStash(env, { ip, slug, domain, userAgent, botScore, isVerifiedBot, verdict, linkData, url }));
-                return htmlResponse(get404Page());
+                shouldBlock = true;
             }
         }
 
-        // שליחת לוג וסיום
+        // 4. שליחת לוג אחד בלבד ל-QStash
         ctx.waitUntil(this.postToQStash(env, { ip, slug, domain, userAgent, botScore, isVerifiedBot, verdict, linkData, url }));
+
+        // 5. ביצוע הפעולה (חסימה או הפניה)
+        if (shouldBlock) {
+            return htmlResponse(get404Page());
+        }
+
         return Response.redirect(finalRedirectUrl, 302);
     },
 
     async postToQStash(env, p) {
         try {
-            // ניקוי כתובת הוורקר: מוודאים שאין https:// כפול
             let targetWorker = env.LOGGER_WORKER_URL.replace(/^https?:\/\//, '').replace(/\/$/, '');
             const qstashUrl = `https://qstash.upstash.io/v2/publish/https://${targetWorker}`;
 
-            console.log(`📡 Sending to QStash: ${qstashUrl}`);
-
-            const res = await fetch(qstashUrl, {
+            await fetch(qstashUrl, {
                 method: "POST",
                 headers: { "Authorization": `Bearer ${env.QSTASH_TOKEN}`, "Content-Type": "application/json" },
                 body: JSON.stringify({
@@ -88,9 +93,8 @@ export default {
                     timestamp: new Date().toISOString()
                 })
             });
-            console.log(`📬 QStash Response: ${res.status}`);
         } catch (e) {
-            console.error("❌ QStash Error:", e);
+            console.error("QStash Error:", e);
         }
     }
 };
