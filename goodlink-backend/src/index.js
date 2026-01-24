@@ -47,12 +47,15 @@ async function logClickToSupabase(env, clickRecord, redis) {
         const supabaseUrl = `${env.SUPABASE_URL}/rest/v1/clicks`;
         const qstashUrl = `https://qstash.upstash.io/v2/publish/${supabaseUrl}`;
 
+        console.log(`📤 Sending to QStash → ${supabaseUrl}`);
+        console.log(`📦 Click Record:`, JSON.stringify(clickRecord));
+
         const response = await fetch(qstashUrl, {
             method: "POST",
             headers: {
                 "Authorization": `Bearer ${env.QSTASH_TOKEN}`,
                 "Content-Type": "application/json",
-                // Headers שיועברו לסופבייס
+                // Headers שיועברו לסופבייס (lowercase)
                 "Upstash-Forward-apikey": env.SUPABASE_SERVICE_ROLE_KEY,
                 "Upstash-Forward-Authorization": `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}`,
                 "Upstash-Forward-Content-Type": "application/json",
@@ -61,10 +64,11 @@ async function logClickToSupabase(env, clickRecord, redis) {
             body: JSON.stringify(clickRecord)
         });
 
-        if (response.ok) {
-            console.log(`📡 Click logged via QStash → Supabase (Ray: ${clickRecord.ray_id})`);
-        } else {
-            console.error(`❌ QStash Error: ${response.status}`);
+        const responseText = await response.text();
+        console.log(`📬 QStash Response: ${response.status} - ${responseText}`);
+
+        if (!response.ok) {
+            console.error(`❌ QStash Error: ${response.status} - ${responseText}`);
         }
     } catch (e) {
         console.error("❌ Logger Error:", e.message);
