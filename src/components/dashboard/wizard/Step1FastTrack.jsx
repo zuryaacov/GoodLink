@@ -20,6 +20,7 @@ const Step1FastTrack = ({
   const [lastSlugCheck, setLastSlugCheck] = useState(null); // Track last check time for debouncing
   const [nameError, setNameError] = useState(null); // Error for name validation
   const [isNameAvailable, setIsNameAvailable] = useState(null); // null = not checked, true = available, false = taken
+  const [checkingName, setCheckingName] = useState(false); // Loading state for name check
   const [urlError, setUrlError] = useState(null); // Error for URL validation
   const [safetyCheck, setSafetyCheck] = useState({
     loading: false,
@@ -60,6 +61,63 @@ const Step1FastTrack = ({
     };
     fetchDomains();
   }, []);
+
+  // Debounced check for name availability
+  useEffect(() => {
+    const checkName = async () => {
+      if (!formData.name || !formData.name.trim()) {
+        setIsNameAvailable(null);
+        setCheckingName(false);
+        return;
+      }
+
+      setCheckingName(true);
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+          setCheckingName(false);
+          return;
+        }
+
+        // Check if name already exists for this user
+        let query = supabase
+          .from("links")
+          .select("id, name")
+          .eq("user_id", user.id)
+          .eq("name", formData.name.trim())
+          .neq("status", "deleted");
+
+        // Exclude the current link if in edit mode
+        if (formData.linkId) {
+          query = query.neq("id", formData.linkId);
+        }
+
+        const { data: existingLinks, error } = await query.limit(1);
+
+        if (error) {
+          console.error("Error checking name availability:", error);
+          setCheckingName(false);
+          return;
+        }
+
+        if (existingLinks && existingLinks.length > 0) {
+          setIsNameAvailable(false);
+          setNameError("This name already exists in your links. Please use a different name.");
+        } else {
+          setIsNameAvailable(true);
+          setNameError(null);
+        }
+      } catch (error) {
+        console.error("Error checking name:", error);
+      } finally {
+        setCheckingName(false);
+      }
+    };
+
+    // Debounce the check by 500ms
+    const timeoutId = setTimeout(checkName, 500);
+    return () => clearTimeout(timeoutId);
+  }, [formData.name, formData.linkId]);
 
   // Safety check function that returns the result (for use in handleCheckSlug)
   const performSafetyCheckAndGetResult = async () => {
@@ -616,24 +674,32 @@ const Step1FastTrack = ({
             <label className="block text-sm font-medium text-white mb-2">
               Internal Name
             </label>
-            <input
-              type="text"
-              value={formData.name || ""}
-              onChange={(e) => {
-                updateFormData("name", e.target.value);
-                if (nameError) {
+            <div className="relative">
+              <input
+                type="text"
+                value={formData.name || ""}
+                onChange={(e) => {
+                  updateFormData("name", e.target.value);
                   setNameError(null);
-                }
-              }}
-              placeholder="Enter internal name for this link"
-              className={`w-full px-4 py-3 bg-[#0b0f19] border-2 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-primary transition-colors ${
-                nameError ? "border-red-500" : "border-[#232f48]"
-              }`}
-            />
+                  setIsNameAvailable(null);
+                }}
+                placeholder="Enter internal name for this link"
+                className={`w-full px-4 py-3 bg-[#0b0f19] border-2 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-primary transition-colors ${
+                  nameError ? "border-red-500" : isNameAvailable === true ? "border-green-500/50" : "border-[#232f48]"
+                }`}
+              />
+              {checkingName && (
+                <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                  <span className="material-symbols-outlined animate-spin text-primary text-sm">
+                    refresh
+                  </span>
+                </div>
+              )}
+            </div>
             {nameError && (
               <p className="text-red-400 text-xs mt-1">{nameError}</p>
             )}
-            {isNameAvailable === true && !nameError && formData.name && (
+            {isNameAvailable === true && !nameError && formData.name && !checkingName && (
               <p className="text-green-400 text-xs mt-1">✓ Name is available</p>
             )}
           </div>

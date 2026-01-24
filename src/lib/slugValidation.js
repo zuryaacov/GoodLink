@@ -233,7 +233,7 @@ export async function checkSlugAvailability(slug, domain, userId, supabase, excl
             return {
                 isAvailable: false,
                 error: isDefaultDomain
-                    ? `This slug "${normalizedSlug}" is already taken for domain "${domain}". Please choose a different slug.`
+                    ? `This slug "${normalizedSlug}" is already taken. Please choose a different slug.`
                     : `This slug "${normalizedSlug}" is already taken for your domain "${domain}". Please choose a different slug.`,
             };
         }
