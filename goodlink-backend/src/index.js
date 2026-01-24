@@ -81,6 +81,7 @@ async function logClickToSupabase(env, clickRecord, redis) {
 function buildClickRecord(request, rayId, ip, slug, domain, userAgent, verdict, linkData) {
     const cf = request.cf || {};
     const botMgmt = cf.botManagement || {};
+    const botScore = botMgmt.score ?? 100;
 
     return {
         id: crypto.randomUUID(),
@@ -96,14 +97,15 @@ function buildClickRecord(request, rayId, ip, slug, domain, userAgent, verdict, 
         // נתוני גולש
         ip_address: ip,
         user_agent: userAgent,
+        referer: request.headers.get("referer") || null,
 
         // נתוני גאוגרפיה מ-Cloudflare
         country: cf.country || null,
         city: cf.city || null,
         region: cf.region || null,
         timezone: cf.timezone || null,
-        latitude: cf.latitude || null,
-        longitude: cf.longitude || null,
+        latitude: cf.latitude ? String(cf.latitude) : null,
+        longitude: cf.longitude ? String(cf.longitude) : null,
         postal_code: cf.postalCode || null,
         continent: cf.continent || null,
 
@@ -111,16 +113,16 @@ function buildClickRecord(request, rayId, ip, slug, domain, userAgent, verdict, 
         asn: cf.asn || null,
         isp: cf.asOrganization || null,
 
-        // נתוני בוטים מ-Cloudflare Bot Management
-        bot_score: botMgmt.score ?? 100,
-        is_bot: botMgmt.score <= 29 || botMgmt.verifiedBot || false,
-        is_verified_bot: botMgmt.verifiedBot || false,
+        // נתוני בוטים - fraud_score הפוך מ-bot_score (100 = נקי, 0 = בוט)
+        fraud_score: 100 - botScore,
+        is_bot: botScore <= 29 || botMgmt.verifiedBot || false,
+        bot_reason: botMgmt.verifiedBot ? "verified_bot" : (botScore <= 29 ? `low_score_${botScore}` : null),
         ja3_hash: botMgmt.ja3Hash || null,
         ja4: botMgmt.ja4 || null,
 
         // נתוני אבטחה
         threat_score: cf.threatScore || null,
-        is_tor: cf.isEUCountry === false && cf.country === 'T1', // T1 = Tor
+        is_tor: cf.isEUCountry === false && cf.country === 'T1',
 
         // נתוני חיבור
         http_protocol: cf.httpProtocol || null,
