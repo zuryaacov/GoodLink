@@ -18,7 +18,7 @@ export function validateUrl(urlString) {
   // 1. Trim - Remove whitespace from start and end
   const trimmed = urlString.trim();
   
-  // בדיקה 1: ה-URL לא ריק
+  // Check 1: URL is not empty
   if (!trimmed || trimmed === '') {
     return {
       isValid: false,
@@ -26,7 +26,7 @@ export function validateUrl(urlString) {
     };
   }
 
-  // בדיקה 2: אין רווחים
+  // Check 2: No spaces
   if (/\s/.test(trimmed)) {
     return {
       isValid: false,
@@ -34,7 +34,7 @@ export function validateUrl(urlString) {
     };
   }
 
-  // בדיקה 3: תווים לא חוקיים
+  // Check 3: Invalid characters
   const invalidChars = /[<>"\{\}\|\\^`]/;
   if (invalidChars.test(trimmed)) {
     return {
@@ -51,7 +51,7 @@ export function validateUrl(urlString) {
   let hasProtocol = false;
   let protocol = null;
 
-  // בדיקה 4: פרוטוקול
+  // Check 4: Protocol
   const protocolRegex = /^[a-zA-Z][a-zA-Z0-9+.-]*:\/\//;
   if (!protocolRegex.test(trimmed)) {
     // No protocol - add https:// for validation
@@ -61,7 +61,7 @@ export function validateUrl(urlString) {
     hasProtocol = true;
     urlToValidate = trimmed; // Keep original case for protocol check
     
-    // בדיקת פרוטוקול תקני
+    // Check for valid protocol
     const validProtocols = ['http', 'https', 'ftp', 'ftps', 'ws', 'wss'];
     protocol = trimmed.split('://')[0].toLowerCase();
     if (!validProtocols.includes(protocol)) {
@@ -89,7 +89,7 @@ export function validateUrl(urlString) {
   // 5. Extract hostname (domain)
   const hostname = urlObj.hostname;
 
-  // בדיקה 6: יש דומיין
+  // Check 6: Has domain
   if (!hostname || hostname.length === 0) {
     return {
       isValid: false,
@@ -97,7 +97,7 @@ export function validateUrl(urlString) {
     };
   }
 
-  // בדיקה 7: דומיין תקני - בדיקה בסיסית עם regex
+  // Check 7: Valid domain - basic regex check
   const domainRegex = /^(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)*[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?$/;
   const ipv4Regex = /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
   const ipv6Regex = /^\[(?:[0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}\]$|^\[(?:[0-9a-fA-F]{1,4}:)*:(?:[0-9a-fA-F]{1,4}:)*[0-9a-fA-F]{1,4}\]$/;

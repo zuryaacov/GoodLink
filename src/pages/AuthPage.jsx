@@ -444,7 +444,7 @@ const AuthPage = () => {
   const PasswordStrengthMeter = ({ password }) => {
     if (!password) return null;
 
-    // פונקציות בדיקה
+    // Check functions
     const checks = {
       length: password.length >= 8,
       hasUpper: /[A-Z]/.test(password),
@@ -452,10 +452,10 @@ const AuthPage = () => {
       hasNumber: /[0-9]/.test(password),
     };
 
-    // חישוב ציון (0 עד 4)
+    // Calculate score (0 to 4)
     const strengthScore = Object.values(checks).filter(Boolean).length;
 
-    // צבעים לפי חוזק
+    // Colors by strength
     const strengthColor = () => {
       if (strengthScore === 0) return "bg-slate-600";
       if (strengthScore === 1) return "bg-red-500";
@@ -464,7 +464,7 @@ const AuthPage = () => {
       return "bg-green-500";
     };
 
-    // טקסט לפי חוזק
+    // Text by strength
     const strengthText = () => {
       if (strengthScore === 0) return "";
       if (strengthScore === 1) return "Very Weak";
@@ -475,7 +475,7 @@ const AuthPage = () => {
 
     return (
       <div className="mt-2 w-full">
-        {/* פסי חוזק */}
+        {/* Strength bars */}
         <div className="flex gap-1 mb-2">
           {[1, 2, 3, 4].map((step) => (
             <div
@@ -487,7 +487,7 @@ const AuthPage = () => {
           ))}
         </div>
 
-        {/* רשימת דרישות (Checklist) */}
+        {/* Requirements checklist */}
         <ul className="text-xs space-y-1 text-slate-400">
           <li
             className={`flex items-center gap-2 ${

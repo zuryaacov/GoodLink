@@ -761,7 +761,6 @@ const Step1FastTrack = ({
                   }}
                   placeholder={fetchingTitle ? "Fetching title..." : "Enter name (required)"}
                   disabled={fetchingTitle}
-                  required
                   className={`w-full px-3 py-2 bg-[#101622] border rounded-lg text-white text-sm focus:outline-none focus:border-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
                     !formData.name && formData.targetUrl && !fetchingTitle
                       ? "border-red-500/50"

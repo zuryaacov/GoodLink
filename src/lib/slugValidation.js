@@ -267,12 +267,12 @@ const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
  * These are words that should be blocked regardless of API results
  */
 const BLOCKED_WORDS = [
-    // --- GAMBLING & BETTING (הימורים) ---
+    // --- GAMBLING & BETTING ---
     'gambling', 'gamble', 'casino', 'betting', 'poker', 'slots', 'roulette', 'jackpot',
     'bet', 'bet365', 'baccarat', 'lottery', 'bookie', 'wagering', 'casino-online',
     'bet-online', 'casino-bonus', 'free-spins', 'lucky-slots', 'win-money', 'make-money-fast',
 
-    // --- ADULT CONTENT & SEXUAL (תוכן למבוגרים ומיני) ---
+    // --- ADULT CONTENT & SEXUAL ---
     'porn', 'sex', 'xxx', 'adult', 'nude', 'naked', 'erotic', 'brazers', 'hentai',
     'escort', 'camgirl', 'milf', 'playboy', 'strip', 'vixen', 'hardcore', 'softcore',
     'sexual', 'penis', 'vagina', 'clitoris', 'boobs', 'butt', 'asshole',
@@ -339,30 +339,30 @@ const BLOCKED_WORDS = [
     'wet dream', 'white power', 'whore', 'worldsex', 'wrapping men',
     'wrinkled starfish', 'xx', 'yaoi', 'yellow showers', 'yiffy', 'zoophilia', '🖕',
 
-    // --- DRUGS & ILLICIT SUBSTANCES (סמים וחומרים אסורים) ---
+    // --- DRUGS & ILLICIT SUBSTANCES ---
     'drugs', 'weed', 'marijuana', 'cocaine', 'heroin', 'meth', 'mdma', 'ecstasy',
     'pills', 'lsd', 'fentanyl', 'narcotics', 'cannabis', 'hashish', 'vape', 'smoke',
     'high-times', 'psychedelic', 'dealer', 'inject', 'mj', 'high-quality-coke',
 
-    // --- PRESCRIPTION DRUGS & PHARMACEUTICALS (תרופות מרשם ותרופות) ---
+    // --- PRESCRIPTION DRUGS & PHARMACEUTICALS ---
     'valium', 'xanax', 'oxycontin', 'pharmacy-online', 'cheap-meds', 'steroids',
     'testosterone', 'weight-loss-pills',
 
-    // --- VIOLENCE & WEAPONS (אלימות ונשק) ---
+    // --- VIOLENCE & WEAPONS ---
     'bomb', 'weapon', 'gun', 'firearm', 'shoot', 'kill', 'murder', 'terror',
     'terrorism', 'explosion', 'ammo', 'ammunition', 'grenade', 'knife', 'stab',
     'suicide', 'deadly', 'assassin', 'sniper', 'slaughter', 'massacre',
 
-    // --- OFFENSIVE & HATE SPEECH (ביטויים פוגעניים ושנאה) ---
+    // --- OFFENSIVE & HATE SPEECH ---
     'retard', 'racist', 'nazi', 'hitler', 'hate', 'crap',
 
-    // --- SCAMS & FRAUD (הונאות ודיוג) ---
+    // --- SCAMS & FRAUD ---
     'hack', 'cracked', 'phishing', 'scam', 'fraud', 'exploit', 'malware', 'virus',
     'identity-theft', 'carding', 'spoof', 'pyramid-scheme', 'free-money',
     'hacked', 'crypto-scam', 'giveaway', 'prize-winner', 'claim-reward', 'bank-transfer',
     'western-union', 'paypal-hack',
 
-    // --- SPAM & MARKETING SCAMS (ספאם והונאות שיווקיות) ---
+    // --- SPAM & MARKETING SCAMS ---
     '100% more', '100% free', '100% satisfied', 'additional income', 'be your own boss',
     'best price', 'big bucks', 'billion', 'cash bonus', 'cents on the dollar',
     'consolidate debt', 'double your cash', 'double your income', 'earn extra cash',
@@ -401,7 +401,7 @@ const BLOCKED_WORDS = [
     'sent in compliance', 'subject to', 'terms and conditions', 'trial', 'unlimited',
     'warranty', 'web traffic', 'work from home',
 
-    // --- OTHER SENSITIVE TOPICS (נושאים רגישים נוספים) ---
+    // --- OTHER SENSITIVE TOPICS ---
     'abortion', 'darknet', 'darkweb', 'tor-link', 'hitman', 'deepfake'
 ];
 

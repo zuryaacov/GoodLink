@@ -21,29 +21,29 @@ function ensureValidUrl(url) {
 }
 
 /**
- * שליחת רשומת קליק ישירות לסופבייס דרך QStash
- * כל הנתונים נלקחים מ-Cloudflare (ללא IPINFO)
+ * Send click record directly to Supabase via QStash
+ * All data is collected from Cloudflare (no IPINFO)
  */
 async function logClickToSupabase(env, clickRecord, redis) {
     try {
         const rayDedupKey = `log:${clickRecord.ray_id}:${clickRecord.slug}`;
         const ipDedupKey = `ip_limit:${clickRecord.ip_address}:${clickRecord.slug}`;
 
-        // 1. הגנה מפני Retry טכני (אותה בקשה בדיוק)
+        // 1. Protection against technical retries (exact same request)
         const isNewRay = await redis.set(rayDedupKey, "1", { nx: true, ex: 120 });
         if (isNewRay === null) {
             console.log(`⏭️ Duplicate Ray ID (${clickRecord.ray_id}) - skipping`);
             return;
         }
 
-        // 2. הגנה מפני קליקים כפולים (אותו IP לאותו Slug תוך 30 שניות)
+        // 2. Protection against duplicate clicks (same IP to same slug within 30 seconds)
         const isNewClick = await redis.set(ipDedupKey, "1", { nx: true, ex: 30 });
         if (isNewClick === null) {
             console.log(`⏭️ Rate limit: Same IP within 30s (${clickRecord.ip_address}) - skipping`);
             return;
         }
 
-        // שליחה ישירות לסופבייס דרך QStash
+        // Send directly to Supabase via QStash
         const supabaseUrl = `${env.SUPABASE_URL}/rest/v1/clicks`;
         const qstashUrl = `https://qstash.upstash.io/v2/publish/${supabaseUrl}`;
 
@@ -55,7 +55,7 @@ async function logClickToSupabase(env, clickRecord, redis) {
             headers: {
                 "Authorization": `Bearer ${env.QSTASH_TOKEN}`,
                 "Content-Type": "application/json",
-                // Headers שיועברו לסופבייס (lowercase)
+                // Headers to forward to Supabase
                 "Upstash-Forward-apikey": env.SUPABASE_SERVICE_ROLE_KEY,
                 "Upstash-Forward-Authorization": `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}`,
                 "Upstash-Forward-Content-Type": "application/json",
@@ -76,7 +76,7 @@ async function logClickToSupabase(env, clickRecord, redis) {
 }
 
 /**
- * יצירת רשומת קליק מלאה עם כל הנתונים מ-Cloudflare
+ * Build complete click record with all Cloudflare data
  */
 function buildClickRecord(request, rayId, ip, slug, domain, userAgent, verdict, linkData) {
     const cf = request.cf || {};
@@ -87,19 +87,19 @@ function buildClickRecord(request, rayId, ip, slug, domain, userAgent, verdict, 
         id: crypto.randomUUID(),
         ray_id: rayId,
 
-        // נתוני לינק
+        // Link data
         link_id: linkData?.id || null,
         user_id: linkData?.user_id || null,
         target_url: linkData?.target_url || null,
         slug: slug || "root",
         domain: domain,
 
-        // נתוני גולש
+        // Visitor data
         ip_address: ip,
         user_agent: userAgent,
         referer: request.headers.get("referer") || null,
 
-        // נתוני גאוגרפיה מ-Cloudflare
+        // Geography data from Cloudflare
         country: cf.country || null,
         city: cf.city || null,
         region: cf.region || null,
@@ -109,27 +109,27 @@ function buildClickRecord(request, rayId, ip, slug, domain, userAgent, verdict, 
         postal_code: cf.postalCode || null,
         continent: cf.continent || null,
 
-        // נתוני רשת מ-Cloudflare
+        // Network data from Cloudflare
         asn: cf.asn || null,
         isp: cf.asOrganization || null,
 
-        // נתוני בוטים - fraud_score הפוך מ-bot_score (100 = נקי, 0 = בוט)
+        // Bot data - fraud_score is inverse of bot_score (100 = clean, 0 = bot)
         fraud_score: 100 - botScore,
         is_bot: botScore <= 29 || botMgmt.verifiedBot || false,
         bot_reason: botMgmt.verifiedBot ? "verified_bot" : (botScore <= 29 ? `low_score_${botScore}` : null),
         ja3_hash: botMgmt.ja3Hash || null,
         ja4: botMgmt.ja4 || null,
 
-        // נתוני אבטחה
+        // Security data
         threat_score: cf.threatScore || null,
         is_tor: cf.isEUCountry === false && cf.country === 'T1',
 
-        // נתוני חיבור
+        // Connection data
         http_protocol: cf.httpProtocol || null,
         tls_version: cf.tlsVersion || null,
         tls_cipher: cf.tlsCipher || null,
 
-        // מטא-דאטה
+        // Metadata
         verdict: verdict,
         query_params: new URL(request.url).search || "",
         clicked_at: new Date().toISOString()
@@ -141,7 +141,7 @@ export default {
         const url = new URL(request.url);
         const path = url.pathname.toLowerCase();
 
-        // CORS Headers לכל הבקשות
+        // CORS Headers for all requests
         const corsHeaders = {
             "Access-Control-Allow-Origin": "*",
             "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
@@ -153,7 +153,7 @@ export default {
             return new Response(null, { status: 204, headers: corsHeaders });
         }
 
-        // === API Endpoint: עדכון Redis Cache ===
+        // === API Endpoint: Update Redis Cache ===
         if (path === "/api/update-redis-cache" && request.method === "POST") {
             try {
                 const body = await request.json();
@@ -168,7 +168,7 @@ export default {
 
                 const redis = new Redis({ url: env.UPSTASH_REDIS_REST_URL, token: env.UPSTASH_REDIS_REST_TOKEN });
 
-                // אם השתנה domain או slug - מחק את המפתח הישן
+                // If domain or slug changed - delete the old key
                 let deletedOld = false;
                 let deletedOldKey = null;
                 if (oldDomain && oldSlug) {
@@ -182,7 +182,7 @@ export default {
                     }
                 }
 
-                // שמור את הנתונים החדשים
+                // Save the new data
                 const newKey = `link:${domain}:${slug}`;
                 await redis.set(newKey, JSON.stringify(cacheData));
                 console.log(`✅ [Redis] Cache updated: ${newKey}`);
@@ -210,7 +210,7 @@ export default {
         const userAgent = request.headers.get("user-agent") || "";
         const rayId = request.headers.get("cf-ray") || crypto.randomUUID();
 
-        // 1. Noise Filter: סינון שקט ללא לוג
+        // 1. Noise Filter: Silent filtering without logging
         const noisePaths = ['/favicon.ico', '/robots.txt', '/index.php', '/.env', '/wp-login.php', '/admin', '/root'];
         if (path === '/' || noisePaths.some(p => path === p || path.startsWith(p + '/')) || /uptimerobot|pingdom/i.test(userAgent)) {
             return new Response(null, { status: 204 });
@@ -226,7 +226,7 @@ export default {
             status, headers: { "Content-Type": "text/html;charset=UTF-8" }
         });
 
-        // פונקציית סיום עם לוג לסופבייס
+        // Terminate with log to Supabase
         const terminateWithLog = (verdict, linkData = null) => {
             const clickRecord = buildClickRecord(request, rayId, ip, slug, domain, userAgent, verdict, linkData);
             ctx.waitUntil(logClickToSupabase(env, clickRecord, redis));
@@ -242,7 +242,7 @@ export default {
             return terminateWithLog('invalid_slug_format');
         }
 
-        // 3. שליפת נתוני לינק מ-Redis/Supabase
+        // 3. Fetch link data from Redis/Supabase
         let linkData = await redis.get(`link:${domain}:${slug}`);
         if (!linkData) {
             const sbRes = await fetch(`${env.SUPABASE_URL}/rest/v1/links?slug=eq.${slug}&domain=eq.${domain}&select=*`, {
@@ -256,7 +256,7 @@ export default {
         if (!linkData) return terminateWithLog('link_not_found');
         if (linkData.status !== 'active') return terminateWithLog('link_inactive', linkData);
 
-        // 4. בדיקת Blacklist
+        // 4. Blacklist Check
         const isBlacklisted = await redis.get(`blacklist:${ip}`);
         if (isBlacklisted) {
             console.log(`🚫 IP Blacklisted: ${ip} → ${domain}/${slug}`);
@@ -280,29 +280,29 @@ export default {
         if (isBot) {
             verdict = isImpersonator ? "bot_impersonator" : (botScore <= 10 ? "bot_certain" : "bot_likely");
 
-            // הוספה ל-Blacklist רק לבוטים ודאיים או מתחזים
+            // Add to Blacklist only for certain bots or impersonators
             if (botScore <= 20 || isImpersonator) {
                 ctx.waitUntil(redis.set(`blacklist:${ip}`, "1", { ex: 86400 }));
             }
 
-            // טיפול לפי bot_action
+            // Handle based on bot_action
             if (botAction === "block") {
-                // חסימה מלאה - 404
+                // Full block - 404
                 shouldBlock = true;
             } else if (botAction === "redirect") {
-                // הפניה ל-fallback URL אם קיים, אחרת ל-target הרגיל
+                // Redirect to fallback URL if exists, otherwise to regular target
                 const fallback = ensureValidUrl(linkData.fallback_url);
                 if (fallback) targetUrl = fallback;
-                // אם אין fallback, ממשיכים ל-target הרגיל
+                // If no fallback, continue to regular target
             }
-            // אם botAction === "no-tracking" - ממשיכים ל-target הרגיל (כבר מוגדר)
+            // If botAction === "no-tracking" - continue to regular target (already set)
 
             console.log(`🤖 Bot detected: ${verdict}, action: ${botAction}, target: ${targetUrl}`);
         } else if (botScore <= 59) {
             verdict = "suspicious";
         }
 
-        // 6. שליחת לוג לסופבייס
+        // 6. Send log to Supabase
         const clickRecord = buildClickRecord(request, rayId, ip, slug, domain, userAgent, verdict, linkData);
         ctx.waitUntil(logClickToSupabase(env, clickRecord, redis));
 
