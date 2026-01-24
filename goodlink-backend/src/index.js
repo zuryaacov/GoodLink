@@ -16,66 +16,118 @@ function get404Page() {
 function ensureValidUrl(url) {
     if (!url) return null;
     let cleanUrl = url.trim();
-    if (!/^https?:\/\//i.test(cleanUrl)) {
-        cleanUrl = 'https://' + cleanUrl;
-    }
+    if (!/^https?:\/\//i.test(cleanUrl)) cleanUrl = 'https://' + cleanUrl;
     return cleanUrl;
 }
 
 /**
- * פונקציית לוגינג משודרגת עם הגנה כפולה: Ray ID ו-IP Deduplication
+ * שליחת רשומת קליק ישירות לסופבייס דרך QStash
+ * כל הנתונים נלקחים מ-Cloudflare (ללא IPINFO)
  */
-async function logClick(env, p, redis) {
+async function logClickToSupabase(env, clickRecord, redis) {
     try {
-        const rayDedupKey = `log:${p.rayId}:${p.slug}`;
-        const ipDedupKey = `ip_limit:${p.ip}:${p.slug}`;
+        const rayDedupKey = `log:${clickRecord.ray_id}:${clickRecord.slug}`;
+        const ipDedupKey = `ip_limit:${clickRecord.ip_address}:${clickRecord.slug}`;
 
         // 1. הגנה מפני Retry טכני (אותה בקשה בדיוק)
         const isNewRay = await redis.set(rayDedupKey, "1", { nx: true, ex: 120 });
         if (isNewRay === null) {
-            console.log(`⏭️ Duplicate Ray ID detected (${p.rayId}) - skipping`);
+            console.log(`⏭️ Duplicate Ray ID (${clickRecord.ray_id}) - skipping`);
             return;
         }
 
-        // 2. הגנה מפני קליקים כפולים מהדפדפן (אותו IP לאותו Slug תוך 3 שניות)
-        // הזמן עודכן ל-30 שניות כדי לאזן בין סינון רעש לדיוק בקליקים אנושיים
+        // 2. הגנה מפני קליקים כפולים (אותו IP לאותו Slug תוך 30 שניות)
         const isNewClick = await redis.set(ipDedupKey, "1", { nx: true, ex: 30 });
         if (isNewClick === null) {
-            console.log(`⏭️ Rate limit: Same IP click within 30s (${p.ip}) - skipping DB write`);
+            console.log(`⏭️ Rate limit: Same IP within 30s (${clickRecord.ip_address}) - skipping`);
             return;
         }
 
-        let loggerUrl = env.LOGGER_WORKER_URL || "";
-        if (!loggerUrl.startsWith('http')) loggerUrl = `https://${loggerUrl}`;
-        loggerUrl = loggerUrl.replace(/\/$/, "");
+        // שליחה ישירות לסופבייס דרך QStash
+        const supabaseUrl = `${env.SUPABASE_URL}/rest/v1/clicks`;
+        const qstashUrl = `https://qstash.upstash.io/v2/publish/${supabaseUrl}`;
 
-        const qstashUrl = `https://qstash.upstash.io/v2/publish/${loggerUrl}`;
-
-        await fetch(qstashUrl, {
+        const response = await fetch(qstashUrl, {
             method: "POST",
             headers: {
                 "Authorization": `Bearer ${env.QSTASH_TOKEN}`,
-                "Content-Type": "application/json"
+                "Content-Type": "application/json",
+                // Headers שיועברו לסופבייס
+                "Upstash-Forward-apikey": env.SUPABASE_SERVICE_ROLE_KEY,
+                "Upstash-Forward-Authorization": `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}`,
+                "Upstash-Forward-Content-Type": "application/json",
+                "Upstash-Forward-Prefer": "return=minimal"
             },
-            body: JSON.stringify({
-                id: crypto.randomUUID(),
-                rayId: p.rayId,
-                ip: p.ip,
-                slug: p.slug,
-                domain: p.domain,
-                userAgent: p.userAgent,
-                botScore: p.botScore,
-                isVerifiedBot: p.isVerifiedBot,
-                verdict: p.verdict,
-                linkData: p.linkData,
-                queryParams: p.queryParams,
-                timestamp: new Date().toISOString()
-            })
+            body: JSON.stringify(clickRecord)
         });
-        console.log(`📡 Log sent to QStash for Ray: ${p.rayId}`);
+
+        if (response.ok) {
+            console.log(`📡 Click logged via QStash → Supabase (Ray: ${clickRecord.ray_id})`);
+        } else {
+            console.error(`❌ QStash Error: ${response.status}`);
+        }
     } catch (e) {
-        console.error("❌ Logger Error:", e);
+        console.error("❌ Logger Error:", e.message);
     }
+}
+
+/**
+ * יצירת רשומת קליק מלאה עם כל הנתונים מ-Cloudflare
+ */
+function buildClickRecord(request, rayId, ip, slug, domain, userAgent, verdict, linkData) {
+    const cf = request.cf || {};
+    const botMgmt = cf.botManagement || {};
+
+    return {
+        id: crypto.randomUUID(),
+        ray_id: rayId,
+
+        // נתוני לינק
+        link_id: linkData?.id || null,
+        user_id: linkData?.user_id || null,
+        target_url: linkData?.target_url || null,
+        slug: slug || "root",
+        domain: domain,
+
+        // נתוני גולש
+        ip_address: ip,
+        user_agent: userAgent,
+
+        // נתוני גאוגרפיה מ-Cloudflare
+        country: cf.country || null,
+        city: cf.city || null,
+        region: cf.region || null,
+        timezone: cf.timezone || null,
+        latitude: cf.latitude || null,
+        longitude: cf.longitude || null,
+        postal_code: cf.postalCode || null,
+        continent: cf.continent || null,
+
+        // נתוני רשת מ-Cloudflare
+        asn: cf.asn || null,
+        isp: cf.asOrganization || null,
+
+        // נתוני בוטים מ-Cloudflare Bot Management
+        bot_score: botMgmt.score ?? 100,
+        is_bot: botMgmt.score <= 29 || botMgmt.verifiedBot || false,
+        is_verified_bot: botMgmt.verifiedBot || false,
+        ja3_hash: botMgmt.ja3Hash || null,
+        ja4: botMgmt.ja4 || null,
+
+        // נתוני אבטחה
+        threat_score: cf.threatScore || null,
+        is_tor: cf.isEUCountry === false && cf.country === 'T1', // T1 = Tor
+
+        // נתוני חיבור
+        http_protocol: cf.httpProtocol || null,
+        tls_version: cf.tlsVersion || null,
+        tls_cipher: cf.tlsCipher || null,
+
+        // מטא-דאטה
+        verdict: verdict,
+        query_params: new URL(request.url).search || "",
+        clicked_at: new Date().toISOString()
+    };
 }
 
 export default {
@@ -85,7 +137,7 @@ export default {
         const rayId = request.headers.get("cf-ray") || crypto.randomUUID();
         const path = url.pathname.toLowerCase();
 
-        // 1. Noise Filter: סינון שקט ללא לוג עבור דפי מערכת ובוטים ידועים
+        // 1. Noise Filter: סינון שקט ללא לוג
         const noisePaths = ['/favicon.ico', '/robots.txt', '/index.php', '/.env', '/wp-login.php', '/admin', '/api', '/root'];
         if (path === '/' || noisePaths.some(p => path === p || path.startsWith(p + '/')) || /uptimerobot|pingdom/i.test(userAgent)) {
             return new Response(null, { status: 204 });
@@ -96,34 +148,28 @@ export default {
         const ip = request.headers.get("cf-connecting-ip");
 
         const redis = new Redis({ url: env.UPSTASH_REDIS_REST_URL, token: env.UPSTASH_REDIS_REST_TOKEN });
+
         const htmlResponse = (html, status = 404) => new Response(html, {
             status, headers: { "Content-Type": "text/html;charset=UTF-8" }
         });
 
+        // פונקציית סיום עם לוג לסופבייס
         const terminateWithLog = (verdict, linkData = null) => {
-            const p = {
-                rayId, ip, slug: slug || "root", domain, userAgent,
-                botScore: request.cf?.botManagement?.score || 100,
-                isVerifiedBot: request.cf?.verifiedBot || false,
-                verdict,
-                linkData: linkData ? { id: linkData.id, user_id: linkData.user_id, target_url: linkData.target_url } : null,
-                queryParams: url.search
-            };
-            ctx.waitUntil(logClick(env, p, redis));
+            const clickRecord = buildClickRecord(request, rayId, ip, slug, domain, userAgent, verdict, linkData);
+            ctx.waitUntil(logClickToSupabase(env, clickRecord, redis));
             return htmlResponse(get404Page());
         };
 
-        // 2. Slug Validation: רק אותיות אנגליות, מספרים, ומקפים
+        // 2. Slug Validation
         if (!slug || slug.includes('.')) return terminateWithLog(slug ? 'invalid_slug' : 'home_page_access');
 
-        // בדיקה קפדנית: רק a-z, 0-9, והמקף (-)
         const isValidSlug = /^[a-z0-9-]+$/.test(slug);
         if (!isValidSlug) {
-            console.log(`🚫 Invalid slug format: "${slug}" (contains forbidden characters)`);
+            console.log(`🚫 Invalid slug format: "${slug}"`);
             return terminateWithLog('invalid_slug_format');
         }
 
-        // 3. Zero Latency: שליפת נתוני לינק (קודם!) כדי שיהיו נתונים מלאים גם לבוטים/Blacklist
+        // 3. שליפת נתוני לינק מ-Redis/Supabase
         let linkData = await redis.get(`link:${domain}:${slug}`);
         if (!linkData) {
             const sbRes = await fetch(`${env.SUPABASE_URL}/rest/v1/links?slug=eq.${slug}&domain=eq.${domain}&select=*`, {
@@ -134,20 +180,17 @@ export default {
             if (linkData) ctx.waitUntil(redis.set(`link:${domain}:${slug}`, JSON.stringify(linkData), { ex: 3600 }));
         }
 
-        // אם הלינק לא קיים - 404 ללא נתוני לינק
         if (!linkData) return terminateWithLog('link_not_found');
-
-        // אם הלינק לא פעיל - 404 עם נתוני לינק
         if (linkData.status !== 'active') return terminateWithLog('link_inactive', linkData);
 
-        // 4. בדיקת Blacklist (אחרי שליפת הלינק!) - עכשיו עם נתונים מלאים
+        // 4. בדיקת Blacklist
         const isBlacklisted = await redis.get(`blacklist:${ip}`);
         if (isBlacklisted) {
-            console.log(`🚫 IP Blacklisted: ${ip} → ${domain}/${slug} (Link ID: ${linkData.id})`);
-            return terminateWithLog('blacklisted', linkData); // עם נתוני לינק מלאים!
+            console.log(`🚫 IP Blacklisted: ${ip} → ${domain}/${slug}`);
+            return terminateWithLog('blacklisted', linkData);
         }
 
-        // 5. Bot Analysis: ניתוח בוטים מבוסס Cloudflare
+        // 5. Bot Analysis
         const botScore = request.cf?.botManagement?.score || 100;
         const isVerifiedBot = request.cf?.verifiedBot || false;
         const isBotUA = /bot|crawler|spider|googlebot/i.test(userAgent);
@@ -167,16 +210,13 @@ export default {
             verdict = "suspicious";
         }
 
-        const p = {
-            rayId, ip, slug, domain, userAgent, botScore, isVerifiedBot, verdict,
-            linkData: { id: linkData.id, user_id: linkData.user_id, target_url: linkData.target_url },
-            queryParams: url.search
-        };
-
-        ctx.waitUntil(logClick(env, p, redis));
+        // 6. שליחת לוג לסופבייס
+        const clickRecord = buildClickRecord(request, rayId, ip, slug, domain, userAgent, verdict, linkData);
+        ctx.waitUntil(logClickToSupabase(env, clickRecord, redis));
 
         if (shouldBlock) return htmlResponse(get404Page());
 
+        // 7. Redirect
         try {
             const finalUrl = new URL(targetUrl);
             new URLSearchParams(url.search).forEach((v, k) => finalUrl.searchParams.set(k, v));
