@@ -207,11 +207,30 @@ export default {
         let verdict = "clean";
         let shouldBlock = false;
 
+        // bot_action: "block" | "redirect" | "no-tracking" (default: "block")
+        const botAction = linkData.bot_action || "block";
+
         if (isBot) {
             verdict = isImpersonator ? "bot_impersonator" : (botScore <= 10 ? "bot_certain" : "bot_likely");
-            if (botScore <= 20 || isImpersonator) ctx.waitUntil(redis.set(`blacklist:${ip}`, "1", { ex: 86400 }));
-            const fallback = ensureValidUrl(linkData.fallback_url);
-            if (fallback) targetUrl = fallback; else shouldBlock = true;
+
+            // הוספה ל-Blacklist רק לבוטים ודאיים או מתחזים
+            if (botScore <= 20 || isImpersonator) {
+                ctx.waitUntil(redis.set(`blacklist:${ip}`, "1", { ex: 86400 }));
+            }
+
+            // טיפול לפי bot_action
+            if (botAction === "block") {
+                // חסימה מלאה - 404
+                shouldBlock = true;
+            } else if (botAction === "redirect") {
+                // הפניה ל-fallback URL אם קיים, אחרת ל-target הרגיל
+                const fallback = ensureValidUrl(linkData.fallback_url);
+                if (fallback) targetUrl = fallback;
+                // אם אין fallback, ממשיכים ל-target הרגיל
+            }
+            // אם botAction === "no-tracking" - ממשיכים ל-target הרגיל (כבר מוגדר)
+
+            console.log(`🤖 Bot detected: ${verdict}, action: ${botAction}, target: ${targetUrl}`);
         } else if (botScore <= 59) {
             verdict = "suspicious";
         }
