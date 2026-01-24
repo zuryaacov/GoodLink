@@ -202,10 +202,11 @@ export async function checkSlugAvailability(slug, domain, userId, supabase, excl
         const normalizedDomain = domain?.toLowerCase() || '';
         const isDefaultDomain = normalizedDomain === 'glynk.to';
 
+        // Case-insensitive slug check
         let query = supabase
             .from('links')
             .select('id, slug, domain, user_id')
-            .eq('slug', normalizedSlug)
+            .ilike('slug', normalizedSlug)
             .eq('domain', domain);
 
         // For default domain, check all users (system-wide)

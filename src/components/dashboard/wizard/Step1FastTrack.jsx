@@ -79,12 +79,12 @@ const Step1FastTrack = ({
           return;
         }
 
-        // Check if name already exists for this user
+        // Check if name already exists for this user (case-insensitive)
         let query = supabase
           .from("links")
           .select("id, name")
           .eq("user_id", user.id)
-          .eq("name", formData.name.trim())
+          .ilike("name", formData.name.trim())
           .neq("status", "deleted");
 
         // Exclude the current link if in edit mode
@@ -352,11 +352,12 @@ const Step1FastTrack = ({
         return { isAvailable: false, error: "Name is required" };
       }
 
+      // Case-insensitive name check
       let query = supabase
         .from("links")
         .select("id, name")
         .eq("user_id", userId)
-        .eq("name", name.trim())
+        .ilike("name", name.trim())
         .neq("status", "deleted");
 
       // Exclude the current link if in edit mode
