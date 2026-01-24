@@ -4,12 +4,6 @@ import countriesData from '../../../data/countries.json';
 import { validateUrl } from '../../../lib/urlValidation';
 import Modal from '../../common/Modal';
 
-const fraudShieldOptions = [
-  { value: 'none', label: 'Off', description: 'No additional protection' },
-  { value: 'standard', label: 'Standard', description: 'Turnstile CAPTCHA verification' },
-  { value: 'aggressive', label: 'Aggressive', description: 'IPQS fraud detection + Turnstile' },
-];
-
 const botActionOptions = [
   { value: 'block', label: 'Block', icon: '🚫', description: 'Block the request completely' },
   { value: 'redirect', label: 'Redirect', icon: '🔄', description: 'Send bots to a different link' },
@@ -56,10 +50,6 @@ const Step3Security = ({ formData, updateFormData }) => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [showCountryPicker]);
-
-  const handleFraudShieldChange = (value) => {
-    updateFormData('fraudShield', value);
-  };
 
   const handleAddGeoRule = () => {
     // Clear previous errors
@@ -131,12 +121,6 @@ const Step3Security = ({ formData, updateFormData }) => {
     return String.fromCodePoint(...codePoints);
   };
 
-  const getFraudShieldIndex = () => {
-    return fraudShieldOptions.findIndex(opt => opt.value === formData.fraudShield);
-  };
-
-  const currentFraudShieldIndex = getFraudShieldIndex() >= 0 ? getFraudShieldIndex() : 0;
-
   return (
     <motion.div
       initial={{ opacity: 0, x: 20 }}
@@ -148,64 +132,6 @@ const Step3Security = ({ formData, updateFormData }) => {
       <div className="text-center">
         <h3 className="text-xl sm:text-2xl font-bold text-white mb-2">Security & Logic</h3>
         <p className="text-slate-400 text-sm">Smart Rules & Protection</p>
-      </div>
-
-      {/* Fraud Shield - Slider */}
-      <div>
-        <label className="block text-sm font-medium text-white mb-4">
-          Fraud Shield Protection
-        </label>
-        <div className="relative">
-          {/* Slider Track */}
-          <div className="relative h-16 bg-[#0b0f19] border-2 border-[#232f48] rounded-2xl p-2">
-            <div className="relative h-full flex items-center">
-              {/* Slider Handle */}
-              <motion.div
-                className="absolute top-0 bottom-0 w-1/3 bg-primary/20 rounded-xl"
-                initial={false}
-                animate={{
-                  left: `${(currentFraudShieldIndex / (fraudShieldOptions.length - 1)) * 100}%`,
-                }}
-                transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-              />
-              
-              {/* Options */}
-              <div className="relative w-full flex justify-between items-center h-full px-2">
-                {fraudShieldOptions.map((option, index) => {
-                  const isSelected = formData.fraudShield === option.value;
-                  return (
-                    <button
-                      key={option.value}
-                      onClick={() => handleFraudShieldChange(option.value)}
-                      className={`flex-1 flex flex-col items-center justify-center h-full rounded-lg transition-all ${
-                        isSelected
-                          ? 'bg-primary/30 text-white scale-105'
-                          : 'text-slate-400 hover:text-slate-300'
-                      }`}
-                    >
-                      <div className={`w-3 h-3 rounded-full mb-1 ${
-                        isSelected ? 'bg-primary' : 'bg-slate-600'
-                      }`} />
-                      <span className="text-xs font-bold">{option.label}</span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
-          
-          {/* Selected Option Description */}
-          <motion.div
-            key={formData.fraudShield}
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mt-3 p-3 bg-[#0b0f19] border border-[#232f48] rounded-xl"
-          >
-            <p className="text-sm text-slate-300">
-              {fraudShieldOptions[currentFraudShieldIndex]?.description}
-            </p>
-          </motion.div>
-        </div>
       </div>
 
       {/* Bot Action - Dropdown with Icons */}
