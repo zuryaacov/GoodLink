@@ -139,12 +139,79 @@ function buildClickRecord(request, rayId, ip, slug, domain, userAgent, verdict, 
 export default {
     async fetch(request, env, ctx) {
         const url = new URL(request.url);
-        const userAgent = request.headers.get("user-agent") || "";
-        const rayId = request.headers.get("cf-ray") || crypto.randomUUID();
         const path = url.pathname.toLowerCase();
 
+        // CORS Headers לכל הבקשות
+        const corsHeaders = {
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+            "Access-Control-Allow-Headers": "Content-Type"
+        };
+
+        // Handle CORS preflight
+        if (request.method === "OPTIONS") {
+            return new Response(null, { status: 204, headers: corsHeaders });
+        }
+
+        // === API Endpoint: עדכון Redis Cache ===
+        if (path === "/api/update-redis-cache" && request.method === "POST") {
+            try {
+                const body = await request.json();
+                const { domain, slug, oldDomain, oldSlug, cacheData } = body;
+
+                if (!domain || !slug || !cacheData) {
+                    return new Response(JSON.stringify({ error: "Missing required fields" }), {
+                        status: 400,
+                        headers: { ...corsHeaders, "Content-Type": "application/json" }
+                    });
+                }
+
+                const redis = new Redis({ url: env.UPSTASH_REDIS_REST_URL, token: env.UPSTASH_REDIS_REST_TOKEN });
+
+                // אם השתנה domain או slug - מחק את המפתח הישן
+                let deletedOld = false;
+                let deletedOldKey = null;
+                if (oldDomain && oldSlug) {
+                    const oldKey = `link:${oldDomain}:${oldSlug}`;
+                    const newKey = `link:${domain}:${slug}`;
+                    if (oldKey !== newKey) {
+                        console.log(`🧹 [Redis] Deleting old key: ${oldKey}`);
+                        await redis.del(oldKey);
+                        deletedOld = true;
+                        deletedOldKey = oldKey;
+                    }
+                }
+
+                // שמור את הנתונים החדשים
+                const newKey = `link:${domain}:${slug}`;
+                await redis.set(newKey, JSON.stringify(cacheData));
+                console.log(`✅ [Redis] Cache updated: ${newKey}`);
+
+                return new Response(JSON.stringify({
+                    success: true,
+                    message: "Redis cache updated successfully",
+                    cacheKey: newKey,
+                    deletedOld,
+                    deletedOldKey
+                }), {
+                    status: 200,
+                    headers: { ...corsHeaders, "Content-Type": "application/json" }
+                });
+
+            } catch (error) {
+                console.error("❌ [Redis] Error updating cache:", error);
+                return new Response(JSON.stringify({ error: error.message }), {
+                    status: 500,
+                    headers: { ...corsHeaders, "Content-Type": "application/json" }
+                });
+            }
+        }
+
+        const userAgent = request.headers.get("user-agent") || "";
+        const rayId = request.headers.get("cf-ray") || crypto.randomUUID();
+
         // 1. Noise Filter: סינון שקט ללא לוג
-        const noisePaths = ['/favicon.ico', '/robots.txt', '/index.php', '/.env', '/wp-login.php', '/admin', '/api', '/root'];
+        const noisePaths = ['/favicon.ico', '/robots.txt', '/index.php', '/.env', '/wp-login.php', '/admin', '/root'];
         if (path === '/' || noisePaths.some(p => path === p || path.startsWith(p + '/')) || /uptimerobot|pingdom/i.test(userAgent)) {
             return new Response(null, { status: 204 });
         }
