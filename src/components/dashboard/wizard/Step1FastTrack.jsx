@@ -5,59 +5,6 @@ import { checkUrlSafety } from "../../../lib/urlSafetyCheck";
 import { validateUrl } from "../../../lib/urlValidation";
 import { validateSlug, validateSlugFormat } from "../../../lib/slugValidation";
 
-// Utility function to fetch page title from URL with timeout
-const fetchPageTitle = async (url, timeoutMs = 3000) => {
-  try {
-    // Validate URL first
-    new URL(url);
-
-    // Use a CORS proxy to fetch the page with timeout
-    const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(
-      url
-    )}`;
-    
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
-
-    try {
-      const response = await fetch(proxyUrl, {
-        method: "GET",
-        headers: {
-          Accept: "application/json",
-        },
-        signal: controller.signal,
-      });
-
-      clearTimeout(timeoutId);
-
-      if (!response.ok) {
-        throw new Error("Failed to fetch page");
-      }
-
-      const data = await response.json();
-
-      if (data.contents) {
-        // Parse HTML to extract title
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(data.contents, "text/html");
-        const title = doc.querySelector("title")?.textContent || "";
-        return title.trim();
-      }
-      return "";
-    } catch (fetchError) {
-      clearTimeout(timeoutId);
-      if (fetchError.name === "AbortError") {
-        throw new Error("Timeout");
-      }
-      throw fetchError;
-    }
-  } catch (error) {
-    console.error("Error fetching page title:", error);
-    // Return empty string on error - user can manually enter name
-    return "";
-  }
-};
-
 const Step1FastTrack = ({
   formData,
   updateFormData,
@@ -67,7 +14,6 @@ const Step1FastTrack = ({
   onContinue,
 }) => {
   const [domains, setDomains] = useState(["glynk.to"]);
-  const [fetchingTitle, setFetchingTitle] = useState(false);
   const [checkingSlug, setCheckingSlug] = useState(false);
   const [slugError, setSlugError] = useState(null);
   const [isSlugAvailable, setIsSlugAvailable] = useState(null); // null = not checked, true = available, false = taken
@@ -327,63 +273,6 @@ const Step1FastTrack = ({
     await performSafetyCheckAndGetResult();
   };
 
-  // Auto-fetch title function - called when user leaves the field
-  const fetchTitle = async () => {
-    if (!formData.targetUrl || !formData.targetUrl.trim()) {
-      setFetchingTitle(false);
-      // Clear name if URL is empty
-      if (formData.name && formData.name.trim()) {
-        updateFormData("name", "");
-      }
-      return;
-    }
-
-    // Comprehensive URL validation BEFORE making API calls
-    const validation = validateUrl(formData.targetUrl);
-
-    if (!validation.isValid) {
-      setFetchingTitle(false);
-      return;
-    }
-
-    // Use normalized URL from validation
-    const normalizedUrl = validation.normalizedUrl;
-
-    // Fetch title only if validation passed
-    try {
-      setFetchingTitle(true);
-      const title = await fetchPageTitle(normalizedUrl, 3000);
-      if (title && title.trim()) {
-        updateFormData("name", title.trim());
-      } else {
-        // If no title found, extract domain name from URL
-        try {
-          const urlObj = new URL(normalizedUrl);
-          const domainName = urlObj.hostname.replace("www.", "").split(".")[0];
-          // Capitalize first letter
-          const capitalizedDomain = domainName.charAt(0).toUpperCase() + domainName.slice(1);
-          updateFormData("name", capitalizedDomain);
-        } catch {
-          // If still fails, leave empty - user must enter name manually
-        }
-      }
-    } catch (error) {
-      // Invalid URL or timeout, extract domain name from URL
-      console.log("Error fetching title:", error);
-      try {
-        const urlObj = new URL(normalizedUrl);
-        const domainName = urlObj.hostname.replace("www.", "").split(".")[0];
-        // Capitalize first letter
-        const capitalizedDomain = domainName.charAt(0).toUpperCase() + domainName.slice(1);
-        updateFormData("name", capitalizedDomain);
-      } catch {
-        // If still fails, leave empty - user must enter name manually
-      }
-    } finally {
-      setFetchingTitle(false);
-    }
-  };
-
   const handleUrlChange = (e) => {
     const url = e.target.value;
     updateFormData("targetUrl", url);
@@ -392,16 +281,10 @@ const Step1FastTrack = ({
     if (urlError) {
       setUrlError(null);
     }
-
-    // Reset name when URL changes (will be auto-filled again by useEffect)
-    if (url && url !== formData.targetUrl) {
-      updateFormData("name", "");
-    }
   };
 
   const handleUrlPaste = () => {
     // Let the onChange handler deal with it
-    // The useEffect will automatically fetch the title
   };
 
   // Check if name already exists for this user
@@ -668,20 +551,16 @@ const Step1FastTrack = ({
         <p className="text-slate-400 text-xs sm:text-sm">Destination & Identity</p>
       </div>
 
-      {/* Large URL Input - Google Search Style */}
-      <div className="flex flex-col items-center justify-center min-h-[150px] sm:min-h-[200px]">
+      {/* Link URL Input */}
+      <div className="flex flex-col items-center justify-center">
         <div className="w-full max-w-2xl px-2 sm:px-0">
+          <label className="block text-sm font-medium text-white mb-2">Link</label>
           <div className="relative">
             <input
               type="text"
               value={formData.targetUrl}
               onChange={handleUrlChange}
               onPaste={handleUrlPaste}
-              onBlur={() => {
-                // Only fetch title automatically for name field
-                // All validations (including URL format check) happen only on CHECK button click
-                fetchTitle();
-              }}
               placeholder="Paste your URL here..."
               className={`w-full px-4 sm:px-6 py-4 sm:py-5 text-base sm:text-lg bg-[#0b0f19] border-2 rounded-xl sm:rounded-2xl text-white placeholder-slate-500 focus:outline-none transition-all shadow-lg ${
                 urlError
@@ -712,11 +591,6 @@ const Step1FastTrack = ({
                   <span className="hidden sm:inline">Secure Link</span>
                 </div>
               )}
-              {fetchingTitle && !checkingSlug && !safetyCheck.loading && (
-                <span className="material-symbols-outlined animate-spin text-primary text-base sm:text-lg">
-                  refresh
-                </span>
-              )}
             </div>
           </div>
 
@@ -737,55 +611,32 @@ const Step1FastTrack = ({
           {/* Safety Warning / URL Exists Warning - Only show if urlError exists (after CHECK button click) */}
           {/* Removed automatic safety warning display - only show warnings from CHECK button via urlError */}
 
-          {/* Name input (appears when URL is entered, shows during fetch and after) */}
-          {(fetchingTitle || formData.name || (formData.targetUrl && formData.targetUrl.trim())) && (
-            <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="mt-4 p-4 bg-[#0b0f19] border border-[#232f48] rounded-xl"
-            >
-              <label className="block text-xs text-slate-500 mb-1">
-                Internal Name <span className="text-red-400">*</span>
-                {formData.name && !fetchingTitle && " (Auto-filled)"}
-              </label>
-              <div className="relative">
-                <input
-                  type="text"
-                  value={formData.name || ""}
-                  onChange={(e) => {
-                    updateFormData("name", e.target.value);
-                    // Clear name error when user types
-                    if (nameError) {
-                      setNameError(null);
-                    }
-                  }}
-                  placeholder={fetchingTitle ? "Fetching title..." : "Enter name (required)"}
-                  disabled={fetchingTitle}
-                  className={`w-full px-3 py-2 bg-[#101622] border rounded-lg text-white text-sm focus:outline-none focus:border-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
-                    !formData.name && formData.targetUrl && !fetchingTitle
-                      ? "border-red-500/50"
-                      : "border-[#232f48]"
-                  }`}
-                />
-                {fetchingTitle && (
-                  <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                    <span className="material-symbols-outlined animate-spin text-primary text-sm">
-                      refresh
-                    </span>
-                  </div>
-                )}
-              </div>
-              {nameError && (
-                <p className="text-red-400 text-xs mt-1">{nameError}</p>
-              )}
-              {!formData.name && formData.targetUrl && !fetchingTitle && !nameError && (
-                <p className="text-red-400 text-xs mt-1">Name is required</p>
-              )}
-              {isNameAvailable === true && !nameError && (
-                <p className="text-green-400 text-xs mt-1">✓ Name is available</p>
-              )}
-            </motion.div>
-          )}
+          {/* Internal Name input - always visible */}
+          <div className="mt-4">
+            <label className="block text-sm font-medium text-white mb-2">
+              Internal Name
+            </label>
+            <input
+              type="text"
+              value={formData.name || ""}
+              onChange={(e) => {
+                updateFormData("name", e.target.value);
+                if (nameError) {
+                  setNameError(null);
+                }
+              }}
+              placeholder="Enter internal name for this link"
+              className={`w-full px-4 py-3 bg-[#0b0f19] border-2 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-primary transition-colors ${
+                nameError ? "border-red-500" : "border-[#232f48]"
+              }`}
+            />
+            {nameError && (
+              <p className="text-red-400 text-xs mt-1">{nameError}</p>
+            )}
+            {isNameAvailable === true && !nameError && formData.name && (
+              <p className="text-green-400 text-xs mt-1">✓ Name is available</p>
+            )}
+          </div>
         </div>
       </div>
 
