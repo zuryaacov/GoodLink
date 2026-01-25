@@ -165,7 +165,7 @@ const NewLinkWizard = ({ isOpen, onClose, initialData = null }) => {
   const nextStep = async () => {
     // If we're on step 1, run validations before continuing
     if (currentStep === 1 && step1ValidationRef.current) {
-      const validationResult = await step1ValidationRef.current();
+      const validationResult = await step1ValidationRef.current(true);
       if (!validationResult || !validationResult.isValid) {
         // Validation failed - errors are already shown in Step1FastTrack
         return;
@@ -174,7 +174,7 @@ const NewLinkWizard = ({ isOpen, onClose, initialData = null }) => {
     
     // Validate Step 2 (Security) - fallback URL is required if redirect is selected
     if (currentStep === 2 && step3ValidationRef.current) {
-      const validationResult = await step3ValidationRef.current();
+      const validationResult = step3ValidationRef.current();
       if (!validationResult || !validationResult.isValid) {
         return;
       }
@@ -192,10 +192,10 @@ const NewLinkWizard = ({ isOpen, onClose, initialData = null }) => {
   };
 
   const handleSubmit = async () => {
-    // Validate Step 3 (fallback URL) before submitting
+    // Validate Step 2 (Security) before submitting
     let finalFallbackUrl = null;
     if (step3ValidationRef.current) {
-      const step3Validation = await step3ValidationRef.current();
+      const step3Validation = step3ValidationRef.current();
       if (!step3Validation.isValid) {
         // Validation failed - error is already shown inline, just return
         return;

@@ -395,7 +395,7 @@ const Step1FastTrack = ({
     }
   };
 
-  const handleCheckSlug = async () => {
+  const handleCheckSlug = async (isManual = false) => {
     // Clear previous errors
     setUrlError(null);
     setSlugError(null);
@@ -404,15 +404,20 @@ const Step1FastTrack = ({
     setIsNameAvailable(null);
 
     // Debouncing: Don't check the same slug too frequently (wait at least 2 seconds)
+    // UNLESS it's a manual check from a button click
     const now = Date.now();
     const slugToCheck = formData.slug?.trim().toLowerCase() || "";
     if (
+      !isManual &&
       lastSlugCheck &&
       lastSlugCheck.slug === slugToCheck &&
       now - lastSlugCheck.timestamp < 2000
     ) {
-      console.log("⏸️ Debouncing: Skipping check (too soon after last check)");
-      return;
+      console.log("⏸️ Debouncing: Skipping automatic check");
+      return { 
+        isValid: isSlugAvailable === true && isNameAvailable === true && safetyCheck.isSafe === true,
+        errors: null 
+      };
     }
 
     const selectedDomain = formData.domain || domains[0];
@@ -833,7 +838,7 @@ const Step1FastTrack = ({
           onClick={async () => {
             // Run all validations first
             setValidatingButton('pink');
-            const validationResult = await handleCheckSlug();
+            const validationResult = await handleCheckSlug(true);
             setValidatingButton(null);
             if (validationResult && validationResult.isValid) {
               // All validations passed - create/update the link
@@ -896,7 +901,7 @@ const Step1FastTrack = ({
             onClick={async () => {
               setValidatingButton('blue');
               if (onValidationRequest && onValidationRequest.current) {
-                const validationResult = await onValidationRequest.current();
+                const validationResult = await onValidationRequest.current(true);
                 if (!validationResult || !validationResult.isValid) {
                   // Validation failed - errors are already shown
                   setValidatingButton(null);

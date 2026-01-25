@@ -76,8 +76,8 @@ const Step3Security = ({ formData, updateFormData, onValidationRequest }) => {
   };
 
   // Validation function that can be called from parent before submit
-  // Returns validation result and normalized URL without triggering re-renders
-  const handleValidateBeforeSubmit = async () => {
+  // Returns validation result and normalized URL
+  const handleValidateBeforeSubmit = () => {
     // If botAction is not 'redirect', no validation needed for fallbackUrl
     if (formData.botAction !== 'redirect') {
       return { isValid: true, normalizedUrl: null };
@@ -110,19 +110,17 @@ const Step3Security = ({ formData, updateFormData, onValidationRequest }) => {
       // Continue if URL parsing fails
     }
 
-    // Validation passed - update UI state but RETURN result directly to parent
+    // Validation passed - update UI state and return result
     setFallbackUrlError(null);
     setFallbackUrlValid(true);
     
     return { isValid: true, normalizedUrl: urlValidation.normalizedUrl || formData.fallbackUrl };
   };
 
-  // Expose validation function to parent component
-  useEffect(() => {
-    if (onValidationRequest) {
-      onValidationRequest.current = handleValidateBeforeSubmit;
-    }
-  });
+  // Expose validation function to parent component - update on every render to capture latest state
+  if (onValidationRequest) {
+    onValidationRequest.current = handleValidateBeforeSubmit;
+  }
 
   // Filter countries based on search query
   const filteredCountries = countriesData.filter(country =>
