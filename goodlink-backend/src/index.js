@@ -1,4 +1,5 @@
 import { Redis } from "@upstash/redis/cloudflare";
+import * as Sentry from "@sentry/cloudflare";
 
 // --- Utility Functions ---
 
@@ -136,7 +137,12 @@ function buildClickRecord(request, rayId, ip, slug, domain, userAgent, verdict, 
     };
 }
 
-export default {
+export default Sentry.withSentry(
+    (env) => ({
+        dsn: "https://e771f37fced759ffa221f6b97bdce745@o4510770008293376.ingest.us.sentry.io/4510770172985344",
+        sendDefaultPii: true,
+    }),
+    {
     async fetch(request, env, ctx) {
         const url = new URL(request.url);
         const path = url.pathname.toLowerCase();
@@ -317,4 +323,5 @@ export default {
             return Response.redirect(targetUrl, 302);
         }
     }
-};
+    }
+);

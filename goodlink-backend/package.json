@@ -12,6 +12,7 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
+    "@sentry/cloudflare": "^10.36.0",
     "@upstash/redis": "^1.30.0"
   },
   "devDependencies": {
