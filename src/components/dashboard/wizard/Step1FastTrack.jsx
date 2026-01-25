@@ -871,14 +871,14 @@ const Step1FastTrack = ({
             <>
               <span className="material-symbols-outlined text-base sm:text-lg">{formData.linkId ? "save" : "bolt"}</span>
               <span className="hidden sm:inline">
-                {planType?.toLowerCase() === 'free' 
-                  ? "Create Link" 
-                  : (formData.linkId ? "Update Link" : "Create Quick Link (Skip Advanced Settings)")}
+                {formData.linkId 
+                  ? "Update Link" 
+                  : (planType?.toLowerCase() === 'free' ? "Create Link" : "Create Quick Link (Skip Advanced Settings)")}
               </span>
               <span className="sm:hidden">
-                {planType?.toLowerCase() === 'free' 
-                  ? "Create Link" 
-                  : (formData.linkId ? "Update Link" : "Create Quick Link")}
+                {formData.linkId 
+                  ? "Update Link" 
+                  : (planType?.toLowerCase() === 'free' ? "Create Link" : "Create Quick Link")}
               </span>
             </>
           )}
