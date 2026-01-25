@@ -486,12 +486,7 @@ const LinkBuilderPage = () => {
             <ArrowLeft size={24} />
           </button>
           <div className="flex-1 min-w-0">
-            <h1 className="text-xl font-bold text-white truncate">{isEditMode ? 'Edit Link' : 'The Smart Flow'}</h1>
-            <p className="text-slate-400 text-sm">
-              {isEditMode 
-                ? 'Update your smart link' 
-                : (planType?.toLowerCase() === 'free' ? 'Create your smart link' : 'Create your smart link in 3 simple steps')}
-            </p>
+            <h1 className="text-xl font-bold text-white truncate">{isEditMode ? 'Edit Link' : 'Create Your GoodLink'}</h1>
           </div>
         </div>
       </div>

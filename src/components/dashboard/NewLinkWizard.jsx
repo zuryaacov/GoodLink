@@ -423,12 +423,7 @@ const NewLinkWizard = ({ isOpen, onClose, initialData = null }) => {
         {/* Header */}
         <div className="flex items-center justify-between p-4 sm:p-6 border-b border-[#232f48] flex-shrink-0">
           <div className="flex-1 min-w-0 pr-2">
-            <h2 className="text-xl sm:text-2xl font-bold text-white truncate">{isEditMode ? 'Edit Link' : 'The Smart Flow'}</h2>
-            <p className="text-slate-400 text-xs sm:text-sm mt-1">
-              {isEditMode 
-                ? 'Update your smart link' 
-                : (planType?.toLowerCase() === 'free' ? 'Create your smart link' : 'Create your smart link in 3 simple steps')}
-            </p>
+            <h2 className="text-xl sm:text-2xl font-bold text-white truncate">{isEditMode ? 'Edit Link' : 'Create Your GoodLink'}</h2>
           </div>
           <button
             onClick={onClose}
