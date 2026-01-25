@@ -85,7 +85,7 @@ const Step3Security = ({ formData, updateFormData, onValidationRequest }) => {
 
   // Validation function that can be called from parent before submit
   // Returns validation result and normalized URL
-  const handleValidateBeforeSubmit = () => {
+  const handleValidateBeforeSubmit = React.useCallback(() => {
     // Access latest data through ref to prevent stale closures
     const currentData = formDataRef.current;
 
@@ -126,14 +126,14 @@ const Step3Security = ({ formData, updateFormData, onValidationRequest }) => {
     setFallbackUrlValid(true);
     
     return { isValid: true, normalizedUrl: urlValidation.normalizedUrl || currentData.fallbackUrl };
-  };
+  }, []);
 
-  // Expose validation function to parent component - update on every data change
+  // Expose validation function to parent component - update only when ref/callback changes
   React.useLayoutEffect(() => {
     if (onValidationRequest) {
       onValidationRequest.current = handleValidateBeforeSubmit;
     }
-  }, [onValidationRequest]);
+  }, [onValidationRequest, handleValidateBeforeSubmit]);
   const filteredCountries = countriesData.filter(country =>
     country.name.toLowerCase().includes(countrySearchQuery.toLowerCase()) ||
     country.code.toLowerCase().includes(countrySearchQuery.toLowerCase())
