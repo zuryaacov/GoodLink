@@ -75,13 +75,7 @@ const Step3Security = ({ formData, updateFormData, onValidationRequest }) => {
     return true;
   };
 
-  const handleFallbackUrlBlur = () => {
-    if (formData.botAction === 'redirect' && formData.fallbackUrl) {
-      setCheckingFallbackUrl(true);
-      validateFallbackUrl(formData.fallbackUrl);
-      setCheckingFallbackUrl(false);
-    }
-  };
+
 
   // Validation function that can be called from parent before submit
   // Returns validation result and normalized URL
@@ -301,7 +295,6 @@ const Step3Security = ({ formData, updateFormData, onValidationRequest }) => {
                   }
                   setFallbackUrlValid(false);
                 }}
-                onBlur={handleFallbackUrlBlur}
                 placeholder="https://example.com/bot-page"
                 className={`w-full px-4 py-3 bg-[#101622] border-2 rounded-xl text-white placeholder-slate-500 focus:outline-none transition-colors ${
                   fallbackUrlError
