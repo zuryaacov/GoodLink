@@ -117,12 +117,12 @@ const Step3Security = ({ formData, updateFormData, onValidationRequest }) => {
     return { isValid: true, normalizedUrl: urlValidation.normalizedUrl || formData.fallbackUrl };
   };
 
-  // Expose validation function to parent component - update on every render to capture latest state
-  if (onValidationRequest) {
-    onValidationRequest.current = handleValidateBeforeSubmit;
-  }
-
-  // Filter countries based on search query
+  // Expose validation function to parent component - update on every data change
+  React.useLayoutEffect(() => {
+    if (onValidationRequest) {
+      onValidationRequest.current = handleValidateBeforeSubmit;
+    }
+  }, [formData.botAction, formData.fallbackUrl, onValidationRequest]);
   const filteredCountries = countriesData.filter(country =>
     country.name.toLowerCase().includes(countrySearchQuery.toLowerCase()) ||
     country.code.toLowerCase().includes(countrySearchQuery.toLowerCase())
