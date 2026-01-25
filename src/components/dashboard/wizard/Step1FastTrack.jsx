@@ -34,6 +34,13 @@ const Step1FastTrack = ({
 
   useEffect(() => {
     const fetchDomains = async () => {
+      // If user is on FREE plan, only allow default domain
+      if (planType?.toLowerCase() === 'free') {
+        setDomains(["glynk.to"]);
+        updateFormData("domain", "glynk.to");
+        return;
+      }
+
       try {
         const {
           data: { user },
@@ -62,7 +69,7 @@ const Step1FastTrack = ({
       }
     };
     fetchDomains();
-  }, []);
+  }, [planType]);
 
   // Debounced check for name availability
   useEffect(() => {
@@ -711,30 +718,32 @@ const Step1FastTrack = ({
         </div>
       </div>
 
-      {/* Domain Selection - Show always (glynk.to + active custom domains) */}
-      <div className="max-w-2xl mx-auto w-full px-2 sm:px-0">
-        <label className="block text-sm font-medium text-white mb-3">
-          Domain
-        </label>
-        <div className="flex flex-wrap gap-2">
-          {domains.map((domain) => {
-            const isSelected = (formData.domain || domains[0]) === domain;
-            return (
-              <button
-                key={domain}
-                onClick={() => handleDomainSelect(domain)}
-                className={`px-4 py-2 rounded-lg font-medium text-sm transition-all ${
-                  isSelected
-                    ? "bg-primary text-white shadow-lg shadow-primary/30"
-                    : "bg-[#0b0f19] border border-[#232f48] text-slate-300 hover:border-primary/50"
-                }`}
-              >
-                {domain}
-              </button>
-            );
-          })}
+      {/* Domain Selection - Hidden for FREE users */}
+      {planType?.toLowerCase() !== 'free' && (
+        <div className="max-w-2xl mx-auto w-full px-2 sm:px-0">
+          <label className="block text-sm font-medium text-white mb-3">
+            Domain
+          </label>
+          <div className="flex flex-wrap gap-2">
+            {domains.map((domain) => {
+              const isSelected = (formData.domain || domains[0]) === domain;
+              return (
+                <button
+                  key={domain}
+                  onClick={() => handleDomainSelect(domain)}
+                  className={`px-4 py-2 rounded-lg font-medium text-sm transition-all ${
+                    isSelected
+                      ? "bg-primary text-white shadow-lg shadow-primary/30"
+                      : "bg-[#0b0f19] border border-[#232f48] text-slate-300 hover:border-primary/50"
+                  }`}
+                >
+                  {domain}
+                </button>
+              );
+            })}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Slug with Magic Wand */}
       <div className="max-w-2xl mx-auto w-full px-2 sm:px-0">
