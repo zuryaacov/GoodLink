@@ -210,37 +210,6 @@ const LinkBuilderPage = () => {
     return slug;
   };
 
-  // Helper function to validate Step 2 (Security) using formData directly
-  const validateStep2Security = () => {
-    // If botAction is not 'redirect', no validation needed
-    if (formData.botAction !== 'redirect') {
-      return { isValid: true, normalizedUrl: null };
-    }
-    
-    // Check if URL is empty
-    if (!formData.fallbackUrl || !formData.fallbackUrl.trim()) {
-      return { isValid: false, normalizedUrl: null, error: 'Please enter a redirect URL for bots' };
-    }
-
-    const urlValidation = validateUrl(formData.fallbackUrl);
-    if (!urlValidation.isValid) {
-      return { isValid: false, normalizedUrl: null, error: urlValidation.error || 'Invalid URL format' };
-    }
-
-    // Check if URL is pointing to glynk.to (not allowed)
-    try {
-      const urlObj = new URL(urlValidation.normalizedUrl);
-      const hostname = urlObj.hostname.toLowerCase().replace(/^www\./, '');
-      if (hostname === 'glynk.to') {
-        return { isValid: false, normalizedUrl: null, error: 'Redirect cannot be to glynk.to' };
-      }
-    } catch (error) {
-      // Continue if URL parsing fails
-    }
-
-    return { isValid: true, normalizedUrl: urlValidation.normalizedUrl || formData.fallbackUrl };
-  };
-
   const nextStep = async () => {
     if (currentStep === 1 && step1ValidationRef.current) {
       const validationResult = await step1ValidationRef.current(true);
@@ -249,14 +218,10 @@ const LinkBuilderPage = () => {
       }
     }
     
-    // Validate Step 2 (Security) - use direct validation instead of ref
-    if (currentStep === 2) {
-      const validationResult = validateStep2Security();
-      if (!validationResult.isValid) {
-        // Trigger the component to show error
-        if (step3ValidationRef.current) {
-          step3ValidationRef.current();
-        }
+    // Validate Step 2 (Security) - fallback URL is required if redirect is selected
+    if (currentStep === 2 && step3ValidationRef.current) {
+      const validationResult = step3ValidationRef.current();
+      if (!validationResult || !validationResult.isValid) {
         return;
       }
     }
@@ -273,16 +238,16 @@ const LinkBuilderPage = () => {
   };
 
   const handleSubmit = async () => {
-    // Validate Step 2 (Security) before submitting - use direct validation
-    const step2Validation = validateStep2Security();
-    let finalFallbackUrl = step2Validation.normalizedUrl;
-    
-    if (!step2Validation.isValid) {
-      // Trigger the component to show error
-      if (step3ValidationRef.current) {
-        step3ValidationRef.current();
+    // Validate Step 2 (Security) before submitting
+    let finalFallbackUrl = null;
+    if (step3ValidationRef.current) {
+      const step3Validation = step3ValidationRef.current();
+      if (!step3Validation.isValid) {
+        // Validation failed - error is already shown inline, just return
+        return;
       }
-      return;
+      // Use the normalized URL from validation
+      finalFallbackUrl = step3Validation.normalizedUrl;
     }
 
     setIsSubmitting(true);
