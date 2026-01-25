@@ -487,55 +487,61 @@ const LinkBuilderPage = () => {
           </button>
           <div className="flex-1 min-w-0">
             <h1 className="text-xl font-bold text-white truncate">{isEditMode ? 'Edit Link' : 'The Smart Flow'}</h1>
-            <p className="text-slate-400 text-sm">{isEditMode ? 'Update your smart link' : 'Create your smart link in 3 simple steps'}</p>
+            <p className="text-slate-400 text-sm">
+              {isEditMode 
+                ? 'Update your smart link' 
+                : (planType?.toLowerCase() === 'free' ? 'Create your smart link' : 'Create your smart link in 3 simple steps')}
+            </p>
           </div>
         </div>
       </div>
 
       <div className="max-w-4xl mx-auto px-4 py-6">
-        {/* Stepper */}
-        <div className="mb-8 pb-6 border-b border-slate-800">
-          <div className="flex items-center gap-4 overflow-x-auto">
-            {steps.map((step, index) => (
-              <React.Fragment key={step.number}>
-                <div className="flex items-center gap-3 flex-shrink-0">
-                  <div
-                    className={`flex items-center justify-center w-10 h-10 rounded-full font-bold text-base transition-all ${
-                      currentStep === step.number
-                        ? 'bg-primary text-white scale-110 shadow-lg shadow-primary/50'
-                        : currentStep > step.number
-                        ? 'bg-primary/50 text-white'
-                        : 'bg-slate-800 text-slate-400'
-                    }`}
-                  >
-                    {step.number}
-                  </div>
-                  <div className="hidden sm:block">
+        {/* Stepper - Hidden for FREE users */}
+        {planType?.toLowerCase() !== 'free' && (
+          <div className="mb-8 pb-6 border-b border-slate-800">
+            <div className="flex items-center gap-4 overflow-x-auto">
+              {steps.map((step, index) => (
+                <React.Fragment key={step.number}>
+                  <div className="flex items-center gap-3 flex-shrink-0">
                     <div
-                      className={`text-sm font-bold ${
-                        currentStep >= step.number ? 'text-white' : 'text-slate-400'
+                      className={`flex items-center justify-center w-10 h-10 rounded-full font-bold text-base transition-all ${
+                        currentStep === step.number
+                          ? 'bg-primary text-white scale-110 shadow-lg shadow-primary/50'
+                          : currentStep > step.number
+                          ? 'bg-primary/50 text-white'
+                          : 'bg-slate-800 text-slate-400'
                       }`}
                     >
-                      {step.title}
+                      {step.number}
                     </div>
-                    {step.subtitle && (
-                      <div className="text-xs text-slate-500 mt-0.5 hidden md:block">
-                        {step.subtitle}
+                    <div className="hidden sm:block">
+                      <div
+                        className={`text-sm font-bold ${
+                          currentStep >= step.number ? 'text-white' : 'text-slate-400'
+                        }`}
+                      >
+                        {step.title}
                       </div>
-                    )}
+                      {step.subtitle && (
+                        <div className="text-xs text-slate-500 mt-0.5 hidden md:block">
+                          {step.subtitle}
+                        </div>
+                      )}
+                    </div>
                   </div>
-                </div>
-                {index < steps.length - 1 && (
-                  <div
-                    className={`w-12 h-0.5 flex-shrink-0 ${
-                      currentStep > step.number ? 'bg-primary' : 'bg-slate-800'
-                    }`}
-                  />
-                )}
-              </React.Fragment>
-            ))}
+                  {index < steps.length - 1 && (
+                    <div
+                      className={`w-12 h-0.5 flex-shrink-0 ${
+                        currentStep > step.number ? 'bg-primary' : 'bg-slate-800'
+                      }`}
+                    />
+                  )}
+                </React.Fragment>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Content */}
         <div className="space-y-6">
@@ -569,7 +575,7 @@ const LinkBuilderPage = () => {
         <div className="flex items-center justify-between mt-8 pt-6 border-t border-slate-800 gap-4">
           {currentStep === 1 ? (
             <div className="text-slate-400 text-sm whitespace-nowrap">
-              Step {currentStep} of {steps.length}
+              {steps.length > 1 && `Step ${currentStep} of ${steps.length}`}
             </div>
           ) : (
             <>
