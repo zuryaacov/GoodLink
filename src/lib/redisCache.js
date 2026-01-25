@@ -53,6 +53,7 @@ export async function updateLinkInRedis(linkData, supabase, oldDomain = null, ol
       custom_script: linkData.custom_script || null,
       fraud_shield: linkData.fraud_shield || 'none',
       bot_action: linkData.bot_action || 'block',
+      fallback_url: linkData.fallback_url || null,
       geo_rules: linkData.geo_rules || [],
       created_at: linkData.created_at,
       updated_at: linkData.updated_at || new Date().toISOString(),

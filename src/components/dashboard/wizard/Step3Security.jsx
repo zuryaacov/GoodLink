@@ -76,15 +76,45 @@ const Step3Security = ({ formData, updateFormData, onValidationRequest }) => {
   };
 
   // Validation function that can be called from parent before submit
+  // Returns validation result and normalized URL without triggering re-renders
   const handleValidateBeforeSubmit = () => {
     // If botAction is not 'redirect', no validation needed for fallbackUrl
     if (formData.botAction !== 'redirect') {
-      return { isValid: true };
+      return { isValid: true, normalizedUrl: null };
     }
     
-    // Validate fallback URL
-    const isValid = validateFallbackUrl(formData.fallbackUrl);
-    return { isValid };
+    // Check if URL is empty
+    if (!formData.fallbackUrl || !formData.fallbackUrl.trim()) {
+      setFallbackUrlError('Please enter a redirect URL for bots');
+      setFallbackUrlValid(false);
+      return { isValid: false, normalizedUrl: null };
+    }
+
+    const urlValidation = validateUrl(formData.fallbackUrl);
+    if (!urlValidation.isValid) {
+      setFallbackUrlError(urlValidation.error || 'Invalid URL format');
+      setFallbackUrlValid(false);
+      return { isValid: false, normalizedUrl: null };
+    }
+
+    // Check if URL is pointing to glynk.to (not allowed)
+    try {
+      const urlObj = new URL(urlValidation.normalizedUrl);
+      const hostname = urlObj.hostname.toLowerCase().replace(/^www\./, '');
+      if (hostname === 'glynk.to') {
+        setFallbackUrlError('Redirect cannot be to glynk.to. Please use a different URL.');
+        setFallbackUrlValid(false);
+        return { isValid: false, normalizedUrl: null };
+      }
+    } catch (error) {
+      // Continue if URL parsing fails
+    }
+
+    // Validation passed - clear errors and return normalized URL
+    setFallbackUrlError(null);
+    setFallbackUrlValid(true);
+    
+    return { isValid: true, normalizedUrl: urlValidation.normalizedUrl || formData.fallbackUrl };
   };
 
   // Expose validation function to parent component
@@ -92,7 +122,7 @@ const Step3Security = ({ formData, updateFormData, onValidationRequest }) => {
     if (onValidationRequest) {
       onValidationRequest.current = handleValidateBeforeSubmit;
     }
-  }, [onValidationRequest, formData.botAction, formData.fallbackUrl]);
+  });
 
   // Filter countries based on search query
   const filteredCountries = countriesData.filter(country =>

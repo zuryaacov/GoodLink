@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
-import { validateUrl } from '../../lib/urlValidation';
 import { updateLinkInRedis } from '../../lib/redisCache';
 import { ArrowLeft } from 'lucide-react';
 import Step1FastTrack from '../../components/dashboard/wizard/Step1FastTrack';
@@ -191,12 +190,15 @@ const LinkBuilderPage = () => {
 
   const handleSubmit = async () => {
     // Validate Step 3 (fallback URL) before submitting
+    let finalFallbackUrl = null;
     if (step3ValidationRef.current) {
       const step3Validation = step3ValidationRef.current();
       if (!step3Validation.isValid) {
         // Validation failed - error is already shown inline, just return
         return;
       }
+      // Use the normalized URL from validation
+      finalFallbackUrl = step3Validation.normalizedUrl;
     }
 
     setIsSubmitting(true);
@@ -211,13 +213,6 @@ const LinkBuilderPage = () => {
       let finalName = formData.name?.trim();
       if (!finalName) {
         throw new Error('Link name is required. Please enter a name for your link.');
-      }
-
-      // Get fallback URL (already validated by Step3Security)
-      let finalFallbackUrl = null;
-      if (formData.botAction === 'redirect' && formData.fallbackUrl) {
-        const fallbackValidation = validateUrl(formData.fallbackUrl);
-        finalFallbackUrl = fallbackValidation.normalizedUrl || formData.fallbackUrl;
       }
 
       const finalSlug = formData.slug || generateRandomSlug();

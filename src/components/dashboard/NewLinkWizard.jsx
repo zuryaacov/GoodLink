@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../../lib/supabase';
-import { validateUrl } from '../../lib/urlValidation';
 import Step1FastTrack from './wizard/Step1FastTrack';
 import Step2Optimization from './wizard/Step2Optimization';
 import Step3Security from './wizard/Step3Security';
@@ -144,12 +143,15 @@ const NewLinkWizard = ({ isOpen, onClose, initialData = null }) => {
 
   const handleSubmit = async () => {
     // Validate Step 3 (fallback URL) before submitting
+    let finalFallbackUrl = null;
     if (step3ValidationRef.current) {
       const step3Validation = step3ValidationRef.current();
       if (!step3Validation.isValid) {
         // Validation failed - error is already shown inline, just return
         return;
       }
+      // Use the normalized URL from validation
+      finalFallbackUrl = step3Validation.normalizedUrl;
     }
 
     setIsSubmitting(true);
@@ -166,13 +168,6 @@ const NewLinkWizard = ({ isOpen, onClose, initialData = null }) => {
       let finalName = formData.name?.trim();
       if (!finalName) {
         throw new Error('Link name is required. Please enter a name for your link.');
-      }
-
-      // Get fallback URL (already validated by Step3Security)
-      let finalFallbackUrl = null;
-      if (formData.botAction === 'redirect' && formData.fallbackUrl) {
-        const fallbackValidation = validateUrl(formData.fallbackUrl);
-        finalFallbackUrl = fallbackValidation.normalizedUrl || formData.fallbackUrl;
       }
 
       // Generate slug if not provided
