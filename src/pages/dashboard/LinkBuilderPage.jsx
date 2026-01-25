@@ -219,7 +219,7 @@ const LinkBuilderPage = () => {
     
     // Validate Step 2 (Security) - fallback URL is required if redirect is selected
     if (currentStep === 2 && step3ValidationRef.current) {
-      const validationResult = step3ValidationRef.current();
+      const validationResult = await step3ValidationRef.current();
       if (!validationResult || !validationResult.isValid) {
         return;
       }

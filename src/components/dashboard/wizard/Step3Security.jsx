@@ -77,7 +77,7 @@ const Step3Security = ({ formData, updateFormData, onValidationRequest }) => {
 
   // Validation function that can be called from parent before submit
   // Returns validation result and normalized URL without triggering re-renders
-  const handleValidateBeforeSubmit = () => {
+  const handleValidateBeforeSubmit = async () => {
     // If botAction is not 'redirect', no validation needed for fallbackUrl
     if (formData.botAction !== 'redirect') {
       return { isValid: true, normalizedUrl: null };
