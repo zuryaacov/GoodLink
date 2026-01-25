@@ -15,6 +15,7 @@ const Step1FastTrack = ({
 }) => {
   const [domains, setDomains] = useState(["glynk.to"]);
   const [checkingSlug, setCheckingSlug] = useState(false);
+  const [validatingButton, setValidatingButton] = useState(null); // 'pink' | 'blue' | null
   const [slugError, setSlugError] = useState(null);
   const [isSlugAvailable, setIsSlugAvailable] = useState(null); // null = not checked, true = available, false = taken
   const [lastSlugCheck, setLastSlugCheck] = useState(null); // Track last check time for debouncing
@@ -819,7 +820,9 @@ const Step1FastTrack = ({
         <button
           onClick={async () => {
             // Run all validations first
+            setValidatingButton('pink');
             const validationResult = await handleCheckSlug();
+            setValidatingButton(null);
             if (validationResult && validationResult.isValid) {
               // All validations passed - create/update the link
               if (onQuickCreate) {
@@ -846,7 +849,7 @@ const Step1FastTrack = ({
             }
           }}
         >
-          {checkingSlug ? (
+          {validatingButton === 'pink' ? (
             <>
               <span className="material-symbols-outlined animate-spin text-base sm:text-lg">refresh</span>
               <span className="hidden sm:inline">Validating...</span>
@@ -870,13 +873,16 @@ const Step1FastTrack = ({
       >
         <button
           onClick={async () => {
+            setValidatingButton('blue');
             if (onValidationRequest && onValidationRequest.current) {
               const validationResult = await onValidationRequest.current();
               if (!validationResult || !validationResult.isValid) {
                 // Validation failed - errors are already shown
+                setValidatingButton(null);
                 return;
               }
             }
+            setValidatingButton(null);
             if (onContinue) {
               onContinue();
             }
@@ -886,7 +892,7 @@ const Step1FastTrack = ({
             checkingSlug ? "opacity-50 cursor-not-allowed" : ""
           }`}
         >
-          {checkingSlug ? (
+          {validatingButton === 'blue' ? (
             <>
               <span className="material-symbols-outlined animate-spin text-base sm:text-lg">refresh</span>
               <span className="hidden sm:inline">Validating...</span>
