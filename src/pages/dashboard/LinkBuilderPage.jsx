@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
+import { validateUrl } from '../../lib/urlValidation';
 import { updateLinkInRedis } from '../../lib/redisCache';
 import { ArrowLeft } from 'lucide-react';
 import Step1FastTrack from '../../components/dashboard/wizard/Step1FastTrack';
@@ -44,7 +45,8 @@ const LinkBuilderPage = () => {
     serverSideTracking: false,
     customScript: '',
     fraudShield: 'none',
-    botAction: 'block',
+    botAction: 'no-tracking',
+    fallbackUrl: '',
     geoRules: [],
     shortUrl: '',
     fullUtmString: '',
@@ -126,7 +128,8 @@ const LinkBuilderPage = () => {
         serverSideTracking: data.server_side_tracking || false,
         customScript: data.custom_script || '',
         fraudShield: data.fraud_shield || 'none',
-        botAction: data.bot_action || 'block',
+        botAction: data.bot_action || 'no-tracking',
+        fallbackUrl: data.fallback_url || '',
         geoRules: (() => {
           if (Array.isArray(data.geo_rules)) {
             return data.geo_rules;
@@ -200,6 +203,32 @@ const LinkBuilderPage = () => {
         throw new Error('Link name is required. Please enter a name for your link.');
       }
 
+      // Validate fallback URL if botAction is 'redirect'
+      let finalFallbackUrl = null;
+      if (formData.botAction === 'redirect') {
+        if (!formData.fallbackUrl || !formData.fallbackUrl.trim()) {
+          throw new Error('Redirect URL is required when Bot Action is set to Redirect.');
+        }
+        
+        const fallbackValidation = validateUrl(formData.fallbackUrl);
+        if (!fallbackValidation.isValid) {
+          throw new Error(`Invalid Redirect URL: ${fallbackValidation.error || 'Please enter a valid URL'}`);
+        }
+        
+        // Check if URL is pointing to glynk.to (not allowed)
+        try {
+          const urlObj = new URL(fallbackValidation.normalizedUrl);
+          const hostname = urlObj.hostname.toLowerCase().replace(/^www\./, '');
+          if (hostname === 'glynk.to') {
+            throw new Error('Redirect URL cannot be glynk.to. Please use a different URL.');
+          }
+        } catch (e) {
+          if (e.message.includes('glynk.to')) throw e;
+        }
+        
+        finalFallbackUrl = fallbackValidation.normalizedUrl || formData.fallbackUrl;
+      }
+
       const finalSlug = formData.slug || generateRandomSlug();
       
       const utmParams = new URLSearchParams();
@@ -234,6 +263,7 @@ const LinkBuilderPage = () => {
             custom_script: formData.customScript || null,
             fraud_shield: formData.fraudShield,
             bot_action: formData.botAction,
+            fallback_url: finalFallbackUrl,
             geo_rules: Array.isArray(formData.geoRules) ? formData.geoRules : [],
             updated_at: new Date().toISOString(),
           })
@@ -317,6 +347,7 @@ const LinkBuilderPage = () => {
             custom_script: formData.customScript || null,
             fraud_shield: formData.fraudShield,
             bot_action: formData.botAction,
+            fallback_url: finalFallbackUrl,
             geo_rules: Array.isArray(formData.geoRules) ? formData.geoRules : [],
             created_at: new Date().toISOString(),
           });
