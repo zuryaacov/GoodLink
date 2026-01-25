@@ -142,6 +142,8 @@ const NewLinkWizard = ({ isOpen, onClose, initialData = null }) => {
   };
 
   const handleSubmit = async () => {
+    console.log('🚀 [Submit] handleSubmit called!');
+    console.log('🔵 [Submit] formData:', JSON.stringify(formData, null, 2));
     setIsSubmitting(true);
     try {
       const { data: { user } } = await supabase.auth.getUser();
@@ -160,13 +162,20 @@ const NewLinkWizard = ({ isOpen, onClose, initialData = null }) => {
 
       // Validate fallback URL if botAction is 'redirect'
       let finalFallbackUrl = null;
+      console.log('🔵 [Submit] botAction:', formData.botAction);
+      console.log('🔵 [Submit] fallbackUrl:', formData.fallbackUrl);
+      
       if (formData.botAction === 'redirect') {
         if (!formData.fallbackUrl || !formData.fallbackUrl.trim()) {
+          console.log('❌ [Submit] Redirect URL is empty');
           throw new Error('Redirect URL is required when Bot Action is set to Redirect.');
         }
         
         const fallbackValidation = validateUrl(formData.fallbackUrl);
+        console.log('🔵 [Submit] fallbackValidation:', fallbackValidation);
+        
         if (!fallbackValidation.isValid) {
+          console.log('❌ [Submit] Redirect URL validation failed');
           throw new Error(`Invalid Redirect URL: ${fallbackValidation.error || 'Please enter a valid URL'}`);
         }
         
@@ -183,6 +192,7 @@ const NewLinkWizard = ({ isOpen, onClose, initialData = null }) => {
         }
         
         finalFallbackUrl = fallbackValidation.normalizedUrl || formData.fallbackUrl;
+        console.log('✅ [Submit] finalFallbackUrl:', finalFallbackUrl);
       }
 
       // Generate slug if not provided
@@ -200,8 +210,13 @@ const NewLinkWizard = ({ isOpen, onClose, initialData = null }) => {
       const fullUtmString = utmParams.toString() ? `${shortUrl}?${utmParams.toString()}` : shortUrl;
 
       // Save to database (UPDATE if edit mode, INSERT if create mode)
+      console.log('🔵 [Submit] Saving to database...');
+      console.log('🔵 [Submit] isEditMode:', isEditMode);
+      console.log('🔵 [Submit] finalFallbackUrl to save:', finalFallbackUrl);
+      
       if (isEditMode && initialData.id) {
         // Update existing link
+        console.log('🔵 [Submit] Updating link ID:', initialData.id);
         const { error } = await supabase
           .from('links')
           .update({
@@ -226,7 +241,9 @@ const NewLinkWizard = ({ isOpen, onClose, initialData = null }) => {
           })
           .eq('id', initialData.id);
 
+        console.log('🔵 [Submit] Update result - error:', error);
         if (error) throw error;
+        console.log('✅ [Submit] Link updated successfully!');
 
         // Show success modal
         setModalState({
@@ -245,6 +262,7 @@ const NewLinkWizard = ({ isOpen, onClose, initialData = null }) => {
         });
       } else {
         // Create new link
+        console.log('🔵 [Submit] Creating new link...');
         const { error } = await supabase
           .from('links')
           .insert({
@@ -269,7 +287,9 @@ const NewLinkWizard = ({ isOpen, onClose, initialData = null }) => {
             created_at: new Date().toISOString(),
           });
 
+        console.log('🔵 [Submit] Insert result - error:', error);
         if (error) throw error;
+        console.log('✅ [Submit] Link created successfully!');
 
         // Copy to clipboard
         try {
@@ -323,7 +343,8 @@ const NewLinkWizard = ({ isOpen, onClose, initialData = null }) => {
         fullUtmString: '',
       });
     } catch (error) {
-      console.error('Error creating link:', error);
+      console.error('❌ [Submit] Error:', error);
+      console.error('❌ [Submit] Error message:', error?.message);
       const errorMessage = error?.message || 'Unknown error occurred';
       setModalState({
         isOpen: true,
