@@ -8,11 +8,24 @@ import Step2Optimization from '../../components/dashboard/wizard/Step2Optimizati
 import Step3Security from '../../components/dashboard/wizard/Step3Security';
 import Modal from '../../components/common/Modal';
 
-const steps = [
+const allSteps = [
   { number: 1, title: 'The Fast Track', subtitle: 'Destination & Identity' },
   { number: 2, title: 'Security & Logic', subtitle: 'Smart Rules & Protection' },
   { number: 3, title: 'Optimization & Marketing', subtitle: 'UTM & Pixels' },
 ];
+
+// Get visible steps based on plan type
+const getStepsForPlan = (planType) => {
+  switch (planType?.toLowerCase()) {
+    case 'pro':
+      return allSteps; // All 3 steps
+    case 'advanced':
+      return allSteps.slice(0, 2); // Steps 1 and 2
+    case 'free':
+    default:
+      return allSteps.slice(0, 1); // Only Step 1
+  }
+};
 
 const LinkBuilderPage = () => {
   const { id } = useParams();
@@ -23,9 +36,13 @@ const LinkBuilderPage = () => {
   const isDuplicateMode = !!duplicateId;
   const linkIdToLoad = id || duplicateId;
   const [currentStep, setCurrentStep] = useState(1);
+  const [planType, setPlanType] = useState('free');
   const step1ValidationRef = useRef(null);
   const step3ValidationRef = useRef(null);
   const [initialLoading, setInitialLoading] = useState(!!linkIdToLoad);
+  
+  // Get steps based on plan type
+  const steps = getStepsForPlan(planType);
 
   const getInitialFormData = () => ({
     linkId: id || null,
@@ -64,6 +81,29 @@ const LinkBuilderPage = () => {
     onConfirm: null,
     isLoading: false,
   });
+
+  // Fetch user's plan type
+  useEffect(() => {
+    const fetchPlanType = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+        
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('plan_type')
+          .eq('user_id', user.id)
+          .single();
+        
+        if (profile?.plan_type) {
+          setPlanType(profile.plan_type);
+        }
+      } catch (error) {
+        console.error('Error fetching plan type:', error);
+      }
+    };
+    fetchPlanType();
+  }, []);
 
   useEffect(() => {
     if (linkIdToLoad) {
@@ -507,6 +547,7 @@ const LinkBuilderPage = () => {
               onSafetyCheckUpdate={(safety) => updateFormData('urlSafety', safety)}
               onValidationRequest={step1ValidationRef}
               onContinue={nextStep}
+              planType={planType}
             />
           )}
           {currentStep === 2 && (
@@ -551,7 +592,8 @@ const LinkBuilderPage = () => {
               ) : null}
             </>
           )}
-          {currentStep >= steps.length && (
+          {/* Show save button on last step, but not on Step 1 (Step 1 has pink button) */}
+          {currentStep >= steps.length && currentStep > 1 && (
             <button
               onClick={handleSubmit}
               disabled={isSubmitting}

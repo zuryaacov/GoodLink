@@ -12,6 +12,7 @@ const Step1FastTrack = ({
   onSafetyCheckUpdate,
   onValidationRequest,
   onContinue,
+  planType = 'free',
 }) => {
   const [domains, setDomains] = useState(["glynk.to"]);
   const [checkingSlug, setCheckingSlug] = useState(false);
@@ -865,48 +866,50 @@ const Step1FastTrack = ({
         </button>
       </motion.div>
 
-      {/* Continue Button - Always visible on Step 1 */}
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="max-w-2xl mx-auto w-full px-2 sm:px-0 pt-4"
-      >
-        <button
-          onClick={async () => {
-            setValidatingButton('blue');
-            if (onValidationRequest && onValidationRequest.current) {
-              const validationResult = await onValidationRequest.current();
-              if (!validationResult || !validationResult.isValid) {
-                // Validation failed - errors are already shown
-                setValidatingButton(null);
-                return;
-              }
-            }
-            setValidatingButton(null);
-            if (onContinue) {
-              onContinue();
-            }
-          }}
-          disabled={checkingSlug}
-          className={`w-full px-4 sm:px-6 py-3 text-sm sm:text-base bg-primary hover:bg-primary/90 text-white font-bold rounded-xl transition-all flex items-center justify-center gap-2 ${
-            checkingSlug && validatingButton !== 'blue' ? "opacity-50 cursor-not-allowed" : ""
-          }`}
+      {/* Continue Button - Only visible for ADVANCED and PRO plans */}
+      {planType?.toLowerCase() !== 'free' && (
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="max-w-2xl mx-auto w-full px-2 sm:px-0 pt-4"
         >
-          {validatingButton === 'blue' ? (
-            <>
-              <span className="material-symbols-outlined animate-spin text-base sm:text-lg">refresh</span>
-              <span className="hidden sm:inline">Validating...</span>
-              <span className="sm:hidden">Validating...</span>
-            </>
-          ) : (
-            <>
-              <span className="material-symbols-outlined text-base sm:text-lg">arrow_forward</span>
-              <span className="hidden sm:inline">Continue to customize UTM, pixels, and security</span>
-              <span className="sm:hidden">Continue to customize</span>
-            </>
-          )}
-        </button>
-      </motion.div>
+          <button
+            onClick={async () => {
+              setValidatingButton('blue');
+              if (onValidationRequest && onValidationRequest.current) {
+                const validationResult = await onValidationRequest.current();
+                if (!validationResult || !validationResult.isValid) {
+                  // Validation failed - errors are already shown
+                  setValidatingButton(null);
+                  return;
+                }
+              }
+              setValidatingButton(null);
+              if (onContinue) {
+                onContinue();
+              }
+            }}
+            disabled={checkingSlug}
+            className={`w-full px-4 sm:px-6 py-3 text-sm sm:text-base bg-primary hover:bg-primary/90 text-white font-bold rounded-xl transition-all flex items-center justify-center gap-2 ${
+              checkingSlug && validatingButton !== 'blue' ? "opacity-50 cursor-not-allowed" : ""
+            }`}
+          >
+            {validatingButton === 'blue' ? (
+              <>
+                <span className="material-symbols-outlined animate-spin text-base sm:text-lg">refresh</span>
+                <span className="hidden sm:inline">Validating...</span>
+                <span className="sm:hidden">Validating...</span>
+              </>
+            ) : (
+              <>
+                <span className="material-symbols-outlined text-base sm:text-lg">arrow_forward</span>
+                <span className="hidden sm:inline">Continue to customize UTM, pixels, and security</span>
+                <span className="sm:hidden">Continue to customize</span>
+              </>
+            )}
+          </button>
+        </motion.div>
+      )}
     </motion.div>
   );
 };

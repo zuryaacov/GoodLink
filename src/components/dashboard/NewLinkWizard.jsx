@@ -6,18 +6,35 @@ import Step2Optimization from './wizard/Step2Optimization';
 import Step3Security from './wizard/Step3Security';
 import Modal from '../common/Modal';
 
-const steps = [
+const allSteps = [
   { number: 1, title: 'The Fast Track', subtitle: 'Destination & Identity' },
   { number: 2, title: 'Security & Logic', subtitle: 'Smart Rules & Protection' },
   { number: 3, title: 'Optimization & Marketing', subtitle: 'UTM & Pixels' },
 ];
 
+// Get visible steps based on plan type
+const getStepsForPlan = (planType) => {
+  switch (planType?.toLowerCase()) {
+    case 'pro':
+      return allSteps; // All 3 steps
+    case 'advanced':
+      return allSteps.slice(0, 2); // Steps 1 and 2
+    case 'free':
+    default:
+      return allSteps.slice(0, 1); // Only Step 1
+  }
+};
+
 const NewLinkWizard = ({ isOpen, onClose, initialData = null }) => {
   // Edit mode only if initialData exists AND has an ID (for duplication, we pass data without ID)
   const isEditMode = !!(initialData && initialData.id);
   const [currentStep, setCurrentStep] = useState(1);
+  const [planType, setPlanType] = useState('free');
   const step1ValidationRef = useRef(null);
   const step3ValidationRef = useRef(null);
+  
+  // Get steps based on plan type
+  const steps = getStepsForPlan(planType);
   
   // Initialize formData with initialData if in edit mode, otherwise use defaults
   const getInitialFormData = () => {
@@ -106,6 +123,31 @@ const NewLinkWizard = ({ isOpen, onClose, initialData = null }) => {
     onConfirm: null,
     isLoading: false,
   });
+
+  // Fetch user's plan type
+  useEffect(() => {
+    const fetchPlanType = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+        
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('plan_type')
+          .eq('user_id', user.id)
+          .single();
+        
+        if (profile?.plan_type) {
+          setPlanType(profile.plan_type);
+        }
+      } catch (error) {
+        console.error('Error fetching plan type:', error);
+      }
+    };
+    if (isOpen) {
+      fetchPlanType();
+    }
+  }, [isOpen]);
 
   // Reset form data when initialData changes (when switching between create/edit)
   useEffect(() => {
@@ -448,6 +490,7 @@ const NewLinkWizard = ({ isOpen, onClose, initialData = null }) => {
                 onSafetyCheckUpdate={(safety) => updateFormData('urlSafety', safety)}
                 onValidationRequest={step1ValidationRef}
                 onContinue={nextStep}
+                planType={planType}
               />
             )}
             {currentStep === 2 && (
@@ -497,7 +540,8 @@ const NewLinkWizard = ({ isOpen, onClose, initialData = null }) => {
               ) : null}
             </>
           )}
-          {currentStep >= steps.length && (
+          {/* Show save button on last step, but not on Step 1 (Step 1 has pink button) */}
+          {currentStep >= steps.length && currentStep > 1 && (
             <button
               onClick={handleSubmit}
               disabled={isSubmitting}
