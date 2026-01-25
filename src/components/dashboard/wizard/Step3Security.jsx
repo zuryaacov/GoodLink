@@ -122,7 +122,7 @@ const Step3Security = ({ formData, updateFormData, onValidationRequest }) => {
     if (onValidationRequest) {
       onValidationRequest.current = handleValidateBeforeSubmit;
     }
-  }, [onValidationRequest, formData.botAction, formData.fallbackUrl]);
+  });
 
   // Filter countries based on search query
   const filteredCountries = countriesData.filter(country =>

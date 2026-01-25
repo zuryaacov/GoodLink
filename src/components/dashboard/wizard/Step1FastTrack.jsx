@@ -585,7 +585,7 @@ const Step1FastTrack = ({
     if (onValidationRequest) {
       onValidationRequest.current = handleCheckSlug;
     }
-  }, [onValidationRequest, formData.targetUrl, formData.name, formData.slug, formData.domain]);
+  });
 
   const handleDomainSelect = (domain) => {
     updateFormData("domain", domain);
