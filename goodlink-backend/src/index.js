@@ -24,15 +24,19 @@ function ensureValidUrl(url) {
 /**
  * Build safe redirect URL with query params
  * Handles edge cases like missing trailing slash
+ * URLSearchParams automatically encodes special characters (#!@ etc.)
  */
 function buildSafeUrl(base, searchParams) {
     try {
         const urlObj = new URL(base);
-        // Copy params from original request to target URL
-        searchParams.forEach((v, k) => urlObj.searchParams.set(k, v));
-        return urlObj.toString();
+        // Copy params from original request to target URL (encoded safely)
+        searchParams.forEach((value, key) => urlObj.searchParams.set(key, value));
+        const finalUrl = urlObj.toString();
+        console.log(`🚀 Redirecting to: ${finalUrl}`);
+        return finalUrl;
     } catch (e) {
         // If URL in database is broken, return as-is
+        console.error("❌ Redirect Construction Error:", e.message);
         return base;
     }
 }
@@ -238,7 +242,8 @@ export default Sentry.withSentry(
             return new Response(null, { status: 204 });
         }
 
-        const slug = path.replace(/^\//, '').split('?')[0];
+        // Clean leading and trailing slashes to prevent routing errors
+        const slug = path.split('?')[0].replace(/^\/+|\/+$/g, '');
         const domain = url.hostname.replace(/^www\./, '');
         const ip = request.headers.get("cf-connecting-ip");
 
