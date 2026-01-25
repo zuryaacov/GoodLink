@@ -922,8 +922,16 @@ const Step1FastTrack = ({
             ) : (
               <>
                 <span className="material-symbols-outlined text-base sm:text-lg">arrow_forward</span>
-                <span className="hidden sm:inline">Continue to customize UTM, pixels, and security</span>
-                <span className="sm:hidden">Continue to customize</span>
+                <span className="hidden sm:inline">
+                  {planType?.toLowerCase() === 'advanced' 
+                    ? "Continue to customize security" 
+                    : "Continue to customize UTM, pixels, and security"}
+                </span>
+                <span className="sm:hidden">
+                  {planType?.toLowerCase() === 'advanced' 
+                    ? "Continue to customize security" 
+                    : "Continue to customize"}
+                </span>
               </>
             )}
           </button>
