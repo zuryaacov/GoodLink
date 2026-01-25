@@ -30,6 +30,14 @@ const Step3Security = ({ formData, updateFormData, onValidationRequest }) => {
     isLoading: false,
   });
 
+  // Keep a ref to the latest formData to avoid stale closures in validation callback
+  const formDataRef = useRef(formData);
+
+  // Update ref whenever formData changes
+  useEffect(() => {
+    formDataRef.current = formData;
+  }, [formData]);
+
   // Validate fallback URL when it changes
   const validateFallbackUrl = (url) => {
     if (!url || !url.trim()) {
@@ -78,19 +86,22 @@ const Step3Security = ({ formData, updateFormData, onValidationRequest }) => {
   // Validation function that can be called from parent before submit
   // Returns validation result and normalized URL
   const handleValidateBeforeSubmit = () => {
+    // Access latest data through ref to prevent stale closures
+    const currentData = formDataRef.current;
+
     // If botAction is not 'redirect', no validation needed for fallbackUrl
-    if (formData.botAction !== 'redirect') {
+    if (currentData.botAction !== 'redirect') {
       return { isValid: true, normalizedUrl: null };
     }
     
     // Check if URL is empty
-    if (!formData.fallbackUrl || !formData.fallbackUrl.trim()) {
+    if (!currentData.fallbackUrl || !currentData.fallbackUrl.trim()) {
       setFallbackUrlError('Please enter a redirect URL for bots');
       setFallbackUrlValid(false);
       return { isValid: false, normalizedUrl: null };
     }
 
-    const urlValidation = validateUrl(formData.fallbackUrl);
+    const urlValidation = validateUrl(currentData.fallbackUrl);
     if (!urlValidation.isValid) {
       setFallbackUrlError(urlValidation.error || 'Invalid URL format');
       setFallbackUrlValid(false);
@@ -114,7 +125,7 @@ const Step3Security = ({ formData, updateFormData, onValidationRequest }) => {
     setFallbackUrlError(null);
     setFallbackUrlValid(true);
     
-    return { isValid: true, normalizedUrl: urlValidation.normalizedUrl || formData.fallbackUrl };
+    return { isValid: true, normalizedUrl: urlValidation.normalizedUrl || currentData.fallbackUrl };
   };
 
   // Expose validation function to parent component - update on every data change
@@ -122,7 +133,7 @@ const Step3Security = ({ formData, updateFormData, onValidationRequest }) => {
     if (onValidationRequest) {
       onValidationRequest.current = handleValidateBeforeSubmit;
     }
-  }, [formData.botAction, formData.fallbackUrl, onValidationRequest]);
+  }, [onValidationRequest]);
   const filteredCountries = countriesData.filter(country =>
     country.name.toLowerCase().includes(countrySearchQuery.toLowerCase()) ||
     country.code.toLowerCase().includes(countrySearchQuery.toLowerCase())
