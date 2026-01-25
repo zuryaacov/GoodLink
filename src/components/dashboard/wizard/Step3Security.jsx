@@ -5,9 +5,9 @@ import { validateUrl } from '../../../lib/urlValidation';
 import Modal from '../../common/Modal';
 
 const botActionOptions = [
+  { value: 'no-tracking', label: 'Allow', icon: '✅', description: 'Allow bots through without tracking' },
   { value: 'block', label: 'Block', icon: '🚫', description: 'Block the request completely' },
-  { value: 'redirect', label: 'Redirect', icon: '🔄', description: 'Send bots to a different link' },
-  { value: 'no-tracking', label: 'No Tracking', icon: '⚡', description: 'Allow but skip pixel firing' },
+  { value: 'redirect', label: 'Redirect', icon: '🔄', description: 'Send bots to a different URL' },
 ];
 
 const Step3Security = ({ formData, updateFormData }) => {
@@ -18,6 +18,9 @@ const Step3Security = ({ formData, updateFormData }) => {
   const [geoRuleErrors, setGeoRuleErrors] = useState({ country: null, url: null });
   const [countrySearchQuery, setCountrySearchQuery] = useState('');
   const countryPickerRef = useRef(null);
+  const [fallbackUrlError, setFallbackUrlError] = useState(null);
+  const [fallbackUrlValid, setFallbackUrlValid] = useState(false);
+  const [checkingFallbackUrl, setCheckingFallbackUrl] = useState(false);
   const [modalState, setModalState] = useState({
     isOpen: false,
     type: 'error',
@@ -26,6 +29,51 @@ const Step3Security = ({ formData, updateFormData }) => {
     onConfirm: null,
     isLoading: false,
   });
+
+  // Validate fallback URL when it changes
+  const validateFallbackUrl = (url) => {
+    if (!url || !url.trim()) {
+      setFallbackUrlError('Please enter a redirect URL for bots');
+      setFallbackUrlValid(false);
+      return false;
+    }
+
+    const urlValidation = validateUrl(url);
+    if (!urlValidation.isValid) {
+      setFallbackUrlError(urlValidation.error || 'Invalid URL format');
+      setFallbackUrlValid(false);
+      return false;
+    }
+
+    // Check if URL is pointing to glynk.to (not allowed)
+    try {
+      const urlObj = new URL(urlValidation.normalizedUrl);
+      const hostname = urlObj.hostname.toLowerCase().replace(/^www\./, '');
+      if (hostname === 'glynk.to') {
+        setFallbackUrlError('Redirect cannot be to glynk.to. Please use a different URL.');
+        setFallbackUrlValid(false);
+        return false;
+      }
+    } catch (error) {
+      // Continue if URL parsing fails
+    }
+
+    setFallbackUrlError(null);
+    setFallbackUrlValid(true);
+    // Update with normalized URL
+    if (urlValidation.normalizedUrl && urlValidation.normalizedUrl !== url) {
+      updateFormData('fallbackUrl', urlValidation.normalizedUrl);
+    }
+    return true;
+  };
+
+  const handleFallbackUrlBlur = () => {
+    if (formData.botAction === 'redirect' && formData.fallbackUrl) {
+      setCheckingFallbackUrl(true);
+      validateFallbackUrl(formData.fallbackUrl);
+      setCheckingFallbackUrl(false);
+    }
+  };
 
   // Filter countries based on search query
   const filteredCountries = countriesData.filter(country =>
@@ -165,10 +213,69 @@ const Step3Security = ({ formData, updateFormData }) => {
                   </div>
                   <p className="text-slate-500 text-xs mt-1">{option.description}</p>
                 </div>
-              </button>
+                </button>
             );
           })}
         </div>
+
+        {/* Fallback URL Input - Only show when Redirect is selected */}
+        {formData.botAction === 'redirect' && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            className="mt-4 p-4 bg-[#0b0f19] border border-[#232f48] rounded-xl"
+          >
+            <label className="block text-sm font-medium text-white mb-2">
+              Redirect URL for Bots
+            </label>
+            <p className="text-xs text-slate-500 mb-3">
+              Where should bots be redirected to?
+            </p>
+            <div className="relative">
+              <input
+                type="url"
+                value={formData.fallbackUrl || ''}
+                onChange={(e) => {
+                  updateFormData('fallbackUrl', e.target.value);
+                  if (fallbackUrlError) {
+                    setFallbackUrlError(null);
+                  }
+                  setFallbackUrlValid(false);
+                }}
+                onBlur={handleFallbackUrlBlur}
+                placeholder="https://example.com/bot-page"
+                className={`w-full px-4 py-3 bg-[#101622] border-2 rounded-xl text-white placeholder-slate-500 focus:outline-none transition-colors ${
+                  fallbackUrlError
+                    ? 'border-red-500 focus:border-red-500'
+                    : fallbackUrlValid
+                    ? 'border-green-500/50 focus:border-green-500'
+                    : 'border-[#232f48] focus:border-primary'
+                }`}
+              />
+              {checkingFallbackUrl && (
+                <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                  <span className="material-symbols-outlined animate-spin text-primary text-sm">
+                    refresh
+                  </span>
+                </div>
+              )}
+              {!checkingFallbackUrl && fallbackUrlValid && (
+                <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                  <span className="material-symbols-outlined text-green-400 text-sm">
+                    check_circle
+                  </span>
+                </div>
+              )}
+            </div>
+            {fallbackUrlError && (
+              <p className="text-red-400 text-xs mt-2">{fallbackUrlError}</p>
+            )}
+            {fallbackUrlValid && !fallbackUrlError && (
+              <p className="text-green-400 text-xs mt-2">✓ URL is valid</p>
+            )}
+          </motion.div>
+        )}
       </div>
 
       {/* Geo-Targeting - Mobile-First Card Design */}

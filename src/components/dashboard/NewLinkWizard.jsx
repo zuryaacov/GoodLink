@@ -42,7 +42,8 @@ const NewLinkWizard = ({ isOpen, onClose, initialData = null }) => {
         customScript: initialData.custom_script || '',
         // Step 4
         fraudShield: initialData.fraud_shield || 'none',
-        botAction: initialData.bot_action || 'block',
+        botAction: initialData.bot_action || 'no-tracking',
+        fallbackUrl: initialData.fallback_url || '',
         geoRules: (() => {
           if (Array.isArray(initialData.geo_rules)) {
             return initialData.geo_rules;
@@ -83,7 +84,8 @@ const NewLinkWizard = ({ isOpen, onClose, initialData = null }) => {
       customScript: '',
       // Step 4
       fraudShield: 'none',
-      botAction: 'block',
+      botAction: 'no-tracking',
+      fallbackUrl: '',
       geoRules: [],
       // Step 5 - calculated
       shortUrl: '',
@@ -190,6 +192,7 @@ const NewLinkWizard = ({ isOpen, onClose, initialData = null }) => {
             custom_script: formData.customScript || null,
             fraud_shield: formData.fraudShield,
             bot_action: formData.botAction,
+            fallback_url: formData.botAction === 'redirect' ? (formData.fallbackUrl || null) : null,
             geo_rules: Array.isArray(formData.geoRules) ? formData.geoRules : [],
             updated_at: new Date().toISOString(),
           })
@@ -233,6 +236,7 @@ const NewLinkWizard = ({ isOpen, onClose, initialData = null }) => {
             custom_script: formData.customScript || null,
             fraud_shield: formData.fraudShield,
             bot_action: formData.botAction,
+            fallback_url: formData.botAction === 'redirect' ? (formData.fallbackUrl || null) : null,
             geo_rules: Array.isArray(formData.geoRules) ? formData.geoRules : [],
             created_at: new Date().toISOString(),
           });
@@ -284,7 +288,8 @@ const NewLinkWizard = ({ isOpen, onClose, initialData = null }) => {
         serverSideTracking: false,
         customScript: '',
         fraudShield: 'none',
-        botAction: 'block',
+        botAction: 'no-tracking',
+        fallbackUrl: '',
         geoRules: [],
         shortUrl: '',
         fullUtmString: '',
