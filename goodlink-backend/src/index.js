@@ -253,10 +253,20 @@ export default Sentry.withSentry(
             status, headers: { "Content-Type": "text/html;charset=UTF-8" }
         });
 
-        // Terminate with log to Supabase
+        // Terminate with log to Supabase - redirects to fallback_url if available
         const terminateWithLog = (verdict, linkData = null) => {
             const clickRecord = buildClickRecord(request, rayId, ip, slug, domain, userAgent, verdict, linkData);
             ctx.waitUntil(logClickToSupabase(env, clickRecord, redis));
+            
+            // If linkData has fallback_url, redirect there instead of showing 404
+            if (linkData?.fallback_url) {
+                const fallbackUrl = ensureValidUrl(linkData.fallback_url);
+                if (fallbackUrl) {
+                    console.log(`🔀 Redirecting to fallback URL: ${fallbackUrl} (reason: ${verdict})`);
+                    return Response.redirect(fallbackUrl, 302);
+                }
+            }
+            
             return htmlResponse(get404Page());
         };
 
@@ -333,7 +343,17 @@ export default Sentry.withSentry(
         const clickRecord = buildClickRecord(request, rayId, ip, slug, domain, userAgent, verdict, linkData);
         ctx.waitUntil(logClickToSupabase(env, clickRecord, redis));
 
-        if (shouldBlock) return htmlResponse(get404Page());
+        // If blocked, redirect to fallback_url if exists, otherwise 404
+        if (shouldBlock) {
+            if (linkData?.fallback_url) {
+                const fallbackUrl = ensureValidUrl(linkData.fallback_url);
+                if (fallbackUrl) {
+                    console.log(`🔀 Bot blocked, redirecting to fallback URL: ${fallbackUrl}`);
+                    return Response.redirect(fallbackUrl, 302);
+                }
+            }
+            return htmlResponse(get404Page());
+        }
 
         // 7. Redirect
         const finalRedirectUrl = buildSafeUrl(targetUrl, url.searchParams);
