@@ -832,11 +832,11 @@ const Step1FastTrack = ({
             // If validation failed, errors are already shown by handleCheckSlug
           }}
           disabled={checkingSlug}
-          className={`w-full px-4 sm:px-6 py-3 text-sm sm:text-base text-white font-bold rounded-xl transition-colors flex items-center justify-center gap-2 ${
-            checkingSlug ? "opacity-50 cursor-not-allowed" : ""
+          className={`w-full px-4 sm:px-6 py-3 text-sm sm:text-base text-white font-bold rounded-xl transition-all flex items-center justify-center gap-2 ${
+            checkingSlug && validatingButton !== 'pink' ? "opacity-50 cursor-not-allowed" : ""
           }`}
           style={{
-            backgroundColor: checkingSlug ? undefined : "#FF10F0",
+            backgroundColor: "#FF10F0",
           }}
           onMouseEnter={(e) => {
             if (!checkingSlug) {
@@ -888,8 +888,8 @@ const Step1FastTrack = ({
             }
           }}
           disabled={checkingSlug}
-          className={`w-full px-4 sm:px-6 py-3 text-sm sm:text-base bg-primary hover:bg-primary/90 text-white font-bold rounded-xl transition-colors flex items-center justify-center gap-2 ${
-            checkingSlug ? "opacity-50 cursor-not-allowed" : ""
+          className={`w-full px-4 sm:px-6 py-3 text-sm sm:text-base bg-primary hover:bg-primary/90 text-white font-bold rounded-xl transition-all flex items-center justify-center gap-2 ${
+            checkingSlug && validatingButton !== 'blue' ? "opacity-50 cursor-not-allowed" : ""
           }`}
         >
           {validatingButton === 'blue' ? (
