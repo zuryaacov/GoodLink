@@ -326,29 +326,6 @@ const Step2Optimization = ({ formData, updateFormData }) => {
         </div>
       )}
 
-      {/* Parameter Pass-through */}
-      <div className="flex items-center justify-between p-4 bg-[#0b0f19] border border-[#232f48] rounded-xl">
-        <div className="flex-1">
-          <label className="block text-sm font-medium text-white mb-1">
-            Parameter Pass-through
-          </label>
-          <p className="text-xs text-slate-500">
-            Automatically forward all additional parameters (like ClickID) to the affiliate URL
-          </p>
-        </div>
-        <button
-          onClick={() => updateFormData('parameterPassThrough', !formData.parameterPassThrough)}
-          className={`relative w-14 h-7 rounded-full transition-colors flex-shrink-0 ${
-            formData.parameterPassThrough ? 'bg-primary' : 'bg-[#232f48]'
-          }`}
-        >
-          <span
-            className={`absolute top-0.5 left-0.5 w-6 h-6 bg-white rounded-full transition-transform shadow-md ${
-              formData.parameterPassThrough ? 'translate-x-7' : 'translate-x-0'
-            }`}
-          />
-        </button>
-      </div>
     </motion.div>
   );
 };
