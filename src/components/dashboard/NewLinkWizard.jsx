@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../../lib/supabase';
+import { validateUrl } from '../../lib/urlValidation';
 import Step1FastTrack from './wizard/Step1FastTrack';
 import Step2Optimization from './wizard/Step2Optimization';
 import Step3Security from './wizard/Step3Security';
@@ -162,6 +163,37 @@ const NewLinkWizard = ({ isOpen, onClose, initialData = null }) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
+  // Helper function to validate Step 2 (Security) using formData directly
+  const validateStep2Security = () => {
+    // If botAction is not 'redirect', no validation needed
+    if (formData.botAction !== 'redirect') {
+      return { isValid: true, normalizedUrl: null };
+    }
+    
+    // Check if URL is empty
+    if (!formData.fallbackUrl || !formData.fallbackUrl.trim()) {
+      return { isValid: false, normalizedUrl: null, error: 'Please enter a redirect URL for bots' };
+    }
+
+    const urlValidation = validateUrl(formData.fallbackUrl);
+    if (!urlValidation.isValid) {
+      return { isValid: false, normalizedUrl: null, error: urlValidation.error || 'Invalid URL format' };
+    }
+
+    // Check if URL is pointing to glynk.to (not allowed)
+    try {
+      const urlObj = new URL(urlValidation.normalizedUrl);
+      const hostname = urlObj.hostname.toLowerCase().replace(/^www\./, '');
+      if (hostname === 'glynk.to') {
+        return { isValid: false, normalizedUrl: null, error: 'Redirect cannot be to glynk.to' };
+      }
+    } catch (error) {
+      // Continue if URL parsing fails
+    }
+
+    return { isValid: true, normalizedUrl: urlValidation.normalizedUrl || formData.fallbackUrl };
+  };
+
   const nextStep = async () => {
     // If we're on step 1, run validations before continuing
     if (currentStep === 1 && step1ValidationRef.current) {
@@ -172,10 +204,14 @@ const NewLinkWizard = ({ isOpen, onClose, initialData = null }) => {
       }
     }
     
-    // Validate Step 2 (Security) - fallback URL is required if redirect is selected
-    if (currentStep === 2 && step3ValidationRef.current) {
-      const validationResult = step3ValidationRef.current();
-      if (!validationResult || !validationResult.isValid) {
+    // Validate Step 2 (Security) - use direct validation instead of ref
+    if (currentStep === 2) {
+      const validationResult = validateStep2Security();
+      if (!validationResult.isValid) {
+        // Show error via Step3Security component - it will pick up the error
+        if (step3ValidationRef.current) {
+          step3ValidationRef.current(); // This will set the error state in the component
+        }
         return;
       }
     }
@@ -192,16 +228,16 @@ const NewLinkWizard = ({ isOpen, onClose, initialData = null }) => {
   };
 
   const handleSubmit = async () => {
-    // Validate Step 2 (Security) before submitting
-    let finalFallbackUrl = null;
-    if (step3ValidationRef.current) {
-      const step3Validation = step3ValidationRef.current();
-      if (!step3Validation.isValid) {
-        // Validation failed - error is already shown inline, just return
-        return;
+    // Validate Step 2 (Security) before submitting - use direct validation
+    const step2Validation = validateStep2Security();
+    let finalFallbackUrl = step2Validation.normalizedUrl;
+    
+    if (!step2Validation.isValid) {
+      // Trigger the component to show error
+      if (step3ValidationRef.current) {
+        step3ValidationRef.current();
       }
-      // Use the normalized URL from validation
-      finalFallbackUrl = step3Validation.normalizedUrl;
+      return;
     }
 
     setIsSubmitting(true);
