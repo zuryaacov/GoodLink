@@ -881,11 +881,24 @@ const Step1FastTrack = ({
               onContinue();
             }
           }}
-          className="w-full px-4 sm:px-6 py-3 text-sm sm:text-base bg-primary hover:bg-primary/90 text-white font-bold rounded-xl transition-colors flex items-center justify-center gap-2"
+          disabled={checkingSlug}
+          className={`w-full px-4 sm:px-6 py-3 text-sm sm:text-base bg-primary hover:bg-primary/90 text-white font-bold rounded-xl transition-colors flex items-center justify-center gap-2 ${
+            checkingSlug ? "opacity-50 cursor-not-allowed" : ""
+          }`}
         >
-          <span className="material-symbols-outlined text-base sm:text-lg">arrow_forward</span>
-          <span className="hidden sm:inline">Continue to customize UTM, pixels, and security</span>
-          <span className="sm:hidden">Continue to customize</span>
+          {checkingSlug ? (
+            <>
+              <span className="material-symbols-outlined animate-spin text-base sm:text-lg">refresh</span>
+              <span className="hidden sm:inline">Validating...</span>
+              <span className="sm:hidden">Validating...</span>
+            </>
+          ) : (
+            <>
+              <span className="material-symbols-outlined text-base sm:text-lg">arrow_forward</span>
+              <span className="hidden sm:inline">Continue to customize UTM, pixels, and security</span>
+              <span className="sm:hidden">Continue to customize</span>
+            </>
+          )}
         </button>
       </motion.div>
     </motion.div>
