@@ -110,7 +110,7 @@ const Step3Security = ({ formData, updateFormData, onValidationRequest }) => {
       // Continue if URL parsing fails
     }
 
-    // Validation passed - clear errors and return normalized URL
+    // Validation passed - update UI state but RETURN result directly to parent
     setFallbackUrlError(null);
     setFallbackUrlValid(true);
     
@@ -122,7 +122,7 @@ const Step3Security = ({ formData, updateFormData, onValidationRequest }) => {
     if (onValidationRequest) {
       onValidationRequest.current = handleValidateBeforeSubmit;
     }
-  });
+  }, [onValidationRequest, formData.botAction, formData.fallbackUrl]);
 
   // Filter countries based on search query
   const filteredCountries = countriesData.filter(country =>
