@@ -424,7 +424,11 @@ const NewLinkWizard = ({ isOpen, onClose, initialData = null }) => {
         <div className="flex items-center justify-between p-4 sm:p-6 border-b border-[#232f48] flex-shrink-0">
           <div className="flex-1 min-w-0 pr-2">
             <h2 className="text-xl sm:text-2xl font-bold text-white truncate">{isEditMode ? 'Edit Link' : 'The Smart Flow'}</h2>
-            <p className="text-slate-400 text-xs sm:text-sm mt-1">{isEditMode ? 'Update your smart link' : 'Create your smart link in 3 simple steps'}</p>
+            <p className="text-slate-400 text-xs sm:text-sm mt-1">
+              {isEditMode 
+                ? 'Update your smart link' 
+                : (planType?.toLowerCase() === 'free' ? 'Create your smart link' : 'Create your smart link in 3 simple steps')}
+            </p>
           </div>
           <button
             onClick={onClose}
@@ -434,49 +438,51 @@ const NewLinkWizard = ({ isOpen, onClose, initialData = null }) => {
           </button>
         </div>
 
-        {/* Stepper */}
-        <div className="px-3 sm:px-6 py-3 sm:py-4 border-b border-[#232f48] flex-shrink-0 overflow-x-auto">
-          <div className="flex items-center gap-2 sm:gap-4 min-w-max">
-            {steps.map((step, index) => (
-              <React.Fragment key={step.number}>
-                <div className="flex items-center gap-3">
-                  <div
-                    className={`flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full font-bold text-sm sm:text-base transition-all flex-shrink-0 ${
-                      currentStep === step.number
-                        ? 'bg-primary text-white scale-110 shadow-lg shadow-primary/50'
-                        : currentStep > step.number
-                        ? 'bg-primary/50 text-white'
-                        : 'bg-[#232f48] text-slate-400'
-                    }`}
-                  >
-                    {step.number}
-                  </div>
-                  <div className="hidden sm:block">
+        {/* Stepper - Hidden for FREE users */}
+        {planType?.toLowerCase() !== 'free' && (
+          <div className="px-3 sm:px-6 py-3 sm:py-4 border-b border-[#232f48] flex-shrink-0 overflow-x-auto">
+            <div className="flex items-center gap-2 sm:gap-4 min-w-max">
+              {steps.map((step, index) => (
+                <React.Fragment key={step.number}>
+                  <div className="flex items-center gap-3">
                     <div
-                      className={`text-xs sm:text-sm font-bold ${
-                        currentStep >= step.number ? 'text-white' : 'text-slate-400'
+                      className={`flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full font-bold text-sm sm:text-base transition-all flex-shrink-0 ${
+                        currentStep === step.number
+                          ? 'bg-primary text-white scale-110 shadow-lg shadow-primary/50'
+                          : currentStep > step.number
+                          ? 'bg-primary/50 text-white'
+                          : 'bg-[#232f48] text-slate-400'
                       }`}
                     >
-                      {step.title}
+                      {step.number}
                     </div>
-                    {step.subtitle && (
-                      <div className="text-xs text-slate-500 mt-0.5 hidden md:block">
-                        {step.subtitle}
+                    <div className="hidden sm:block">
+                      <div
+                        className={`text-xs sm:text-sm font-bold ${
+                          currentStep >= step.number ? 'text-white' : 'text-slate-400'
+                        }`}
+                      >
+                        {step.title}
                       </div>
-                    )}
+                      {step.subtitle && (
+                        <div className="text-xs text-slate-500 mt-0.5 hidden md:block">
+                          {step.subtitle}
+                        </div>
+                      )}
+                    </div>
                   </div>
-                </div>
-                {index < steps.length - 1 && (
-                  <div
-                    className={`w-6 sm:w-12 h-0.5 flex-shrink-0 ${
-                      currentStep > step.number ? 'bg-primary' : 'bg-[#232f48]'
-                    }`}
-                  />
-                )}
-              </React.Fragment>
-            ))}
+                  {index < steps.length - 1 && (
+                    <div
+                      className={`w-6 sm:w-12 h-0.5 flex-shrink-0 ${
+                        currentStep > step.number ? 'bg-primary' : 'bg-[#232f48]'
+                      }`}
+                    />
+                  )}
+                </React.Fragment>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Content */}
         <div className="flex-1 overflow-y-auto overflow-x-hidden p-3 sm:p-6">
@@ -516,7 +522,7 @@ const NewLinkWizard = ({ isOpen, onClose, initialData = null }) => {
           {currentStep === 1 ? (
             // Step 1: Hide Previous button and Continue button (moved to Step1FastTrack)
             <div className="text-slate-400 text-xs sm:text-sm whitespace-nowrap">
-              Step {currentStep} of {steps.length}
+              {steps.length > 1 && `Step ${currentStep} of ${steps.length}`}
             </div>
           ) : (
             <>

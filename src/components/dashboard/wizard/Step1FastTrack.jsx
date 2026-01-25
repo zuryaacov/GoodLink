@@ -606,11 +606,13 @@ const Step1FastTrack = ({
       exit={{ opacity: 0, y: -20 }}
       className="space-y-4 sm:space-y-8"
     >
-      {/* Header */}
-      <div className="text-center">
-        <h3 className="text-xl sm:text-2xl font-bold text-white mb-2">The Fast Track</h3>
-        <p className="text-slate-400 text-xs sm:text-sm">Destination & Identity</p>
-      </div>
+      {/* Header - Hidden for FREE users */}
+      {planType?.toLowerCase() !== 'free' && (
+        <div className="text-center">
+          <h3 className="text-xl sm:text-2xl font-bold text-white mb-2">The Fast Track</h3>
+          <p className="text-slate-400 text-xs sm:text-sm">Destination & Identity</p>
+        </div>
+      )}
 
       {/* Link URL Input */}
       <div className="flex flex-col items-center justify-center">
@@ -859,8 +861,16 @@ const Step1FastTrack = ({
           ) : (
             <>
               <span className="material-symbols-outlined text-base sm:text-lg">{formData.linkId ? "save" : "bolt"}</span>
-              <span className="hidden sm:inline">{formData.linkId ? "Update Link" : "Create Quick Link (Skip Advanced Settings)"}</span>
-              <span className="sm:hidden">{formData.linkId ? "Update Link" : "Create Quick Link"}</span>
+              <span className="hidden sm:inline">
+                {planType?.toLowerCase() === 'free' 
+                  ? "Create Link" 
+                  : (formData.linkId ? "Update Link" : "Create Quick Link (Skip Advanced Settings)")}
+              </span>
+              <span className="sm:hidden">
+                {planType?.toLowerCase() === 'free' 
+                  ? "Create Link" 
+                  : (formData.linkId ? "Update Link" : "Create Quick Link")}
+              </span>
             </>
           )}
         </button>
