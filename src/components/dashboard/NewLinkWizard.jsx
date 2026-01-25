@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../../lib/supabase';
+import { validateUrl } from '../../lib/urlValidation';
 import Step1FastTrack from './wizard/Step1FastTrack';
 import Step2Optimization from './wizard/Step2Optimization';
 import Step3Security from './wizard/Step3Security';
@@ -157,6 +158,33 @@ const NewLinkWizard = ({ isOpen, onClose, initialData = null }) => {
         throw new Error('Link name is required. Please enter a name for your link.');
       }
 
+      // Validate fallback URL if botAction is 'redirect'
+      let finalFallbackUrl = null;
+      if (formData.botAction === 'redirect') {
+        if (!formData.fallbackUrl || !formData.fallbackUrl.trim()) {
+          throw new Error('Redirect URL is required when Bot Action is set to Redirect.');
+        }
+        
+        const fallbackValidation = validateUrl(formData.fallbackUrl);
+        if (!fallbackValidation.isValid) {
+          throw new Error(`Invalid Redirect URL: ${fallbackValidation.error || 'Please enter a valid URL'}`);
+        }
+        
+        // Check if URL is pointing to glynk.to (not allowed)
+        try {
+          const urlObj = new URL(fallbackValidation.normalizedUrl);
+          const hostname = urlObj.hostname.toLowerCase().replace(/^www\./, '');
+          if (hostname === 'glynk.to') {
+            throw new Error('Redirect URL cannot be glynk.to. Please use a different URL.');
+          }
+        } catch (e) {
+          if (e.message.includes('glynk.to')) throw e;
+          // Continue if URL parsing fails for other reasons
+        }
+        
+        finalFallbackUrl = fallbackValidation.normalizedUrl || formData.fallbackUrl;
+      }
+
       // Generate slug if not provided
       const finalSlug = formData.slug || generateRandomSlug();
       
@@ -192,7 +220,7 @@ const NewLinkWizard = ({ isOpen, onClose, initialData = null }) => {
             custom_script: formData.customScript || null,
             fraud_shield: formData.fraudShield,
             bot_action: formData.botAction,
-            fallback_url: formData.botAction === 'redirect' ? (formData.fallbackUrl || null) : null,
+            fallback_url: finalFallbackUrl,
             geo_rules: Array.isArray(formData.geoRules) ? formData.geoRules : [],
             updated_at: new Date().toISOString(),
           })
@@ -236,7 +264,7 @@ const NewLinkWizard = ({ isOpen, onClose, initialData = null }) => {
             custom_script: formData.customScript || null,
             fraud_shield: formData.fraudShield,
             bot_action: formData.botAction,
-            fallback_url: formData.botAction === 'redirect' ? (formData.fallbackUrl || null) : null,
+            fallback_url: finalFallbackUrl,
             geo_rules: Array.isArray(formData.geoRules) ? formData.geoRules : [],
             created_at: new Date().toISOString(),
           });
