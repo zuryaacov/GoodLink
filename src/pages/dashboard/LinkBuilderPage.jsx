@@ -25,6 +25,7 @@ const LinkBuilderPage = () => {
   const linkIdToLoad = id || duplicateId;
   const [currentStep, setCurrentStep] = useState(1);
   const step1ValidationRef = useRef(null);
+  const step3ValidationRef = useRef(null);
   const [initialLoading, setInitialLoading] = useState(!!linkIdToLoad);
 
   const getInitialFormData = () => ({
@@ -189,6 +190,15 @@ const LinkBuilderPage = () => {
   };
 
   const handleSubmit = async () => {
+    // Validate Step 3 (fallback URL) before submitting
+    if (step3ValidationRef.current) {
+      const step3Validation = step3ValidationRef.current();
+      if (!step3Validation.isValid) {
+        // Validation failed - error is already shown inline, just return
+        return;
+      }
+    }
+
     setIsSubmitting(true);
     try {
       const { data: { user } } = await supabase.auth.getUser();
@@ -203,29 +213,10 @@ const LinkBuilderPage = () => {
         throw new Error('Link name is required. Please enter a name for your link.');
       }
 
-      // Validate fallback URL if botAction is 'redirect'
+      // Get fallback URL (already validated by Step3Security)
       let finalFallbackUrl = null;
-      if (formData.botAction === 'redirect') {
-        if (!formData.fallbackUrl || !formData.fallbackUrl.trim()) {
-          throw new Error('Redirect URL is required when Bot Action is set to Redirect.');
-        }
-        
+      if (formData.botAction === 'redirect' && formData.fallbackUrl) {
         const fallbackValidation = validateUrl(formData.fallbackUrl);
-        if (!fallbackValidation.isValid) {
-          throw new Error(`Invalid Redirect URL: ${fallbackValidation.error || 'Please enter a valid URL'}`);
-        }
-        
-        // Check if URL is pointing to glynk.to (not allowed)
-        try {
-          const urlObj = new URL(fallbackValidation.normalizedUrl);
-          const hostname = urlObj.hostname.toLowerCase().replace(/^www\./, '');
-          if (hostname === 'glynk.to') {
-            throw new Error('Redirect URL cannot be glynk.to. Please use a different URL.');
-          }
-        } catch (e) {
-          if (e.message.includes('glynk.to')) throw e;
-        }
-        
         finalFallbackUrl = fallbackValidation.normalizedUrl || formData.fallbackUrl;
       }
 
@@ -525,6 +516,7 @@ const LinkBuilderPage = () => {
             <Step3Security
               formData={formData}
               updateFormData={updateFormData}
+              onValidationRequest={step3ValidationRef}
             />
           )}
         </div>

@@ -10,7 +10,7 @@ const botActionOptions = [
   { value: 'redirect', label: 'Redirect', icon: '🔄', description: 'Send bots to a different URL' },
 ];
 
-const Step3Security = ({ formData, updateFormData }) => {
+const Step3Security = ({ formData, updateFormData, onValidationRequest }) => {
   const [showGeoRuleForm, setShowGeoRuleForm] = useState(false);
   const [showCountryPicker, setShowCountryPicker] = useState(false);
   const [editingRuleIndex, setEditingRuleIndex] = useState(null);
@@ -74,6 +74,25 @@ const Step3Security = ({ formData, updateFormData }) => {
       setCheckingFallbackUrl(false);
     }
   };
+
+  // Validation function that can be called from parent before submit
+  const handleValidateBeforeSubmit = () => {
+    // If botAction is not 'redirect', no validation needed for fallbackUrl
+    if (formData.botAction !== 'redirect') {
+      return { isValid: true };
+    }
+    
+    // Validate fallback URL
+    const isValid = validateFallbackUrl(formData.fallbackUrl);
+    return { isValid };
+  };
+
+  // Expose validation function to parent component
+  useEffect(() => {
+    if (onValidationRequest) {
+      onValidationRequest.current = handleValidateBeforeSubmit;
+    }
+  }, [onValidationRequest, formData.botAction, formData.fallbackUrl]);
 
   // Filter countries based on search query
   const filteredCountries = countriesData.filter(country =>

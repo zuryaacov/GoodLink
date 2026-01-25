@@ -18,6 +18,7 @@ const NewLinkWizard = ({ isOpen, onClose, initialData = null }) => {
   const isEditMode = !!(initialData && initialData.id);
   const [currentStep, setCurrentStep] = useState(1);
   const step1ValidationRef = useRef(null);
+  const step3ValidationRef = useRef(null);
   
   // Initialize formData with initialData if in edit mode, otherwise use defaults
   const getInitialFormData = () => {
@@ -142,8 +143,15 @@ const NewLinkWizard = ({ isOpen, onClose, initialData = null }) => {
   };
 
   const handleSubmit = async () => {
-    console.log('🚀 [Submit] handleSubmit called!');
-    console.log('🔵 [Submit] formData:', JSON.stringify(formData, null, 2));
+    // Validate Step 3 (fallback URL) before submitting
+    if (step3ValidationRef.current) {
+      const step3Validation = step3ValidationRef.current();
+      if (!step3Validation.isValid) {
+        // Validation failed - error is already shown inline, just return
+        return;
+      }
+    }
+
     setIsSubmitting(true);
     try {
       const { data: { user } } = await supabase.auth.getUser();
@@ -160,39 +168,11 @@ const NewLinkWizard = ({ isOpen, onClose, initialData = null }) => {
         throw new Error('Link name is required. Please enter a name for your link.');
       }
 
-      // Validate fallback URL if botAction is 'redirect'
+      // Get fallback URL (already validated by Step3Security)
       let finalFallbackUrl = null;
-      console.log('🔵 [Submit] botAction:', formData.botAction);
-      console.log('🔵 [Submit] fallbackUrl:', formData.fallbackUrl);
-      
-      if (formData.botAction === 'redirect') {
-        if (!formData.fallbackUrl || !formData.fallbackUrl.trim()) {
-          console.log('❌ [Submit] Redirect URL is empty');
-          throw new Error('Redirect URL is required when Bot Action is set to Redirect.');
-        }
-        
+      if (formData.botAction === 'redirect' && formData.fallbackUrl) {
         const fallbackValidation = validateUrl(formData.fallbackUrl);
-        console.log('🔵 [Submit] fallbackValidation:', fallbackValidation);
-        
-        if (!fallbackValidation.isValid) {
-          console.log('❌ [Submit] Redirect URL validation failed');
-          throw new Error(`Invalid Redirect URL: ${fallbackValidation.error || 'Please enter a valid URL'}`);
-        }
-        
-        // Check if URL is pointing to glynk.to (not allowed)
-        try {
-          const urlObj = new URL(fallbackValidation.normalizedUrl);
-          const hostname = urlObj.hostname.toLowerCase().replace(/^www\./, '');
-          if (hostname === 'glynk.to') {
-            throw new Error('Redirect URL cannot be glynk.to. Please use a different URL.');
-          }
-        } catch (e) {
-          if (e.message.includes('glynk.to')) throw e;
-          // Continue if URL parsing fails for other reasons
-        }
-        
         finalFallbackUrl = fallbackValidation.normalizedUrl || formData.fallbackUrl;
-        console.log('✅ [Submit] finalFallbackUrl:', finalFallbackUrl);
       }
 
       // Generate slug if not provided
@@ -479,6 +459,7 @@ const NewLinkWizard = ({ isOpen, onClose, initialData = null }) => {
                 key="step3"
                 formData={formData}
                 updateFormData={updateFormData}
+                onValidationRequest={step3ValidationRef}
               />
             )}
           </AnimatePresence>
