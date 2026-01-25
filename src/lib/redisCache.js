@@ -114,3 +114,49 @@ export async function updateLinkInRedis(linkData, supabase, oldDomain = null, ol
     return false;
   }
 }
+
+/**
+ * Delete a link from Redis cache
+ * This function is called when a link is deleted
+ * 
+ * @param {string} domain - The domain of the link
+ * @param {string} slug - The slug of the link
+ */
+export async function deleteLinkFromRedis(domain, slug) {
+  try {
+    let workerUrl = import.meta.env.VITE_WORKER_URL;
+    
+    if (!workerUrl) {
+      workerUrl = window.location.origin.replace(/:\d+$/, '');
+      console.warn('⚠️ [RedisCache] VITE_WORKER_URL not set, using:', workerUrl);
+    }
+    
+    console.log('🗑️ [RedisCache] Deleting from Redis cache...');
+    console.log('🗑️ [RedisCache] Domain:', domain);
+    console.log('🗑️ [RedisCache] Slug:', slug);
+    
+    const response = await fetch(`${workerUrl}/api/delete-redis-cache`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        domain: domain,
+        slug: slug,
+      }),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('❌ [RedisCache] Failed to delete from Redis cache:', response.status, errorText);
+      return false;
+    }
+
+    const result = await response.json();
+    console.log('✅ [RedisCache] Redis cache deleted successfully:', result);
+    return true;
+  } catch (error) {
+    console.error('Error deleting from Redis cache:', error);
+    return false;
+  }
+}

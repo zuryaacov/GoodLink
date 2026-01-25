@@ -233,6 +233,44 @@ export default Sentry.withSentry(
             }
         }
 
+        // === API Endpoint: Delete Redis Cache ===
+        if (path === "/api/delete-redis-cache" && request.method === "POST") {
+            try {
+                const body = await request.json();
+                const { domain, slug } = body;
+
+                if (!domain || !slug) {
+                    return new Response(JSON.stringify({ error: "Missing required fields (domain, slug)" }), {
+                        status: 400,
+                        headers: { ...corsHeaders, "Content-Type": "application/json" }
+                    });
+                }
+
+                const redis = new Redis({ url: env.UPSTASH_REDIS_REST_URL, token: env.UPSTASH_REDIS_REST_TOKEN });
+
+                const cacheKey = `link:${domain}:${slug}`;
+                const deleted = await redis.del(cacheKey);
+                console.log(`🗑️ [Redis] Cache deleted: ${cacheKey}, result: ${deleted}`);
+
+                return new Response(JSON.stringify({
+                    success: true,
+                    message: "Redis cache deleted successfully",
+                    cacheKey: cacheKey,
+                    deleted: deleted > 0
+                }), {
+                    status: 200,
+                    headers: { ...corsHeaders, "Content-Type": "application/json" }
+                });
+
+            } catch (error) {
+                console.error("❌ [Redis] Error deleting cache:", error);
+                return new Response(JSON.stringify({ error: error.message }), {
+                    status: 500,
+                    headers: { ...corsHeaders, "Content-Type": "application/json" }
+                });
+            }
+        }
+
         const userAgent = request.headers.get("user-agent") || "";
         const rayId = request.headers.get("cf-ray") || crypto.randomUUID();
 

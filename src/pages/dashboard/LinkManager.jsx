@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import Modal from '../../components/common/Modal';
-import { updateLinkInRedis } from '../../lib/redisCache';
+import { updateLinkInRedis, deleteLinkFromRedis } from '../../lib/redisCache';
 
 const PLATFORMS = {
   meta: { name: 'Meta (FB/IG)', colorClass: 'text-blue-400 bg-blue-400/10' },
@@ -425,14 +425,11 @@ const LinkActionsMenu = ({ link, onRefresh, onEdit, onDuplicate, onShowModal }) 
 
       if (error) throw error;
 
-      // Best-effort: keep Redis in sync as well (so redirects stop immediately)
+      // Delete from Redis cache so redirects stop immediately
       try {
-        await updateLinkInRedis(
-          { ...link, status: 'deleted', deleted_at: deletedAt },
-          supabase
-        );
+        await deleteLinkFromRedis(link.domain, link.slug);
       } catch (redisError) {
-        console.warn('⚠️ [LinkManager] Failed to sync Redis after delete:', redisError);
+        console.warn('⚠️ [LinkManager] Failed to delete from Redis:', redisError);
       }
       
       setDeleteModalOpen(false);
