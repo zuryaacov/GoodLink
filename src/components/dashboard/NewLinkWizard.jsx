@@ -8,8 +8,8 @@ import Modal from '../common/Modal';
 
 const steps = [
   { number: 1, title: 'The Fast Track', subtitle: 'Destination & Identity' },
-  { number: 2, title: 'Optimization & Marketing', subtitle: 'UTM & Pixels' },
-  { number: 3, title: 'Security & Logic', subtitle: 'Smart Rules & Protection' },
+  { number: 2, title: 'Security & Logic', subtitle: 'Smart Rules & Protection' },
+  { number: 3, title: 'Optimization & Marketing', subtitle: 'UTM & Pixels' },
 ];
 
 const NewLinkWizard = ({ isOpen, onClose, initialData = null }) => {
@@ -443,18 +443,18 @@ const NewLinkWizard = ({ isOpen, onClose, initialData = null }) => {
               />
             )}
             {currentStep === 2 && (
-              <Step2Optimization
+              <Step3Security
                 key="step2"
                 formData={formData}
                 updateFormData={updateFormData}
+                onValidationRequest={step3ValidationRef}
               />
             )}
             {currentStep === 3 && (
-              <Step3Security
+              <Step2Optimization
                 key="step3"
                 formData={formData}
                 updateFormData={updateFormData}
-                onValidationRequest={step3ValidationRef}
               />
             )}
           </AnimatePresence>

@@ -10,8 +10,8 @@ import Modal from '../../components/common/Modal';
 
 const steps = [
   { number: 1, title: 'The Fast Track', subtitle: 'Destination & Identity' },
-  { number: 2, title: 'Optimization & Marketing', subtitle: 'UTM & Pixels' },
-  { number: 3, title: 'Security & Logic', subtitle: 'Smart Rules & Protection' },
+  { number: 2, title: 'Security & Logic', subtitle: 'Smart Rules & Protection' },
+  { number: 3, title: 'Optimization & Marketing', subtitle: 'UTM & Pixels' },
 ];
 
 const LinkBuilderPage = () => {
@@ -502,16 +502,16 @@ const LinkBuilderPage = () => {
             />
           )}
           {currentStep === 2 && (
-            <Step2Optimization
-              formData={formData}
-              updateFormData={updateFormData}
-            />
-          )}
-          {currentStep === 3 && (
             <Step3Security
               formData={formData}
               updateFormData={updateFormData}
               onValidationRequest={step3ValidationRef}
+            />
+          )}
+          {currentStep === 3 && (
+            <Step2Optimization
+              formData={formData}
+              updateFormData={updateFormData}
             />
           )}
         </div>
