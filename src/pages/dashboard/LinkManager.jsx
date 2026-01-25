@@ -242,7 +242,7 @@ const LinkManager = () => {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="flex flex-col gap-2">
           <h1 className="text-2xl md:text-3xl font-bold text-white">Link Manager</h1>
-          <p className="text-sm md:text-base text-slate-400">Create and manage your smart links</p>
+          <p className="text-sm md:text-base text-slate-400">Create and manage your GoodLinks</p>
         </div>
         <button
           onClick={() => navigate('/dashboard/links/new')}
