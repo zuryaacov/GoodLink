@@ -22,6 +22,22 @@ function ensureValidUrl(url) {
 }
 
 /**
+ * Build safe redirect URL with query params
+ * Handles edge cases like missing trailing slash
+ */
+function buildSafeUrl(base, searchParams) {
+    try {
+        const urlObj = new URL(base);
+        // Copy params from original request to target URL
+        searchParams.forEach((v, k) => urlObj.searchParams.set(k, v));
+        return urlObj.toString();
+    } catch (e) {
+        // If URL in database is broken, return as-is
+        return base;
+    }
+}
+
+/**
  * Send click record directly to Supabase via QStash
  * All data is collected from Cloudflare (no IPINFO)
  */
@@ -144,13 +160,6 @@ export default Sentry.withSentry(
     }),
     {
     async fetch(request, env, ctx) {
-        // ⚠️ SENTRY TEST - Remove after verifying!
-        try {
-            throw new Error("Test Sentry Error from GoodLink Backend!");
-        } catch (e) {
-            Sentry.captureException(e);
-        }
-
         const url = new URL(request.url);
         const path = url.pathname.toLowerCase();
 
@@ -322,13 +331,8 @@ export default Sentry.withSentry(
         if (shouldBlock) return htmlResponse(get404Page());
 
         // 7. Redirect
-        try {
-            const finalUrl = new URL(targetUrl);
-            new URLSearchParams(url.search).forEach((v, k) => finalUrl.searchParams.set(k, v));
-            return Response.redirect(finalUrl.toString(), 302);
-        } catch (e) {
-            return Response.redirect(targetUrl, 302);
-        }
+        const finalRedirectUrl = buildSafeUrl(targetUrl, url.searchParams);
+        return Response.redirect(finalRedirectUrl, 302);
     }
     }
 );

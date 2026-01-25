@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts';
 import Modal from '../../components/common/Modal';
-import ErrorButton from '../../components/common/ErrorButton';
 
 const StatCard = ({ title, value, change, icon, trend }) => (
   <div className="bg-[#101622] border border-[#232f48] rounded-2xl p-6 relative overflow-hidden group hover:border-[#324467] transition-colors">
@@ -333,17 +332,6 @@ const Analytics = () => {
           value={formatNumber(stats.activeLinks)}
           icon="link" 
         />
-      </div>
-
-      {/* Sentry Test Button - Remove after testing */}
-      <div className="bg-[#101622] border border-[#232f48] rounded-2xl p-4 md:p-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-xl font-bold text-white">Sentry Test</h2>
-            <p className="text-slate-400 text-sm">Click to test error tracking</p>
-          </div>
-          <ErrorButton />
-        </div>
       </div>
 
       {/* Charts Grid */}

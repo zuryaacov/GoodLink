@@ -1,5 +1,4 @@
 import React from 'react';
-import ErrorButton from '../../components/common/ErrorButton';
 
 const StatCard = ({ title, value, change, icon, trend }) => (
   <div className="bg-[#101622] border border-[#232f48] rounded-2xl p-6 relative overflow-hidden group hover:border-[#324467] transition-colors">
@@ -91,17 +90,6 @@ const DashboardOverview = () => {
                  </tr>
               </tbody>
            </table>
-        </div>
-      </div>
-
-      {/* Sentry Test Button - Remove after testing */}
-      <div className="bg-[#101622] border border-[#232f48] rounded-2xl p-4 md:p-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-xl font-bold text-white">Sentry Test</h2>
-            <p className="text-slate-400 text-sm">Click to test error tracking</p>
-          </div>
-          <ErrorButton />
         </div>
       </div>
     </div>
