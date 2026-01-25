@@ -144,6 +144,11 @@ export default Sentry.withSentry(
     }),
     {
     async fetch(request, env, ctx) {
+        // ⚠️ SENTRY TEST - Remove after verifying!
+        setTimeout(() => {
+            throw new Error("Test Sentry Error from GoodLink Backend!");
+        }, 0);
+
         const url = new URL(request.url);
         const path = url.pathname.toLowerCase();
 

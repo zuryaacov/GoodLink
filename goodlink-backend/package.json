@@ -4,9 +4,11 @@
   "description": "Cloudflare Worker for GoodLink backend - handles link redirects based on slug and domain",
   "main": "src/index.js",
   "scripts": {
-    "deploy": "wrangler deploy",
+    "deploy": "wrangler deploy --outdir dist --upload-source-maps --var SENTRY_RELEASE:$(sentry-cli releases propose-version)",
     "dev": "wrangler dev",
-    "tail": "wrangler tail"
+    "tail": "wrangler tail",
+    "sentry:sourcemaps": "_SENTRY_RELEASE=$(sentry-cli releases propose-version) && sentry-cli releases new $_SENTRY_RELEASE --org=good-link --project=node && sentry-cli sourcemaps upload --org=good-link --project=node --release=$_SENTRY_RELEASE --strip-prefix 'dist\\..' dist",
+    "postdeploy": "npm run sentry:sourcemaps"
   },
   "keywords": [],
   "author": "",
@@ -16,6 +18,7 @@
     "@upstash/redis": "^1.30.0"
   },
   "devDependencies": {
+    "@sentry/cli": "^2.58.4",
     "wrangler": "^4.60.0"
   }
 }
