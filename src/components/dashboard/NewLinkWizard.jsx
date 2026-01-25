@@ -195,7 +195,7 @@ const NewLinkWizard = ({ isOpen, onClose, initialData = null }) => {
     // Validate Step 3 (fallback URL) before submitting
     let finalFallbackUrl = null;
     if (step3ValidationRef.current) {
-      const step3Validation = step3ValidationRef.current();
+      const step3Validation = await step3ValidationRef.current();
       if (!step3Validation.isValid) {
         // Validation failed - error is already shown inline, just return
         return;
