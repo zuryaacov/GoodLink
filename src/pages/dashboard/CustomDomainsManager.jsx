@@ -246,7 +246,7 @@ const CustomDomainsManager = () => {
               {/* Domain Name & Status */}
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b border-[#232f48]">
                 <div className="flex flex-col gap-2">
-                  <h3 className="text-xl md:text-2xl font-bold text-white tracking-tight truncate max-w-[200px]" title={domain.domain}>
+                  <h3 className="text-xl md:text-2xl font-bold text-white tracking-tight break-all" title={domain.domain}>
                     {domain.domain}
                   </h3>
                   <div className={`inline-flex items-center self-start gap-1.5 px-3 py-1 rounded-lg border text-xs font-bold uppercase tracking-wider ${getStatusColor(domain.status)}`}>
