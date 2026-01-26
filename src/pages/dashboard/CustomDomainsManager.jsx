@@ -326,10 +326,10 @@ const CustomDomainsManager = () => {
                               </code>
                               <button 
                                 onClick={() => navigator.clipboard.writeText(record.value)}
-                                className="w-12 h-12 md:w-14 md:h-14 flex items-center justify-center bg-primary hover:bg-[#FF10F0] text-white rounded-xl transition-all shadow-[0_0_20px_rgba(19,91,236,0.2)] active:scale-95 flex-shrink-0"
+                                className="w-10 h-10 flex items-center justify-center bg-[#232f48] hover:bg-primary text-white rounded-lg transition-all shadow-xl active:scale-90 flex-shrink-0"
                                 title="Copy Value"
                               >
-                                <span className="material-symbols-outlined text-2xl md:text-3xl font-bold">content_copy</span>
+                                <span className="material-symbols-outlined text-xl">content_copy</span>
                               </button>
                             </div>
                           </div>
