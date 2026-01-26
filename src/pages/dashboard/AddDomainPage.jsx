@@ -151,17 +151,49 @@ const AddDomainPage = () => {
             throw new Error(result.error || 'Failed to register domain with Cloudflare');
           }
 
-          if (result.dns_records && result.dns_records.length > 0) {
-            setDnsRecords(result.dns_records);
+          let currentRecords = result.dns_records || [];
+          const hostnameId = result.cloudflare_hostname_id;
+          
+          if (result.domain_id) setSavedDomainId(result.domain_id);
+          if (hostnameId) setCloudflareHostnameId(hostnameId);
+
+          // Check if we have the SSL challenge record already
+          const hasSslRecord = (records) => records.some(r => 
+            r.host?.toLowerCase().includes('_acme-challenge') || 
+            r.name?.toLowerCase().includes('_acme-challenge')
+          );
+
+          if (!hasSslRecord(currentRecords) && hostnameId) {
+            // Poll for up to 60 seconds (12 attempts every 5s)
+            console.log('⏳ SSL record missing, starting poll...');
+            setIsSubmitting(true);
+            
+            for (let i = 0; i < 15; i++) {
+              // Wait 4 seconds between attempts
+              await new Promise(resolve => setTimeout(resolve, 4000));
+              
+              try {
+                const pollRes = await fetch(`${workerUrl}/api/get-domain-records`, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ cloudflare_hostname_id: hostnameId }),
+                });
+                
+                if (pollRes.ok) {
+                  const pollData = await pollRes.json();
+                  if (pollData.dns_records && hasSslRecord(pollData.dns_records)) {
+                    currentRecords = pollData.dns_records;
+                    console.log('✅ SSL record found!');
+                    break;
+                  }
+                }
+              } catch (err) {
+                console.error('Polling error:', err);
+              }
+            }
           }
 
-          if (result.domain_id) {
-            setSavedDomainId(result.domain_id);
-          }
-          if (result.cloudflare_hostname_id) {
-            setCloudflareHostnameId(result.cloudflare_hostname_id);
-          }
-          
+          setDnsRecords(currentRecords);
           setCurrentStep(2);
         } catch (error) {
           console.error('Error:', error);
@@ -380,7 +412,6 @@ const AddDomainPage = () => {
           <div className="text-slate-400 text-sm">
             Step {currentStep} of {steps.length}
           </div>
-          {currentStep < steps.length && (
             <button
               onClick={handleNext}
               disabled={!domainName.trim() || isSubmitting}
@@ -389,13 +420,12 @@ const AddDomainPage = () => {
               {isSubmitting ? (
                 <>
                   <span className="material-symbols-outlined animate-spin">refresh</span>
-                  Saving...
+                  {currentStep === 1 ? 'Preparing records...' : 'Loading...'}
                 </>
               ) : (
                 'Next'
               )}
             </button>
-          )}
         </div>
       </div>
     </div>
