@@ -52,12 +52,21 @@ const DNSRecordsDisplay = ({ records, domain }) => {
   console.log('🔵 [DNSRecordsDisplay] All records:', records);
   console.log('🔵 [DNSRecordsDisplay] Domain:', domain);
 
-  // Find TXT records - ownership verification (first) and SSL verification (second)
-  // Note: Worker sends 'txt' (lowercase) but we check case-insensitively
+  // Find TXT records - identify by their content/host instead of just index
   const txtRecords =
     records?.filter((r) => r.type?.toUpperCase() === "TXT") || [];
-  const ownershipRecord = txtRecords[0]; // First TXT record is ownership verification
-  const sslRecord = txtRecords[1]; // Second TXT record is SSL verification (if exists)
+  
+  // Ownership record typically starts with _cf-custom-hostname
+  const ownershipRecord = txtRecords.find(r => 
+    r.host?.toLowerCase().includes('_cf-custom-hostname') || 
+    r.name?.toLowerCase().includes('_cf-custom-hostname')
+  ) || txtRecords[0];
+
+  // SSL record starts with _acme-challenge
+  const sslRecord = txtRecords.find(r => 
+    r.host?.toLowerCase().includes('_acme-challenge') || 
+    r.name?.toLowerCase().includes('_acme-challenge')
+  );
   
   console.log('🔵 [DNSRecordsDisplay] TXT records found:', txtRecords.length);
   console.log('🔵 [DNSRecordsDisplay] Ownership record:', ownershipRecord);
@@ -189,7 +198,7 @@ const DNSRecordsDisplay = ({ records, domain }) => {
       )}
 
       {/* Step 2: SSL Verification */}
-      {sslRecord && (
+      {sslRecord ? (
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -251,6 +260,21 @@ const DNSRecordsDisplay = ({ records, domain }) => {
             </div>
           </div>
         </motion.div>
+      ) : (
+        <div className="bg-[#101622]/50 border border-dashed border-[#232f48] rounded-xl p-6 text-center">
+          <div className="flex flex-col items-center gap-3">
+            <span className="material-symbols-outlined text-primary animate-pulse text-3xl">pending</span>
+            <div>
+              <p className="text-white font-bold text-sm">Generating SSL Records...</p>
+              <p className="text-slate-400 text-xs mt-1">
+                Cloudflare is preparing your certificate. This usually takes 30-60 seconds.
+              </p>
+              <p className="text-primary text-[10px] uppercase tracking-wider font-bold mt-2">
+                Wait a moment and click "Refresh Records" above
+              </p>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* Step 3: Point Traffic */}
