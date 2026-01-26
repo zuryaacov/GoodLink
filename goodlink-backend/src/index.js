@@ -329,19 +329,30 @@ export default Sentry.withSentry(
                     const hostnameData = cfResult.result;
                     const dnsRecords = [];
 
-                    // Extract DNS records from Cloudflare response
+                    // Extract ownership verification TXT record
                     if (hostnameData.ownership_verification) {
                         dnsRecords.push({
                             type: hostnameData.ownership_verification.type,
-                            name: hostnameData.ownership_verification.name,
+                            host: hostnameData.ownership_verification.name,
                             value: hostnameData.ownership_verification.value
+                        });
+                    }
+
+                    // Extract SSL Certificate validation TXT records (CRITICAL for SSL)
+                    if (hostnameData.ssl?.validation_records && Array.isArray(hostnameData.ssl.validation_records)) {
+                        hostnameData.ssl.validation_records.forEach(record => {
+                            dnsRecords.push({
+                                type: "TXT",
+                                host: record.txt_name,
+                                value: record.txt_value
+                            });
                         });
                     }
 
                     // Add CNAME record
                     dnsRecords.push({
                         type: "CNAME",
-                        name: domain,
+                        host: domain,
                         value: "glynk.to"
                     });
 
@@ -531,14 +542,25 @@ export default Sentry.withSentry(
                     if (hostnameData.ownership_verification) {
                         dnsRecords.push({
                             type: hostnameData.ownership_verification.type,
-                            name: hostnameData.ownership_verification.name,
+                            host: hostnameData.ownership_verification.name,
                             value: hostnameData.ownership_verification.value
+                        });
+                    }
+
+                    // Extract SSL Certificate validation TXT records (CRITICAL for SSL)
+                    if (hostnameData.ssl?.validation_records && Array.isArray(hostnameData.ssl.validation_records)) {
+                        hostnameData.ssl.validation_records.forEach(record => {
+                            dnsRecords.push({
+                                type: "TXT",
+                                host: record.txt_name,
+                                value: record.txt_value
+                            });
                         });
                     }
 
                     dnsRecords.push({
                         type: "CNAME",
-                        name: hostnameData.hostname,
+                        host: hostnameData.hostname,
                         value: "glynk.to"
                     });
 
