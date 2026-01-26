@@ -163,239 +163,527 @@ export default Sentry.withSentry(
         sendDefaultPii: true,
     }),
     {
-    async fetch(request, env, ctx) {
-        const url = new URL(request.url);
-        const path = url.pathname.toLowerCase();
+        async fetch(request, env, ctx) {
+            const url = new URL(request.url);
+            const path = url.pathname.toLowerCase();
 
-        // CORS Headers for all requests
-        const corsHeaders = {
-            "Access-Control-Allow-Origin": "*",
-            "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-            "Access-Control-Allow-Headers": "Content-Type"
-        };
+            // CORS Headers for all requests
+            const corsHeaders = {
+                "Access-Control-Allow-Origin": "*",
+                "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+                "Access-Control-Allow-Headers": "Content-Type"
+            };
 
-        // Handle CORS preflight
-        if (request.method === "OPTIONS") {
-            return new Response(null, { status: 204, headers: corsHeaders });
-        }
+            // Handle CORS preflight
+            if (request.method === "OPTIONS") {
+                return new Response(null, { status: 204, headers: corsHeaders });
+            }
 
-        // === API Endpoint: Update Redis Cache ===
-        if (path === "/api/update-redis-cache" && request.method === "POST") {
-            try {
-                const body = await request.json();
-                const { domain, slug, oldDomain, oldSlug, cacheData } = body;
+            // === API Endpoint: Update Redis Cache ===
+            if (path === "/api/update-redis-cache" && request.method === "POST") {
+                try {
+                    const body = await request.json();
+                    const { domain, slug, oldDomain, oldSlug, cacheData } = body;
 
-                if (!domain || !slug || !cacheData) {
-                    return new Response(JSON.stringify({ error: "Missing required fields" }), {
-                        status: 400,
+                    if (!domain || !slug || !cacheData) {
+                        return new Response(JSON.stringify({ error: "Missing required fields" }), {
+                            status: 400,
+                            headers: { ...corsHeaders, "Content-Type": "application/json" }
+                        });
+                    }
+
+                    const redis = new Redis({ url: env.UPSTASH_REDIS_REST_URL, token: env.UPSTASH_REDIS_REST_TOKEN });
+
+                    // If domain or slug changed - delete the old key
+                    let deletedOld = false;
+                    let deletedOldKey = null;
+                    if (oldDomain && oldSlug) {
+                        const oldKey = `link:${oldDomain}:${oldSlug}`;
+                        const newKey = `link:${domain}:${slug}`;
+                        if (oldKey !== newKey) {
+                            console.log(`🧹 [Redis] Deleting old key: ${oldKey}`);
+                            await redis.del(oldKey);
+                            deletedOld = true;
+                            deletedOldKey = oldKey;
+                        }
+                    }
+
+                    // Save the new data
+                    const newKey = `link:${domain}:${slug}`;
+                    await redis.set(newKey, JSON.stringify(cacheData));
+                    console.log(`✅ [Redis] Cache updated: ${newKey}`);
+
+                    return new Response(JSON.stringify({
+                        success: true,
+                        message: "Redis cache updated successfully",
+                        cacheKey: newKey,
+                        deletedOld,
+                        deletedOldKey
+                    }), {
+                        status: 200,
+                        headers: { ...corsHeaders, "Content-Type": "application/json" }
+                    });
+
+                } catch (error) {
+                    console.error("❌ [Redis] Error updating cache:", error);
+                    return new Response(JSON.stringify({ error: error.message }), {
+                        status: 500,
                         headers: { ...corsHeaders, "Content-Type": "application/json" }
                     });
                 }
+            }
 
-                const redis = new Redis({ url: env.UPSTASH_REDIS_REST_URL, token: env.UPSTASH_REDIS_REST_TOKEN });
+            // === API Endpoint: Delete Redis Cache ===
+            if (path === "/api/delete-redis-cache" && request.method === "POST") {
+                try {
+                    const body = await request.json();
+                    const { domain, slug } = body;
 
-                // If domain or slug changed - delete the old key
-                let deletedOld = false;
-                let deletedOldKey = null;
-                if (oldDomain && oldSlug) {
-                    const oldKey = `link:${oldDomain}:${oldSlug}`;
-                    const newKey = `link:${domain}:${slug}`;
-                    if (oldKey !== newKey) {
-                        console.log(`🧹 [Redis] Deleting old key: ${oldKey}`);
-                        await redis.del(oldKey);
-                        deletedOld = true;
-                        deletedOldKey = oldKey;
+                    if (!domain || !slug) {
+                        return new Response(JSON.stringify({ error: "Missing required fields (domain, slug)" }), {
+                            status: 400,
+                            headers: { ...corsHeaders, "Content-Type": "application/json" }
+                        });
+                    }
+
+                    const redis = new Redis({ url: env.UPSTASH_REDIS_REST_URL, token: env.UPSTASH_REDIS_REST_TOKEN });
+
+                    const cacheKey = `link:${domain}:${slug}`;
+                    const deleted = await redis.del(cacheKey);
+                    console.log(`🗑️ [Redis] Cache deleted: ${cacheKey}, result: ${deleted}`);
+
+                    return new Response(JSON.stringify({
+                        success: true,
+                        message: "Redis cache deleted successfully",
+                        cacheKey: cacheKey,
+                        deleted: deleted > 0
+                    }), {
+                        status: 200,
+                        headers: { ...corsHeaders, "Content-Type": "application/json" }
+                    });
+
+                } catch (error) {
+                    console.error("❌ [Redis] Error deleting cache:", error);
+                    return new Response(JSON.stringify({ error: error.message }), {
+                        status: 500,
+                        headers: { ...corsHeaders, "Content-Type": "application/json" }
+                    });
+                }
+            }
+
+            // === API Endpoint: Add Custom Domain ===
+            if (path === "/api/add-custom-domain" && request.method === "POST") {
+                try {
+                    const body = await request.json();
+                    const { domain, user_id } = body;
+
+                    if (!domain || !user_id) {
+                        return new Response(JSON.stringify({ error: "Missing required fields (domain, user_id)" }), {
+                            status: 400,
+                            headers: { ...corsHeaders, "Content-Type": "application/json" }
+                        });
+                    }
+
+                    if (!env.CLOUDFLARE_ZONE_ID || !env.CLOUDFLARE_API_TOKEN) {
+                        return new Response(JSON.stringify({ error: "Cloudflare credentials not configured" }), {
+                            status: 500,
+                            headers: { ...corsHeaders, "Content-Type": "application/json" }
+                        });
+                    }
+
+                    // Create Custom Hostname in Cloudflare
+                    const cfResponse = await fetch(
+                        `https://api.cloudflare.com/client/v4/zones/${env.CLOUDFLARE_ZONE_ID}/custom_hostnames`,
+                        {
+                            method: "POST",
+                            headers: {
+                                "Authorization": `Bearer ${env.CLOUDFLARE_API_TOKEN}`,
+                                "Content-Type": "application/json"
+                            },
+                            body: JSON.stringify({
+                                hostname: domain,
+                                ssl: {
+                                    method: "txt",
+                                    type: "dv",
+                                    settings: {
+                                        min_tls_version: "1.2"
+                                    }
+                                }
+                            })
+                        }
+                    );
+
+                    const cfResult = await cfResponse.json();
+
+                    if (!cfResponse.ok || !cfResult.success) {
+                        console.error("Cloudflare API error:", cfResult);
+                        return new Response(JSON.stringify({
+                            success: false,
+                            error: cfResult.errors?.[0]?.message || "Failed to create custom hostname"
+                        }), {
+                            status: 400,
+                            headers: { ...corsHeaders, "Content-Type": "application/json" }
+                        });
+                    }
+
+                    const hostnameData = cfResult.result;
+                    const dnsRecords = [];
+
+                    // Extract DNS records from Cloudflare response
+                    if (hostnameData.ownership_verification) {
+                        dnsRecords.push({
+                            type: hostnameData.ownership_verification.type,
+                            name: hostnameData.ownership_verification.name,
+                            value: hostnameData.ownership_verification.value
+                        });
+                    }
+
+                    // Add CNAME record
+                    dnsRecords.push({
+                        type: "CNAME",
+                        name: domain,
+                        value: "glynk.to"
+                    });
+
+                    // Save to Supabase
+                    const supabaseUrl = `${env.SUPABASE_URL}/rest/v1/custom_domains`;
+                    const supabaseResponse = await fetch(supabaseUrl, {
+                        method: "POST",
+                        headers: {
+                            "apikey": env.SUPABASE_SERVICE_ROLE_KEY,
+                            "Authorization": `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}`,
+                            "Content-Type": "application/json",
+                            "Prefer": "return=representation"
+                        },
+                        body: JSON.stringify({
+                            user_id: user_id,
+                            domain: domain,
+                            cloudflare_hostname_id: hostnameData.id,
+                            dns_records: dnsRecords,
+                            status: "pending"
+                        })
+                    });
+
+                    const supabaseData = await supabaseResponse.json();
+
+                    if (!supabaseResponse.ok) {
+                        console.error("Supabase error:", supabaseData);
+                        return new Response(JSON.stringify({
+                            success: false,
+                            error: "Failed to save domain to database"
+                        }), {
+                            status: 500,
+                            headers: { ...corsHeaders, "Content-Type": "application/json" }
+                        });
+                    }
+
+                    return new Response(JSON.stringify({
+                        success: true,
+                        domain_id: supabaseData[0]?.id,
+                        cloudflare_hostname_id: hostnameData.id,
+                        dns_records: dnsRecords
+                    }), {
+                        status: 200,
+                        headers: { ...corsHeaders, "Content-Type": "application/json" }
+                    });
+
+                } catch (error) {
+                    console.error("❌ [Custom Domain] Error:", error);
+                    return new Response(JSON.stringify({ success: false, error: error.message }), {
+                        status: 500,
+                        headers: { ...corsHeaders, "Content-Type": "application/json" }
+                    });
+                }
+            }
+
+            // === API Endpoint: Verify Custom Domain ===
+            if (path === "/api/verify-custom-domain" && request.method === "POST") {
+                try {
+                    const body = await request.json();
+                    const { domain_id, cloudflare_hostname_id } = body;
+
+                    if (!cloudflare_hostname_id) {
+                        return new Response(JSON.stringify({ error: "Missing cloudflare_hostname_id" }), {
+                            status: 400,
+                            headers: { ...corsHeaders, "Content-Type": "application/json" }
+                        });
+                    }
+
+                    if (!env.CLOUDFLARE_ZONE_ID || !env.CLOUDFLARE_API_TOKEN) {
+                        return new Response(JSON.stringify({ error: "Cloudflare credentials not configured" }), {
+                            status: 500,
+                            headers: { ...corsHeaders, "Content-Type": "application/json" }
+                        });
+                    }
+
+                    // Check status in Cloudflare
+                    const cfResponse = await fetch(
+                        `https://api.cloudflare.com/client/v4/zones/${env.CLOUDFLARE_ZONE_ID}/custom_hostnames/${cloudflare_hostname_id}`,
+                        {
+                            method: "GET",
+                            headers: {
+                                "Authorization": `Bearer ${env.CLOUDFLARE_API_TOKEN}`,
+                                "Content-Type": "application/json"
+                            }
+                        }
+                    );
+
+                    const cfResult = await cfResponse.json();
+
+                    if (!cfResponse.ok || !cfResult.success) {
+                        return new Response(JSON.stringify({
+                            success: false,
+                            error: "Failed to verify domain"
+                        }), {
+                            status: 400,
+                            headers: { ...corsHeaders, "Content-Type": "application/json" }
+                        });
+                    }
+
+                    const hostnameData = cfResult.result;
+                    const isActive = hostnameData.status === "active";
+                    const sslStatus = hostnameData.ssl?.status || "pending";
+
+                    // Update Supabase if active
+                    if (isActive && domain_id) {
+                        const supabaseUrl = `${env.SUPABASE_URL}/rest/v1/custom_domains?id=eq.${domain_id}`;
+                        await fetch(supabaseUrl, {
+                            method: "PATCH",
+                            headers: {
+                                "apikey": env.SUPABASE_SERVICE_ROLE_KEY,
+                                "Authorization": `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}`,
+                                "Content-Type": "application/json"
+                            },
+                            body: JSON.stringify({
+                                status: "active",
+                                verified_at: new Date().toISOString()
+                            })
+                        });
+                    }
+
+                    return new Response(JSON.stringify({
+                        success: true,
+                        is_active: isActive,
+                        ssl_status: sslStatus,
+                        status: hostnameData.status
+                    }), {
+                        status: 200,
+                        headers: { ...corsHeaders, "Content-Type": "application/json" }
+                    });
+
+                } catch (error) {
+                    console.error("❌ [Verify Domain] Error:", error);
+                    return new Response(JSON.stringify({ success: false, error: error.message }), {
+                        status: 500,
+                        headers: { ...corsHeaders, "Content-Type": "application/json" }
+                    });
+                }
+            }
+
+            // === API Endpoint: Get Domain Records ===
+            if (path === "/api/get-domain-records" && request.method === "POST") {
+                try {
+                    const body = await request.json();
+                    const { cloudflare_hostname_id } = body;
+
+                    if (!cloudflare_hostname_id) {
+                        return new Response(JSON.stringify({ error: "Missing cloudflare_hostname_id" }), {
+                            status: 400,
+                            headers: { ...corsHeaders, "Content-Type": "application/json" }
+                        });
+                    }
+
+                    if (!env.CLOUDFLARE_ZONE_ID || !env.CLOUDFLARE_API_TOKEN) {
+                        return new Response(JSON.stringify({ error: "Cloudflare credentials not configured" }), {
+                            status: 500,
+                            headers: { ...corsHeaders, "Content-Type": "application/json" }
+                        });
+                    }
+
+                    // Get hostname data from Cloudflare
+                    const cfResponse = await fetch(
+                        `https://api.cloudflare.com/client/v4/zones/${env.CLOUDFLARE_ZONE_ID}/custom_hostnames/${cloudflare_hostname_id}`,
+                        {
+                            method: "GET",
+                            headers: {
+                                "Authorization": `Bearer ${env.CLOUDFLARE_API_TOKEN}`,
+                                "Content-Type": "application/json"
+                            }
+                        }
+                    );
+
+                    const cfResult = await cfResponse.json();
+
+                    if (!cfResponse.ok || !cfResult.success) {
+                        return new Response(JSON.stringify({
+                            success: false,
+                            error: "Failed to get domain records"
+                        }), {
+                            status: 400,
+                            headers: { ...corsHeaders, "Content-Type": "application/json" }
+                        });
+                    }
+
+                    const hostnameData = cfResult.result;
+                    const dnsRecords = [];
+
+                    // Extract DNS records
+                    if (hostnameData.ownership_verification) {
+                        dnsRecords.push({
+                            type: hostnameData.ownership_verification.type,
+                            name: hostnameData.ownership_verification.name,
+                            value: hostnameData.ownership_verification.value
+                        });
+                    }
+
+                    dnsRecords.push({
+                        type: "CNAME",
+                        name: hostnameData.hostname,
+                        value: "glynk.to"
+                    });
+
+                    return new Response(JSON.stringify({
+                        success: true,
+                        dns_records: dnsRecords
+                    }), {
+                        status: 200,
+                        headers: { ...corsHeaders, "Content-Type": "application/json" }
+                    });
+
+                } catch (error) {
+                    console.error("❌ [Get Domain Records] Error:", error);
+                    return new Response(JSON.stringify({ success: false, error: error.message }), {
+                        status: 500,
+                        headers: { ...corsHeaders, "Content-Type": "application/json" }
+                    });
+                }
+            }
+
+            const userAgent = request.headers.get("user-agent") || "";
+            const rayId = request.headers.get("cf-ray") || crypto.randomUUID();
+
+            // 1. Noise Filter: Silent filtering without logging
+            const noisePaths = ['/favicon.ico', '/robots.txt', '/index.php', '/.env', '/wp-login.php', '/admin', '/root'];
+            if (path === '/' || noisePaths.some(p => path === p || path.startsWith(p + '/')) || /uptimerobot|pingdom/i.test(userAgent)) {
+                return new Response(null, { status: 204 });
+            }
+
+            // Clean leading and trailing slashes to prevent routing errors
+            const slug = path.split('?')[0].replace(/^\/+|\/+$/g, '');
+            const domain = url.hostname.replace(/^www\./, '');
+            const ip = request.headers.get("cf-connecting-ip");
+
+            const redis = new Redis({ url: env.UPSTASH_REDIS_REST_URL, token: env.UPSTASH_REDIS_REST_TOKEN });
+
+            const htmlResponse = (html, status = 404) => new Response(html, {
+                status, headers: { "Content-Type": "text/html;charset=UTF-8" }
+            });
+
+            // Terminate with log to Supabase - redirects to fallback_url if available
+            const terminateWithLog = (verdict, linkData = null) => {
+                const clickRecord = buildClickRecord(request, rayId, ip, slug, domain, userAgent, verdict, linkData);
+                ctx.waitUntil(logClickToSupabase(env, clickRecord, redis));
+
+                // If linkData has fallback_url, redirect there instead of showing 404
+                if (linkData?.fallback_url) {
+                    const fallbackUrl = ensureValidUrl(linkData.fallback_url);
+                    if (fallbackUrl) {
+                        console.log(`🔀 Redirecting to fallback URL: ${fallbackUrl} (reason: ${verdict})`);
+                        return Response.redirect(fallbackUrl, 302);
                     }
                 }
 
-                // Save the new data
-                const newKey = `link:${domain}:${slug}`;
-                await redis.set(newKey, JSON.stringify(cacheData));
-                console.log(`✅ [Redis] Cache updated: ${newKey}`);
+                return htmlResponse(get404Page());
+            };
 
-                return new Response(JSON.stringify({
-                    success: true,
-                    message: "Redis cache updated successfully",
-                    cacheKey: newKey,
-                    deletedOld,
-                    deletedOldKey
-                }), {
-                    status: 200,
-                    headers: { ...corsHeaders, "Content-Type": "application/json" }
-                });
+            // 2. Slug Validation
+            if (!slug || slug.includes('.')) return terminateWithLog(slug ? 'invalid_slug' : 'home_page_access');
 
-            } catch (error) {
-                console.error("❌ [Redis] Error updating cache:", error);
-                return new Response(JSON.stringify({ error: error.message }), {
-                    status: 500,
-                    headers: { ...corsHeaders, "Content-Type": "application/json" }
-                });
+            const isValidSlug = /^[a-z0-9-]+$/.test(slug);
+            if (!isValidSlug) {
+                console.log(`🚫 Invalid slug format: "${slug}"`);
+                return terminateWithLog('invalid_slug_format');
             }
-        }
 
-        // === API Endpoint: Delete Redis Cache ===
-        if (path === "/api/delete-redis-cache" && request.method === "POST") {
-            try {
-                const body = await request.json();
-                const { domain, slug } = body;
+            // 3. Fetch link data from Redis/Supabase
+            let linkData = await redis.get(`link:${domain}:${slug}`);
+            if (!linkData) {
+                const sbRes = await fetch(`${env.SUPABASE_URL}/rest/v1/links?slug=eq.${slug}&domain=eq.${domain}&select=*`, {
+                    headers: { 'apikey': env.SUPABASE_SERVICE_ROLE_KEY, 'Authorization': `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}` }
+                });
+                const data = await sbRes.json();
+                linkData = data?.[0];
+                if (linkData) ctx.waitUntil(redis.set(`link:${domain}:${slug}`, JSON.stringify(linkData), { ex: 3600 }));
+            }
 
-                if (!domain || !slug) {
-                    return new Response(JSON.stringify({ error: "Missing required fields (domain, slug)" }), {
-                        status: 400,
-                        headers: { ...corsHeaders, "Content-Type": "application/json" }
-                    });
+            if (!linkData) return terminateWithLog('link_not_found');
+            if (linkData.status !== 'active') return terminateWithLog('link_inactive', linkData);
+
+            // 4. Blacklist Check
+            const isBlacklisted = await redis.get(`blacklist:${ip}`);
+            if (isBlacklisted) {
+                console.log(`🚫 IP Blacklisted: ${ip} → ${domain}/${slug}`);
+                return terminateWithLog('blacklisted', linkData);
+            }
+
+            // 5. Bot Analysis
+            const botScore = request.cf?.botManagement?.score || 100;
+            const isVerifiedBot = request.cf?.verifiedBot || false;
+            const isBotUA = /bot|crawler|spider|googlebot/i.test(userAgent);
+            const isImpersonator = isBotUA && !isVerifiedBot;
+            const isBot = botScore <= 29 || isVerifiedBot || isImpersonator;
+
+            let targetUrl = ensureValidUrl(linkData.target_url);
+            let verdict = "clean";
+            let shouldBlock = false;
+
+            // bot_action: "block" | "redirect" | "no-tracking" (default: "block")
+            const botAction = linkData.bot_action || "block";
+
+            if (isBot) {
+                verdict = isImpersonator ? "bot_impersonator" : (botScore <= 10 ? "bot_certain" : "bot_likely");
+
+                // Add to Blacklist only for certain bots or impersonators
+                if (botScore <= 20 || isImpersonator) {
+                    ctx.waitUntil(redis.set(`blacklist:${ip}`, "1", { ex: 86400 }));
                 }
 
-                const redis = new Redis({ url: env.UPSTASH_REDIS_REST_URL, token: env.UPSTASH_REDIS_REST_TOKEN });
+                // Handle based on bot_action
+                if (botAction === "block") {
+                    // Full block - 404
+                    shouldBlock = true;
+                } else if (botAction === "redirect") {
+                    // Redirect to fallback URL if exists, otherwise to regular target
+                    const fallback = ensureValidUrl(linkData.fallback_url);
+                    if (fallback) targetUrl = fallback;
+                    // If no fallback, continue to regular target
+                }
+                // If botAction === "no-tracking" - continue to regular target (already set)
 
-                const cacheKey = `link:${domain}:${slug}`;
-                const deleted = await redis.del(cacheKey);
-                console.log(`🗑️ [Redis] Cache deleted: ${cacheKey}, result: ${deleted}`);
-
-                return new Response(JSON.stringify({
-                    success: true,
-                    message: "Redis cache deleted successfully",
-                    cacheKey: cacheKey,
-                    deleted: deleted > 0
-                }), {
-                    status: 200,
-                    headers: { ...corsHeaders, "Content-Type": "application/json" }
-                });
-
-            } catch (error) {
-                console.error("❌ [Redis] Error deleting cache:", error);
-                return new Response(JSON.stringify({ error: error.message }), {
-                    status: 500,
-                    headers: { ...corsHeaders, "Content-Type": "application/json" }
-                });
+                console.log(`🤖 Bot detected: ${verdict}, action: ${botAction}, target: ${targetUrl}`);
+            } else if (botScore <= 59) {
+                verdict = "suspicious";
             }
-        }
 
-        const userAgent = request.headers.get("user-agent") || "";
-        const rayId = request.headers.get("cf-ray") || crypto.randomUUID();
-
-        // 1. Noise Filter: Silent filtering without logging
-        const noisePaths = ['/favicon.ico', '/robots.txt', '/index.php', '/.env', '/wp-login.php', '/admin', '/root'];
-        if (path === '/' || noisePaths.some(p => path === p || path.startsWith(p + '/')) || /uptimerobot|pingdom/i.test(userAgent)) {
-            return new Response(null, { status: 204 });
-        }
-
-        // Clean leading and trailing slashes to prevent routing errors
-        const slug = path.split('?')[0].replace(/^\/+|\/+$/g, '');
-        const domain = url.hostname.replace(/^www\./, '');
-        const ip = request.headers.get("cf-connecting-ip");
-
-        const redis = new Redis({ url: env.UPSTASH_REDIS_REST_URL, token: env.UPSTASH_REDIS_REST_TOKEN });
-
-        const htmlResponse = (html, status = 404) => new Response(html, {
-            status, headers: { "Content-Type": "text/html;charset=UTF-8" }
-        });
-
-        // Terminate with log to Supabase - redirects to fallback_url if available
-        const terminateWithLog = (verdict, linkData = null) => {
+            // 6. Send log to Supabase
             const clickRecord = buildClickRecord(request, rayId, ip, slug, domain, userAgent, verdict, linkData);
             ctx.waitUntil(logClickToSupabase(env, clickRecord, redis));
-            
-            // If linkData has fallback_url, redirect there instead of showing 404
-            if (linkData?.fallback_url) {
-                const fallbackUrl = ensureValidUrl(linkData.fallback_url);
-                if (fallbackUrl) {
-                    console.log(`🔀 Redirecting to fallback URL: ${fallbackUrl} (reason: ${verdict})`);
-                    return Response.redirect(fallbackUrl, 302);
+
+            // If blocked, redirect to fallback_url if exists, otherwise 404
+            if (shouldBlock) {
+                if (linkData?.fallback_url) {
+                    const fallbackUrl = ensureValidUrl(linkData.fallback_url);
+                    if (fallbackUrl) {
+                        console.log(`🔀 Bot blocked, redirecting to fallback URL: ${fallbackUrl}`);
+                        return Response.redirect(fallbackUrl, 302);
+                    }
                 }
-            }
-            
-            return htmlResponse(get404Page());
-        };
-
-        // 2. Slug Validation
-        if (!slug || slug.includes('.')) return terminateWithLog(slug ? 'invalid_slug' : 'home_page_access');
-
-        const isValidSlug = /^[a-z0-9-]+$/.test(slug);
-        if (!isValidSlug) {
-            console.log(`🚫 Invalid slug format: "${slug}"`);
-            return terminateWithLog('invalid_slug_format');
-        }
-
-        // 3. Fetch link data from Redis/Supabase
-        let linkData = await redis.get(`link:${domain}:${slug}`);
-        if (!linkData) {
-            const sbRes = await fetch(`${env.SUPABASE_URL}/rest/v1/links?slug=eq.${slug}&domain=eq.${domain}&select=*`, {
-                headers: { 'apikey': env.SUPABASE_SERVICE_ROLE_KEY, 'Authorization': `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}` }
-            });
-            const data = await sbRes.json();
-            linkData = data?.[0];
-            if (linkData) ctx.waitUntil(redis.set(`link:${domain}:${slug}`, JSON.stringify(linkData), { ex: 3600 }));
-        }
-
-        if (!linkData) return terminateWithLog('link_not_found');
-        if (linkData.status !== 'active') return terminateWithLog('link_inactive', linkData);
-
-        // 4. Blacklist Check
-        const isBlacklisted = await redis.get(`blacklist:${ip}`);
-        if (isBlacklisted) {
-            console.log(`🚫 IP Blacklisted: ${ip} → ${domain}/${slug}`);
-            return terminateWithLog('blacklisted', linkData);
-        }
-
-        // 5. Bot Analysis
-        const botScore = request.cf?.botManagement?.score || 100;
-        const isVerifiedBot = request.cf?.verifiedBot || false;
-        const isBotUA = /bot|crawler|spider|googlebot/i.test(userAgent);
-        const isImpersonator = isBotUA && !isVerifiedBot;
-        const isBot = botScore <= 29 || isVerifiedBot || isImpersonator;
-
-        let targetUrl = ensureValidUrl(linkData.target_url);
-        let verdict = "clean";
-        let shouldBlock = false;
-
-        // bot_action: "block" | "redirect" | "no-tracking" (default: "block")
-        const botAction = linkData.bot_action || "block";
-
-        if (isBot) {
-            verdict = isImpersonator ? "bot_impersonator" : (botScore <= 10 ? "bot_certain" : "bot_likely");
-
-            // Add to Blacklist only for certain bots or impersonators
-            if (botScore <= 20 || isImpersonator) {
-                ctx.waitUntil(redis.set(`blacklist:${ip}`, "1", { ex: 86400 }));
+                return htmlResponse(get404Page());
             }
 
-            // Handle based on bot_action
-            if (botAction === "block") {
-                // Full block - 404
-                shouldBlock = true;
-            } else if (botAction === "redirect") {
-                // Redirect to fallback URL if exists, otherwise to regular target
-                const fallback = ensureValidUrl(linkData.fallback_url);
-                if (fallback) targetUrl = fallback;
-                // If no fallback, continue to regular target
-            }
-            // If botAction === "no-tracking" - continue to regular target (already set)
-
-            console.log(`🤖 Bot detected: ${verdict}, action: ${botAction}, target: ${targetUrl}`);
-        } else if (botScore <= 59) {
-            verdict = "suspicious";
+            // 7. Redirect
+            const finalRedirectUrl = buildSafeUrl(targetUrl, url.searchParams);
+            return Response.redirect(finalRedirectUrl, 302);
         }
-
-        // 6. Send log to Supabase
-        const clickRecord = buildClickRecord(request, rayId, ip, slug, domain, userAgent, verdict, linkData);
-        ctx.waitUntil(logClickToSupabase(env, clickRecord, redis));
-
-        // If blocked, redirect to fallback_url if exists, otherwise 404
-        if (shouldBlock) {
-            if (linkData?.fallback_url) {
-                const fallbackUrl = ensureValidUrl(linkData.fallback_url);
-                if (fallbackUrl) {
-                    console.log(`🔀 Bot blocked, redirecting to fallback URL: ${fallbackUrl}`);
-                    return Response.redirect(fallbackUrl, 302);
-                }
-            }
-            return htmlResponse(get404Page());
-        }
-
-        // 7. Redirect
-        const finalRedirectUrl = buildSafeUrl(targetUrl, url.searchParams);
-        return Response.redirect(finalRedirectUrl, 302);
-    }
     }
 );
