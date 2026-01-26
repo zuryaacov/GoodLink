@@ -263,21 +263,52 @@ const CustomDomainsManager = () => {
                 </button>
               </div>
 
-              {/* DNS Records - Show if pending or error */}
-              {(domain.status === 'pending' || domain.status === 'error') && domain.dns_records && (
-                <div className="pt-4 border-t border-[#232f48]">
+              {/* DNS Records Detail Display */}
+              {domain.dns_records && Array.isArray(domain.dns_records) && (
+                <div className="space-y-3 mt-2">
+                  <p className="text-[10px] uppercase tracking-wider font-bold text-slate-500">Required Configuration:</p>
+                  <div className="space-y-2">
+                    {domain.dns_records.map((record, idx) => (
+                      <div key={idx} className="bg-[#0b0f19] border border-[#232f48] rounded-lg p-2 text-[11px]">
+                        <div className="flex justify-between items-center mb-1">
+                          <span className="px-1.5 py-0.5 bg-primary/10 text-primary rounded font-bold text-[9px] uppercase">{record.type}</span>
+                          <span className="text-slate-500 font-mono truncate max-w-[120px]" title={record.host || record.name}>{record.host || record.name}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <code className="text-white font-mono truncate flex-1 leading-tight break-all" title={record.value}>{record.value}</code>
+                          <button 
+                            onClick={() => {
+                              navigator.clipboard.writeText(record.value);
+                              // Could add a temporary "copied" state here if needed
+                            }}
+                            className="text-slate-500 hover:text-white transition-colors"
+                          >
+                            <span className="material-symbols-outlined text-sm">content_copy</span>
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Verify Button - Show if pending or error */}
+              {(domain.status === 'pending' || domain.status === 'error') && (
+                <div className="pt-2">
                   <button
                     onClick={() => handleVerifyDNS(domain)}
-                    className="w-full px-4 py-2.5 bg-[#FF10F0] hover:bg-[#e00ed0] text-white font-bold rounded-xl transition-colors"
+                    className="w-full px-4 py-2 bg-[#FF10F0] hover:bg-[#e00ed0] text-white font-bold rounded-xl transition-colors text-xs flex items-center justify-center gap-2"
                   >
-                    Verify My DNS
+                    <span className="material-symbols-outlined text-sm">verified</span>
+                    Verify DNS Now
                   </button>
                 </div>
               )}
 
               {/* Verified Date */}
               {domain.verified_at && (
-                <div className="text-xs text-slate-500">
+                <div className="text-[10px] text-slate-500 flex items-center gap-1 mt-auto">
+                  <span className="material-symbols-outlined text-[12px]">calendar_today</span>
                   Verified: {new Date(domain.verified_at).toLocaleDateString()}
                 </div>
               )}
