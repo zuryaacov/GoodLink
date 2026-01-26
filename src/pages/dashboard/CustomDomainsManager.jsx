@@ -237,99 +237,99 @@ const CustomDomainsManager = () => {
           </div>
         </div>
       ) : (
-        <div className="grid grid-cols-1 gap-6 w-full">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
           {domains.map((domain) => (
             <div
               key={domain.id}
-              className="bg-[#101622] border border-[#232f48] rounded-2xl p-6 md:p-10 transition-all hover:bg-white/5 hover:border-primary/40 flex flex-col gap-8 shadow-2xl"
+              className="bg-[#101622] border border-[#232f48] rounded-2xl p-6 md:p-8 transition-all hover:bg-white/5 hover:border-primary/40 flex flex-col gap-6 shadow-2xl"
             >
               {/* Domain Name & Status */}
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 pb-6 border-b border-[#232f48]">
-                <div className="flex flex-col gap-4">
-                  <h3 className="text-3xl md:text-4xl font-extrabold text-white tracking-tight" title={domain.domain}>
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b border-[#232f48]">
+                <div className="flex flex-col gap-2">
+                  <h3 className="text-xl md:text-2xl font-bold text-white tracking-tight truncate max-w-[200px]" title={domain.domain}>
                     {domain.domain}
                   </h3>
-                  <div className={`inline-flex items-center self-start gap-2 px-4 py-1.5 rounded-xl border text-base font-bold uppercase tracking-wider ${getStatusColor(domain.status)}`}>
-                    <span className="material-symbols-outlined text-xl">{getStatusIcon(domain.status)}</span>
+                  <div className={`inline-flex items-center self-start gap-1.5 px-3 py-1 rounded-lg border text-xs font-bold uppercase tracking-wider ${getStatusColor(domain.status)}`}>
+                    <span className="material-symbols-outlined text-base">{getStatusIcon(domain.status)}</span>
                     <span>{domain.status}</span>
                   </div>
                 </div>
-                <div className="flex items-center gap-4 self-end sm:self-center">
+                <div className="flex items-center gap-3 self-end sm:self-center">
                    {/* Verify Button - Show if pending or error */}
                   {(domain.status === 'pending' || domain.status === 'error') && (
                     <button
                       onClick={() => handleVerifyDNS(domain)}
-                      className="px-8 py-3 bg-[#FF10F0] hover:bg-[#e00ed0] text-white font-bold rounded-2xl transition-all shadow-lg shadow-[#FF10F0]/20 flex items-center justify-center gap-3 text-lg"
+                      className="px-4 py-2 bg-[#FF10F0] hover:bg-[#e00ed0] text-white font-bold rounded-xl transition-all shadow-lg shadow-[#FF10F0]/20 flex items-center justify-center gap-2 text-sm"
                     >
-                      <span className="material-symbols-outlined text-2xl">verified</span>
+                      <span className="material-symbols-outlined text-lg">verified</span>
                       Verify DNS
                     </button>
                   )}
                   <button
                     onClick={() => handleDeleteClick(domain.id, domain.domain)}
-                    className="text-slate-500 hover:text-red-400 transition-colors p-3 bg-red-500/10 rounded-xl border border-red-500/20"
+                    className="text-slate-500 hover:text-red-400 transition-colors p-2 bg-red-500/10 rounded-lg border border-red-500/20"
                     title="Delete domain"
                   >
-                    <span className="material-symbols-outlined text-2xl md:text-3xl">delete</span>
+                    <span className="material-symbols-outlined text-xl md:text-2xl">delete</span>
                   </button>
                 </div>
               </div>
 
               {/* DNS Records Detail Display */}
               {domain.dns_records && Array.isArray(domain.dns_records) && (
-                <div className="space-y-6">
-                  <div className="flex items-center gap-3 text-slate-400">
-                    <span className="material-symbols-outlined">dns</span>
-                    <p className="text-lg uppercase tracking-widest font-black">DNS Configuration Required</p>
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2 text-slate-500">
+                    <span className="material-symbols-outlined text-sm">dns</span>
+                    <p className="text-xs uppercase tracking-widest font-black">DNS Configuration Required</p>
                   </div>
                   
-                  <div className="grid grid-cols-1 gap-6">
+                  <div className="grid grid-cols-1 gap-4">
                     {domain.dns_records.map((record, idx) => (
-                      <div key={idx} className="bg-[#0b0f19] border-2 border-[#232f48] rounded-[2rem] p-8 md:p-12 space-y-8 hover:border-primary/30 transition-all shadow-inner">
+                      <div key={idx} className="bg-[#0b0f19] border border-[#232f48] rounded-xl p-4 md:p-6 space-y-4 hover:border-primary/20 transition-all shadow-inner">
                         {/* Record Type Header */}
-                        <div className="flex items-center gap-6">
-                          <div className="px-6 py-2 bg-primary text-white rounded-full font-black text-lg uppercase tracking-[0.2em]">Record {idx + 1}</div>
+                        <div className="flex items-center gap-3">
+                          <div className="px-3 py-1 bg-primary/20 text-primary border border-primary/30 rounded-lg font-bold text-xs uppercase tracking-wider">Record {idx + 1}</div>
                           <div className="h-px flex-1 bg-[#232f48]"></div>
-                          <span className="text-4xl text-primary font-black font-mono uppercase">{record.type}</span>
+                          <span className="text-xl text-primary font-black font-mono uppercase">{record.type}</span>
                         </div>
 
-                        <div className="grid grid-cols-1 gap-8">
+                        <div className="grid grid-cols-1 gap-4">
                           {/* Host / Name Section */}
-                          <div className="space-y-4">
-                            <div className="flex items-center gap-3">
-                              <span className="material-symbols-outlined text-slate-500">label</span>
-                              <span className="text-sm uppercase font-black text-slate-500 tracking-[0.3em]">Host / Name</span>
+                          <div className="space-y-2">
+                            <div className="flex items-center gap-2">
+                              <span className="material-symbols-outlined text-slate-500 text-sm">label</span>
+                              <span className="text-[10px] uppercase font-black text-slate-600 tracking-[0.2em]">Host / Name</span>
                             </div>
-                            <div className="flex items-center gap-4 bg-[#101622] p-6 rounded-2xl border-2 border-[#232f48] group hover:border-primary/20 transition-all">
-                              <code className="text-2xl md:text-3xl text-white font-mono flex-1 truncate selection:bg-primary/40">
+                            <div className="flex items-center gap-3 bg-[#101622] p-3 rounded-xl border border-[#232f48] group hover:border-primary/20 transition-all">
+                              <code className="text-sm md:text-base text-white font-mono flex-1 truncate selection:bg-primary/40">
                                 {record.host || record.name}
                               </code>
                               <button 
                                 onClick={() => navigator.clipboard.writeText(record.host || record.name)}
-                                className="w-16 h-16 flex items-center justify-center bg-[#232f48] hover:bg-primary text-white rounded-2xl transition-all shadow-xl active:scale-90"
+                                className="w-10 h-10 flex items-center justify-center bg-[#232f48] hover:bg-primary text-white rounded-lg transition-all shadow-xl active:scale-90"
                                 title="Copy Host"
                               >
-                                <span className="material-symbols-outlined text-3xl">content_copy</span>
+                                <span className="material-symbols-outlined text-xl">content_copy</span>
                               </button>
                             </div>
                           </div>
 
                           {/* Target Value Section */}
-                          <div className="space-y-4">
-                            <div className="flex items-center gap-3">
-                              <span className="material-symbols-outlined text-slate-500">shortcut</span>
-                              <span className="text-sm uppercase font-black text-slate-500 tracking-[0.3em]">Target Value</span>
+                          <div className="space-y-2">
+                            <div className="flex items-center gap-2">
+                              <span className="material-symbols-outlined text-slate-500 text-sm">shortcut</span>
+                              <span className="text-[10px] uppercase font-black text-slate-600 tracking-[0.2em]">Target Value</span>
                             </div>
-                            <div className="flex items-center gap-4 bg-[#101622] p-6 md:p-8 rounded-2xl border-2 border-[#232f48] group hover:border-primary/40 transition-all shadow-[inset_0_2px_10px_rgba(0,0,0,0.5)]">
-                              <code className="text-2xl md:text-4xl text-green-400 font-mono flex-1 break-all leading-[1.3] selection:bg-primary/30">
+                            <div className="flex items-center gap-3 bg-[#101622] p-3 md:p-4 rounded-xl border border-[#232f48] group hover:border-primary/20 transition-all shadow-[inset_0_2px_10px_rgba(0,0,0,0.5)]">
+                              <code className="text-sm md:text-lg text-green-400 font-mono flex-1 break-all leading-tight selection:bg-primary/30">
                                 {record.value}
                               </code>
                               <button 
                                 onClick={() => navigator.clipboard.writeText(record.value)}
-                                className="w-20 h-20 md:w-24 md:h-24 flex items-center justify-center bg-primary hover:bg-[#FF10F0] text-white rounded-[1.5rem] transition-all shadow-[0_0_30px_rgba(19,91,236,0.3)] hover:shadow-[0_0_40px_rgba(19,91,236,0.5)] active:scale-95 flex-shrink-0"
+                                className="w-12 h-12 md:w-14 md:h-14 flex items-center justify-center bg-primary hover:bg-[#FF10F0] text-white rounded-xl transition-all shadow-[0_0_20px_rgba(19,91,236,0.2)] active:scale-95 flex-shrink-0"
                                 title="Copy Value"
                               >
-                                <span className="material-symbols-outlined text-4xl md:text-5xl font-bold">content_copy</span>
+                                <span className="material-symbols-outlined text-2xl md:text-3xl font-bold">content_copy</span>
                               </button>
                             </div>
                           </div>
@@ -342,8 +342,8 @@ const CustomDomainsManager = () => {
 
               {/* Verified Date */}
               {domain.verified_at && (
-                <div className="pt-6 border-t border-[#232f48] text-sm md:text-base text-slate-500 flex items-center gap-2">
-                  <span className="material-symbols-outlined text-xl">calendar_today</span>
+                <div className="pt-4 border-t border-[#232f48] text-[11px] md:text-sm text-slate-500 flex items-center gap-2">
+                  <span className="material-symbols-outlined text-lg">calendar_today</span>
                   <span className="font-semibold uppercase tracking-wide">Last Verified:</span>
                   <span className="text-slate-300">{new Date(domain.verified_at).toLocaleString()}</span>
                 </div>
