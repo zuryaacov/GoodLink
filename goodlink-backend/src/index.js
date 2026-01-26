@@ -455,8 +455,38 @@ export default Sentry.withSentry(
                     const isActive = hostnameData.status === "active";
                     const sslStatus = hostnameData.ssl?.status || "pending";
 
-                    // Update Supabase if active
-                    if (isActive && domain_id) {
+                    // Prepare updated DNS records for storage
+                    const dnsRecords = [];
+                    if (hostnameData.ownership_verification) {
+                        dnsRecords.push({
+                            type: hostnameData.ownership_verification.type,
+                            host: hostnameData.ownership_verification.name,
+                            value: hostnameData.ownership_verification.value
+                        });
+                    }
+                    if (hostnameData.ssl?.validation_records && Array.isArray(hostnameData.ssl.validation_records)) {
+                        hostnameData.ssl.validation_records.forEach(record => {
+                            dnsRecords.push({
+                                type: "TXT",
+                                host: record.txt_name,
+                                value: record.txt_value
+                            });
+                        });
+                    }
+                    dnsRecords.push({
+                        type: "CNAME",
+                        host: hostnameData.hostname,
+                        value: "www.glynk.to"
+                    });
+
+                    // Update Supabase
+                    if (domain_id) {
+                        const updateData = {
+                            dns_records: dnsRecords,
+                            // If it just became active, update status and verified_at
+                            ...(isActive ? { status: "active", verified_at: new Date().toISOString() } : {})
+                        };
+
                         const supabaseUrl = `${env.SUPABASE_URL}/rest/v1/custom_domains?id=eq.${domain_id}`;
                         await fetch(supabaseUrl, {
                             method: "PATCH",
@@ -465,10 +495,7 @@ export default Sentry.withSentry(
                                 "Authorization": `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}`,
                                 "Content-Type": "application/json"
                             },
-                            body: JSON.stringify({
-                                status: "active",
-                                verified_at: new Date().toISOString()
-                            })
+                            body: JSON.stringify(updateData)
                         });
                     }
 
