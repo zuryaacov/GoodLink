@@ -237,54 +237,102 @@ const CustomDomainsManager = () => {
           </div>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 w-full">
+        <div className="grid grid-cols-1 gap-6 w-full">
           {domains.map((domain) => (
             <div
               key={domain.id}
-              className="bg-[#101622] border border-[#232f48] rounded-xl p-5 sm:p-6 transition-all hover:bg-white/5 hover:border-primary/30 flex flex-col gap-4"
+              className="bg-[#101622] border border-[#232f48] rounded-2xl p-6 md:p-10 transition-all hover:bg-white/5 hover:border-primary/40 flex flex-col gap-8 shadow-2xl"
             >
               {/* Domain Name & Status */}
-              <div className="flex items-start justify-between gap-3">
-                <div className="flex-1 min-w-0">
-                  <h3 className="text-lg sm:text-xl font-bold text-white mb-2 truncate" title={domain.domain}>
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 pb-6 border-b border-[#232f48]">
+                <div className="flex flex-col gap-4">
+                  <h3 className="text-3xl md:text-4xl font-extrabold text-white tracking-tight" title={domain.domain}>
                     {domain.domain}
                   </h3>
-                  <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-lg border text-xs sm:text-sm font-medium ${getStatusColor(domain.status)}`}>
-                    <span className="material-symbols-outlined text-sm sm:text-base">{getStatusIcon(domain.status)}</span>
-                    <span className="capitalize">{domain.status}</span>
+                  <div className={`inline-flex items-center self-start gap-2 px-4 py-1.5 rounded-xl border text-base font-bold uppercase tracking-wider ${getStatusColor(domain.status)}`}>
+                    <span className="material-symbols-outlined text-xl">{getStatusIcon(domain.status)}</span>
+                    <span>{domain.status}</span>
                   </div>
                 </div>
-                <button
-                  onClick={() => handleDeleteClick(domain.id, domain.domain)}
-                  className="text-slate-400 hover:text-red-400 transition-colors p-2 flex-shrink-0"
-                  title="Delete domain"
-                >
-                  <span className="material-symbols-outlined text-lg sm:text-xl">delete</span>
-                </button>
+                <div className="flex items-center gap-4 self-end sm:self-center">
+                   {/* Verify Button - Show if pending or error */}
+                  {(domain.status === 'pending' || domain.status === 'error') && (
+                    <button
+                      onClick={() => handleVerifyDNS(domain)}
+                      className="px-8 py-3 bg-[#FF10F0] hover:bg-[#e00ed0] text-white font-bold rounded-2xl transition-all shadow-lg shadow-[#FF10F0]/20 flex items-center justify-center gap-3 text-lg"
+                    >
+                      <span className="material-symbols-outlined text-2xl">verified</span>
+                      Verify DNS
+                    </button>
+                  )}
+                  <button
+                    onClick={() => handleDeleteClick(domain.id, domain.domain)}
+                    className="text-slate-500 hover:text-red-400 transition-colors p-3 bg-red-500/10 rounded-xl border border-red-500/20"
+                    title="Delete domain"
+                  >
+                    <span className="material-symbols-outlined text-2xl md:text-3xl">delete</span>
+                  </button>
+                </div>
               </div>
 
               {/* DNS Records Detail Display */}
               {domain.dns_records && Array.isArray(domain.dns_records) && (
-                <div className="space-y-3 mt-2">
-                  <p className="text-[10px] uppercase tracking-wider font-bold text-slate-500">Required Configuration:</p>
-                  <div className="space-y-2">
+                <div className="space-y-6">
+                  <div className="flex items-center gap-3 text-slate-400">
+                    <span className="material-symbols-outlined">dns</span>
+                    <p className="text-lg uppercase tracking-widest font-black">DNS Configuration Required</p>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 gap-6">
                     {domain.dns_records.map((record, idx) => (
-                      <div key={idx} className="bg-[#0b0f19] border border-[#232f48] rounded-lg p-2 text-[11px]">
-                        <div className="flex justify-between items-center mb-1">
-                          <span className="px-1.5 py-0.5 bg-primary/10 text-primary rounded font-bold text-[9px] uppercase">{record.type}</span>
-                          <span className="text-slate-500 font-mono truncate max-w-[120px]" title={record.host || record.name}>{record.host || record.name}</span>
+                      <div key={idx} className="bg-[#0b0f19] border-2 border-[#232f48] rounded-[2rem] p-8 md:p-12 space-y-8 hover:border-primary/30 transition-all shadow-inner">
+                        {/* Record Type Header */}
+                        <div className="flex items-center gap-6">
+                          <div className="px-6 py-2 bg-primary text-white rounded-full font-black text-lg uppercase tracking-[0.2em]">Record {idx + 1}</div>
+                          <div className="h-px flex-1 bg-[#232f48]"></div>
+                          <span className="text-4xl text-primary font-black font-mono uppercase">{record.type}</span>
                         </div>
-                        <div className="flex items-center gap-2">
-                          <code className="text-white font-mono truncate flex-1 leading-tight break-all" title={record.value}>{record.value}</code>
-                          <button 
-                            onClick={() => {
-                              navigator.clipboard.writeText(record.value);
-                              // Could add a temporary "copied" state here if needed
-                            }}
-                            className="text-slate-500 hover:text-white transition-colors"
-                          >
-                            <span className="material-symbols-outlined text-sm">content_copy</span>
-                          </button>
+
+                        <div className="grid grid-cols-1 gap-8">
+                          {/* Host / Name Section */}
+                          <div className="space-y-4">
+                            <div className="flex items-center gap-3">
+                              <span className="material-symbols-outlined text-slate-500">label</span>
+                              <span className="text-sm uppercase font-black text-slate-500 tracking-[0.3em]">Host / Name</span>
+                            </div>
+                            <div className="flex items-center gap-4 bg-[#101622] p-6 rounded-2xl border-2 border-[#232f48] group hover:border-primary/20 transition-all">
+                              <code className="text-2xl md:text-3xl text-white font-mono flex-1 truncate selection:bg-primary/40">
+                                {record.host || record.name}
+                              </code>
+                              <button 
+                                onClick={() => navigator.clipboard.writeText(record.host || record.name)}
+                                className="w-16 h-16 flex items-center justify-center bg-[#232f48] hover:bg-primary text-white rounded-2xl transition-all shadow-xl active:scale-90"
+                                title="Copy Host"
+                              >
+                                <span className="material-symbols-outlined text-3xl">content_copy</span>
+                              </button>
+                            </div>
+                          </div>
+
+                          {/* Target Value Section */}
+                          <div className="space-y-4">
+                            <div className="flex items-center gap-3">
+                              <span className="material-symbols-outlined text-slate-500">shortcut</span>
+                              <span className="text-sm uppercase font-black text-slate-500 tracking-[0.3em]">Target Value</span>
+                            </div>
+                            <div className="flex items-center gap-4 bg-[#101622] p-6 md:p-8 rounded-2xl border-2 border-[#232f48] group hover:border-primary/40 transition-all shadow-[inset_0_2px_10px_rgba(0,0,0,0.5)]">
+                              <code className="text-2xl md:text-4xl text-green-400 font-mono flex-1 break-all leading-[1.3] selection:bg-primary/30">
+                                {record.value}
+                              </code>
+                              <button 
+                                onClick={() => navigator.clipboard.writeText(record.value)}
+                                className="w-20 h-20 md:w-24 md:h-24 flex items-center justify-center bg-primary hover:bg-[#FF10F0] text-white rounded-[1.5rem] transition-all shadow-[0_0_30px_rgba(19,91,236,0.3)] hover:shadow-[0_0_40px_rgba(19,91,236,0.5)] active:scale-95 flex-shrink-0"
+                                title="Copy Value"
+                              >
+                                <span className="material-symbols-outlined text-4xl md:text-5xl font-bold">content_copy</span>
+                              </button>
+                            </div>
+                          </div>
                         </div>
                       </div>
                     ))}
@@ -292,24 +340,12 @@ const CustomDomainsManager = () => {
                 </div>
               )}
 
-              {/* Verify Button - Show if pending or error */}
-              {(domain.status === 'pending' || domain.status === 'error') && (
-                <div className="pt-2">
-                  <button
-                    onClick={() => handleVerifyDNS(domain)}
-                    className="w-full px-4 py-2 bg-[#FF10F0] hover:bg-[#e00ed0] text-white font-bold rounded-xl transition-colors text-xs flex items-center justify-center gap-2"
-                  >
-                    <span className="material-symbols-outlined text-sm">verified</span>
-                    Verify DNS Now
-                  </button>
-                </div>
-              )}
-
               {/* Verified Date */}
               {domain.verified_at && (
-                <div className="text-[10px] text-slate-500 flex items-center gap-1 mt-auto">
-                  <span className="material-symbols-outlined text-[12px]">calendar_today</span>
-                  Verified: {new Date(domain.verified_at).toLocaleDateString()}
+                <div className="pt-6 border-t border-[#232f48] text-sm md:text-base text-slate-500 flex items-center gap-2">
+                  <span className="material-symbols-outlined text-xl">calendar_today</span>
+                  <span className="font-semibold uppercase tracking-wide">Last Verified:</span>
+                  <span className="text-slate-300">{new Date(domain.verified_at).toLocaleString()}</span>
                 </div>
               )}
             </div>
