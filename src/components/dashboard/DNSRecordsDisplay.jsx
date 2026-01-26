@@ -96,7 +96,7 @@ const DNSRecordsDisplay = ({ records, domain }) => {
   };
 
   const cnameHost = getSubdomain(domain);
-  const fallbackOrigin = cnameRecord?.value || "glynk.to";
+  const fallbackOrigin = "www.glynk.to";
 
   const CopyButton = ({ value, fieldName, className = "" }) => (
     <button

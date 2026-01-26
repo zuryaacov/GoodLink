@@ -353,7 +353,7 @@ export default Sentry.withSentry(
                     dnsRecords.push({
                         type: "CNAME",
                         host: domain,
-                        value: "glynk.to"
+                        value: "www.glynk.to"
                     });
 
                     // Save to Supabase
@@ -561,7 +561,7 @@ export default Sentry.withSentry(
                     dnsRecords.push({
                         type: "CNAME",
                         host: hostnameData.hostname,
-                        value: "glynk.to"
+                        value: "www.glynk.to"
                     });
 
                     return new Response(JSON.stringify({
