@@ -88,6 +88,33 @@ const AddDomainPage = () => {
     }
   };
 
+  const fetchDnsRecords = async () => {
+    if (!cloudflareHostnameId) return;
+    
+    setIsSubmitting(true);
+    const workerUrl = import.meta.env.VITE_WORKER_URL || 'https://glynk.to';
+    const apiUrl = `${workerUrl}/api/get-domain-records`;
+    
+    try {
+      const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ cloudflare_hostname_id: cloudflareHostnameId }),
+      });
+      
+      if (response.ok) {
+        const result = await response.json();
+        if (result.dns_records) {
+          setDnsRecords(result.dns_records);
+        }
+      }
+    } catch (err) {
+      console.error('Error fetching DNS records:', err);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   const handleNext = async () => {
     if (currentStep === 1) {
       if (!domainName || !domainName.trim()) {
@@ -287,10 +314,22 @@ const AddDomainPage = () => {
           {currentStep === 2 && (
             <div className="space-y-6">
               <div>
-                <h3 className="text-lg font-bold text-white mb-2">DNS Configuration</h3>
-                <p className="text-sm text-slate-400 mb-4">
-                  Add these DNS records to your domain registrar (e.g., Cloudflare, GoDaddy)
-                </p>
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <h3 className="text-lg font-bold text-white mb-1">DNS Configuration</h3>
+                    <p className="text-sm text-slate-400">
+                      Add these DNS records to your domain registrar
+                    </p>
+                  </div>
+                  <button
+                    onClick={fetchDnsRecords}
+                    disabled={isSubmitting}
+                    className="flex items-center gap-2 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-white text-xs font-medium rounded-lg transition-colors border border-slate-700"
+                  >
+                    <span className={`material-symbols-outlined text-sm ${isSubmitting ? 'animate-spin' : ''}`}>refresh</span>
+                    Refresh Records
+                  </button>
+                </div>
                 {dnsRecords && <DNSRecordsDisplay records={dnsRecords} domain={domainName} />}
               </div>
             </div>
