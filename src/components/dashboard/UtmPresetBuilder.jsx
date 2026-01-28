@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
 import { X, CheckCircle2, Zap } from 'lucide-react';
+import outbrainLogo from '../../assets/outbrain-logo.jpeg';
 
 const getPlatformLogo = (platform) => {
   switch (platform) {
@@ -47,7 +48,7 @@ const getPlatformLogo = (platform) => {
       return (
         <div className="w-12 h-12 rounded-lg flex items-center justify-center overflow-hidden border border-slate-700">
           <img 
-            src="/src/assets/outbrain-logo.png" 
+            src={outbrainLogo} 
             alt="Outbrain" 
             className="w-full h-full object-cover" 
           />
