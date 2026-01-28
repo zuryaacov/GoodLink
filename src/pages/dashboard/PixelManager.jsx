@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import Modal from '../../components/common/Modal';
+import outbrainLogo from '../../assets/id-bNajMAc_1769618145922.svg';
 
 const PixelManager = () => {
   const navigate = useNavigate();
@@ -161,6 +162,25 @@ const PixelManager = () => {
             </svg>
           </div>
         );
+      case 'taboola':
+        return (
+          <div className="w-10 h-10 rounded-lg bg-white flex items-center justify-center overflow-hidden border border-slate-700">
+            <svg viewBox="0 0 100 100" width="24" height="24" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="50" cy="50" r="45" fill="#3568F6"/>
+              <text x="50" y="65" fontSize="45" fontWeight="bold" fill="white" textAnchor="middle" fontFamily="Arial, sans-serif">t</text>
+            </svg>
+          </div>
+        );
+      case 'outbrain':
+        return (
+          <div className="w-10 h-10 rounded-lg flex items-center justify-center overflow-hidden border border-slate-700">
+            <img 
+              src={outbrainLogo} 
+              alt="Outbrain" 
+              className="w-full h-full object-cover" 
+            />
+          </div>
+        );
       default:
         return (
           <div className="w-10 h-10 rounded-lg bg-[#232f48] flex items-center justify-center">
@@ -176,6 +196,8 @@ const PixelManager = () => {
       case 'tiktok': return 'TikTok';
       case 'google': return 'Google Ads';
       case 'snapchat': return 'Snapchat';
+      case 'taboola': return 'Taboola';
+      case 'outbrain': return 'Outbrain';
       default: return platform;
     }
   };
