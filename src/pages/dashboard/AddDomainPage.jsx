@@ -203,9 +203,18 @@ const AddDomainPage = () => {
           const workerUrl = import.meta.env.VITE_WORKER_URL || 'https://glynk.to';
           const apiUrl = `${workerUrl}/api/add-custom-domain`;
 
-          // Get sanitized root redirect URL
+          // Get sanitized root redirect URL - store domain only (no https://) with www.
           const rootRedirectValidation = validateRootRedirectUrl(rootRedirect);
-          const finalRootRedirect = rootRedirectValidation.sanitized || null;
+          let finalRootRedirect = null;
+          if (rootRedirectValidation.sanitized) {
+            // Remove protocol (https:// or http://)
+            let rootDomain = rootRedirectValidation.sanitized.replace(/^https?:\/\//, '');
+            // Add www. if not present
+            if (!rootDomain.startsWith('www.')) {
+              rootDomain = `www.${rootDomain}`;
+            }
+            finalRootRedirect = rootDomain;
+          }
 
           const response = await fetch(apiUrl, {
             method: 'POST',

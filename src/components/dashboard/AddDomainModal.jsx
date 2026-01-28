@@ -109,9 +109,18 @@ const AddDomainModal = ({ isOpen, onClose, domain = null }) => {
 
           console.log('🔵 [AddDomain] Calling worker API:', apiUrl);
 
-          // Get sanitized root redirect URL
+          // Get sanitized root redirect URL - store domain only (no https://) with www.
           const rootRedirectValidation = validateRootRedirectUrl(rootRedirect);
-          const finalRootRedirect = rootRedirectValidation.sanitized || null;
+          let finalRootRedirect = null;
+          if (rootRedirectValidation.sanitized) {
+            // Remove protocol (https:// or http://)
+            let rootDomain = rootRedirectValidation.sanitized.replace(/^https?:\/\//, '');
+            // Add www. if not present
+            if (!rootDomain.startsWith('www.')) {
+              rootDomain = `www.${rootDomain}`;
+            }
+            finalRootRedirect = rootDomain;
+          }
 
           // Call worker endpoint to register domain with Cloudflare
           const response = await fetch(apiUrl, {

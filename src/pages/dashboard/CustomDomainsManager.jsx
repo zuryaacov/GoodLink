@@ -436,13 +436,13 @@ const CustomDomainsManager = () => {
                       </span>
                       <span className="text-slate-500">Root:</span>
                       <a
-                        href={domain.root_redirect}
+                        href={`https://${domain.root_redirect}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-primary hover:underline truncate max-w-[200px]"
                         title={domain.root_redirect}
                       >
-                        {domain.root_redirect.replace(/^https?:\/\//, '')}
+                        {domain.root_redirect}
                       </a>
                     </div>
                   )}
