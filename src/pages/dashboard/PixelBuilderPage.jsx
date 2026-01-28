@@ -18,6 +18,12 @@ const validatePixelId = (pixelId, platform) => {
       return /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(trimmed);
     case 'google':
       return /^AW-\d{9,10}$/i.test(trimmed);
+    case 'outbrain':
+      // Outbrain: 32 chars hexadecimal (0-9, a-f)
+      return /^[a-f0-9]{32}$/.test(trimmed);
+    case 'taboola':
+      // Taboola: 6-8 digits only
+      return /^\d{6,8}$/.test(trimmed);
     default:
       return false;
   }
@@ -47,6 +53,18 @@ const PLATFORMS = [
     label: 'Snapchat', 
     placeholder: 'Enter your UUID Pixel ID (36 characters)',
     validate: (id) => validatePixelId(id, 'snapchat')
+  },
+  { 
+    value: 'outbrain', 
+    label: 'Outbrain', 
+    placeholder: 'Enter your 32-character Marketer ID (0-9, a-f)',
+    validate: (id) => validatePixelId(id, 'outbrain')
+  },
+  { 
+    value: 'taboola', 
+    label: 'Taboola', 
+    placeholder: 'Enter your Account ID (6-8 digits)',
+    validate: (id) => validatePixelId(id, 'taboola')
   },
 ];
 
@@ -84,6 +102,16 @@ const STANDARD_EVENTS = {
     { value: 'SAVE', label: 'SAVE', description: 'Saving the offer' },
     { value: 'SEARCH', label: 'SEARCH', description: 'Search within page' },
     { value: 'LIST_VIEW', label: 'LIST_VIEW', description: 'Viewing a list' },
+  ],
+  outbrain: [
+    { value: 'PAGE_VIEW', label: 'PAGE_VIEW (Default)', description: 'Recommended for affiliates' },
+    { value: 'LEAD', label: 'LEAD', description: 'Lead generation' },
+    { value: 'PURCHASE', label: 'PURCHASE', description: 'Sale conversion' },
+  ],
+  taboola: [
+    { value: 'page_view', label: 'page_view (Default)', description: 'Recommended for affiliates' },
+    { value: 'lead', label: 'lead', description: 'Lead generation' },
+    { value: 'purchase', label: 'purchase', description: 'Sale conversion' },
   ],
 };
 
@@ -175,6 +203,12 @@ const PixelBuilderPage = () => {
             break;
           case 'snapchat':
             errorMsg += 'Must be a valid UUID format (36 characters: 8-4-4-4-12).';
+            break;
+          case 'outbrain':
+            errorMsg += 'Must be exactly 32 lowercase hex characters (0-9, a-f).';
+            break;
+          case 'taboola':
+            errorMsg += 'Must be between 6 and 8 digits.';
             break;
           default:
             errorMsg += 'Please check the format.';

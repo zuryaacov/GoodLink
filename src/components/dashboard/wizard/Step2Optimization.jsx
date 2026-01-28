@@ -230,6 +230,18 @@ const Step2Optimization = ({ formData, updateFormData }) => {
                           </svg>
                         </div>
                       );
+                    case 'taboola':
+                      return (
+                        <div className="w-8 h-8 rounded-lg bg-[#0056F0] flex items-center justify-center flex-shrink-0">
+                          <span className="text-white font-bold text-[10px]">T</span>
+                        </div>
+                      );
+                    case 'outbrain':
+                      return (
+                        <div className="w-8 h-8 rounded-lg bg-[#184869] flex items-center justify-center flex-shrink-0">
+                          <span className="text-white font-bold text-[10px]">O</span>
+                        </div>
+                      );
                     default:
                       return (
                         <div className="w-8 h-8 rounded-lg bg-[#232f48] flex items-center justify-center flex-shrink-0">
@@ -245,6 +257,8 @@ const Step2Optimization = ({ formData, updateFormData }) => {
                     case 'tiktok': return 'TikTok';
                     case 'google': return 'Google Ads';
                     case 'snapchat': return 'Snapchat';
+                    case 'taboola': return 'Taboola';
+                    case 'outbrain': return 'Outbrain';
                     default: return platform;
                   }
                 };
