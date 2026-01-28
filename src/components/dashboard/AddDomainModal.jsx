@@ -123,6 +123,9 @@ const AddDomainModal = ({ isOpen, onClose, domain = null }) => {
       }
     } else if (currentStep === 2) {
       setCurrentStep(3);
+    } else if (currentStep === 3) {
+      // Final step - close modal
+      onClose();
     }
   };
 
@@ -384,24 +387,24 @@ const AddDomainModal = ({ isOpen, onClose, domain = null }) => {
             <div className="text-slate-400 text-xs sm:text-sm whitespace-nowrap">
               Step {currentStep} of {steps.length}
             </div>
-            {currentStep < steps.length ? (
-              <button
-                onClick={handleNext}
-                disabled={!domainName.trim() || isSubmitting}
-                className="px-4 sm:px-6 py-2 sm:py-2.5 text-xs sm:text-sm bg-[#FF10F0] hover:bg-[#e00ed0] disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold rounded-lg sm:rounded-xl transition-colors flex-shrink-0"
-              >
-                {isSubmitting ? (
-                  <>
-                    <span className="material-symbols-outlined animate-spin text-sm sm:text-base mr-2">
-                      refresh
-                    </span>
-                    Saving...
-                  </>
-                ) : (
-                  'Next'
-                )}
-              </button>
-            ) : null}
+            <button
+              onClick={handleNext}
+              disabled={!domainName.trim() || isSubmitting}
+              className="px-4 sm:px-6 py-2 sm:py-2.5 text-xs sm:text-sm bg-[#FF10F0] hover:bg-[#e00ed0] disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold rounded-lg sm:rounded-xl transition-colors flex-shrink-0"
+            >
+              {isSubmitting ? (
+                <>
+                  <span className="material-symbols-outlined animate-spin text-sm sm:text-base mr-2">
+                    refresh
+                  </span>
+                  Saving...
+                </>
+              ) : currentStep === 3 ? (
+                'Add Domain'
+              ) : (
+                'Next'
+              )}
+            </button>
           </div>
         </motion.div>
       </div>

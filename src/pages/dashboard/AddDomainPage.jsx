@@ -239,6 +239,9 @@ const AddDomainPage = () => {
       }
     } else if (currentStep === 2) {
       setCurrentStep(3);
+    } else if (currentStep === 3) {
+      // Final step - navigate back to domains list
+      navigate('/dashboard/domains');
     }
   };
 
@@ -474,6 +477,8 @@ const AddDomainPage = () => {
                 <span className="material-symbols-outlined animate-spin">refresh</span>
                 {currentStep === 1 ? 'Preparing records...' : 'Loading...'}
               </>
+            ) : currentStep === 3 ? (
+              'Add Domain'
             ) : (
               'Next'
             )}
