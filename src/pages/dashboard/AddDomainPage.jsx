@@ -124,7 +124,7 @@ const AddDomainPage = () => {
     }
   };
 
-  // Validate URL format for root redirect
+  // Validate URL format for root redirect (comprehensive validation like target URL)
   const validateRootRedirectUrl = (url) => {
     if (!url || url.trim() === '') {
       return { isValid: true, sanitized: '' }; // Optional field
@@ -139,10 +139,38 @@ const AddDomainPage = () => {
 
     try {
       const parsed = new URL(urlToValidate);
+
       // Check if it's a valid URL with a proper hostname
       if (!parsed.hostname || parsed.hostname.length < 3) {
-        return { isValid: false, error: 'Invalid URL format' };
+        return { isValid: false, error: 'Invalid URL - hostname too short' };
       }
+
+      // Check for valid protocol
+      if (!['http:', 'https:'].includes(parsed.protocol)) {
+        return { isValid: false, error: 'URL must use http or https protocol' };
+      }
+
+      // Check hostname has valid TLD (at least one dot and TLD length >= 2)
+      const hostParts = parsed.hostname.split('.');
+      if (hostParts.length < 2) {
+        return { isValid: false, error: 'Invalid URL - missing domain extension' };
+      }
+      const tld = hostParts[hostParts.length - 1];
+      if (tld.length < 2 || /^\d+$/.test(tld)) {
+        return { isValid: false, error: 'Invalid URL - invalid domain extension' };
+      }
+
+      // Block localhost and local IPs
+      const lowerHost = parsed.hostname.toLowerCase();
+      if (
+        lowerHost === 'localhost' ||
+        lowerHost.startsWith('127.') ||
+        lowerHost.startsWith('192.168.') ||
+        lowerHost.startsWith('10.')
+      ) {
+        return { isValid: false, error: 'Local URLs are not allowed' };
+      }
+
       return { isValid: true, sanitized: urlToValidate };
     } catch (e) {
       return { isValid: false, error: 'Invalid URL format' };
@@ -434,7 +462,11 @@ const AddDomainPage = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-white mb-2">Root Redirect</label>
+                <label className="block text-sm font-medium text-white mb-1">Root Redirect</label>
+                <p className="text-xs font-bold mb-2" style={{ color: '#FF10F0' }}>
+                  Visitors accessing the domain without a referral slug will be automatically
+                  redirected to the root domain.
+                </p>
                 <input
                   type="text"
                   value={rootRedirect}
@@ -445,10 +477,6 @@ const AddDomainPage = () => {
                   placeholder="https://example.com"
                   className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-primary transition-colors"
                 />
-                <p className="text-xs text-slate-500 mt-2">
-                  Visitors accessing the domain without a referral slug will be automatically
-                  redirected to the root domain.
-                </p>
                 {rootRedirectError && (
                   <div className="bg-red-500/20 border border-red-500/30 rounded-xl p-4 mt-3">
                     <p className="text-red-400 text-sm font-medium">❌ {rootRedirectError}</p>
