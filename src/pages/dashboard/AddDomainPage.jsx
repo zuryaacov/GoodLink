@@ -33,7 +33,9 @@ const AddDomainPage = () => {
   const fetchDomain = async () => {
     try {
       setInitialLoading(true);
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (!user) {
         navigate('/dashboard/domains');
         return;
@@ -55,20 +57,20 @@ const AddDomainPage = () => {
       setDomainName(data.domain || '');
       setSavedDomainId(data.id);
       setCloudflareHostnameId(data.cloudflare_hostname_id);
-      
+
       // If domain already has DNS records, fetch them
       if (data.cloudflare_hostname_id) {
         // Fetch DNS records from Cloudflare
         const workerUrl = import.meta.env.VITE_WORKER_URL || 'https://glynk.to';
         const apiUrl = `${workerUrl}/api/get-domain-records`;
-        
+
         try {
           const response = await fetch(apiUrl, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ cloudflare_hostname_id: data.cloudflare_hostname_id }),
           });
-          
+
           if (response.ok) {
             const result = await response.json();
             if (result.dns_records) {
@@ -90,18 +92,18 @@ const AddDomainPage = () => {
 
   const fetchDnsRecords = async () => {
     if (!cloudflareHostnameId) return;
-    
+
     setIsSubmitting(true);
     const workerUrl = import.meta.env.VITE_WORKER_URL || 'https://glynk.to';
     const apiUrl = `${workerUrl}/api/get-domain-records`;
-    
+
     try {
       const response = await fetch(apiUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ cloudflare_hostname_id: cloudflareHostnameId }),
       });
-      
+
       if (response.ok) {
         const result = await response.json();
         if (result.dns_records) {
@@ -120,7 +122,7 @@ const AddDomainPage = () => {
       if (!domainName || !domainName.trim()) {
         return;
       }
-      
+
       const domainRegex = /^([a-z0-9]+(-[a-z0-9]+)*\.)+[a-z]{2,}$/i;
       if (!domainRegex.test(domainName.trim())) {
         return;
@@ -130,7 +132,9 @@ const AddDomainPage = () => {
         setIsSubmitting(true);
         setSaveError(null);
         try {
-          const { data: { user } } = await supabase.auth.getUser();
+          const {
+            data: { user },
+          } = await supabase.auth.getUser();
           if (!user) throw new Error('User not authenticated');
 
           const workerUrl = import.meta.env.VITE_WORKER_URL || 'https://glynk.to';
@@ -153,32 +157,34 @@ const AddDomainPage = () => {
 
           let currentRecords = result.dns_records || [];
           const hostnameId = result.cloudflare_hostname_id;
-          
+
           if (result.domain_id) setSavedDomainId(result.domain_id);
           if (hostnameId) setCloudflareHostnameId(hostnameId);
 
           // Check if we have the SSL challenge record already
-          const hasSslRecord = (records) => records.some(r => 
-            r.host?.toLowerCase().includes('_acme-challenge') || 
-            r.name?.toLowerCase().includes('_acme-challenge')
-          );
+          const hasSslRecord = (records) =>
+            records.some(
+              (r) =>
+                r.host?.toLowerCase().includes('_acme-challenge') ||
+                r.name?.toLowerCase().includes('_acme-challenge')
+            );
 
           if (!hasSslRecord(currentRecords) && hostnameId) {
             // Poll for up to 60 seconds (12 attempts every 5s)
             console.log('⏳ SSL record missing, starting poll...');
             setIsSubmitting(true);
-            
+
             for (let i = 0; i < 15; i++) {
               // Wait 4 seconds between attempts
-              await new Promise(resolve => setTimeout(resolve, 4000));
-              
+              await new Promise((resolve) => setTimeout(resolve, 4000));
+
               try {
                 const pollRes = await fetch(`${workerUrl}/api/get-domain-records`, {
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json' },
                   body: JSON.stringify({ cloudflare_hostname_id: hostnameId }),
                 });
-                
+
                 if (pollRes.ok) {
                   const pollData = await pollRes.json();
                   if (pollData.dns_records && hasSslRecord(pollData.dns_records)) {
@@ -232,20 +238,34 @@ const AddDomainPage = () => {
         }),
       });
 
+      if (!response.ok) {
+        const result = await response.json().catch(() => ({}));
+        throw new Error(result.error || `HTTP ${response.status}: Failed to verify domain`);
+      }
+
       const result = await response.json();
 
-      if (!response.ok || !result.success) {
-        throw new Error(result.error || 'Failed to verify domain');
+      if (!result.success) {
+        throw new Error(
+          result.error || 'Domain verification failed. Please check your DNS records.'
+        );
       }
 
       if (result.is_active) {
         navigate('/dashboard/domains');
       } else {
-        setVerifyError(`DNS records are still pending. Status: ${result.ssl_status || 'pending'}. Please wait a few minutes and try again.`);
+        const statusMessage = result.ssl_status
+          ? `Status: ${result.ssl_status}`
+          : 'DNS records not fully propagated yet';
+        setVerifyError(
+          `⚠️ DNS records are still pending. ${statusMessage}. Please wait a few minutes and try again.`
+        );
       }
     } catch (error) {
-      console.error('Error:', error);
-      setVerifyError(error.message || 'Error verifying domain. Please try again.');
+      console.error('Error verifying domain:', error);
+      const errorMessage =
+        error.message || 'Error verifying domain. Please check your DNS records and try again.';
+      setVerifyError(`❌ ${errorMessage}`);
     } finally {
       setIsVerifying(false);
     }
@@ -255,7 +275,9 @@ const AddDomainPage = () => {
     return (
       <div className="min-h-screen bg-[#0b0f19] flex items-center justify-center">
         <div className="text-center">
-          <span className="material-symbols-outlined text-4xl text-slate-600 animate-spin">refresh</span>
+          <span className="material-symbols-outlined text-4xl text-slate-600 animate-spin">
+            refresh
+          </span>
           <p className="text-slate-400 mt-4">Loading...</p>
         </div>
       </div>
@@ -320,9 +342,7 @@ const AddDomainPage = () => {
           {currentStep === 1 && (
             <div className="space-y-6">
               <div>
-                <label className="block text-sm font-medium text-white mb-2">
-                  Domain Name
-                </label>
+                <label className="block text-sm font-medium text-white mb-2">Domain Name</label>
                 <input
                   type="text"
                   value={domainName}
@@ -334,11 +354,7 @@ const AddDomainPage = () => {
                 <p className="text-xs text-slate-500 mt-2">
                   Enter your domain (e.g., links.mybrand.com)
                 </p>
-                {saveError && (
-                  <p className="text-red-400 text-xs mt-2">
-                    {saveError}
-                  </p>
-                )}
+                {saveError && <p className="text-red-400 text-xs mt-2">{saveError}</p>}
               </div>
             </div>
           )}
@@ -358,7 +374,11 @@ const AddDomainPage = () => {
                     disabled={isSubmitting}
                     className="flex items-center gap-2 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-white text-xs font-medium rounded-lg transition-colors border border-slate-700"
                   >
-                    <span className={`material-symbols-outlined text-sm ${isSubmitting ? 'animate-spin' : ''}`}>refresh</span>
+                    <span
+                      className={`material-symbols-outlined text-sm ${isSubmitting ? 'animate-spin' : ''}`}
+                    >
+                      refresh
+                    </span>
                     Refresh Records
                   </button>
                 </div>
@@ -372,7 +392,8 @@ const AddDomainPage = () => {
               <div className="text-center space-y-4">
                 <h3 className="text-lg font-bold text-white">Verify DNS Records</h3>
                 <p className="text-sm text-slate-400">
-                  Click below to verify that your DNS records are configured correctly. This may take a few minutes after adding the DNS records.
+                  Click below to verify that your DNS records are configured correctly. This may
+                  take a few minutes after adding the DNS records.
                 </p>
                 {verifyError && (
                   <div className="bg-red-500/20 border border-red-500/30 rounded-xl p-4 text-left">
@@ -404,7 +425,9 @@ const AddDomainPage = () => {
         {/* Footer */}
         <div className="flex items-center justify-between mt-8 pt-6 border-t border-slate-800 gap-4">
           <button
-            onClick={() => currentStep > 1 ? setCurrentStep(currentStep - 1) : navigate('/dashboard/domains')}
+            onClick={() =>
+              currentStep > 1 ? setCurrentStep(currentStep - 1) : navigate('/dashboard/domains')
+            }
             className="px-6 py-3 bg-slate-700 hover:bg-slate-600 text-white font-bold rounded-xl transition-colors"
           >
             {currentStep === 1 ? 'Cancel' : 'Previous'}
@@ -412,20 +435,20 @@ const AddDomainPage = () => {
           <div className="text-slate-400 text-sm">
             Step {currentStep} of {steps.length}
           </div>
-            <button
-              onClick={handleNext}
-              disabled={!domainName.trim() || isSubmitting}
-              className="px-6 py-3 bg-[#FF10F0] hover:bg-[#e00ed0] disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold rounded-xl transition-all flex items-center gap-2"
-            >
-              {isSubmitting ? (
-                <>
-                  <span className="material-symbols-outlined animate-spin">refresh</span>
-                  {currentStep === 1 ? 'Preparing records...' : 'Loading...'}
-                </>
-              ) : (
-                'Next'
-              )}
-            </button>
+          <button
+            onClick={handleNext}
+            disabled={!domainName.trim() || isSubmitting}
+            className="px-6 py-3 bg-[#FF10F0] hover:bg-[#e00ed0] disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold rounded-xl transition-all flex items-center gap-2"
+          >
+            {isSubmitting ? (
+              <>
+                <span className="material-symbols-outlined animate-spin">refresh</span>
+                {currentStep === 1 ? 'Preparing records...' : 'Loading...'}
+              </>
+            ) : (
+              'Next'
+            )}
+          </button>
         </div>
       </div>
     </div>
