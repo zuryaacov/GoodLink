@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../../lib/supabase';
 import DNSRecordsDisplay from './DNSRecordsDisplay';
+import { validateDomain } from '../../lib/domainValidation';
 
 const AddDomainModal = ({ isOpen, onClose, domain = null }) => {
   const [currentStep, setCurrentStep] = useState(1);
@@ -24,16 +25,17 @@ const AddDomainModal = ({ isOpen, onClose, domain = null }) => {
 
   const handleNext = async () => {
     if (currentStep === 1) {
-      // Validate domain format
-      if (!domainName || !domainName.trim()) {
-        setSaveError('Please enter a domain name');
-        return;
-      }
+      // Validate domain using comprehensive validation
+      const validation = validateDomain(domainName, {
+        allowSubdomains: true,
+        allowPunycode: true,
+        requireTLD: true,
+        allowLocalhost: false,
+        allowIP: false,
+      });
 
-      // Basic domain validation
-      const domainRegex = /^([a-z0-9]+(-[a-z0-9]+)*\.)+[a-z]{2,}$/i;
-      if (!domainRegex.test(domainName.trim())) {
-        setSaveError('Please enter a valid domain (e.g., mybrand.com)');
+      if (!validation.isValid) {
+        setSaveError(validation.error);
         return;
       }
 
@@ -50,8 +52,8 @@ const AddDomainModal = ({ isOpen, onClose, domain = null }) => {
           } = await supabase.auth.getUser();
           if (!user) throw new Error('User not authenticated');
 
-          // Add www. if not present
-          let finalDomain = domainName.trim();
+          // Use sanitized domain from validation and add www. if not present
+          let finalDomain = validation.sanitized;
           if (!finalDomain.startsWith('www.')) {
             finalDomain = `www.${finalDomain}`;
           }

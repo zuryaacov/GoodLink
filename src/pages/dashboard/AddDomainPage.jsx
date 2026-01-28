@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { ArrowLeft } from 'lucide-react';
 import DNSRecordsDisplay from '../../components/dashboard/DNSRecordsDisplay';
+import { validateDomain } from '../../lib/domainValidation';
 
 const AddDomainPage = () => {
   const { id } = useParams();
@@ -119,14 +120,17 @@ const AddDomainPage = () => {
 
   const handleNext = async () => {
     if (currentStep === 1) {
-      if (!domainName || !domainName.trim()) {
-        setSaveError('Please enter a domain name');
-        return;
-      }
+      // Validate domain using comprehensive validation
+      const validation = validateDomain(domainName, {
+        allowSubdomains: true,
+        allowPunycode: true,
+        requireTLD: true,
+        allowLocalhost: false,
+        allowIP: false,
+      });
 
-      const domainRegex = /^([a-z0-9]+(-[a-z0-9]+)*\.)+[a-z]{2,}$/i;
-      if (!domainRegex.test(domainName.trim())) {
-        setSaveError('Please enter a valid domain (e.g., mybrand.com)');
+      if (!validation.isValid) {
+        setSaveError(validation.error);
         return;
       }
 
@@ -142,8 +146,8 @@ const AddDomainPage = () => {
           } = await supabase.auth.getUser();
           if (!user) throw new Error('User not authenticated');
 
-          // Add www. if not present
-          let finalDomain = domainName.trim();
+          // Use sanitized domain from validation and add www. if not present
+          let finalDomain = validation.sanitized;
           if (!finalDomain.startsWith('www.')) {
             finalDomain = `www.${finalDomain}`;
           }
