@@ -142,11 +142,105 @@ const AddDomainPage = () => {
     try {
       const urlObj = new URL(result.normalizedUrl);
       const hostParts = urlObj.hostname.split('.');
-      if (hostParts.length >= 2) {
-        const domainName = hostParts[hostParts.length - 2]; // Get domain part before TLD
-        if (domainName.length < 3) {
-          return { isValid: false, error: 'Domain name must be at least 3 characters' };
+
+      // Handle two-part TLDs like co.il, co.uk, com.br, etc.
+      const twoPartTLDs = [
+        'co.il',
+        'org.il',
+        'net.il',
+        'ac.il',
+        'gov.il',
+        'muni.il',
+        'k12.il',
+        'co.uk',
+        'org.uk',
+        'ac.uk',
+        'gov.uk',
+        'me.uk',
+        'net.uk',
+        'com.au',
+        'net.au',
+        'org.au',
+        'edu.au',
+        'gov.au',
+        'co.nz',
+        'net.nz',
+        'org.nz',
+        'govt.nz',
+        'ac.nz',
+        'co.za',
+        'org.za',
+        'net.za',
+        'gov.za',
+        'ac.za',
+        'com.br',
+        'net.br',
+        'org.br',
+        'gov.br',
+        'edu.br',
+        'co.jp',
+        'ne.jp',
+        'or.jp',
+        'ac.jp',
+        'go.jp',
+        'co.kr',
+        'ne.kr',
+        'or.kr',
+        'ac.kr',
+        'go.kr',
+        'com.mx',
+        'net.mx',
+        'org.mx',
+        'gob.mx',
+        'edu.mx',
+        'com.ar',
+        'net.ar',
+        'org.ar',
+        'gov.ar',
+        'edu.ar',
+        'co.in',
+        'net.in',
+        'org.in',
+        'gov.in',
+        'ac.in',
+        'com.sg',
+        'net.sg',
+        'org.sg',
+        'gov.sg',
+        'edu.sg',
+        'com.hk',
+        'net.hk',
+        'org.hk',
+        'gov.hk',
+        'edu.hk',
+        'com.tw',
+        'net.tw',
+        'org.tw',
+        'gov.tw',
+        'edu.tw',
+        'com.cn',
+        'net.cn',
+        'org.cn',
+        'gov.cn',
+        'edu.cn',
+      ];
+
+      let domainName;
+      if (hostParts.length >= 3) {
+        const possibleTwoPartTLD = `${hostParts[hostParts.length - 2]}.${hostParts[hostParts.length - 1]}`;
+        if (twoPartTLDs.includes(possibleTwoPartTLD.toLowerCase())) {
+          // Two-part TLD - domain is the part before that
+          domainName = hostParts[hostParts.length - 3];
+        } else {
+          // Single TLD
+          domainName = hostParts[hostParts.length - 2];
         }
+      } else if (hostParts.length === 2) {
+        domainName = hostParts[0];
+      }
+
+      if (domainName && domainName.length < 3 && domainName !== 'www') {
+        return { isValid: false, error: 'Domain name must be at least 3 characters' };
       }
     } catch (e) {
       // URL already validated above, this shouldn't fail
