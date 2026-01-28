@@ -45,10 +45,13 @@ const getPlatformLogo = (platform) => {
       );
     case 'outbrain':
       return (
-        <div className="w-12 h-12 rounded-lg bg-white flex items-center justify-center overflow-hidden border border-slate-700">
-          <svg viewBox="0 0 100 100" width="32" height="32" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="50" cy="50" r="45" fill="#FF5C26"/>
-            <text x="50" y="67" fontSize="50" fontWeight="bold" fill="white" textAnchor="middle" fontFamily="Arial, sans-serif">O</text>
+        <div className="w-12 h-12 rounded-lg bg-[#FF6633] flex items-center justify-center overflow-hidden border border-slate-700">
+          <svg viewBox="0 0 24 24" width="28" height="28" fill="white" xmlns="http://www.w3.org/2000/svg">
+            {/* Glasses icon representing Outbrain logo */}
+            <path d="M12 4L8 9H4v4h4l4 5 4-5h4V9h-4l-4-5z M7 11c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm10 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/>
+            <circle cx="7" cy="13" r="1.5" fill="white"/>
+            <circle cx="17" cy="13" r="1.5" fill="white"/>
+            <path d="M10 13h4" stroke="white" strokeWidth="1.5" fill="none"/>
           </svg>
         </div>
       );
