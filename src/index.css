@@ -8,25 +8,26 @@ html {
 
 @layer base {
   :root {
-    --background: 222 36% 10%; /* #101622 */
-    --foreground: 210 40% 98%;
-    --card: 222 36% 10%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222 36% 10%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 220 85% 50%; /* #135bec */
-    --primary-foreground: 210 40% 98%;
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 222 36% 18%; /* #232f48 approx */
-    --input: 222 36% 18%;
-    --ring: 220 85% 50%;
+    /* Sentry Color Scheme */
+    --background: 261 42% 13%; /* #1e152f - Sentry Dark Background */
+    --foreground: 260 33% 97%; /* #f2eff7 - Sentry Light */
+    --card: 261 30% 17%; /* #362d59 - Primary Purple */
+    --card-foreground: 260 33% 97%;
+    --popover: 261 30% 17%;
+    --popover-foreground: 260 33% 97%;
+    --primary: 348 68% 61%; /* #e1567c - Sentry Pink */
+    --primary-foreground: 0 0% 100%;
+    --secondary: 266 26% 36%; /* #584674 - Secondary Purple */
+    --secondary-foreground: 260 33% 97%;
+    --muted: 266 26% 36%;
+    --muted-foreground: 260 20% 70%;
+    --accent: 261 30% 17%;
+    --accent-foreground: 260 33% 97%;
+    --destructive: 348 68% 50%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 266 26% 36%; /* #584674 - Secondary Purple */
+    --input: 266 26% 30%;
+    --ring: 348 68% 61%; /* Sentry Pink */
     --radius: 0.5rem;
   }
 }
@@ -41,33 +42,33 @@ html {
   }
 }
 
-/* Custom scrollbar for a cleaner tech look */
+/* Custom scrollbar for a cleaner tech look - Sentry style */
 ::-webkit-scrollbar {
-    width: 8px;
+  width: 8px;
 }
 ::-webkit-scrollbar-track {
-    background: #101622; 
+  background: #1e152f; /* Sentry Dark Background */
 }
 ::-webkit-scrollbar-thumb {
-    background: #232f48; 
-    border-radius: 4px;
+  background: #584674; /* Sentry Secondary Purple */
+  border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-    background: #324467; 
+  background: #6b5a87; /* Lighter purple on hover */
 }
 
 .layout-content-container {
   @apply mx-auto max-w-[1200px];
 }
 
-/* Modal Styles */
+/* Modal Styles - Sentry Theme */
 .modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(10, 17, 40, 0.6); /* #0A1128 with transparency */
+  background: rgba(30, 21, 47, 0.8); /* Sentry Dark with transparency */
   backdrop-filter: blur(4px);
   display: flex;
   align-items: center;
@@ -76,8 +77,8 @@ html {
 }
 
 .modal-box {
-  background: white;
-  border: 1px solid #e5e7eb;
+  background: #362d59; /* Sentry Primary Purple */
+  border: 1px solid #584674; /* Sentry Secondary Purple */
   padding: 32px;
   border-radius: 16px;
   max-width: 600px;
@@ -89,7 +90,7 @@ html {
 }
 
 .modal-box h2 {
-  color: #0A1128;
+  color: #f2eff7; /* Sentry Light */
   margin-top: 16px;
   font-family: sans-serif;
   font-size: 1.5rem;
@@ -98,20 +99,20 @@ html {
 }
 
 .modal-box p {
-  color: #374151;
+  color: #c4bdd4; /* Lighter purple for readability */
   line-height: 1.5;
   margin-top: 8px;
   font-size: 0.95rem;
 }
 
 .modal-box > div {
-  color: #374151;
+  color: #c4bdd4;
 }
 
 .icon-circle {
   width: 60px;
   height: 60px;
-  background: #FF10F015; /* Pink with 15% opacity */
+  background: rgba(225, 86, 124, 0.15); /* Sentry Pink with 15% opacity */
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -128,18 +129,18 @@ html {
 .btn-secondary {
   flex: 1;
   padding: 12px;
-  border: 1px solid #E5E7EB;
-  background: white;
+  border: 1px solid #584674; /* Sentry Secondary Purple */
+  background: #362d59; /* Sentry Primary Purple */
   border-radius: 8px;
   cursor: pointer;
-  color: #0A1128;
+  color: #f2eff7; /* Sentry Light */
   font-weight: 600;
   transition: all 0.2s;
 }
 
 .btn-secondary:hover:not(:disabled) {
-  background: #F9FAFB;
-  border-color: #D1D5DB;
+  background: #584674; /* Secondary Purple on hover */
+  border-color: #6b5a87;
 }
 
 .btn-secondary:disabled {
@@ -151,8 +152,8 @@ html {
   flex: 1;
   padding: 12px;
   border: none;
-  background: #FF10F0; /* Pink */
-  color: white; /* White text on pink */
+  background: #e1567c; /* Sentry Pink */
+  color: white;
   border-radius: 8px;
   cursor: pointer;
   font-weight: 600;
@@ -160,7 +161,7 @@ html {
 }
 
 .btn-danger:hover:not(:disabled) {
-  background: #e00ed0; /* Darker pink on hover */
+  background: #c94669; /* Darker Sentry Pink on hover */
 }
 
 .btn-danger:disabled {
@@ -172,8 +173,8 @@ html {
   flex: 1;
   padding: 12px;
   border: none;
-  background: #FF10F0; /* Pink */
-  color: white; /* White text on pink */
+  background: #e1567c; /* Sentry Pink */
+  color: white;
   border-radius: 8px;
   cursor: pointer;
   font-weight: 600;
@@ -181,7 +182,7 @@ html {
 }
 
 .btn-primary:hover:not(:disabled) {
-  background: #e00ed0; /* Darker pink on hover */
+  background: #c94669; /* Darker Sentry Pink on hover */
 }
 
 .btn-primary:disabled {

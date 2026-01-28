@@ -103,7 +103,7 @@ const Sidebar = ({ className = "", onLinkClick }) => {
   };
 
   // Base classes with default width if not overridden
-  const baseClasses = `flex flex-col bg-[#101622] border-r border-[#232f48] pt-6 ${className.includes('w-') ? '' : 'w-64'} ${className.includes('h-') ? '' : 'h-screen'} ${className}`;
+  const baseClasses = `flex flex-col bg-[#1e152f] border-r border-[#584674] pt-6 ${className.includes('w-') ? '' : 'w-64'} ${className.includes('h-') ? '' : 'h-screen'} ${className}`;
 
   return (
     <aside className={baseClasses}>
@@ -143,7 +143,7 @@ const Sidebar = ({ className = "", onLinkClick }) => {
         ))}
       </nav>
 
-      <div className="p-4 border-t border-[#232f48] flex flex-col gap-2">
+      <div className="p-4 border-t border-[#584674] flex flex-col gap-2">
         <div className="flex items-center gap-3 px-3 py-2">
             <div className="size-8 rounded-full bg-gradient-to-tr from-primary to-[#10b981] flex items-center justify-center text-white font-bold text-xs">
                 {getInitials(userEmail)}

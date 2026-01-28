@@ -270,7 +270,7 @@ const PixelManager = () => {
         );
       default:
         return (
-          <div className="w-10 h-10 rounded-lg bg-[#232f48] flex items-center justify-center">
+          <div className="w-10 h-10 rounded-lg bg-[#584674] flex items-center justify-center">
             <span className="text-slate-400 text-xs">?</span>
           </div>
         );
@@ -314,7 +314,7 @@ const PixelManager = () => {
   // Show upgrade paywall only if explicitly not PRO
   if (normalizedPlan && normalizedPlan !== 'pro') {
     return (
-      <div className="relative min-h-[480px] w-full flex items-center justify-center p-6 overflow-hidden bg-[#0b0f19] rounded-2xl border border-dashed border-[#232f48]">
+      <div className="relative min-h-[480px] w-full flex items-center justify-center p-6 overflow-hidden bg-[#1e152f] rounded-2xl border border-dashed border-[#584674]">
         {/* Background mock layout */}
         <div className="absolute inset-0 opacity-[0.18] blur-[3px] pointer-events-none select-none p-6">
           <div className="max-w-5xl mx-auto space-y-6">
@@ -329,12 +329,12 @@ const PixelManager = () => {
         </div>
 
         {/* Main card */}
-        <div className="relative z-10 max-w-xl w-full bg-[#101622]/90 backdrop-blur-xl border border-[#232f48] shadow-2xl rounded-3xl p-8 md:p-10 text-center">
+        <div className="relative z-10 max-w-xl w-full bg-[#1e152f]/90 backdrop-blur-xl border border-[#584674] shadow-2xl rounded-3xl p-8 md:p-10 text-center">
           {/* Icon */}
           <div className="mb-6 flex justify-center">
             <div className="relative">
-              <div className="absolute inset-0 bg-[#FF10F0] blur-2xl opacity-25 animate-pulse" />
-              <div className="relative bg-gradient-to-br from-[#FF10F0] to-[#7c3aed] p-4 rounded-2xl shadow-lg shadow-[#FF10F0]/40">
+              <div className="absolute inset-0 bg-[#e1567c] blur-2xl opacity-25 animate-pulse" />
+              <div className="relative bg-gradient-to-br from-[#e1567c] to-[#7c3aed] p-4 rounded-2xl shadow-lg shadow-[#e1567c]/40">
                 <Lock className="w-8 h-8 text-white" />
               </div>
             </div>
@@ -350,14 +350,14 @@ const PixelManager = () => {
               {normalizedPlan} plan
             </span>{' '}
             does not include pixel tracking. Upgrade to&nbsp;
-            <span className="text-[#FF10F0] font-bold uppercase tracking-wider">PRO</span> to
+            <span className="text-[#e1567c] font-bold uppercase tracking-wider">PRO</span> to
             create, manage, and optimize pixels across all your campaigns.
           </p>
 
           {/* Value props */}
           <div className="space-y-4 mb-10 text-left">
-            <div className="flex items-center gap-3 p-3 bg-[#0b0f19]/80 rounded-xl border border-[#232f48] hover:border-[#FF10F0]/40 transition-colors">
-              <Globe className="w-5 h-5 text-[#FF10F0]" />
+            <div className="flex items-center gap-3 p-3 bg-[#1e152f]/80 rounded-xl border border-[#584674] hover:border-[#e1567c]/40 transition-colors">
+              <Globe className="w-5 h-5 text-[#e1567c]" />
               <div>
                 <p className="font-semibold text-sm text-white italic">Cross‑platform Pixels</p>
                 <p className="text-xs text-slate-400">
@@ -365,8 +365,8 @@ const PixelManager = () => {
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-3 p-3 bg-[#0b0f19]/80 rounded-xl border border-[#232f48] hover:border-[#FF10F0]/40 transition-colors">
-              <BarChart3 className="w-5 h-5 text-[#FF10F0]" />
+            <div className="flex items-center gap-3 p-3 bg-[#1e152f]/80 rounded-xl border border-[#584674] hover:border-[#e1567c]/40 transition-colors">
+              <BarChart3 className="w-5 h-5 text-[#e1567c]" />
               <div>
                 <p className="font-semibold text-sm text-white italic">
                   Advanced Attribution & Optimization
@@ -383,7 +383,7 @@ const PixelManager = () => {
             onClick={() => {
               window.location.href = '/#pricing';
             }}
-            className="group relative w-full inline-flex items-center justify-center gap-2 bg-[#FF10F0] text-white font-bold py-3.5 px-8 rounded-2xl transition-all duration-300 hover:bg-[#e00ed0] hover:scale-[1.02] active:scale-[0.98] shadow-xl shadow-[#FF10F0]/30"
+            className="group relative w-full inline-flex items-center justify-center gap-2 bg-[#e1567c] text-white font-bold py-3.5 px-8 rounded-2xl transition-all duration-300 hover:bg-[#c94669] hover:scale-[1.02] active:scale-[0.98] shadow-xl shadow-[#e1567c]/30"
           >
             <Zap className="w-5 h-5" />
             <span>View Plans & Upgrade</span>
@@ -410,13 +410,13 @@ const PixelManager = () => {
           onClick={() => navigate('/dashboard/pixels/new')}
           className="flex items-center justify-center gap-2 w-full sm:w-auto px-6 py-3 md:py-2.5 text-white font-bold rounded-xl transition-colors shadow-lg text-base md:text-sm"
           style={{
-            backgroundColor: '#FF10F0',
+            backgroundColor: '#e1567c',
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = '#e00ed0';
+            e.currentTarget.style.backgroundColor = '#c94669';
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = '#FF10F0';
+            e.currentTarget.style.backgroundColor = '#e1567c';
           }}
         >
           <span className="material-symbols-outlined text-xl md:text-base">add</span>
@@ -426,7 +426,7 @@ const PixelManager = () => {
 
       {/* Pixels List */}
       {pixels.length === 0 ? (
-        <div className="bg-[#101622] border border-[#232f48] rounded-2xl p-4 md:p-6 w-full">
+        <div className="bg-[#1e152f] border border-[#584674] rounded-2xl p-4 md:p-6 w-full">
           <div className="text-center py-12">
             <span className="material-symbols-outlined text-6xl text-slate-600 mb-4">
               ads_click
@@ -442,7 +442,7 @@ const PixelManager = () => {
           {pixels.map((pixel) => (
             <div
               key={pixel.id}
-              className="bg-[#101622] border border-[#232f48] rounded-xl p-5 transition-all hover:bg-white/5 hover:border-primary/30 flex flex-col gap-4"
+              className="bg-[#1e152f] border border-[#584674] rounded-xl p-5 transition-all hover:bg-white/5 hover:border-primary/30 flex flex-col gap-4"
             >
               {/* Header with Logo and Name */}
               <div className="flex items-start gap-3">
@@ -456,7 +456,7 @@ const PixelManager = () => {
               </div>
 
               {/* Pixel ID (Masked) */}
-              <div className="p-3 bg-[#0b0f19] rounded-lg border border-[#232f48]">
+              <div className="p-3 bg-[#1e152f] rounded-lg border border-[#584674]">
                 <p className="text-xs text-slate-500 mb-1">Pixel ID</p>
                 <p className="font-mono text-sm text-slate-300 break-all">
                   {maskPixelId(pixel.pixel_id)}
@@ -472,13 +472,13 @@ const PixelManager = () => {
               </div>
 
               {/* Status & Actions */}
-              <div className="flex items-center justify-between gap-3 pt-2 border-t border-[#232f48]">
+              <div className="flex items-center justify-between gap-3 pt-2 border-t border-[#584674]">
                 {/* Status */}
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => handleToggleStatus(pixel.id, pixel.status || 'active')}
                     className={`relative w-12 h-6 rounded-full transition-colors flex-shrink-0 ${
-                      pixel.status === 'active' ? 'bg-primary' : 'bg-[#232f48]'
+                      pixel.status === 'active' ? 'bg-primary' : 'bg-[#584674]'
                     }`}
                     aria-label="Toggle pixel status"
                     title={

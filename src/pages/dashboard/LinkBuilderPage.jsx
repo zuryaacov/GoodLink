@@ -466,7 +466,7 @@ const LinkBuilderPage = () => {
 
   if (initialLoading) {
     return (
-      <div className="min-h-screen bg-[#0b0f19] flex items-center justify-center">
+      <div className="min-h-screen bg-[#1e152f] flex items-center justify-center">
         <div className="text-center">
           <span className="material-symbols-outlined text-4xl text-slate-600 animate-spin">refresh</span>
           <p className="text-slate-400 mt-4">Loading...</p>
@@ -476,9 +476,9 @@ const LinkBuilderPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[#0b0f19] pb-8">
+    <div className="min-h-screen bg-[#1e152f] pb-8">
       {/* Header with back button */}
-      <div className="sticky top-0 z-10 bg-[#0b0f19] border-b border-slate-800 px-4 py-4">
+      <div className="sticky top-0 z-10 bg-[#1e152f] border-b border-slate-800 px-4 py-4">
         <div className="max-w-4xl mx-auto flex items-center gap-4">
           <button
             onClick={() => navigate('/dashboard/links')}
@@ -599,7 +599,7 @@ const LinkBuilderPage = () => {
             <button
               onClick={handleSubmit}
               disabled={isSubmitting}
-              className="px-6 py-3 bg-[#FF10F0] hover:bg-[#e00ed0] text-white font-bold rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              className="px-6 py-3 bg-[#e1567c] hover:bg-[#c94669] text-white font-bold rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
             >
               {isSubmitting ? (
                 <>

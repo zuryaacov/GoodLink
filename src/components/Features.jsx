@@ -73,7 +73,7 @@ const Features = () => {
             <motion.div 
               key={index} 
               variants={itemVariants}
-              className="group flex flex-col gap-4 rounded-xl border border-white/10 dark:border-[#324467] bg-white/5 dark:bg-[#192233]/50 backdrop-blur-md p-6 shadow-sm hover:shadow-xl hover:border-primary/50 transition-all duration-300"
+              className="group flex flex-col gap-4 rounded-xl border border-white/10 dark:border-[#6b5a87] bg-white/5 dark:bg-[#192233]/50 backdrop-blur-md p-6 shadow-sm hover:shadow-xl hover:border-primary/50 transition-all duration-300"
             >
               <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 text-primary group-hover:bg-primary group-hover:text-white transition-colors">
                 <span className="material-symbols-outlined text-3xl">{feature.icon}</span>

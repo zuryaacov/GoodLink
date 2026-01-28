@@ -35,7 +35,7 @@ const ProtectedRoute = ({ children }) => {
 
   if (loading) {
     return (
-      <div className="h-screen w-full bg-[#0b0f19] flex items-center justify-center text-white">
+      <div className="h-screen w-full bg-[#1e152f] flex items-center justify-center text-white">
         Loading...
       </div>
     );
@@ -52,7 +52,7 @@ function App() {
   if (!supabase) {
     // ... existing configuration check ...
     return (
-      <div className="h-screen w-full bg-[#101622] flex items-center justify-center text-white px-6">
+      <div className="h-screen w-full bg-[#1e152f] flex items-center justify-center text-white px-6">
         <div className="max-w-md text-center">
           <h1 className="text-2xl font-bold text-red-500 mb-4">
             Configuration Required

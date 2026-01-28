@@ -31,7 +31,7 @@ const Step5Review = ({ formData, generateRandomSlug }) => {
       </div>
 
       {/* Summary Card */}
-      <div className="bg-[#0b0f19] border border-[#232f48] rounded-2xl p-6 space-y-6">
+      <div className="bg-[#1e152f] border border-[#584674] rounded-2xl p-6 space-y-6">
         {/* Core Details */}
         <div>
           <h4 className="text-sm font-bold text-white mb-4 uppercase tracking-wider">Core Details</h4>
@@ -63,7 +63,7 @@ const Step5Review = ({ formData, generateRandomSlug }) => {
 
         {/* UTM Parameters */}
         {(formData.utmSource || formData.utmMedium || formData.utmCampaign || formData.utmContent) && (
-          <div className="border-t border-[#232f48] pt-6">
+          <div className="border-t border-[#584674] pt-6">
             <h4 className="text-sm font-bold text-white mb-4 uppercase tracking-wider">UTM Parameters</h4>
             <div className="space-y-2">
               {formData.utmSource && (
@@ -90,7 +90,7 @@ const Step5Review = ({ formData, generateRandomSlug }) => {
                   <span className="text-white text-sm font-mono">{formData.utmContent}</span>
                 </div>
               )}
-              <div className="flex justify-between pt-2 border-t border-[#232f48]">
+              <div className="flex justify-between pt-2 border-t border-[#584674]">
                 <span className="text-slate-400 text-sm">Parameter Pass-through</span>
                 <span className="text-white text-sm">{formData.parameterPassThrough ? 'Enabled' : 'Disabled'}</span>
               </div>
@@ -99,7 +99,7 @@ const Step5Review = ({ formData, generateRandomSlug }) => {
         )}
 
         {/* Tracking */}
-        <div className="border-t border-[#232f48] pt-6">
+        <div className="border-t border-[#584674] pt-6">
           <h4 className="text-sm font-bold text-white mb-4 uppercase tracking-wider">Tracking</h4>
           <div className="space-y-2">
             <div className="flex justify-between">
@@ -115,7 +115,7 @@ const Step5Review = ({ formData, generateRandomSlug }) => {
             {formData.customScript && (
               <div>
                 <span className="text-slate-400 text-sm">Custom Script</span>
-                <p className="text-white text-xs font-mono mt-1 bg-[#101622] p-2 rounded break-all">
+                <p className="text-white text-xs font-mono mt-1 bg-[#1e152f] p-2 rounded break-all">
                   {formData.customScript.substring(0, 100)}
                   {formData.customScript.length > 100 ? '...' : ''}
                 </p>
@@ -125,7 +125,7 @@ const Step5Review = ({ formData, generateRandomSlug }) => {
         </div>
 
         {/* Security */}
-        <div className="border-t border-[#232f48] pt-6">
+        <div className="border-t border-[#584674] pt-6">
           <h4 className="text-sm font-bold text-white mb-4 uppercase tracking-wider">Security & Routing</h4>
           <div className="space-y-2">
             <div className="flex justify-between">
@@ -146,9 +146,9 @@ const Step5Review = ({ formData, generateRandomSlug }) => {
         </div>
 
         {/* Final URL Preview */}
-        <div className="border-t border-[#232f48] pt-6">
+        <div className="border-t border-[#584674] pt-6">
           <h4 className="text-sm font-bold text-white mb-4 uppercase tracking-wider">Final URL</h4>
-          <div className="p-4 bg-[#101622] border border-primary/30 rounded-xl">
+          <div className="p-4 bg-[#1e152f] border border-primary/30 rounded-xl">
             <p className="text-xs text-slate-500 mb-2">Copy this URL for your ad platform:</p>
             <p className="text-primary font-mono text-sm break-all">{fullUtmString}</p>
           </div>

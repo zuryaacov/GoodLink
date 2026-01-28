@@ -65,7 +65,7 @@ const Step2UTMParameters = ({ formData, updateFormData }) => {
               className={`flex items-center gap-2 px-4 py-3 rounded-xl border transition-colors ${
                 formData.platformPreset === preset.name
                   ? 'border-primary bg-primary/10 text-primary'
-                  : 'border-[#232f48] bg-[#0b0f19] text-white hover:border-[#324467]'
+                  : 'border-[#584674] bg-[#1e152f] text-white hover:border-[#6b5a87]'
               }`}
             >
               <span className="material-symbols-outlined">{preset.icon}</span>
@@ -86,7 +86,7 @@ const Step2UTMParameters = ({ formData, updateFormData }) => {
             value={formData.utmSource}
             onChange={(e) => updateFormData('utmSource', e.target.value)}
             placeholder="e.g., facebook, google, tiktok"
-            className="w-full px-4 py-3 bg-[#0b0f19] border border-[#232f48] rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-primary transition-colors"
+            className="w-full px-4 py-3 bg-[#1e152f] border border-[#584674] rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-primary transition-colors"
           />
         </div>
 
@@ -99,7 +99,7 @@ const Step2UTMParameters = ({ formData, updateFormData }) => {
             value={formData.utmMedium}
             onChange={(e) => updateFormData('utmMedium', e.target.value)}
             placeholder="e.g., cpc, email, social"
-            className="w-full px-4 py-3 bg-[#0b0f19] border border-[#232f48] rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-primary transition-colors"
+            className="w-full px-4 py-3 bg-[#1e152f] border border-[#584674] rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-primary transition-colors"
           />
         </div>
 
@@ -112,7 +112,7 @@ const Step2UTMParameters = ({ formData, updateFormData }) => {
             value={formData.utmCampaign}
             onChange={(e) => updateFormData('utmCampaign', e.target.value)}
             placeholder="e.g., summer-sale-2024 or {{campaign.name}}"
-            className="w-full px-4 py-3 bg-[#0b0f19] border border-[#232f48] rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-primary transition-colors"
+            className="w-full px-4 py-3 bg-[#1e152f] border border-[#584674] rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-primary transition-colors"
           />
           <p className="text-xs text-slate-500 mt-1">
             Use dynamic placeholders like {'{{campaign.name}}'} for auto-replacement
@@ -128,13 +128,13 @@ const Step2UTMParameters = ({ formData, updateFormData }) => {
             value={formData.utmContent}
             onChange={(e) => updateFormData('utmContent', e.target.value)}
             placeholder="e.g., ad-variant-1"
-            className="w-full px-4 py-3 bg-[#0b0f19] border border-[#232f48] rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-primary transition-colors"
+            className="w-full px-4 py-3 bg-[#1e152f] border border-[#584674] rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-primary transition-colors"
           />
         </div>
       </div>
 
       {/* Parameter Pass-through */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-4 bg-[#0b0f19] border border-[#232f48] rounded-xl">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-4 bg-[#1e152f] border border-[#584674] rounded-xl">
         <div className="flex-1">
           <label className="block text-sm font-medium text-white mb-1">
             Parameter Pass-through
@@ -146,7 +146,7 @@ const Step2UTMParameters = ({ formData, updateFormData }) => {
         <button
           onClick={() => updateFormData('parameterPassThrough', !formData.parameterPassThrough)}
           className={`relative w-14 h-7 sm:w-12 sm:h-6 rounded-full transition-colors flex-shrink-0 ${
-            formData.parameterPassThrough ? 'bg-primary' : 'bg-[#232f48]'
+            formData.parameterPassThrough ? 'bg-primary' : 'bg-[#584674]'
           }`}
           aria-label="Toggle parameter pass-through"
         >
@@ -160,7 +160,7 @@ const Step2UTMParameters = ({ formData, updateFormData }) => {
 
       {/* Preview */}
       {(formData.utmSource || formData.utmMedium || formData.utmCampaign) && (
-        <div className="p-4 bg-[#0b0f19] border border-[#232f48] rounded-xl">
+        <div className="p-4 bg-[#1e152f] border border-[#584674] rounded-xl">
           <p className="text-xs text-slate-500 mb-2">UTM Preview:</p>
           <div className="space-y-1 text-sm font-mono">
             {formData.utmSource && <p className="text-white">utm_source={formData.utmSource}</p>}

@@ -101,7 +101,7 @@ const DNSRecordsDisplay = ({ records, domain }) => {
   const CopyButton = ({ value, fieldName, className = "" }) => (
     <button
       onClick={() => handleCopy(value, fieldName)}
-      className={`px-3 py-1.5 bg-[#232f48] hover:bg-[#324467] text-white text-xs font-medium rounded-lg transition-colors flex items-center gap-2 ${className}`}
+      className={`px-3 py-1.5 bg-[#584674] hover:bg-[#6b5a87] text-white text-xs font-medium rounded-lg transition-colors flex items-center gap-2 ${className}`}
     >
       {copiedField === fieldName ? (
         <>
@@ -136,7 +136,7 @@ const DNSRecordsDisplay = ({ records, domain }) => {
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-[#101622] border border-[#232f48] rounded-xl p-5 space-y-4"
+          className="bg-[#1e152f] border border-[#584674] rounded-xl p-5 space-y-4"
         >
           <div>
             <h5 className="text-base font-bold text-white mb-1">
@@ -154,7 +154,7 @@ const DNSRecordsDisplay = ({ records, domain }) => {
                 <label className="text-xs text-slate-500 mb-1 block">
                   Type:
                 </label>
-                <code className="block px-3 py-2 bg-[#0b0f19] border border-[#232f48] rounded-lg text-sm text-white font-mono">
+                <code className="block px-3 py-2 bg-[#1e152f] border border-[#584674] rounded-lg text-sm text-white font-mono">
                   TXT
                 </code>
               </div>
@@ -165,7 +165,7 @@ const DNSRecordsDisplay = ({ records, domain }) => {
                 <label className="text-xs text-slate-500 mb-1 block">
                   Host/Name:
                 </label>
-                <code className="block px-3 py-2 bg-[#0b0f19] border border-[#232f48] rounded-lg text-sm text-white font-mono break-all">
+                <code className="block px-3 py-2 bg-[#1e152f] border border-[#584674] rounded-lg text-sm text-white font-mono break-all">
                   {ownershipHost || ownershipRecord.host}
                 </code>
               </div>
@@ -182,7 +182,7 @@ const DNSRecordsDisplay = ({ records, domain }) => {
                 <label className="text-xs text-slate-500 mb-1 block">
                   Value:
                 </label>
-                <code className="block px-3 py-2 bg-[#0b0f19] border border-[#232f48] rounded-lg text-sm text-white font-mono break-all">
+                <code className="block px-3 py-2 bg-[#1e152f] border border-[#584674] rounded-lg text-sm text-white font-mono break-all">
                   {ownershipRecord.value}
                 </code>
               </div>
@@ -202,7 +202,7 @@ const DNSRecordsDisplay = ({ records, domain }) => {
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-[#101622] border border-[#232f48] rounded-xl p-5 space-y-4"
+          className="bg-[#1e152f] border border-[#584674] rounded-xl p-5 space-y-4"
         >
           <div>
             <h5 className="text-base font-bold text-white mb-1">
@@ -219,7 +219,7 @@ const DNSRecordsDisplay = ({ records, domain }) => {
                 <label className="text-xs text-slate-500 mb-1 block">
                   Type:
                 </label>
-                <code className="block px-3 py-2 bg-[#0b0f19] border border-[#232f48] rounded-lg text-sm text-white font-mono">
+                <code className="block px-3 py-2 bg-[#1e152f] border border-[#584674] rounded-lg text-sm text-white font-mono">
                   TXT
                 </code>
               </div>
@@ -230,7 +230,7 @@ const DNSRecordsDisplay = ({ records, domain }) => {
                 <label className="text-xs text-slate-500 mb-1 block">
                   Host/Name:
                 </label>
-                <code className="block px-3 py-2 bg-[#0b0f19] border border-[#232f48] rounded-lg text-sm text-white font-mono break-all">
+                <code className="block px-3 py-2 bg-[#1e152f] border border-[#584674] rounded-lg text-sm text-white font-mono break-all">
                   {sslHost || sslRecord.host}
                 </code>
               </div>
@@ -247,7 +247,7 @@ const DNSRecordsDisplay = ({ records, domain }) => {
                 <label className="text-xs text-slate-500 mb-1 block">
                   Value:
                 </label>
-                <code className="block px-3 py-2 bg-[#0b0f19] border border-[#232f48] rounded-lg text-sm text-white font-mono break-all">
+                <code className="block px-3 py-2 bg-[#1e152f] border border-[#584674] rounded-lg text-sm text-white font-mono break-all">
                   {sslRecord.value}
                 </code>
               </div>
@@ -261,7 +261,7 @@ const DNSRecordsDisplay = ({ records, domain }) => {
           </div>
         </motion.div>
       ) : (
-        <div className="bg-[#101622]/50 border border-dashed border-[#232f48] rounded-xl p-6 text-center">
+        <div className="bg-[#1e152f]/50 border border-dashed border-[#584674] rounded-xl p-6 text-center">
           <div className="flex flex-col items-center gap-3">
             <span className="material-symbols-outlined text-primary animate-pulse text-3xl">pending</span>
             <div>
@@ -282,7 +282,7 @@ const DNSRecordsDisplay = ({ records, domain }) => {
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-[#101622] border border-[#232f48] rounded-xl p-5 space-y-4"
+          className="bg-[#1e152f] border border-[#584674] rounded-xl p-5 space-y-4"
         >
           <div>
             <h5 className="text-base font-bold text-white mb-1">
@@ -299,7 +299,7 @@ const DNSRecordsDisplay = ({ records, domain }) => {
                 <label className="text-xs text-slate-500 mb-1 block">
                   Type:
                 </label>
-                <code className="block px-3 py-2 bg-[#0b0f19] border border-[#232f48] rounded-lg text-sm text-white font-mono">
+                <code className="block px-3 py-2 bg-[#1e152f] border border-[#584674] rounded-lg text-sm text-white font-mono">
                   CNAME
                 </code>
               </div>
@@ -310,7 +310,7 @@ const DNSRecordsDisplay = ({ records, domain }) => {
                 <label className="text-xs text-slate-500 mb-1 block">
                   Host/Name:
                 </label>
-                <code className="block px-3 py-2 bg-[#0b0f19] border border-[#232f48] rounded-lg text-sm text-white font-mono break-all">
+                <code className="block px-3 py-2 bg-[#1e152f] border border-[#584674] rounded-lg text-sm text-white font-mono break-all">
                   {cnameHost}
                 </code>
                 <p className="text-xs text-slate-500 mt-1">
@@ -327,7 +327,7 @@ const DNSRecordsDisplay = ({ records, domain }) => {
                 <label className="text-xs text-slate-500 mb-1 block">
                   Target/Value:
                 </label>
-                <code className="block px-3 py-2 bg-[#0b0f19] border border-[#232f48] rounded-lg text-sm text-white font-mono break-all">
+                <code className="block px-3 py-2 bg-[#1e152f] border border-[#584674] rounded-lg text-sm text-white font-mono break-all">
                   {fallbackOrigin}
                 </code>
                 <p className="text-xs text-slate-500 mt-1">
@@ -351,11 +351,11 @@ const DNSRecordsDisplay = ({ records, domain }) => {
           <li>
             <strong>Double Domain Names:</strong> In the "Host" field, do not
             include your full domain. For example, use{" "}
-            <code className="bg-[#0b0f19] px-1 py-0.5 rounded text-yellow-300">
+            <code className="bg-[#1e152f] px-1 py-0.5 rounded text-yellow-300">
               _cf-custom-hostname.www
             </code>{" "}
             instead of{" "}
-            <code className="bg-[#0b0f19] px-1 py-0.5 rounded text-yellow-300">
+            <code className="bg-[#1e152f] px-1 py-0.5 rounded text-yellow-300">
               _cf-custom-hostname.www.tipul4u.com
             </code>
             .

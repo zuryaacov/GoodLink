@@ -578,7 +578,7 @@ const AuthPage = () => {
   );
 
   return (
-    <div className="min-h-screen w-full bg-[#101622] flex flex-col items-center justify-center px-6 py-12 relative overflow-hidden">
+    <div className="min-h-screen w-full bg-[#1e152f] flex flex-col items-center justify-center px-6 py-12 relative overflow-hidden">
       {/* Background Orbs */}
       <div className="absolute top-[-10%] left-[-10%] size-96 bg-primary/20 blur-[120px] rounded-full"></div>
       <div className="absolute bottom-[-10%] right-[-10%] size-96 bg-[#10b981]/10 blur-[120px] rounded-full"></div>

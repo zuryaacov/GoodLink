@@ -417,12 +417,12 @@ const NewLinkWizard = ({ isOpen, onClose, initialData = null }) => {
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
-            className="relative bg-[#101622] border border-[#232f48] rounded-xl sm:rounded-2xl shadow-2xl w-full max-w-4xl max-h-[95vh] sm:max-h-[90vh] flex flex-col overflow-hidden m-2 sm:m-0"
+            className="relative bg-[#1e152f] border border-[#584674] rounded-xl sm:rounded-2xl shadow-2xl w-full max-w-4xl max-h-[95vh] sm:max-h-[90vh] flex flex-col overflow-hidden m-2 sm:m-0"
             style={{ overflowX: 'hidden' }}
             onClick={(e) => e.stopPropagation()}
           >
         {/* Header */}
-        <div className="flex items-center justify-between p-4 sm:p-6 border-b border-[#232f48] flex-shrink-0">
+        <div className="flex items-center justify-between p-4 sm:p-6 border-b border-[#584674] flex-shrink-0">
           <div className="flex-1 min-w-0 pr-2">
             <h2 className="text-xl sm:text-2xl font-bold text-white truncate">{isEditMode ? 'Edit Link' : 'Create Your GoodLink'}</h2>
           </div>
@@ -436,7 +436,7 @@ const NewLinkWizard = ({ isOpen, onClose, initialData = null }) => {
 
         {/* Stepper - Hidden for FREE users */}
         {planType?.toLowerCase() !== 'free' && (
-          <div className="px-3 sm:px-6 py-3 sm:py-4 border-b border-[#232f48] flex-shrink-0 overflow-x-auto">
+          <div className="px-3 sm:px-6 py-3 sm:py-4 border-b border-[#584674] flex-shrink-0 overflow-x-auto">
             <div className="flex items-center gap-2 sm:gap-4 min-w-max">
               {steps.map((step, index) => (
                 <React.Fragment key={step.number}>
@@ -447,7 +447,7 @@ const NewLinkWizard = ({ isOpen, onClose, initialData = null }) => {
                           ? 'bg-primary text-white scale-110 shadow-lg shadow-primary/50'
                           : currentStep > step.number
                           ? 'bg-primary/50 text-white'
-                          : 'bg-[#232f48] text-slate-400'
+                          : 'bg-[#584674] text-slate-400'
                       }`}
                     >
                       {step.number}
@@ -470,7 +470,7 @@ const NewLinkWizard = ({ isOpen, onClose, initialData = null }) => {
                   {index < steps.length - 1 && (
                     <div
                       className={`w-6 sm:w-12 h-0.5 flex-shrink-0 ${
-                        currentStep > step.number ? 'bg-primary' : 'bg-[#232f48]'
+                        currentStep > step.number ? 'bg-primary' : 'bg-[#584674]'
                       }`}
                     />
                   )}
@@ -514,7 +514,7 @@ const NewLinkWizard = ({ isOpen, onClose, initialData = null }) => {
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between p-3 sm:p-6 border-t border-[#232f48] flex-shrink-0 gap-2">
+        <div className="flex items-center justify-between p-3 sm:p-6 border-t border-[#584674] flex-shrink-0 gap-2">
           {currentStep === 1 ? (
             // Step 1: Hide Previous button and Continue button (moved to Step1FastTrack)
             <div className="text-slate-400 text-xs sm:text-sm whitespace-nowrap">
@@ -524,7 +524,7 @@ const NewLinkWizard = ({ isOpen, onClose, initialData = null }) => {
             <>
               <button
                 onClick={prevStep}
-                className="px-3 sm:px-4 py-2 text-xs sm:text-sm rounded-lg sm:rounded-xl font-bold transition-colors flex-shrink-0 bg-[#232f48] text-white hover:bg-[#324467]"
+                className="px-3 sm:px-4 py-2 text-xs sm:text-sm rounded-lg sm:rounded-xl font-bold transition-colors flex-shrink-0 bg-[#584674] text-white hover:bg-[#6b5a87]"
               >
                 <span className="hidden sm:inline">Previous</span>
                 <span className="sm:hidden">Prev</span>

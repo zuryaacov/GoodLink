@@ -301,11 +301,11 @@ const PixelModal = ({ isOpen, onClose, initialData = null }) => {
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="relative bg-[#101622] border border-[#232f48] rounded-xl sm:rounded-2xl shadow-2xl w-full max-w-2xl max-h-[95vh] sm:max-h-[90vh] flex flex-col overflow-hidden m-2 sm:m-0"
+              className="relative bg-[#1e152f] border border-[#584674] rounded-xl sm:rounded-2xl shadow-2xl w-full max-w-2xl max-h-[95vh] sm:max-h-[90vh] flex flex-col overflow-hidden m-2 sm:m-0"
               onClick={(e) => e.stopPropagation()}
             >
               {/* Header */}
-              <div className="flex items-center justify-between p-4 sm:p-6 border-b border-[#232f48] flex-shrink-0">
+              <div className="flex items-center justify-between p-4 sm:p-6 border-b border-[#584674] flex-shrink-0">
                 <div className="flex-1 min-w-0 pr-2">
                   <h2 className="text-xl sm:text-2xl font-bold text-white">
                     {isEditMode ? 'Edit Pixel' : 'Create New Pixel'}
@@ -338,8 +338,8 @@ const PixelModal = ({ isOpen, onClose, initialData = null }) => {
                         if (errors.name) setErrors({ ...errors, name: null });
                       }}
                       placeholder="e.g., FB - Main Account"
-                      className={`w-full px-4 py-3 bg-[#0b0f19] border rounded-xl text-white placeholder-slate-500 focus:outline-none transition-colors ${
-                        errors.name ? 'border-red-500 focus:border-red-500' : 'border-[#232f48] focus:border-primary'
+                      className={`w-full px-4 py-3 bg-[#1e152f] border rounded-xl text-white placeholder-slate-500 focus:outline-none transition-colors ${
+                        errors.name ? 'border-red-500 focus:border-red-500' : 'border-[#584674] focus:border-primary'
                       }`}
                     />
                     {errors.name && (
@@ -364,7 +364,7 @@ const PixelModal = ({ isOpen, onClose, initialData = null }) => {
                         });
                         if (errors.platform) setErrors({ ...errors, platform: null });
                       }}
-                      className="w-full px-4 py-3 bg-[#0b0f19] border border-[#232f48] rounded-xl text-white focus:outline-none focus:border-primary transition-colors"
+                      className="w-full px-4 py-3 bg-[#1e152f] border border-[#584674] rounded-xl text-white focus:outline-none focus:border-primary transition-colors"
                     >
                       {PLATFORMS.map((platform) => (
                         <option key={platform.value} value={platform.value}>
@@ -392,8 +392,8 @@ const PixelModal = ({ isOpen, onClose, initialData = null }) => {
                         if (errors.pixelId) setErrors({ ...errors, pixelId: null });
                       }}
                       placeholder={currentPlatform?.placeholder || 'Enter Pixel ID'}
-                      className={`w-full px-4 py-3 bg-[#0b0f19] border rounded-xl text-white placeholder-slate-500 focus:outline-none transition-colors font-mono text-sm ${
-                        errors.pixelId ? 'border-red-500 focus:border-red-500' : 'border-[#232f48] focus:border-primary'
+                      className={`w-full px-4 py-3 bg-[#1e152f] border rounded-xl text-white placeholder-slate-500 focus:outline-none transition-colors font-mono text-sm ${
+                        errors.pixelId ? 'border-red-500 focus:border-red-500' : 'border-[#584674] focus:border-primary'
                       }`}
                     />
                     {errors.pixelId && (
@@ -405,7 +405,7 @@ const PixelModal = ({ isOpen, onClose, initialData = null }) => {
                   </div>
 
                   {/* Enable Advanced Events Toggle */}
-                  <div className="flex items-center gap-3 p-4 bg-[#0b0f19] border border-[#232f48] rounded-xl">
+                  <div className="flex items-center gap-3 p-4 bg-[#1e152f] border border-[#584674] rounded-xl">
                     <input
                       type="checkbox"
                       id="enableAdvancedEvents"
@@ -417,7 +417,7 @@ const PixelModal = ({ isOpen, onClose, initialData = null }) => {
                           eventType: e.target.checked ? formData.eventType : 'PageView',
                         });
                       }}
-                      className="w-5 h-5 rounded border-[#232f48] bg-[#101622] text-primary focus:ring-primary focus:ring-offset-0"
+                      className="w-5 h-5 rounded border-[#584674] bg-[#1e152f] text-primary focus:ring-primary focus:ring-offset-0"
                     />
                     <label htmlFor="enableAdvancedEvents" className="text-sm text-white cursor-pointer">
                       Enable Advanced Events
@@ -442,7 +442,7 @@ const PixelModal = ({ isOpen, onClose, initialData = null }) => {
                             });
                             if (errors.customEventName) setErrors({ ...errors, customEventName: null });
                           }}
-                          className="w-full px-4 py-3 bg-[#0b0f19] border border-[#232f48] rounded-xl text-white focus:outline-none focus:border-primary transition-colors"
+                          className="w-full px-4 py-3 bg-[#1e152f] border border-[#584674] rounded-xl text-white focus:outline-none focus:border-primary transition-colors"
                         >
                           {availableEvents.map((event) => (
                             <option key={event.value} value={event.value}>
@@ -467,8 +467,8 @@ const PixelModal = ({ isOpen, onClose, initialData = null }) => {
                               if (errors.customEventName) setErrors({ ...errors, customEventName: null });
                             }}
                             placeholder="e.g., High_Quality_User, ClickedToOffer"
-                            className={`w-full px-4 py-3 bg-[#0b0f19] border rounded-xl text-white placeholder-slate-500 focus:outline-none transition-colors ${
-                              errors.customEventName ? 'border-red-500 focus:border-red-500' : 'border-[#232f48] focus:border-primary'
+                            className={`w-full px-4 py-3 bg-[#1e152f] border rounded-xl text-white placeholder-slate-500 focus:outline-none transition-colors ${
+                              errors.customEventName ? 'border-red-500 focus:border-red-500' : 'border-[#584674] focus:border-primary'
                             }`}
                           />
                           {errors.customEventName && (
@@ -485,10 +485,10 @@ const PixelModal = ({ isOpen, onClose, initialData = null }) => {
               </div>
 
               {/* Footer */}
-              <div className="flex items-center justify-end gap-3 p-4 sm:p-6 border-t border-[#232f48] flex-shrink-0">
+              <div className="flex items-center justify-end gap-3 p-4 sm:p-6 border-t border-[#584674] flex-shrink-0">
                 <button
                   onClick={onClose}
-                  className="px-4 py-2 text-sm bg-[#232f48] text-white hover:bg-[#324467] rounded-xl font-bold transition-colors"
+                  className="px-4 py-2 text-sm bg-[#584674] text-white hover:bg-[#6b5a87] rounded-xl font-bold transition-colors"
                 >
                   Cancel
                 </button>
@@ -497,16 +497,16 @@ const PixelModal = ({ isOpen, onClose, initialData = null }) => {
                   disabled={isSubmitting}
                   className="px-6 py-2.5 text-sm text-white font-bold rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                   style={{
-                    backgroundColor: isSubmitting ? undefined : "#FF10F0",
+                    backgroundColor: isSubmitting ? undefined : "#e1567c",
                   }}
                   onMouseEnter={(e) => {
                     if (!isSubmitting) {
-                      e.currentTarget.style.backgroundColor = "#e00ed0";
+                      e.currentTarget.style.backgroundColor = "#c94669";
                     }
                   }}
                   onMouseLeave={(e) => {
                     if (!isSubmitting) {
-                      e.currentTarget.style.backgroundColor = "#FF10F0";
+                      e.currentTarget.style.backgroundColor = "#e1567c";
                     }
                   }}
                 >

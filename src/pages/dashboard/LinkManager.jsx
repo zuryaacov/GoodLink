@@ -141,7 +141,7 @@ const LinkManager = () => {
           return (
             <div
               key={presetId}
-              className="p-3 bg-[#0b0f19] rounded-lg border border-[#232f48] space-y-2"
+              className="p-3 bg-[#1e152f] rounded-lg border border-[#584674] space-y-2"
             >
               {/* Preset Header */}
               <div className="flex items-center gap-2">
@@ -246,7 +246,7 @@ const LinkManager = () => {
         </div>
         <button
           onClick={() => navigate('/dashboard/links/new')}
-          className="flex items-center justify-center gap-2 w-full sm:w-auto px-6 py-3 md:py-2.5 text-white font-bold rounded-xl transition-colors shadow-lg text-base md:text-sm bg-[#FF10F0] hover:bg-[#e00ed0]"
+          className="flex items-center justify-center gap-2 w-full sm:w-auto px-6 py-3 md:py-2.5 text-white font-bold rounded-xl transition-colors shadow-lg text-base md:text-sm bg-[#e1567c] hover:bg-[#c94669]"
         >
           <span className="material-symbols-outlined text-xl md:text-base">add</span>
           New Link
@@ -255,7 +255,7 @@ const LinkManager = () => {
 
       {/* Links List */}
       {links.length === 0 ? (
-        <div className="bg-[#101622] border border-[#232f48] rounded-2xl p-4 md:p-6 w-full">
+        <div className="bg-[#1e152f] border border-[#584674] rounded-2xl p-4 md:p-6 w-full">
           <div className="text-center py-12">
             <span className="material-symbols-outlined text-6xl text-slate-600 mb-4">link_off</span>
             <p className="text-slate-400 text-lg mb-2">No links yet</p>
@@ -267,7 +267,7 @@ const LinkManager = () => {
           {links.map((link) => (
             <div
               key={link.id}
-              className="bg-[#101622] border border-[#232f48] rounded-xl p-5 transition-all hover:bg-white/5 hover:border-primary/30 flex flex-col gap-4"
+              className="bg-[#1e152f] border border-[#584674] rounded-xl p-5 transition-all hover:bg-white/5 hover:border-primary/30 flex flex-col gap-4"
             >
               {/* Name & Destination */}
               <div className="flex flex-col gap-2 min-w-0 flex-1">
@@ -280,7 +280,7 @@ const LinkManager = () => {
               </div>
 
               {/* Short URL */}
-              <div className="flex items-center gap-2 min-w-0 p-3 bg-[#0b0f19] rounded-lg border border-[#232f48]">
+              <div className="flex items-center gap-2 min-w-0 p-3 bg-[#1e152f] rounded-lg border border-[#584674]">
                 <span className="font-mono font-bold truncate flex-1 min-w-0" style={{ color: "#10b981", fontSize: "1.2em" }} title={link.short_url}>
                   {link.short_url}
                 </span>
@@ -294,7 +294,7 @@ const LinkManager = () => {
               </div>
 
               {/* UTM Presets */}
-              <div className="pt-2 border-t border-[#232f48]">
+              <div className="pt-2 border-t border-[#584674]">
                 <div className="flex items-center justify-between gap-3">
                   <div
                     className={`text-xs font-medium ${
@@ -308,7 +308,7 @@ const LinkManager = () => {
                   {link.utm_presets && Array.isArray(link.utm_presets) && link.utm_presets.length > 0 && (
                     <button
                       onClick={() => setUtmPresetsModal({ isOpen: true, link })}
-                      className="p-2 rounded-lg border border-[#232f48] bg-[#FF10F0] hover:bg-[#e00ed0] text-white transition-colors shadow-lg"
+                      className="p-2 rounded-lg border border-[#584674] bg-[#e1567c] hover:bg-[#c94669] text-white transition-colors shadow-lg"
                       title="Open UTM preset links"
                     >
                       <span className="material-symbols-outlined text-base leading-none">open_in_new</span>
@@ -324,13 +324,13 @@ const LinkManager = () => {
               </div>
 
               {/* Status & Actions */}
-              <div className="flex items-center justify-between gap-3 pt-2 border-t border-[#232f48]">
+              <div className="flex items-center justify-between gap-3 pt-2 border-t border-[#584674]">
                 {/* Status */}
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => handleToggleStatus(link.id, link.status || 'active')}
                     className={`relative w-12 h-6 rounded-full transition-colors flex-shrink-0 ${
-                      (link.status === 'active') ? 'bg-primary' : 'bg-[#232f48]'
+                      (link.status === 'active') ? 'bg-primary' : 'bg-[#584674]'
                     }`}
                     aria-label="Toggle link status"
                     title={link.status === 'active' ? 'Active - Click to pause' : 'Paused - Click to activate'}
@@ -471,7 +471,7 @@ const LinkActionsMenu = ({ link, onRefresh, onEdit, onDuplicate, onShowModal }) 
             className="fixed inset-0 z-10"
             onClick={() => setIsOpen(false)}
           />
-          <div className="absolute right-0 mt-2 w-48 bg-[#101622] border border-[#232f48] rounded-xl shadow-2xl z-20 overflow-hidden min-w-max">
+          <div className="absolute right-0 mt-2 w-48 bg-[#1e152f] border border-[#584674] rounded-xl shadow-2xl z-20 overflow-hidden min-w-max">
             <button
               onClick={() => {
                 setIsOpen(false);

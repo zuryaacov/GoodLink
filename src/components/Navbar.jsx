@@ -39,7 +39,7 @@ const Navbar = () => {
   ];
 
   return (
-    <header className="sticky top-0 z-50 flex flex-col border-b border-solid border-slate-200 dark:border-[#232f48] bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md">
+    <header className="sticky top-0 z-50 flex flex-col border-b border-solid border-slate-200 dark:border-[#584674] bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md">
       <div className="flex items-center justify-between px-6 py-4 lg:px-20">
         <Link to="/" className="flex items-center gap-3 text-white transition-opacity hover:opacity-80">
           <div className="size-10 text-primary">
@@ -82,7 +82,7 @@ const Navbar = () => {
                 </Link>
                 <button 
                   onClick={handleLogout}
-                  className="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-slate-200 dark:bg-[#232f48] hover:bg-slate-300 dark:hover:bg-[#324467] text-slate-900 dark:text-white text-sm font-bold leading-normal tracking-[0.015em] transition-colors"
+                  className="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-slate-200 dark:bg-[#584674] hover:bg-slate-300 dark:hover:bg-[#6b5a87] text-slate-900 dark:text-white text-sm font-bold leading-normal tracking-[0.015em] transition-colors"
                 >
                   <span className="truncate">Logout</span>
                 </button>
@@ -97,7 +97,7 @@ const Navbar = () => {
           {/* Hamburger Menu Token */}
           <button 
             onClick={() => setIsOpen(!isOpen)}
-            className="flex md:hidden items-center justify-center size-10 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-[#232f48] transition-colors"
+            className="flex md:hidden items-center justify-center size-10 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-[#584674] transition-colors"
           >
             <span className="material-symbols-outlined text-2xl">
               {isOpen ? 'close' : 'menu'}
@@ -114,7 +114,7 @@ const Navbar = () => {
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
-            className="md:hidden flex flex-col border-t border-slate-200 dark:border-[#232f48] bg-background-light dark:bg-background-dark overflow-hidden"
+            className="md:hidden flex flex-col border-t border-slate-200 dark:border-[#584674] bg-background-light dark:bg-background-dark overflow-hidden"
           >
             <motion.div 
               initial={{ opacity: 0, y: -10 }}
@@ -145,14 +145,14 @@ const Navbar = () => {
               </Link>
             )}
           </div>
-          <div className="flex flex-col gap-3 pt-6 border-t border-slate-200 dark:border-[#232f48]">
+          <div className="flex flex-col gap-3 pt-6 border-t border-slate-200 dark:border-[#584674]">
             {user ? (
               <button 
                 onClick={() => {
                   handleLogout();
                   setIsOpen(false);
                 }}
-                className="flex w-full cursor-pointer items-center justify-center rounded-lg h-12 bg-slate-200 dark:bg-[#232f48] text-slate-900 dark:text-white font-bold transition-colors"
+                className="flex w-full cursor-pointer items-center justify-center rounded-lg h-12 bg-slate-200 dark:bg-[#584674] text-slate-900 dark:text-white font-bold transition-colors"
               >
                 Logout
               </button>

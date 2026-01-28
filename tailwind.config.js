@@ -11,11 +11,16 @@ export default {
     extend: {
       colors: {
         primary: {
-          DEFAULT: "#135bec",
+          DEFAULT: "#e1567c", // Sentry Pink - for actions and highlights
           foreground: "hsl(var(--primary-foreground))",
         },
-        "background-light": "#f6f6f8",
-        "background-dark": "#101622",
+        "sentry-purple": "#362d59", // Primary Purple - brand color
+        "sentry-pink": "#e1567c", // Sentry Pink - highlights
+        "sentry-dark": "#1e152f", // Dark Background
+        "sentry-secondary": "#584674", // Secondary Purple - cards/elements
+        "sentry-light": "#f2eff7", // Light text
+        "background-light": "#f2eff7",
+        "background-dark": "#1e152f", // Sentry Dark Background
         background: "hsl(var(--background))",
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",

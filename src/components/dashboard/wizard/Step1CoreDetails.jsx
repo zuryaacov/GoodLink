@@ -53,7 +53,7 @@ const Step1CoreDetails = ({ formData, updateFormData, generateRandomSlug }) => {
           value={formData.name}
           onChange={(e) => updateFormData('name', e.target.value)}
           placeholder="e.g., iPhone Campaign January - Facebook"
-          className="w-full px-4 py-3 bg-[#0b0f19] border border-[#232f48] rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-primary transition-colors"
+          className="w-full px-4 py-3 bg-[#1e152f] border border-[#584674] rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-primary transition-colors"
         />
       </div>
 
@@ -67,7 +67,7 @@ const Step1CoreDetails = ({ formData, updateFormData, generateRandomSlug }) => {
           onChange={(e) => updateFormData('targetUrl', e.target.value)}
           placeholder="Paste your long affiliate URL here..."
           rows={3}
-          className="w-full px-4 py-3 bg-[#0b0f19] border border-[#232f48] rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-primary transition-colors resize-none"
+          className="w-full px-4 py-3 bg-[#1e152f] border border-[#584674] rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-primary transition-colors resize-none"
         />
       </div>
 
@@ -79,7 +79,7 @@ const Step1CoreDetails = ({ formData, updateFormData, generateRandomSlug }) => {
         <select
           value={formData.domain || domains[0]}
           onChange={(e) => updateFormData('domain', e.target.value)}
-          className="w-full px-4 py-3 bg-[#0b0f19] border border-[#232f48] rounded-xl text-white focus:outline-none focus:border-primary transition-colors"
+          className="w-full px-4 py-3 bg-[#1e152f] border border-[#584674] rounded-xl text-white focus:outline-none focus:border-primary transition-colors"
         >
           {domains.map((domain) => (
             <option key={domain} value={domain}>
@@ -100,7 +100,7 @@ const Step1CoreDetails = ({ formData, updateFormData, generateRandomSlug }) => {
             value={formData.slug}
             onChange={(e) => updateFormData('slug', e.target.value)}
             placeholder="e.g., iphone-deal"
-            className="flex-1 px-4 py-3 bg-[#0b0f19] border border-[#232f48] rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-primary transition-colors"
+            className="flex-1 px-4 py-3 bg-[#1e152f] border border-[#584674] rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-primary transition-colors"
           />
           <button
             onClick={handleMagicWand}
@@ -118,7 +118,7 @@ const Step1CoreDetails = ({ formData, updateFormData, generateRandomSlug }) => {
 
       {/* Preview */}
       {(formData.domain || domains[0]) && formData.slug && (
-        <div className="p-4 bg-[#0b0f19] border border-[#232f48] rounded-xl">
+        <div className="p-4 bg-[#1e152f] border border-[#584674] rounded-xl">
           <p className="text-xs text-slate-500 mb-1">Preview:</p>
           <p className="text-primary font-mono text-sm break-all">
             https://{formData.domain || domains[0]}/{formData.slug}

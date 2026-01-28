@@ -12,7 +12,7 @@ const DashboardLayout = () => {
   }, []);
 
   return (
-    <div className="flex h-screen bg-[#0b0f19] overflow-hidden">
+    <div className="flex h-screen bg-[#1e152f] overflow-hidden">
       {/* Desktop Sidebar */}
       <div className="hidden lg:block fixed inset-y-0 left-0 z-50">
         <Sidebar className="w-64" />
@@ -21,7 +21,7 @@ const DashboardLayout = () => {
       {/* Main Content Area */}
       <div className="flex-1 lg:ml-64 flex flex-col h-full overflow-hidden">
          {/* Mobile Header */}
-        <header className="lg:hidden h-16 bg-[#101622] border-b border-[#232f48] flex items-center justify-between px-4 fixed top-0 left-0 right-0 z-40">
+        <header className="lg:hidden h-16 bg-[#1e152f] border-b border-[#584674] flex items-center justify-between px-4 fixed top-0 left-0 right-0 z-40">
            <Link to="/" className="flex items-center gap-2">
              <div className="size-8 text-primary">
                 <svg fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -60,9 +60,9 @@ const DashboardLayout = () => {
                 animate={{ x: 0 }}
                 exit={{ x: '-100%' }}
                 transition={{ duration: 0.3, ease: 'easeInOut' }}
-                className="absolute left-0 top-0 bottom-0 w-64 bg-[#101622] shadow-2xl flex flex-col"
+                className="absolute left-0 top-0 bottom-0 w-64 bg-[#1e152f] shadow-2xl flex flex-col"
               >
-                <div className="flex justify-between items-center p-4 border-b border-[#232f48] flex-shrink-0">
+                <div className="flex justify-between items-center p-4 border-b border-[#584674] flex-shrink-0">
                   <span className="text-white font-bold ml-2">Menu</span>
                   <button onClick={() => setIsMobileMenuOpen(false)} className="text-slate-400 hover:text-white">
                     <span className="material-symbols-outlined">close</span>

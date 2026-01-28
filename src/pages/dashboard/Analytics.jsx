@@ -16,7 +16,7 @@ import {
 import Modal from '../../components/common/Modal';
 
 const StatCard = ({ title, value, change, icon, trend }) => (
-  <div className="bg-[#101622] border border-[#232f48] rounded-2xl p-6 relative overflow-hidden group hover:border-[#324467] transition-colors">
+  <div className="bg-[#1e152f] border border-[#584674] rounded-2xl p-6 relative overflow-hidden group hover:border-[#6b5a87] transition-colors">
     <div className="flex justify-between items-start mb-4">
       <div className="p-3 bg-primary/10 rounded-xl text-primary group-hover:bg-primary group-hover:text-white transition-colors">
         <span className="material-symbols-outlined text-[24px]">{icon}</span>
@@ -60,7 +60,7 @@ const DonutChartComponent = ({ data, title, colors }) => {
   };
 
   return (
-    <div className="bg-[#101622] border border-[#232f48] rounded-2xl p-6">
+    <div className="bg-[#1e152f] border border-[#584674] rounded-2xl p-6">
       <h3 className="text-lg font-bold text-white mb-4">{title}</h3>
       <ResponsiveContainer width="100%" height={300}>
         <PieChart>
@@ -81,8 +81,8 @@ const DonutChartComponent = ({ data, title, colors }) => {
           </Pie>
           <Tooltip
             contentStyle={{
-              backgroundColor: '#101622',
-              border: '1px solid #232f48',
+              backgroundColor: '#1e152f',
+              border: '1px solid #584674',
               borderRadius: '8px',
               color: '#fff',
             }}
@@ -381,11 +381,11 @@ const Analytics = () => {
       />
 
       {/* Geographic Bar Chart */}
-      <div className="bg-[#101622] border border-[#232f48] rounded-2xl p-6">
+      <div className="bg-[#1e152f] border border-[#584674] rounded-2xl p-6">
         <h3 className="text-lg font-bold text-white mb-4">Geographic Distribution (Top 15)</h3>
         <ResponsiveContainer width="100%" height={400}>
           <BarChart data={chartData.geographic}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#232f48" />
+            <CartesianGrid strokeDasharray="3 3" stroke="#584674" />
             <XAxis
               dataKey="name"
               stroke="#94a3b8"
@@ -397,8 +397,8 @@ const Analytics = () => {
             <YAxis stroke="#94a3b8" tick={{ fill: '#94a3b8' }} />
             <Tooltip
               contentStyle={{
-                backgroundColor: '#101622',
-                border: '1px solid #232f48',
+                backgroundColor: '#1e152f',
+                border: '1px solid #584674',
                 borderRadius: '8px',
                 color: '#fff',
               }}
@@ -409,7 +409,7 @@ const Analytics = () => {
       </div>
 
       {/* Traffic Table */}
-      <div className="bg-[#101622] border border-[#232f48] rounded-2xl p-6">
+      <div className="bg-[#1e152f] border border-[#584674] rounded-2xl p-6">
         <h3 className="text-lg font-bold text-white mb-4">Traffic Log</h3>
         {trafficData.length === 0 ? (
           <div className="text-center py-12">
@@ -423,7 +423,7 @@ const Analytics = () => {
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="border-b border-[#232f48]">
+                <tr className="border-b border-[#584674]">
                   <th className="text-left py-3 px-4 text-sm font-bold text-slate-400">
                     Date & Time
                   </th>
@@ -436,7 +436,7 @@ const Analytics = () => {
                 {trafficData.map((click) => (
                   <tr
                     key={click.id}
-                    className="border-b border-[#232f48] hover:bg-white/5 transition-colors"
+                    className="border-b border-[#584674] hover:bg-white/5 transition-colors"
                   >
                     <td className="py-3 px-4 text-sm text-white">
                       {formatDateTime(click.clicked_at || click.created_at)}
