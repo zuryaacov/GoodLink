@@ -4,6 +4,7 @@ import { supabase } from '../../lib/supabase';
 import { ArrowLeft } from 'lucide-react';
 import DNSRecordsDisplay from '../../components/dashboard/DNSRecordsDisplay';
 import { validateDomain } from '../../lib/domainValidation';
+import { validateUrl } from '../../lib/urlValidation';
 
 const AddDomainPage = () => {
   const { id } = useParams();
@@ -124,57 +125,20 @@ const AddDomainPage = () => {
     }
   };
 
-  // Validate URL format for root redirect (comprehensive validation like target URL)
+  // Validate URL format for root redirect - uses same validation as target URL
   const validateRootRedirectUrl = (url) => {
     if (!url || url.trim() === '') {
       return { isValid: true, sanitized: '' }; // Optional field
     }
 
-    let urlToValidate = url.trim();
+    // Use the same comprehensive validation as target URL
+    const result = validateUrl(url);
 
-    // Add https:// if no protocol specified
-    if (!urlToValidate.startsWith('http://') && !urlToValidate.startsWith('https://')) {
-      urlToValidate = `https://${urlToValidate}`;
+    if (!result.isValid) {
+      return { isValid: false, error: result.error };
     }
 
-    try {
-      const parsed = new URL(urlToValidate);
-
-      // Check if it's a valid URL with a proper hostname
-      if (!parsed.hostname || parsed.hostname.length < 3) {
-        return { isValid: false, error: 'Invalid URL - hostname too short' };
-      }
-
-      // Check for valid protocol
-      if (!['http:', 'https:'].includes(parsed.protocol)) {
-        return { isValid: false, error: 'URL must use http or https protocol' };
-      }
-
-      // Check hostname has valid TLD (at least one dot and TLD length >= 2)
-      const hostParts = parsed.hostname.split('.');
-      if (hostParts.length < 2) {
-        return { isValid: false, error: 'Invalid URL - missing domain extension' };
-      }
-      const tld = hostParts[hostParts.length - 1];
-      if (tld.length < 2 || /^\d+$/.test(tld)) {
-        return { isValid: false, error: 'Invalid URL - invalid domain extension' };
-      }
-
-      // Block localhost and local IPs
-      const lowerHost = parsed.hostname.toLowerCase();
-      if (
-        lowerHost === 'localhost' ||
-        lowerHost.startsWith('127.') ||
-        lowerHost.startsWith('192.168.') ||
-        lowerHost.startsWith('10.')
-      ) {
-        return { isValid: false, error: 'Local URLs are not allowed' };
-      }
-
-      return { isValid: true, sanitized: urlToValidate };
-    } catch (e) {
-      return { isValid: false, error: 'Invalid URL format' };
-    }
+    return { isValid: true, sanitized: result.normalizedUrl };
   };
 
   const handleNext = async () => {
@@ -463,7 +427,7 @@ const AddDomainPage = () => {
 
               <div>
                 <label className="block text-sm font-medium text-white mb-1">Root Redirect</label>
-                <p className="text-xs font-bold mb-2" style={{ color: '#FF10F0' }}>
+                <p className="text-sm font-bold mb-2" style={{ color: '#FF10F0' }}>
                   Visitors accessing the domain without a referral slug will be automatically
                   redirected to the root domain.
                 </p>
