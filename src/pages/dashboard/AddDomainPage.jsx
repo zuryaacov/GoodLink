@@ -404,18 +404,20 @@ const AddDomainPage = () => {
                       Add these DNS records to your domain registrar
                     </p>
                   </div>
-                  <button
-                    onClick={fetchDnsRecords}
-                    disabled={isSubmitting}
-                    className="flex items-center gap-2 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-white text-xs font-medium rounded-lg transition-colors border border-slate-700"
-                  >
-                    <span
-                      className={`material-symbols-outlined text-sm ${isSubmitting ? 'animate-spin' : ''}`}
+                  {!(Array.isArray(dnsRecords) && dnsRecords.length >= 3) && (
+                    <button
+                      onClick={fetchDnsRecords}
+                      disabled={isSubmitting}
+                      className="flex items-center gap-2 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-white text-xs font-medium rounded-lg transition-colors border border-slate-700"
                     >
-                      refresh
-                    </span>
-                    Refresh Records
-                  </button>
+                      <span
+                        className={`material-symbols-outlined text-sm ${isSubmitting ? 'animate-spin' : ''}`}
+                      >
+                        refresh
+                      </span>
+                      Refresh Records
+                    </button>
+                  )}
                 </div>
                 {dnsRecords && <DNSRecordsDisplay records={dnsRecords} domain={domainName} />}
               </div>
