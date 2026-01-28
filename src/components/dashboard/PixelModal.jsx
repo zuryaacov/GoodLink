@@ -256,9 +256,13 @@ const PixelModal = ({ isOpen, onClose, initialData = null }) => {
 
         if (error) throw error;
       } else {
+        // Use upsert to handle duplicate key constraint
         const { error } = await supabase
           .from('pixels')
-          .insert(pixelData);
+          .upsert(pixelData, {
+            onConflict: 'user_id,pixel_id,platform',
+            ignoreDuplicates: false
+          });
 
         if (error) throw error;
       }
