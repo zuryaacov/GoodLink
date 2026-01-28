@@ -271,6 +271,46 @@ export default Sentry.withSentry(
                 }
             }
 
+            // === Custom Domain Helpers ===
+            // Match the frontend display behavior: store Host/Name trimmed to the "www" level
+            // Example: "_acme-challenge.www.example.com" -> "_acme-challenge.www"
+            const getRootDomain = (userDomainInput) => {
+                if (!userDomainInput) return "";
+                const input = String(userDomainInput).trim().toLowerCase().replace(/\.$/, "");
+                const parts = input.split(".");
+
+                const complexTlds = [
+                    // Israel
+                    "co.il", "org.il", "net.il", "ac.il", "gov.il", "muni.il", "k12.il",
+                    // UK
+                    "co.uk", "org.uk", "me.uk", "net.uk", "ac.uk", "gov.uk",
+                    // AU
+                    "com.au", "net.au", "org.au", "edu.au", "gov.au",
+                ];
+
+                const isComplexTld = complexTlds.some((tld) => input.endsWith(`.${tld}`) || input === tld);
+                return parts.slice(isComplexTld ? -3 : -2).join(".");
+            };
+
+            const extractDnsHost = (fullCfhName, userDomainInput) => {
+                if (!fullCfhName || !userDomainInput) return "";
+                const full = String(fullCfhName).trim().replace(/\.$/, "");
+                const rootDomain = getRootDomain(userDomainInput);
+                if (!rootDomain) return full;
+                const suffixToRemove = `.${rootDomain}`;
+                if (full.endsWith(suffixToRemove)) {
+                    return full.slice(0, -suffixToRemove.length);
+                }
+                return full;
+            };
+
+            const getSubdomainLabel = (domainName) => {
+                if (!domainName) return "@";
+                const input = String(domainName).trim().toLowerCase().replace(/\.$/, "");
+                const parts = input.split(".");
+                return parts.length > 2 ? parts[0] : "@";
+            };
+
             // === API Endpoint: Add Custom Domain ===
             if (path === "/api/add-custom-domain" && request.method === "POST") {
                 try {
@@ -333,7 +373,7 @@ export default Sentry.withSentry(
                     if (hostnameData.ownership_verification) {
                         dnsRecords.push({
                             type: hostnameData.ownership_verification.type,
-                            host: hostnameData.ownership_verification.name,
+                            host: extractDnsHost(hostnameData.ownership_verification.name, domain),
                             value: hostnameData.ownership_verification.value
                         });
                     }
@@ -343,7 +383,7 @@ export default Sentry.withSentry(
                         hostnameData.ssl.validation_records.forEach(record => {
                             dnsRecords.push({
                                 type: "TXT",
-                                host: record.txt_name,
+                                host: extractDnsHost(record.txt_name, domain),
                                 value: record.txt_value
                             });
                         });
@@ -352,7 +392,7 @@ export default Sentry.withSentry(
                     // Add CNAME record
                     dnsRecords.push({
                         type: "CNAME",
-                        host: domain,
+                        host: getSubdomainLabel(domain),
                         value: "www.glynk.to"
                     });
 
@@ -569,7 +609,7 @@ export default Sentry.withSentry(
                     if (hostnameData.ownership_verification) {
                         dnsRecords.push({
                             type: hostnameData.ownership_verification.type,
-                            host: hostnameData.ownership_verification.name,
+                            host: extractDnsHost(hostnameData.ownership_verification.name, hostnameData.hostname),
                             value: hostnameData.ownership_verification.value
                         });
                     }
@@ -579,7 +619,7 @@ export default Sentry.withSentry(
                         hostnameData.ssl.validation_records.forEach(record => {
                             dnsRecords.push({
                                 type: "TXT",
-                                host: record.txt_name,
+                                host: extractDnsHost(record.txt_name, hostnameData.hostname),
                                 value: record.txt_value
                             });
                         });
@@ -587,7 +627,7 @@ export default Sentry.withSentry(
 
                     dnsRecords.push({
                         type: "CNAME",
-                        host: hostnameData.hostname,
+                        host: getSubdomainLabel(hostnameData.hostname),
                         value: "www.glynk.to"
                     });
 
