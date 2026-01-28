@@ -125,7 +125,7 @@ const AddDomainPage = () => {
     }
   };
 
-  // Validate URL format for root redirect - uses same validation as target URL
+  // Validate URL format for root redirect - uses same validation as target URL + min 3 char domain
   const validateRootRedirectUrl = (url) => {
     if (!url || url.trim() === '') {
       return { isValid: true, sanitized: '' }; // Optional field
@@ -136,6 +136,20 @@ const AddDomainPage = () => {
 
     if (!result.isValid) {
       return { isValid: false, error: result.error };
+    }
+
+    // Additional check: domain name must be at least 3 characters (like domain validation)
+    try {
+      const urlObj = new URL(result.normalizedUrl);
+      const hostParts = urlObj.hostname.split('.');
+      if (hostParts.length >= 2) {
+        const domainName = hostParts[hostParts.length - 2]; // Get domain part before TLD
+        if (domainName.length < 3) {
+          return { isValid: false, error: 'Domain name must be at least 3 characters' };
+        }
+      }
+    } catch (e) {
+      // URL already validated above, this shouldn't fail
     }
 
     return { isValid: true, sanitized: result.normalizedUrl };
@@ -427,7 +441,7 @@ const AddDomainPage = () => {
 
               <div>
                 <label className="block text-sm font-medium text-white mb-1">Root Redirect</label>
-                <p className="text-sm font-bold mb-2" style={{ color: '#FF10F0' }}>
+                <p className="text-sm font-bold mb-2 text-white">
                   Visitors accessing the domain without a referral slug will be automatically
                   redirected to the root domain.
                 </p>
@@ -438,7 +452,7 @@ const AddDomainPage = () => {
                     setRootRedirect(e.target.value);
                     setRootRedirectError(null);
                   }}
-                  placeholder="https://example.com"
+                  placeholder="RootRedirect.com"
                   className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-primary transition-colors"
                 />
                 {rootRedirectError && (
