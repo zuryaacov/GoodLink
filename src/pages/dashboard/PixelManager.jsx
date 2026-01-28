@@ -46,6 +46,7 @@ const PixelManager = () => {
       }
 
       // Fetch plan type
+      let currentPlanType = 'free';
       try {
         const { data: profile } = await supabase
           .from('profiles')
@@ -54,6 +55,7 @@ const PixelManager = () => {
           .single();
 
         if (profile?.plan_type) {
+          currentPlanType = profile.plan_type;
           setPlanType(profile.plan_type);
         } else {
           setPlanType('free');
@@ -63,7 +65,7 @@ const PixelManager = () => {
         setPlanType('free');
       }
 
-      const normalized = (planType || '').toLowerCase();
+      const normalized = (currentPlanType || '').toLowerCase();
       // If not PRO, don't bother fetching pixels – UI will show paywall
       if (normalized !== 'pro') {
         setPixels([]);
