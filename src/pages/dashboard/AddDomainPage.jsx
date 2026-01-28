@@ -120,13 +120,18 @@ const AddDomainPage = () => {
   const handleNext = async () => {
     if (currentStep === 1) {
       if (!domainName || !domainName.trim()) {
+        setSaveError('Please enter a domain name');
         return;
       }
 
       const domainRegex = /^([a-z0-9]+(-[a-z0-9]+)*\.)+[a-z]{2,}$/i;
       if (!domainRegex.test(domainName.trim())) {
+        setSaveError('Please enter a valid domain (e.g., mybrand.com)');
         return;
       }
+
+      // Clear any previous errors
+      setSaveError(null);
 
       if (!savedDomainId) {
         setIsSubmitting(true);
@@ -137,6 +142,15 @@ const AddDomainPage = () => {
           } = await supabase.auth.getUser();
           if (!user) throw new Error('User not authenticated');
 
+          // Add www. if not present
+          let finalDomain = domainName.trim();
+          if (!finalDomain.startsWith('www.')) {
+            finalDomain = `www.${finalDomain}`;
+          }
+
+          // Update the domain name in state to reflect the www. prefix
+          setDomainName(finalDomain);
+
           const workerUrl = import.meta.env.VITE_WORKER_URL || 'https://glynk.to';
           const apiUrl = `${workerUrl}/api/add-custom-domain`;
 
@@ -144,15 +158,24 @@ const AddDomainPage = () => {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-              domain: domainName.trim(),
+              domain: finalDomain,
               user_id: user.id,
             }),
           });
 
+          if (!response.ok) {
+            const result = await response.json().catch(() => ({}));
+            throw new Error(
+              result.error || `HTTP ${response.status}: Failed to register domain with Cloudflare`
+            );
+          }
+
           const result = await response.json();
 
-          if (!response.ok || !result.success) {
-            throw new Error(result.error || 'Failed to register domain with Cloudflare');
+          if (!result.success) {
+            throw new Error(
+              result.error || 'Failed to register domain with Cloudflare. Please try again.'
+            );
           }
 
           let currentRecords = result.dns_records || [];
@@ -347,14 +370,16 @@ const AddDomainPage = () => {
                   type="text"
                   value={domainName}
                   onChange={(e) => setDomainName(e.target.value)}
-                  placeholder="links.mybrand.com"
+                  placeholder="mybrand.com"
                   disabled={!!id}
                   className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-primary transition-colors disabled:opacity-50"
                 />
-                <p className="text-xs text-slate-500 mt-2">
-                  Enter your domain (e.g., links.mybrand.com)
-                </p>
-                {saveError && <p className="text-red-400 text-xs mt-2">{saveError}</p>}
+                <p className="text-xs text-slate-500 mt-2">Enter your domain (e.g., mybrand.com)</p>
+                {saveError && (
+                  <div className="bg-red-500/20 border border-red-500/30 rounded-xl p-4 mt-3">
+                    <p className="text-red-400 text-sm font-medium">❌ {saveError}</p>
+                  </div>
+                )}
               </div>
             </div>
           )}

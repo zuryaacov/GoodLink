@@ -10,7 +10,9 @@ const AddDomainModal = ({ isOpen, onClose, domain = null }) => {
   const [dnsRecords, setDnsRecords] = useState(null);
   const [isVerifying, setIsVerifying] = useState(false);
   const [savedDomainId, setSavedDomainId] = useState(domain?.id || null);
-  const [cloudflareHostnameId, setCloudflareHostnameId] = useState(domain?.cloudflare_hostname_id || null);
+  const [cloudflareHostnameId, setCloudflareHostnameId] = useState(
+    domain?.cloudflare_hostname_id || null
+  );
   const [saveError, setSaveError] = useState(null);
   const [verifyError, setVerifyError] = useState(null);
 
@@ -24,22 +26,38 @@ const AddDomainModal = ({ isOpen, onClose, domain = null }) => {
     if (currentStep === 1) {
       // Validate domain format
       if (!domainName || !domainName.trim()) {
+        setSaveError('Please enter a domain name');
         return;
       }
-      
+
       // Basic domain validation
       const domainRegex = /^([a-z0-9]+(-[a-z0-9]+)*\.)+[a-z]{2,}$/i;
       if (!domainRegex.test(domainName.trim())) {
+        setSaveError('Please enter a valid domain (e.g., mybrand.com)');
         return;
       }
+
+      // Clear any previous errors
+      setSaveError(null);
 
       // Save domain to database if it's a new domain
       if (!savedDomainId) {
         setIsSubmitting(true);
         setSaveError(null);
         try {
-          const { data: { user } } = await supabase.auth.getUser();
+          const {
+            data: { user },
+          } = await supabase.auth.getUser();
           if (!user) throw new Error('User not authenticated');
+
+          // Add www. if not present
+          let finalDomain = domainName.trim();
+          if (!finalDomain.startsWith('www.')) {
+            finalDomain = `www.${finalDomain}`;
+          }
+
+          // Update the domain name in state to reflect the www. prefix
+          setDomainName(finalDomain);
 
           // Get worker URL from environment variable
           // Fallback to glynk.to if not set (for production)
@@ -55,15 +73,24 @@ const AddDomainModal = ({ isOpen, onClose, domain = null }) => {
               'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-              domain: domainName.trim(),
+              domain: finalDomain,
               user_id: user.id,
             }),
           });
 
+          if (!response.ok) {
+            const result = await response.json().catch(() => ({}));
+            throw new Error(
+              result.error || `HTTP ${response.status}: Failed to register domain with Cloudflare`
+            );
+          }
+
           const result = await response.json();
 
-          if (!response.ok || !result.success) {
-            throw new Error(result.error || 'Failed to register domain with Cloudflare');
+          if (!result.success) {
+            throw new Error(
+              result.error || 'Failed to register domain with Cloudflare. Please try again.'
+            );
           }
 
           console.log('✅ [AddDomain] Domain registered successfully:', result);
@@ -80,7 +107,7 @@ const AddDomainModal = ({ isOpen, onClose, domain = null }) => {
           if (result.cloudflare_hostname_id) {
             setCloudflareHostnameId(result.cloudflare_hostname_id);
           }
-          
+
           setCurrentStep(2);
         } catch (error) {
           console.error('❌ [AddDomain] Error:', error);
@@ -132,10 +159,17 @@ const AddDomainModal = ({ isOpen, onClose, domain = null }) => {
         }),
       });
 
+      if (!response.ok) {
+        const result = await response.json().catch(() => ({}));
+        throw new Error(result.error || `HTTP ${response.status}: Failed to verify domain`);
+      }
+
       const result = await response.json();
 
-      if (!response.ok || !result.success) {
-        throw new Error(result.error || 'Failed to verify domain');
+      if (!result.success) {
+        throw new Error(
+          result.error || 'Domain verification failed. Please check your DNS records.'
+        );
       }
 
       console.log('✅ [VerifyDomain] Verification result:', result);
@@ -146,11 +180,18 @@ const AddDomainModal = ({ isOpen, onClose, domain = null }) => {
         // Refresh the domains list (parent component should handle this)
       } else {
         // DNS records not yet verified
-        setVerifyError(`DNS records are still pending. Status: ${result.ssl_status || 'pending'}. Please wait a few minutes and try again.`);
+        const statusMessage = result.ssl_status
+          ? `Status: ${result.ssl_status}`
+          : 'DNS records not fully propagated yet';
+        setVerifyError(
+          `⚠️ DNS records are still pending. ${statusMessage}. Please wait a few minutes and try again.`
+        );
       }
     } catch (error) {
       console.error('❌ [VerifyDomain] Error:', error);
-      setVerifyError(error.message || 'Error verifying domain. Please try again.');
+      const errorMessage =
+        error.message || 'Error verifying domain. Please check your DNS records and try again.';
+      setVerifyError(`❌ ${errorMessage}`);
     } finally {
       setIsVerifying(false);
     }
@@ -194,7 +235,10 @@ const AddDomainModal = ({ isOpen, onClose, domain = null }) => {
             <h2 className="text-xl sm:text-2xl font-bold text-white">
               {domain ? 'Edit Domain' : 'Add Custom Domain'}
             </h2>
-            <button onClick={handleClose} className="text-slate-400 hover:text-white transition-colors">
+            <button
+              onClick={handleClose}
+              className="text-slate-400 hover:text-white transition-colors"
+            >
               <span className="material-symbols-outlined text-2xl">close</span>
             </button>
           </div>
@@ -246,24 +290,22 @@ const AddDomainModal = ({ isOpen, onClose, domain = null }) => {
                   className="space-y-4 sm:space-y-6"
                 >
                   <div>
-                    <label className="block text-sm font-medium text-white mb-2">
-                      Domain Name
-                    </label>
+                    <label className="block text-sm font-medium text-white mb-2">Domain Name</label>
                     <input
                       type="text"
                       value={domainName}
                       onChange={(e) => setDomainName(e.target.value)}
-                      placeholder="links.mybrand.com"
+                      placeholder="mybrand.com"
                       className="w-full px-4 py-3 bg-[#101622] border border-[#232f48] rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-primary transition-colors"
                       autoFocus
                     />
                     <p className="text-xs text-slate-500 mt-2">
-                      Enter your domain (e.g., links.mybrand.com)
+                      Enter your domain (e.g., mybrand.com)
                     </p>
                     {saveError && (
-                      <p className="text-red-400 text-xs mt-2">
-                        {saveError}
-                      </p>
+                      <div className="bg-red-500/20 border border-red-500/30 rounded-xl p-4 mt-3">
+                        <p className="text-red-400 text-sm font-medium">❌ {saveError}</p>
+                      </div>
                     )}
                   </div>
                 </motion.div>
@@ -298,7 +340,8 @@ const AddDomainModal = ({ isOpen, onClose, domain = null }) => {
                   <div className="text-center space-y-4">
                     <h3 className="text-lg font-bold text-white">Verify DNS Records</h3>
                     <p className="text-sm text-slate-400">
-                      Click below to verify that your DNS records are configured correctly. This may take a few minutes after adding the DNS records.
+                      Click below to verify that your DNS records are configured correctly. This may
+                      take a few minutes after adding the DNS records.
                     </p>
                     {verifyError && (
                       <div className="bg-red-500/20 border border-red-500/30 rounded-xl p-4 text-left">
@@ -331,7 +374,7 @@ const AddDomainModal = ({ isOpen, onClose, domain = null }) => {
           {/* Footer */}
           <div className="flex items-center justify-between p-3 sm:p-6 border-t border-[#232f48] flex-shrink-0 gap-2">
             <button
-              onClick={() => currentStep > 1 ? setCurrentStep(currentStep - 1) : handleClose()}
+              onClick={() => (currentStep > 1 ? setCurrentStep(currentStep - 1) : handleClose())}
               className="px-3 sm:px-4 py-2 text-xs sm:text-sm rounded-lg sm:rounded-xl font-bold transition-colors flex-shrink-0 bg-[#232f48] text-white hover:bg-[#324467]"
             >
               {currentStep === 1 ? 'Cancel' : 'Previous'}
@@ -347,7 +390,9 @@ const AddDomainModal = ({ isOpen, onClose, domain = null }) => {
               >
                 {isSubmitting ? (
                   <>
-                    <span className="material-symbols-outlined animate-spin text-sm sm:text-base mr-2">refresh</span>
+                    <span className="material-symbols-outlined animate-spin text-sm sm:text-base mr-2">
+                      refresh
+                    </span>
                     Saving...
                   </>
                 ) : (
