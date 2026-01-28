@@ -591,6 +591,26 @@ export default Sentry.withSentry(
                         value: "www.glynk.to"
                     });
 
+                    // Update dns_records in Supabase
+                    try {
+                        const updateUrl = `${env.SUPABASE_URL}/rest/v1/custom_domains?cloudflare_hostname_id=eq.${cloudflare_hostname_id}`;
+                        await fetch(updateUrl, {
+                            method: "PATCH",
+                            headers: {
+                                "apikey": env.SUPABASE_SERVICE_ROLE_KEY,
+                                "Authorization": `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}`,
+                                "Content-Type": "application/json"
+                            },
+                            body: JSON.stringify({
+                                dns_records: dnsRecords
+                            })
+                        });
+                        console.log("✅ DNS records updated in Supabase");
+                    } catch (updateError) {
+                        console.error("⚠️ Failed to update DNS records in Supabase:", updateError);
+                        // Continue anyway - this is not critical
+                    }
+
                     return new Response(JSON.stringify({
                         success: true,
                         dns_records: dnsRecords

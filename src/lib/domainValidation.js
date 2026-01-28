@@ -141,12 +141,112 @@ export function validateDomain(domain, options = {}) {
       return { isValid: false, error: 'TLD must be at least 2 characters', sanitized: null };
     }
 
-    // בדיקת אורך מינימלי של הדומיין (לפחות 3 תווים לפני ה-TLD)
-    const domainWithoutTld = labels.slice(0, -1).join('.');
-    if (domainWithoutTld.length < 3) {
+    // רשימת TLDs דו-חלקיים נפוצים (country-code second-level domains)
+    const twoPartTLDs = [
+      'co.il', 'org.il', 'net.il', 'ac.il', 'gov.il', 'muni.il', 'k12.il',
+      'co.uk', 'org.uk', 'me.uk', 'net.uk', 'ac.uk', 'gov.uk',
+      'com.au', 'net.au', 'org.au', 'edu.au', 'gov.au',
+      'co.nz', 'net.nz', 'org.nz', 'govt.nz',
+      'com.br', 'net.br', 'org.br', 'gov.br',
+      'co.za', 'net.za', 'org.za', 'gov.za',
+      'co.in', 'net.in', 'org.in', 'gov.in',
+      'co.jp', 'ne.jp', 'or.jp', 'ac.jp', 'go.jp',
+      'com.mx', 'net.mx', 'org.mx', 'gob.mx',
+      'com.cn', 'net.cn', 'org.cn', 'gov.cn',
+      'co.kr', 'ne.kr', 'or.kr', 'go.kr',
+      'com.tw', 'net.tw', 'org.tw', 'gov.tw',
+      'com.hk', 'net.hk', 'org.hk', 'gov.hk',
+      'com.sg', 'net.sg', 'org.sg', 'gov.sg',
+      'co.th', 'in.th', 'ac.th', 'go.th',
+      'com.my', 'net.my', 'org.my', 'gov.my',
+      'com.ph', 'net.ph', 'org.ph', 'gov.ph',
+      'com.vn', 'net.vn', 'org.vn', 'gov.vn',
+      'co.id', 'or.id', 'ac.id', 'go.id',
+      'com.ar', 'net.ar', 'org.ar', 'gov.ar',
+      'com.co', 'net.co', 'org.co', 'gov.co',
+      'com.pe', 'net.pe', 'org.pe', 'gob.pe',
+      'com.ve', 'net.ve', 'org.ve', 'gob.ve',
+      'com.ec', 'net.ec', 'org.ec', 'gob.ec',
+      'com.uy', 'net.uy', 'org.uy', 'gub.uy',
+      'com.py', 'net.py', 'org.py', 'gov.py',
+      'com.bo', 'net.bo', 'org.bo', 'gob.bo',
+      'co.cl', 'cl',
+      'com.tr', 'net.tr', 'org.tr', 'gov.tr',
+      'com.ua', 'net.ua', 'org.ua', 'gov.ua',
+      'co.ru', 'com.ru', 'net.ru', 'org.ru',
+      'com.pl', 'net.pl', 'org.pl', 'gov.pl',
+      'co.at', 'or.at', 'ac.at', 'gv.at',
+      'com.es', 'nom.es', 'org.es', 'gob.es',
+      'com.pt', 'net.pt', 'org.pt', 'gov.pt',
+      'co.it', 'com.it', 'net.it', 'org.it',
+      'com.fr', 'net.fr', 'org.fr', 'gouv.fr',
+      'com.de', 'net.de', 'org.de',
+      'com.nl', 'net.nl', 'org.nl',
+      'com.be', 'net.be', 'org.be',
+      'com.gr', 'net.gr', 'org.gr', 'gov.gr',
+      'com.ro', 'net.ro', 'org.ro', 'gov.ro',
+      'com.se', 'org.se', 'pp.se',
+      'com.no', 'net.no', 'org.no',
+      'com.fi', 'net.fi', 'org.fi',
+      'com.dk', 'net.dk', 'org.dk',
+      'com.ie', 'net.ie', 'org.ie', 'gov.ie',
+      'com.cz', 'net.cz', 'org.cz',
+      'com.hu', 'net.hu', 'org.hu', 'gov.hu',
+      'com.sk', 'net.sk', 'org.sk',
+      'com.bg', 'net.bg', 'org.bg',
+      'com.hr', 'net.hr', 'org.hr',
+      'com.si', 'net.si', 'org.si',
+      'com.rs', 'net.rs', 'org.rs',
+      'com.ba', 'net.ba', 'org.ba',
+      'com.mk', 'net.mk', 'org.mk',
+      'com.al', 'net.al', 'org.al',
+      'com.cy', 'net.cy', 'org.cy', 'gov.cy',
+      'com.mt', 'net.mt', 'org.mt',
+      'com.eg', 'net.eg', 'org.eg', 'gov.eg',
+      'co.ae', 'net.ae', 'org.ae', 'gov.ae',
+      'com.sa', 'net.sa', 'org.sa', 'gov.sa',
+      'com.qa', 'net.qa', 'org.qa', 'gov.qa',
+      'com.kw', 'net.kw', 'org.kw', 'gov.kw',
+      'com.bh', 'net.bh', 'org.bh', 'gov.bh',
+      'com.om', 'net.om', 'org.om', 'gov.om',
+      'com.jo', 'net.jo', 'org.jo', 'gov.jo',
+      'com.lb', 'net.lb', 'org.lb', 'gov.lb',
+      'com.pk', 'net.pk', 'org.pk', 'gov.pk',
+      'com.bd', 'net.bd', 'org.bd', 'gov.bd',
+      'com.np', 'net.np', 'org.np', 'gov.np',
+      'com.lk', 'net.lk', 'org.lk', 'gov.lk',
+      'co.ke', 'or.ke', 'ne.ke', 'go.ke',
+      'co.ug', 'or.ug', 'ne.ug', 'go.ug',
+      'co.tz', 'or.tz', 'ne.tz', 'go.tz',
+      'co.zw', 'org.zw', 'gov.zw',
+      'co.bw', 'org.bw',
+      'com.ng', 'net.ng', 'org.ng', 'gov.ng',
+      'com.gh', 'net.gh', 'org.gh', 'gov.gh',
+    ];
+
+    // בדיקה אם זה TLD דו-חלקי
+    let domainNameLabel;
+    if (labels.length >= 3) {
+      const possibleTwoPartTLD = `${labels[labels.length - 2]}.${labels[labels.length - 1]}`;
+      if (twoPartTLDs.includes(possibleTwoPartTLD.toLowerCase())) {
+        // TLD דו-חלקי - הדומיין הוא כל מה שלפני שני החלקים האחרונים
+        domainNameLabel = labels.slice(0, -2).join('.');
+      } else {
+        // TLD רגיל - הדומיין הוא כל מה שלפני החלק האחרון
+        domainNameLabel = labels.slice(0, -1).join('.');
+      }
+    } else {
+      // רק 2 חלקים - הדומיין הוא החלק הראשון
+      domainNameLabel = labels[0];
+    }
+
+    // בדיקת אורך מינימלי של שם הדומיין (לפחות 3 תווים)
+    // מסירים נקודות כדי לבדוק רק את האותיות בשם הדומיין הראשי
+    const mainDomainPart = domainNameLabel.split('.').pop() || domainNameLabel;
+    if (mainDomainPart.length < 3) {
       return {
         isValid: false,
-        error: 'Domain name must be at least 3 characters (before TLD)',
+        error: 'Domain name must be at least 3 characters',
         sanitized: null
       };
     }
