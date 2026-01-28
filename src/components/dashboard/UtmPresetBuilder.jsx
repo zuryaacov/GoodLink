@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
 import { X, CheckCircle2, Zap } from 'lucide-react';
-import outbrainLogo from '../../assets/outbrain-logo.jpeg';
+import outbrainLogo from '../../assets/id-bNajMAc_1769618145922.svg';
 
 const getPlatformLogo = (platform) => {
   switch (platform) {
