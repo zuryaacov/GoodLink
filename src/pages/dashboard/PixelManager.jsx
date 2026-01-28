@@ -48,19 +48,32 @@ const PixelManager = () => {
       // Fetch plan type – only block if explicitly not PRO
       let currentPlanType = null; // null = allow access (fail open)
       try {
-        const { data: profile } = await supabase
+        const { data: profile, error: profileError } = await supabase
           .from('profiles')
           .select('plan_type')
           .eq('user_id', user.id)
           .single();
 
-        if (profile?.plan_type) {
+        console.log('PixelManager - Profile fetch result:', {
+          profile,
+          profileError,
+          userId: user.id,
+        });
+
+        if (profileError) {
+          console.error('Profile fetch error:', profileError);
+          // On error, allow access (fail open)
+          setPlanType(null);
+          currentPlanType = null;
+        } else if (profile?.plan_type) {
           currentPlanType = profile.plan_type;
           setPlanType(profile.plan_type);
+          console.log('PixelManager - Plan type set to:', profile.plan_type);
         } else {
           // No plan_type in profile = allow access (don't block)
           setPlanType(null);
           currentPlanType = null;
+          console.log('PixelManager - No plan_type found, allowing access');
         }
       } catch (planError) {
         console.error('Error fetching plan type for pixels:', planError);
@@ -70,12 +83,22 @@ const PixelManager = () => {
       }
 
       const normalized = (currentPlanType || '').toLowerCase();
+      console.log(
+        'PixelManager - Normalized plan:',
+        normalized,
+        '| Will block:',
+        normalized && normalized !== 'pro'
+      );
+
       // Only block if explicitly not PRO - otherwise allow access
       if (normalized && normalized !== 'pro') {
+        console.log('PixelManager - Blocking access, showing paywall');
         setPixels([]);
         setLoading(false);
         return;
       }
+
+      console.log('PixelManager - Access granted, fetching pixels...');
 
       const { data, error } = await supabase
         .from('pixels')
