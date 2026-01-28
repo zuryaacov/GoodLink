@@ -140,6 +140,16 @@ export function validateDomain(domain, options = {}) {
     if (tld.length < 2) {
       return { isValid: false, error: 'TLD must be at least 2 characters', sanitized: null };
     }
+
+    // בדיקת אורך מינימלי של הדומיין (לפחות 3 תווים לפני ה-TLD)
+    const domainWithoutTld = labels.slice(0, -1).join('.');
+    if (domainWithoutTld.length < 3) {
+      return {
+        isValid: false,
+        error: 'Domain name must be at least 3 characters (before TLD)',
+        sanitized: null
+      };
+    }
   }
 
   // 9. בדיקת subdomains
