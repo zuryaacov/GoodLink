@@ -18,6 +18,8 @@ const AddDomainPage = () => {
   const [saveError, setSaveError] = useState(null);
   const [verifyError, setVerifyError] = useState(null);
   const [initialLoading, setInitialLoading] = useState(!!id);
+  const [rootRedirect, setRootRedirect] = useState('');
+  const [rootRedirectError, setRootRedirectError] = useState(null);
 
   const steps = [
     { number: 1, title: 'Domain', subtitle: 'Enter your domain' },
@@ -58,6 +60,7 @@ const AddDomainPage = () => {
       setDomainName(data.domain || '');
       setSavedDomainId(data.id);
       setCloudflareHostnameId(data.cloudflare_hostname_id);
+      setRootRedirect(data.root_redirect || '');
 
       // If domain already has DNS records, fetch them
       if (data.cloudflare_hostname_id) {
@@ -121,6 +124,31 @@ const AddDomainPage = () => {
     }
   };
 
+  // Validate URL format for root redirect
+  const validateRootRedirectUrl = (url) => {
+    if (!url || url.trim() === '') {
+      return { isValid: true, sanitized: '' }; // Optional field
+    }
+
+    let urlToValidate = url.trim();
+
+    // Add https:// if no protocol specified
+    if (!urlToValidate.startsWith('http://') && !urlToValidate.startsWith('https://')) {
+      urlToValidate = `https://${urlToValidate}`;
+    }
+
+    try {
+      const parsed = new URL(urlToValidate);
+      // Check if it's a valid URL with a proper hostname
+      if (!parsed.hostname || parsed.hostname.length < 3) {
+        return { isValid: false, error: 'Invalid URL format' };
+      }
+      return { isValid: true, sanitized: urlToValidate };
+    } catch (e) {
+      return { isValid: false, error: 'Invalid URL format' };
+    }
+  };
+
   const handleNext = async () => {
     if (currentStep === 1) {
       // Validate domain using comprehensive validation
@@ -136,6 +164,14 @@ const AddDomainPage = () => {
         setSaveError(validation.error);
         return;
       }
+
+      // Validate root redirect URL if provided
+      const rootRedirectValidation = validateRootRedirectUrl(rootRedirect);
+      if (!rootRedirectValidation.isValid) {
+        setRootRedirectError(rootRedirectValidation.error);
+        return;
+      }
+      setRootRedirectError(null);
 
       // Clear any previous errors
       setSaveError(null);
@@ -161,12 +197,17 @@ const AddDomainPage = () => {
           const workerUrl = import.meta.env.VITE_WORKER_URL || 'https://glynk.to';
           const apiUrl = `${workerUrl}/api/add-custom-domain`;
 
+          // Get sanitized root redirect URL
+          const rootRedirectValidation = validateRootRedirectUrl(rootRedirect);
+          const finalRootRedirect = rootRedirectValidation.sanitized || null;
+
           const response = await fetch(apiUrl, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               domain: finalDomain,
               user_id: user.id,
+              root_redirect: finalRootRedirect,
             }),
           });
 
@@ -388,6 +429,29 @@ const AddDomainPage = () => {
                 {saveError && (
                   <div className="bg-red-500/20 border border-red-500/30 rounded-xl p-4 mt-3">
                     <p className="text-red-400 text-sm font-medium">❌ {saveError}</p>
+                  </div>
+                )}
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-white mb-2">Root Redirect</label>
+                <input
+                  type="text"
+                  value={rootRedirect}
+                  onChange={(e) => {
+                    setRootRedirect(e.target.value);
+                    setRootRedirectError(null);
+                  }}
+                  placeholder="https://example.com"
+                  className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-primary transition-colors"
+                />
+                <p className="text-xs text-slate-500 mt-2">
+                  Visitors accessing the domain without a referral slug will be automatically
+                  redirected to the root domain.
+                </p>
+                {rootRedirectError && (
+                  <div className="bg-red-500/20 border border-red-500/30 rounded-xl p-4 mt-3">
+                    <p className="text-red-400 text-sm font-medium">❌ {rootRedirectError}</p>
                   </div>
                 )}
               </div>

@@ -315,7 +315,7 @@ export default Sentry.withSentry(
             if (path === "/api/add-custom-domain" && request.method === "POST") {
                 try {
                     const body = await request.json();
-                    const { domain, user_id } = body;
+                    const { domain, user_id, root_redirect } = body;
 
                     if (!domain || !user_id) {
                         return new Response(JSON.stringify({ error: "Missing required fields (domain, user_id)" }), {
@@ -411,6 +411,7 @@ export default Sentry.withSentry(
                             domain: domain,
                             cloudflare_hostname_id: hostnameData.id,
                             dns_records: dnsRecords,
+                            root_redirect: root_redirect || null,
                             status: "pending"
                         })
                     });

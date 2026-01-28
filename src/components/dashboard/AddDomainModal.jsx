@@ -16,12 +16,39 @@ const AddDomainModal = ({ isOpen, onClose, domain = null }) => {
   );
   const [saveError, setSaveError] = useState(null);
   const [verifyError, setVerifyError] = useState(null);
+  const [rootRedirect, setRootRedirect] = useState(domain?.root_redirect || '');
+  const [rootRedirectError, setRootRedirectError] = useState(null);
 
   const steps = [
     { number: 1, title: 'Domain', subtitle: 'Enter your domain' },
     { number: 2, title: 'DNS Setup', subtitle: 'Configure DNS records' },
     { number: 3, title: 'Verify', subtitle: 'Verify configuration' },
   ];
+
+  // Validate URL format for root redirect
+  const validateRootRedirectUrl = (url) => {
+    if (!url || url.trim() === '') {
+      return { isValid: true, sanitized: '' }; // Optional field
+    }
+
+    let urlToValidate = url.trim();
+
+    // Add https:// if no protocol specified
+    if (!urlToValidate.startsWith('http://') && !urlToValidate.startsWith('https://')) {
+      urlToValidate = `https://${urlToValidate}`;
+    }
+
+    try {
+      const parsed = new URL(urlToValidate);
+      // Check if it's a valid URL with a proper hostname
+      if (!parsed.hostname || parsed.hostname.length < 3) {
+        return { isValid: false, error: 'Invalid URL format' };
+      }
+      return { isValid: true, sanitized: urlToValidate };
+    } catch (e) {
+      return { isValid: false, error: 'Invalid URL format' };
+    }
+  };
 
   const handleNext = async () => {
     if (currentStep === 1) {
@@ -38,6 +65,14 @@ const AddDomainModal = ({ isOpen, onClose, domain = null }) => {
         setSaveError(validation.error);
         return;
       }
+
+      // Validate root redirect URL if provided
+      const rootRedirectValidation = validateRootRedirectUrl(rootRedirect);
+      if (!rootRedirectValidation.isValid) {
+        setRootRedirectError(rootRedirectValidation.error);
+        return;
+      }
+      setRootRedirectError(null);
 
       // Clear any previous errors
       setSaveError(null);
@@ -68,6 +103,10 @@ const AddDomainModal = ({ isOpen, onClose, domain = null }) => {
 
           console.log('🔵 [AddDomain] Calling worker API:', apiUrl);
 
+          // Get sanitized root redirect URL
+          const rootRedirectValidation = validateRootRedirectUrl(rootRedirect);
+          const finalRootRedirect = rootRedirectValidation.sanitized || null;
+
           // Call worker endpoint to register domain with Cloudflare
           const response = await fetch(apiUrl, {
             method: 'POST',
@@ -77,6 +116,7 @@ const AddDomainModal = ({ isOpen, onClose, domain = null }) => {
             body: JSON.stringify({
               domain: finalDomain,
               user_id: user.id,
+              root_redirect: finalRootRedirect,
             }),
           });
 
@@ -205,6 +245,8 @@ const AddDomainModal = ({ isOpen, onClose, domain = null }) => {
   const handleClose = () => {
     setCurrentStep(1);
     setDomainName(domain?.domain || '');
+    setRootRedirect(domain?.root_redirect || '');
+    setRootRedirectError(null);
     setDnsRecords(null);
     setSavedDomainId(domain?.id || null);
     setCloudflareHostnameId(domain?.cloudflare_hostname_id || null);
@@ -310,6 +352,31 @@ const AddDomainModal = ({ isOpen, onClose, domain = null }) => {
                     {saveError && (
                       <div className="bg-red-500/20 border border-red-500/30 rounded-xl p-4 mt-3">
                         <p className="text-red-400 text-sm font-medium">❌ {saveError}</p>
+                      </div>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-white mb-2">
+                      Root Redirect
+                    </label>
+                    <input
+                      type="text"
+                      value={rootRedirect}
+                      onChange={(e) => {
+                        setRootRedirect(e.target.value);
+                        setRootRedirectError(null);
+                      }}
+                      placeholder="https://example.com"
+                      className="w-full px-4 py-3 bg-[#101622] border border-[#232f48] rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-primary transition-colors"
+                    />
+                    <p className="text-xs text-slate-500 mt-2">
+                      Visitors accessing the domain without a referral slug will be automatically
+                      redirected to the root domain.
+                    </p>
+                    {rootRedirectError && (
+                      <div className="bg-red-500/20 border border-red-500/30 rounded-xl p-4 mt-3">
+                        <p className="text-red-400 text-sm font-medium">❌ {rootRedirectError}</p>
                       </div>
                     )}
                   </div>
