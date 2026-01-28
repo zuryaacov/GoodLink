@@ -39,12 +39,6 @@ const PixelManager = () => {
       const {
         data: { user },
       } = await supabase.auth.getUser();
-      if (!user) return;
-
-      // Get user
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
       if (!user) {
         setPixels([]);
         setPlanType('free');
@@ -61,9 +55,19 @@ const PixelManager = () => {
 
         if (profile?.plan_type) {
           setPlanType(profile.plan_type);
+        } else {
+          setPlanType('free');
         }
       } catch (planError) {
         console.error('Error fetching plan type for pixels:', planError);
+        setPlanType('free');
+      }
+
+      const normalized = (planType || '').toLowerCase();
+      // If not PRO, don't bother fetching pixels – UI will show paywall
+      if (normalized !== 'pro') {
+        setPixels([]);
+        return;
       }
 
       const { data, error } = await supabase
