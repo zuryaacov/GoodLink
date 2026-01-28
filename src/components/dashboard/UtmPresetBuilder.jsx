@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
 import { X, CheckCircle2, Zap } from 'lucide-react';
 import outbrainLogo from '../../assets/id-bNajMAc_1769618145922.svg';
+import taboolaLogo from '../../assets/idRS-vCmxj_1769618141092.svg';
 
 const getPlatformLogo = (platform) => {
   switch (platform) {
@@ -37,11 +38,12 @@ const getPlatformLogo = (platform) => {
       );
     case 'taboola':
       return (
-        <div className="w-12 h-12 rounded-lg bg-white flex items-center justify-center overflow-hidden border border-slate-700">
-          <svg viewBox="0 0 100 100" width="32" height="32" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="50" cy="50" r="45" fill="#3568F6"/>
-            <text x="50" y="65" fontSize="45" fontWeight="bold" fill="white" textAnchor="middle" fontFamily="Arial, sans-serif">t</text>
-          </svg>
+        <div className="w-12 h-12 rounded-lg flex items-center justify-center overflow-hidden border border-slate-700">
+          <img 
+            src={taboolaLogo} 
+            alt="Taboola" 
+            className="w-full h-full object-cover" 
+          />
         </div>
       );
     case 'outbrain':

@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { supabase } from '../../../lib/supabase';
+import outbrainLogo from '../../../assets/id-bNajMAc_1769618145922.svg';
+import taboolaLogo from '../../../assets/idRS-vCmxj_1769618141092.svg';
 
 const PLATFORMS = {
   meta: { name: 'Meta (FB/IG)', colorClass: 'text-blue-400 bg-blue-400/10' },
@@ -232,21 +234,21 @@ const Step2Optimization = ({ formData, updateFormData }) => {
                       );
                     case 'taboola':
                       return (
-                        <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center flex-shrink-0 overflow-hidden border border-[#232f48]">
+                        <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden border border-[#232f48]">
                           <img 
-                            src="https://www.google.com/s2/favicons?domain=taboola.com&sz=128" 
+                            src={taboolaLogo} 
                             alt="Taboola" 
-                            className="w-5 h-5 object-contain" 
+                            className="w-full h-full object-cover" 
                           />
                         </div>
                       );
                     case 'outbrain':
                       return (
-                        <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center flex-shrink-0 overflow-hidden border border-[#232f48]">
+                        <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden border border-[#232f48]">
                           <img 
-                            src="https://www.google.com/s2/favicons?domain=outbrain.com&sz=128" 
+                            src={outbrainLogo} 
                             alt="Outbrain" 
-                            className="w-5 h-5 object-contain" 
+                            className="w-full h-full object-cover" 
                           />
                         </div>
                       );
