@@ -46,19 +46,31 @@ const CustomDomainsManager = () => {
       // Fetch plan type – only block if explicitly FREE/STARTER
       let currentPlanType = null; // null = allow access (fail open)
       try {
-        const { data: profile } = await supabase
+        const { data: profile, error: profileError } = await supabase
           .from('profiles')
           .select('plan_type')
           .eq('user_id', user.id)
           .single();
 
-        if (profile?.plan_type) {
+        console.log('CustomDomains - Profile fetch result:', {
+          profile,
+          profileError,
+          userId: user.id,
+        });
+
+        if (profileError) {
+          console.error('CustomDomains - Profile fetch error:', profileError);
+          setPlanType(null);
+          currentPlanType = null;
+        } else if (profile?.plan_type) {
           currentPlanType = profile.plan_type;
           setPlanType(profile.plan_type);
+          console.log('CustomDomains - Plan type set to:', profile.plan_type);
         } else {
           // No plan_type in profile = allow access (don't block)
           setPlanType(null);
           currentPlanType = null;
+          console.log('CustomDomains - No plan_type found, allowing access');
         }
       } catch (planError) {
         console.error('Error fetching plan type for domains:', planError);
@@ -68,13 +80,22 @@ const CustomDomainsManager = () => {
       }
 
       const normalized = (currentPlanType || '').toLowerCase();
+      console.log(
+        'CustomDomains - Normalized plan:',
+        normalized,
+        '| Will block:',
+        normalized === 'free' || normalized === 'start' || normalized === 'starter'
+      );
+
       // Only block if explicitly FREE or STARTER - otherwise allow access
       if (normalized === 'free' || normalized === 'start' || normalized === 'starter') {
+        console.log('CustomDomains - Blocking access, showing paywall');
         setDomains([]);
         setLoading(false);
         return;
       }
 
+      console.log('CustomDomains - Access granted, fetching domains...');
       const { data, error } = await supabase
         .from('custom_domains')
         .select('*')
@@ -82,6 +103,7 @@ const CustomDomainsManager = () => {
         .neq('status', 'deleted') // Don't fetch deleted domains
         .order('created_at', { ascending: false });
 
+      console.log('CustomDomains - Fetch result:', { data, error });
       if (error) throw error;
       setDomains(data || []);
     } catch (error) {

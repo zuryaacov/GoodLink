@@ -10,7 +10,7 @@ const PLATFORMS = {
   tiktok: { name: 'TikTok Ads', colorClass: 'text-pink-400 bg-pink-400/10' },
   taboola: { name: 'Taboola', colorClass: 'text-orange-400 bg-orange-400/10' },
   outbrain: { name: 'Outbrain', colorClass: 'text-indigo-400 bg-indigo-400/10' },
-  snapchat: { name: 'Snapchat', colorClass: 'text-yellow-400 bg-yellow-400/10' }
+  snapchat: { name: 'Snapchat', colorClass: 'text-yellow-400 bg-yellow-400/10' },
 };
 
 const UtmPresetManager = () => {
@@ -19,7 +19,7 @@ const UtmPresetManager = () => {
   const [links, setLinks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [copiedId, setCopiedId] = useState(null);
-  
+
   const [modalState, setModalState] = useState({
     isOpen: false,
     type: 'alert',
@@ -37,7 +37,9 @@ const UtmPresetManager = () => {
   const fetchPresets = async () => {
     try {
       setLoading(true);
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (!user) return;
 
       const { data, error } = await supabase
@@ -66,12 +68,14 @@ const UtmPresetManager = () => {
 
   const fetchLinks = async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (!user) return;
 
       const { data, error } = await supabase
         .from('links')
-        .select('id, slug, destination_url')
+        .select('id, slug, target_url')
         .eq('user_id', user.id)
         .eq('status', 'active')
         .order('created_at', { ascending: false });
@@ -85,17 +89,17 @@ const UtmPresetManager = () => {
 
   const buildUtmQueryString = (preset, encode = false) => {
     const params = [];
-    
+
     // For display: show raw values with {} brackets
     // For copy: use encodeURIComponent for proper URL encoding
-    const encodeValue = (value) => encode ? encodeURIComponent(value) : value;
-    
+    const encodeValue = (value) => (encode ? encodeURIComponent(value) : value);
+
     if (preset.utm_source) params.push(`utm_source=${encodeValue(preset.utm_source)}`);
     if (preset.utm_medium) params.push(`utm_medium=${encodeValue(preset.utm_medium)}`);
     if (preset.utm_campaign) params.push(`utm_campaign=${encodeValue(preset.utm_campaign)}`);
     if (preset.utm_content) params.push(`utm_content=${encodeValue(preset.utm_content)}`);
     if (preset.utm_term) params.push(`utm_term=${encodeValue(preset.utm_term)}`);
-    
+
     return params.length > 0 ? params.join('&') : '';
   };
 
@@ -119,7 +123,7 @@ const UtmPresetManager = () => {
       message: `Are you sure you want to delete "${preset.name}"? This action cannot be undone.`,
       onConfirm: async () => {
         try {
-          setModalState(prev => ({ ...prev, isLoading: true }));
+          setModalState((prev) => ({ ...prev, isLoading: true }));
           const { error } = await supabase
             .from('utm_presets')
             .update({ is_active: false })
@@ -127,7 +131,14 @@ const UtmPresetManager = () => {
 
           if (error) throw error;
           await fetchPresets();
-          setModalState({ isOpen: false, type: 'alert', title: '', message: '', onConfirm: null, isLoading: false });
+          setModalState({
+            isOpen: false,
+            type: 'alert',
+            title: '',
+            message: '',
+            onConfirm: null,
+            isLoading: false,
+          });
         } catch (error) {
           console.error('Error deleting preset:', error);
           setModalState({
@@ -156,7 +167,9 @@ const UtmPresetManager = () => {
     return (
       <div className="flex flex-col gap-8 w-full h-full items-center justify-center">
         <div className="text-center py-12">
-          <span className="material-symbols-outlined text-4xl text-slate-600 animate-spin">refresh</span>
+          <span className="material-symbols-outlined text-4xl text-slate-600 animate-spin">
+            refresh
+          </span>
           <p className="text-slate-400 mt-4">Loading UTM presets...</p>
         </div>
       </div>
@@ -168,7 +181,9 @@ const UtmPresetManager = () => {
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-3xl font-bold text-white mb-2">UTM Presets</h1>
-          <p className="text-slate-400">Create and manage UTM parameter presets for your campaigns</p>
+          <p className="text-slate-400">
+            Create and manage UTM parameter presets for your campaigns
+          </p>
         </div>
         <button
           onClick={handleNewPreset}
@@ -183,7 +198,9 @@ const UtmPresetManager = () => {
         <div className="bg-slate-800/50 border border-slate-700 rounded-2xl p-12 text-center">
           <span className="material-symbols-outlined text-6xl text-slate-600 mb-4">campaign</span>
           <h3 className="text-xl font-bold text-white mb-2">No UTM Presets Yet</h3>
-          <p className="text-slate-400 mb-6">Create your first UTM preset to start tracking your campaigns</p>
+          <p className="text-slate-400 mb-6">
+            Create your first UTM preset to start tracking your campaigns
+          </p>
           <button
             onClick={handleNewPreset}
             className="px-6 py-3 bg-[#FF10F0] hover:bg-[#e00ed0] text-white font-bold rounded-xl transition-all"
@@ -194,10 +211,13 @@ const UtmPresetManager = () => {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {presets.map((preset) => {
-            const platform = PLATFORMS[preset.platform] || { name: preset.platform, colorClass: 'text-slate-400 bg-slate-400/10' };
+            const platform = PLATFORMS[preset.platform] || {
+              name: preset.platform,
+              colorClass: 'text-slate-400 bg-slate-400/10',
+            };
             // Display query string without encoding (to show {{}} instead of %7B%7D)
             const queryString = buildUtmQueryString(preset, false);
-            
+
             return (
               <div
                 key={preset.id}
@@ -206,7 +226,9 @@ const UtmPresetManager = () => {
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex-1">
                     <h3 className="text-lg font-bold text-white mb-1">{preset.name}</h3>
-                    <span className={`inline-block px-2 py-1 rounded-lg text-xs font-bold ${platform.colorClass}`}>
+                    <span
+                      className={`inline-block px-2 py-1 rounded-lg text-xs font-bold ${platform.colorClass}`}
+                    >
                       {platform.name}
                     </span>
                   </div>
@@ -238,7 +260,7 @@ const UtmPresetManager = () => {
                       No UTM parameters set
                     </div>
                   )}
-                  
+
                   {preset.utm_source && (
                     <div className="flex items-center gap-2 text-sm">
                       <span className="text-blue-400 font-mono text-xs w-20">source:</span>
