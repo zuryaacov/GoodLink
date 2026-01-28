@@ -43,8 +43,8 @@ const CustomDomainsManager = () => {
         return;
       }
 
-      // Fetch plan type – on error, allow access so we don't block data
-      let currentPlanType = 'free';
+      // Fetch plan type – only block if explicitly FREE/STARTER
+      let currentPlanType = null; // null = allow access (fail open)
       try {
         const { data: profile } = await supabase
           .from('profiles')
@@ -56,19 +56,22 @@ const CustomDomainsManager = () => {
           currentPlanType = profile.plan_type;
           setPlanType(profile.plan_type);
         } else {
-          setPlanType('free');
+          // No plan_type in profile = allow access (don't block)
+          setPlanType(null);
+          currentPlanType = null;
         }
       } catch (planError) {
         console.error('Error fetching plan type for domains:', planError);
-        setPlanType('free');
-        // Don't block: if profile fetch fails, still fetch domains (fail open)
-        currentPlanType = 'advanced';
+        // On error, allow access (fail open) - don't block data
+        setPlanType(null);
+        currentPlanType = null;
       }
 
       const normalized = (currentPlanType || '').toLowerCase();
-      // If FREE or STARTER, don't fetch domains – UI will show paywall
+      // Only block if explicitly FREE or STARTER - otherwise allow access
       if (normalized === 'free' || normalized === 'start' || normalized === 'starter') {
         setDomains([]);
+        setLoading(false);
         return;
       }
 
@@ -261,9 +264,9 @@ const CustomDomainsManager = () => {
     );
   }
 
-  const normalizedPlan = planType?.toLowerCase() || 'free';
+  const normalizedPlan = planType?.toLowerCase() || null;
 
-  // Show upgrade paywall for FREE or STARTER plans
+  // Show upgrade paywall only if explicitly FREE or STARTER
   if (normalizedPlan === 'free' || normalizedPlan === 'start' || normalizedPlan === 'starter') {
     return (
       <div className="relative min-h-[480px] w-full flex items-center justify-center p-6 overflow-hidden bg-[#0b0f19] rounded-2xl border border-dashed border-[#232f48]">

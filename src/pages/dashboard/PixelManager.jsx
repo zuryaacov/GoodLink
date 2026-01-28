@@ -45,8 +45,8 @@ const PixelManager = () => {
         return;
       }
 
-      // Fetch plan type
-      let currentPlanType = 'free';
+      // Fetch plan type – only block if explicitly not PRO
+      let currentPlanType = null; // null = allow access (fail open)
       try {
         const { data: profile } = await supabase
           .from('profiles')
@@ -58,19 +58,22 @@ const PixelManager = () => {
           currentPlanType = profile.plan_type;
           setPlanType(profile.plan_type);
         } else {
-          setPlanType('free');
+          // No plan_type in profile = allow access (don't block)
+          setPlanType(null);
+          currentPlanType = null;
         }
       } catch (planError) {
         console.error('Error fetching plan type for pixels:', planError);
-        setPlanType('free');
-        // Don't block: if profile fetch fails, still fetch pixels (fail open)
-        currentPlanType = 'pro';
+        // On error, allow access (fail open) - don't block data
+        setPlanType(null);
+        currentPlanType = null;
       }
 
       const normalized = (currentPlanType || '').toLowerCase();
-      // If not PRO, don't bother fetching pixels – UI will show paywall
-      if (normalized !== 'pro') {
+      // Only block if explicitly not PRO - otherwise allow access
+      if (normalized && normalized !== 'pro') {
         setPixels([]);
+        setLoading(false);
         return;
       }
 
@@ -270,7 +273,7 @@ const PixelManager = () => {
     }
   };
 
-  const normalizedPlan = planType?.toLowerCase() || 'free';
+  const normalizedPlan = planType?.toLowerCase() || null;
 
   if (loading) {
     return (
@@ -285,8 +288,8 @@ const PixelManager = () => {
     );
   }
 
-  // Show upgrade paywall for non‑PRO plans
-  if (normalizedPlan !== 'pro') {
+  // Show upgrade paywall only if explicitly not PRO
+  if (normalizedPlan && normalizedPlan !== 'pro') {
     return (
       <div className="relative min-h-[480px] w-full flex items-center justify-center p-6 overflow-hidden bg-[#0b0f19] rounded-2xl border border-dashed border-[#232f48]">
         {/* Background mock layout */}
