@@ -63,6 +63,8 @@ const PixelManager = () => {
       } catch (planError) {
         console.error('Error fetching plan type for pixels:', planError);
         setPlanType('free');
+        // Don't block: if profile fetch fails, still fetch pixels (fail open)
+        currentPlanType = 'pro';
       }
 
       const normalized = (currentPlanType || '').toLowerCase();

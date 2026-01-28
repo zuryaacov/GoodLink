@@ -43,7 +43,7 @@ const CustomDomainsManager = () => {
         return;
       }
 
-      // Fetch plan type
+      // Fetch plan type – on error, allow access so we don't block data
       let currentPlanType = 'free';
       try {
         const { data: profile } = await supabase
@@ -61,6 +61,8 @@ const CustomDomainsManager = () => {
       } catch (planError) {
         console.error('Error fetching plan type for domains:', planError);
         setPlanType('free');
+        // Don't block: if profile fetch fails, still fetch domains (fail open)
+        currentPlanType = 'advanced';
       }
 
       const normalized = (currentPlanType || '').toLowerCase();
