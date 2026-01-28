@@ -8,7 +8,7 @@ const CustomDomainsManager = () => {
   const navigate = useNavigate();
   const [domains, setDomains] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [planType, setPlanType] = useState('free');
+  const [planType, setPlanType] = useState(null); // null = still loading, don't show paywall yet
 
   // Modal states for errors/alerts
   const [modalState, setModalState] = useState({
@@ -39,7 +39,7 @@ const CustomDomainsManager = () => {
       } = await supabase.auth.getUser();
       if (!user) {
         setDomains([]);
-        setPlanType('free');
+        setLoading(false);
         return;
       }
 

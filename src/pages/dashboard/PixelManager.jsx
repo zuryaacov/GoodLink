@@ -10,7 +10,7 @@ const PixelManager = () => {
   const navigate = useNavigate();
   const [pixels, setPixels] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [planType, setPlanType] = useState('free');
+  const [planType, setPlanType] = useState(null); // null = still loading, don't show paywall yet
 
   // Modal states for delete confirmation
   const [deleteModalState, setDeleteModalState] = useState({
@@ -41,7 +41,7 @@ const PixelManager = () => {
       } = await supabase.auth.getUser();
       if (!user) {
         setPixels([]);
-        setPlanType('free');
+        setLoading(false);
         return;
       }
 
