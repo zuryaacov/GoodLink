@@ -48,6 +48,15 @@ const getPlatformLogo = (platform) => {
           <span className="text-white font-bold text-xs">O</span>
         </div>
       );
+    case 'snapchat':
+      // Snapchat logo
+      return (
+        <div className="w-12 h-12 rounded-lg bg-[#FFFC00] flex items-center justify-center">
+          <svg viewBox="0 0 24 24" width="24" height="24" fill="black" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 2.979c-2.32 0-4.085 1.705-4.085 4.084 0 .393.048.775.14 1.144-.816.143-1.632.39-2.222.95-.29.274-.467.575-.544.896-.062.257-.04.516.066.764.123.284.348.513.626.657.34.175.71.258 1.05.28l.19.012c.07.004.143.007.222.01l.013.25c.012.247.025.513.04.79v.117c0 .633.435.986.974 1.15.54.164 1.25.164 1.83.164.083 0 .167 0 .252-.002l.144 1.15c.08.647.284.974.606 1.15.32.176.716.216 1.08.216h1.22c.365 0 .76-.04 1.08-.216.32-.176.526-.503.606-1.15l.144-1.15c.085.002.169.002.252.002.58 0 1.29 0 1.83-.164.54-.164.975-.517.975-1.15v-.117c.015-.277.026-.543.04-.79l.012-.25c.08-.003.153-.006.223-.01l.19-.012c.34-.022.71-.105 1.05-.28.278-.144.503-.373.626-.657.106-.248.128-.507.066-.764-.077-.321-.254-.622-.544-.896-.59-.56-1.406-.807-2.222-.95.093-.369.14-.75.14-1.144 0-2.379-1.765-4.084-4.085-4.084z"/>
+          </svg>
+        </div>
+      );
     default:
       return (
         <div className="w-12 h-12 rounded-lg bg-slate-700 flex items-center justify-center">
@@ -82,6 +91,11 @@ const PLATFORMS = {
     id: 'outbrain',
     name: "Outbrain",
     color: "indigo",
+  },
+  snapchat: {
+    id: 'snapchat',
+    name: "Snapchat",
+    color: "yellow",
   }
 };
 
@@ -232,6 +246,29 @@ const UTM_OPTIONS = {
       '{{publisher_name}}',
       '{{section_id}}',
       '{{section_name}}'
+    ]
+  },
+  snapchat: {
+    source: [
+      'snapchat'
+    ],
+    medium: [
+      'video',
+      'display',
+      'social',
+      'paidsocial'
+    ],
+    campaign: [
+      '{{campaign.id}}',
+      '{{campaign.name}}'
+    ],
+    content: [
+      '{{ad.id}}',
+      '{{ad.name}}'
+    ],
+    term: [
+      '{{adgroup.id}}',
+      '{{adgroup.name}}'
     ]
   }
 };
