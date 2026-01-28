@@ -35,20 +35,19 @@ const getPlatformLogo = (platform) => {
         </div>
       );
     case 'taboola':
-      // Taboola logo
       return (
         <div className="w-12 h-12 rounded-lg bg-[#0056F0] flex items-center justify-center">
-          <svg viewBox="0 0 24 24" width="28" height="28" fill="white" xmlns="http://www.w3.org/2000/svg">
-            <path d="M11.666 2.5a.738.738 0 0 0-.734.738v3.424h1.468V3.238a.738.738 0 0 0-.734-.738zM8.324 2.5a.737.737 0 0 0-.734.738V12.1a.737.737 0 0 0 .734.738h.735a.737.737 0 0 0 .734-.738V3.238A.738.738 0 0 0 9.06 2.5H8.324zM5.006 2.5a.738.738 0 0 0-.735.738V20.76a.738.738 0 0 0 .735.74h.734a.738.738 0 0 0 .734-.74V3.238a.738.738 0 0 0-.734-.738H5.006zM15 2.5a.738.738 0 0 0-.734.738v3.424H15.73V3.238A.738.738 0 0 0 15 2.5zM18.334 2.5a.737.737 0 0 0-.734.738v6.49a.737.737 0 0 0 .734.735h.734a.738.738 0 0 0 .735-.735V3.238a.738.738 0 0 0-.735-.738h-.734zM21.666 2.5a.738.738 0 0 0-.734.738V14.15a.737.737 0 0 0 .734.736h.734a.737.737 0 0 0 .734-.736V3.238a.738.738 0 0 0-.734-.738h-.734zM11.666 7.91h-3.324v4.928h3.324V7.91zM15 7.91h-1.886v4.92h1.886V7.91zM18.334 11.134h-6.668v10.366h6.668V11.134zM21.666 16.353h-3.332v5.147h3.332v-5.147z"/>
+          <svg viewBox="0 0 24 24" width="32" height="32" fill="white" xmlns="http://www.w3.org/2000/svg">
+            <path d="M2.4 20.4h3.2v-12H2.4v12zm4.8 0h3.2v-16H7.2v16zm4.8 0h3.2V8.4H12v12zm4.8 0h3.2v-8h-3.2v8zM18.4 4.4v2.4h3.2V4.4h-3.2z"/>
           </svg>
         </div>
       );
     case 'outbrain':
-      // Outbrain logo
       return (
         <div className="w-12 h-12 rounded-lg bg-[#E76C29] flex items-center justify-center">
-          <svg viewBox="0 0 24 24" width="28" height="28" fill="white" xmlns="http://www.w3.org/2000/svg">
-            <path d="M12 0c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm0 18c-3.314 0-6-2.686-6-6s2.686-6 6-6 6 2.686 6 6-2.686 6-6 6zm3-6c0 1.657-1.343 3-3 3s-3-1.343-3-3 1.343-3 3-3 3 1.343 3 3z"/>
+          <svg viewBox="0 0 24 24" width="32" height="32" fill="white" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="12" cy="12" r="10" fill="none" stroke="white" strokeWidth="2.5"/>
+            <circle cx="12" cy="12" r="4.5" fill="white"/>
           </svg>
         </div>
       );

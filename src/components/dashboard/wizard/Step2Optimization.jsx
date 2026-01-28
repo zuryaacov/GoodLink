@@ -233,13 +233,18 @@ const Step2Optimization = ({ formData, updateFormData }) => {
                     case 'taboola':
                       return (
                         <div className="w-8 h-8 rounded-lg bg-[#0056F0] flex items-center justify-center flex-shrink-0">
-                          <span className="text-white font-bold text-[10px]">T</span>
+                          <svg viewBox="0 0 24 24" width="20" height="20" fill="white" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M2.4 20.4h3.2v-12H2.4v12zm4.8 0h3.2v-16H7.2v16zm4.8 0h3.2V8.4H12v12zm4.8 0h3.2v-8h-3.2v8zM18.4 4.4v2.4h3.2V4.4h-3.2z"/>
+                          </svg>
                         </div>
                       );
                     case 'outbrain':
                       return (
-                        <div className="w-8 h-8 rounded-lg bg-[#184869] flex items-center justify-center flex-shrink-0">
-                          <span className="text-white font-bold text-[10px]">O</span>
+                        <div className="w-8 h-8 rounded-lg bg-[#E76C29] flex items-center justify-center flex-shrink-0">
+                          <svg viewBox="0 0 24 24" width="20" height="20" fill="white" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="12" cy="12" r="10" fill="none" stroke="white" strokeWidth="2.5"/>
+                            <circle cx="12" cy="12" r="4.5" fill="white"/>
+                          </svg>
                         </div>
                       );
                     default:
