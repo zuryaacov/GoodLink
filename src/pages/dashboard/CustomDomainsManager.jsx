@@ -429,6 +429,23 @@ const CustomDomainsManager = () => {
                     </span>
                     <span>{domain.status}</span>
                   </div>
+                  {domain.root_redirect && (
+                    <div className="flex items-center gap-2 text-slate-400 text-sm mt-1">
+                      <span className="material-symbols-outlined text-sm">
+                        subdirectory_arrow_right
+                      </span>
+                      <span className="text-slate-500">Root:</span>
+                      <a
+                        href={domain.root_redirect}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-primary hover:underline truncate max-w-[200px]"
+                        title={domain.root_redirect}
+                      >
+                        {domain.root_redirect.replace(/^https?:\/\//, '')}
+                      </a>
+                    </div>
+                  )}
                 </div>
                 <div className="flex items-center gap-3 self-end sm:self-center">
                   {/* Verify Button - Show if pending or error */}
