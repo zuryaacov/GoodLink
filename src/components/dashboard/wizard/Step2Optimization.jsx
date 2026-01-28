@@ -233,13 +233,21 @@ const Step2Optimization = ({ formData, updateFormData }) => {
                     case 'taboola':
                       return (
                         <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center flex-shrink-0 overflow-hidden border border-[#232f48]">
-                          <img src="https://www.taboola.com/favicon.ico" alt="Taboola" className="w-5 h-5 object-contain" />
+                          <img 
+                            src="https://www.google.com/s2/favicons?domain=taboola.com&sz=128" 
+                            alt="Taboola" 
+                            className="w-5 h-5 object-contain" 
+                          />
                         </div>
                       );
                     case 'outbrain':
                       return (
                         <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center flex-shrink-0 overflow-hidden border border-[#232f48]">
-                          <img src="https://www.outbrain.com/favicon.ico" alt="Outbrain" className="w-5 h-5 object-contain" />
+                          <img 
+                            src="https://www.google.com/s2/favicons?domain=outbrain.com&sz=128" 
+                            alt="Outbrain" 
+                            className="w-5 h-5 object-contain" 
+                          />
                         </div>
                       );
                     default:

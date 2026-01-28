@@ -36,13 +36,21 @@ const getPlatformLogo = (platform) => {
     case 'taboola':
       return (
         <div className="w-12 h-12 rounded-lg bg-white flex items-center justify-center overflow-hidden border border-slate-700">
-          <img src="https://www.taboola.com/favicon.ico" alt="Taboola" className="w-8 h-8 object-contain" />
+          <img 
+            src="https://www.google.com/s2/favicons?domain=taboola.com&sz=128" 
+            alt="Taboola" 
+            className="w-8 h-8 object-contain" 
+          />
         </div>
       );
     case 'outbrain':
       return (
         <div className="w-12 h-12 rounded-lg bg-white flex items-center justify-center overflow-hidden border border-slate-700">
-          <img src="https://www.outbrain.com/favicon.ico" alt="Outbrain" className="w-8 h-8 object-contain" />
+          <img 
+            src="https://www.google.com/s2/favicons?domain=outbrain.com&sz=128" 
+            alt="Outbrain" 
+            className="w-8 h-8 object-contain" 
+          />
         </div>
       );
     case 'snapchat':
