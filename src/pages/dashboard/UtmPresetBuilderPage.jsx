@@ -35,19 +35,14 @@ const getPlatformLogo = (platform) => {
       );
     case 'taboola':
       return (
-        <div className="w-12 h-12 rounded-lg bg-[#0056F0] flex items-center justify-center">
-          <svg viewBox="0 0 24 24" width="32" height="32" fill="white" xmlns="http://www.w3.org/2000/svg">
-            <path d="M2.4 20.4h3.2v-12H2.4v12zm4.8 0h3.2v-16H7.2v16zm4.8 0h3.2V8.4H12v12zm4.8 0h3.2v-8h-3.2v8zM18.4 4.4v2.4h3.2V4.4h-3.2z"/>
-          </svg>
+        <div className="w-12 h-12 rounded-lg bg-white flex items-center justify-center overflow-hidden border border-slate-700">
+          <img src="https://www.taboola.com/favicon.ico" alt="Taboola" className="w-8 h-8 object-contain" />
         </div>
       );
     case 'outbrain':
       return (
-        <div className="w-12 h-12 rounded-lg bg-[#E76C29] flex items-center justify-center">
-          <svg viewBox="0 0 24 24" width="32" height="32" fill="white" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="12" cy="12" r="10" fill="none" stroke="white" strokeWidth="2.5"/>
-            <circle cx="12" cy="12" r="4.5" fill="white"/>
-          </svg>
+        <div className="w-12 h-12 rounded-lg bg-white flex items-center justify-center overflow-hidden border border-slate-700">
+          <img src="https://www.outbrain.com/favicon.ico" alt="Outbrain" className="w-8 h-8 object-contain" />
         </div>
       );
     case 'snapchat':
