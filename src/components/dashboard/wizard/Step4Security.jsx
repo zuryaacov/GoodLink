@@ -14,19 +14,23 @@ const Step4Security = ({ formData, updateFormData }) => {
     >
       <div>
         <h3 className="text-xl font-bold text-white mb-2">Step 4: Security & Routing</h3>
-        <p className="text-slate-400 text-sm">Advanced protection and routing options (Pro Features)</p>
+        <p className="text-slate-400 text-sm">
+          Advanced protection and routing options (Pro Features)
+        </p>
       </div>
 
       {/* Fraud Shield */}
       <div>
-        <label className="block text-sm font-medium text-white mb-3">
-          Fraud Shield Protection
-        </label>
+        <label className="block text-sm font-medium text-white mb-3">Fraud Shield Protection</label>
         <div className="space-y-2">
           {[
             { value: 'none', label: 'None', description: 'No additional protection' },
             { value: 'basic', label: 'Basic', description: 'Turnstile CAPTCHA verification' },
-            { value: 'advanced', label: 'Advanced', description: 'IPQS fraud detection + Turnstile' },
+            {
+              value: 'advanced',
+              label: 'Advanced',
+              description: 'IPQS fraud detection + Turnstile',
+            },
           ].map((option) => (
             <button
               key={option.value}
@@ -34,16 +38,18 @@ const Step4Security = ({ formData, updateFormData }) => {
               className={`w-full flex items-start justify-between p-4 rounded-xl border transition-colors text-left ${
                 formData.fraudShield === option.value
                   ? 'border-primary bg-primary/10'
-                  : 'border-[#584674] bg-[#1e152f] hover:border-[#6b5a87]'
+                  : 'border-[#232f48] bg-[#0b0f19] hover:border-[#324467]'
               }`}
             >
               <div>
                 <div className="flex items-center gap-3 mb-1">
-                  <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
-                    formData.fraudShield === option.value
-                      ? 'border-primary bg-primary'
-                      : 'border-slate-500'
-                  }`}>
+                  <div
+                    className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
+                      formData.fraudShield === option.value
+                        ? 'border-primary bg-primary'
+                        : 'border-slate-500'
+                    }`}
+                  >
                     {formData.fraudShield === option.value && (
                       <div className="w-2 h-2 bg-white rounded-full" />
                     )}
@@ -59,17 +65,21 @@ const Step4Security = ({ formData, updateFormData }) => {
 
       {/* Bot Action */}
       <div>
-        <label className="block text-sm font-medium text-white mb-3">
-          Bot Detection Action
-        </label>
-        <p className="text-xs text-slate-500 mb-3">
-          What should happen when a bot is detected?
-        </p>
+        <label className="block text-sm font-medium text-white mb-3">Bot Detection Action</label>
+        <p className="text-xs text-slate-500 mb-3">What should happen when a bot is detected?</p>
         <div className="space-y-2">
           {[
             { value: 'block', label: 'Block', description: 'Block the request completely' },
-            { value: 'redirect', label: 'Redirect to Alternative URL', description: 'Send bots to a different link' },
-            { value: 'no-tracking', label: 'Forward Without Tracking', description: 'Allow but skip pixel firing' },
+            {
+              value: 'redirect',
+              label: 'Redirect to Alternative URL',
+              description: 'Send bots to a different link',
+            },
+            {
+              value: 'no-tracking',
+              label: 'Forward Without Tracking',
+              description: 'Allow but skip pixel firing',
+            },
           ].map((option) => (
             <button
               key={option.value}
@@ -77,16 +87,18 @@ const Step4Security = ({ formData, updateFormData }) => {
               className={`w-full flex items-start justify-between p-4 rounded-xl border transition-colors text-left ${
                 formData.botAction === option.value
                   ? 'border-primary bg-primary/10'
-                  : 'border-[#584674] bg-[#1e152f] hover:border-[#6b5a87]'
+                  : 'border-[#232f48] bg-[#0b0f19] hover:border-[#324467]'
               }`}
             >
               <div>
                 <div className="flex items-center gap-3 mb-1">
-                  <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
-                    formData.botAction === option.value
-                      ? 'border-primary bg-primary'
-                      : 'border-slate-500'
-                  }`}>
+                  <div
+                    className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
+                      formData.botAction === option.value
+                        ? 'border-primary bg-primary'
+                        : 'border-slate-500'
+                    }`}
+                  >
                     {formData.botAction === option.value && (
                       <div className="w-2 h-2 bg-white rounded-full" />
                     )}
@@ -105,15 +117,17 @@ const Step4Security = ({ formData, updateFormData }) => {
         <label className="block text-sm font-medium text-white mb-3">
           Geo-Targeting Rules <span className="text-slate-500">(Optional)</span>
         </label>
-        <div className="p-4 bg-[#1e152f] border border-[#584674] rounded-xl">
+        <div className="p-4 bg-[#0b0f19] border border-[#232f48] rounded-xl">
           <p className="text-slate-400 text-sm mb-4">
             Set up routing rules based on visitor location
           </p>
           <div className="space-y-3">
             {formData.geoRules && formData.geoRules.length > 0 ? (
               formData.geoRules.map((rule, index) => (
-                <div key={index} className="p-3 bg-[#1e152f] rounded-lg border border-[#584674]">
-                  <p className="text-white text-sm font-medium">{rule.country} → {rule.url}</p>
+                <div key={index} className="p-3 bg-[#101622] rounded-lg border border-[#232f48]">
+                  <p className="text-white text-sm font-medium">
+                    {rule.country} → {rule.url}
+                  </p>
                 </div>
               ))
             ) : (
@@ -125,7 +139,7 @@ const Step4Security = ({ formData, updateFormData }) => {
               onClick={() => {
                 setModalOpen(true);
               }}
-              className="w-full px-4 py-2 border border-dashed border-[#6b5a87] text-slate-400 hover:text-white hover:border-primary rounded-lg transition-colors text-sm"
+              className="w-full px-4 py-2 border border-dashed border-[#324467] text-slate-400 hover:text-white hover:border-primary rounded-lg transition-colors text-sm"
             >
               + Add Geo-Rule
             </button>
@@ -149,5 +163,3 @@ const Step4Security = ({ formData, updateFormData }) => {
 };
 
 export default Step4Security;
-
-

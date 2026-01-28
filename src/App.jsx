@@ -1,18 +1,18 @@
-import React, { useEffect, useState } from "react";
-import { Routes, Route, Navigate, Outlet } from "react-router-dom";
-import Homepage from "./pages/Homepage";
-import AuthPage from "./pages/AuthPage";
-import DashboardLayout from "./layouts/DashboardLayout";
-import Analytics from "./pages/dashboard/Analytics";
-import LinkManager from "./pages/dashboard/LinkManager";
-import UtmPresetManager from "./pages/dashboard/UtmPresetManager";
-import UtmPresetBuilderPage from "./pages/dashboard/UtmPresetBuilderPage";
-import PixelManager from "./pages/dashboard/PixelManager";
-import PixelBuilderPage from "./pages/dashboard/PixelBuilderPage";
-import CustomDomainsManager from "./pages/dashboard/CustomDomainsManager";
-import AddDomainPage from "./pages/dashboard/AddDomainPage";
-import LinkBuilderPage from "./pages/dashboard/LinkBuilderPage";
-import { supabase } from "./lib/supabase";
+import React, { useEffect, useState } from 'react';
+import { Routes, Route, Navigate, Outlet } from 'react-router-dom';
+import Homepage from './pages/Homepage';
+import AuthPage from './pages/AuthPage';
+import DashboardLayout from './layouts/DashboardLayout';
+import Analytics from './pages/dashboard/Analytics';
+import LinkManager from './pages/dashboard/LinkManager';
+import UtmPresetManager from './pages/dashboard/UtmPresetManager';
+import UtmPresetBuilderPage from './pages/dashboard/UtmPresetBuilderPage';
+import PixelManager from './pages/dashboard/PixelManager';
+import PixelBuilderPage from './pages/dashboard/PixelBuilderPage';
+import CustomDomainsManager from './pages/dashboard/CustomDomainsManager';
+import AddDomainPage from './pages/dashboard/AddDomainPage';
+import LinkBuilderPage from './pages/dashboard/LinkBuilderPage';
+import { supabase } from './lib/supabase';
 
 const ProtectedRoute = ({ children }) => {
   const [user, setUser] = useState(null);
@@ -35,7 +35,7 @@ const ProtectedRoute = ({ children }) => {
 
   if (loading) {
     return (
-      <div className="h-screen w-full bg-[#1e152f] flex items-center justify-center text-white">
+      <div className="h-screen w-full bg-[#0b0f19] flex items-center justify-center text-white">
         Loading...
       </div>
     );
@@ -52,11 +52,9 @@ function App() {
   if (!supabase) {
     // ... existing configuration check ...
     return (
-      <div className="h-screen w-full bg-[#1e152f] flex items-center justify-center text-white px-6">
+      <div className="h-screen w-full bg-[#101622] flex items-center justify-center text-white px-6">
         <div className="max-w-md text-center">
-          <h1 className="text-2xl font-bold text-red-500 mb-4">
-            Configuration Required
-          </h1>
+          <h1 className="text-2xl font-bold text-red-500 mb-4">Configuration Required</h1>
           <p className="text-slate-400 mb-6">
             Supabase credentials are missing. Please add
             <code className="bg-slate-800 px-2 py-1 rounded text-primary mx-1">
@@ -165,14 +163,14 @@ function App() {
           </ProtectedRoute>
         }
       />
-        <Route
+      <Route
         path="/dashboard/links/edit/:id"
-          element={
+        element={
           <ProtectedRoute>
             <LinkBuilderPage />
           </ProtectedRoute>
-          }
-        />
+        }
+      />
     </Routes>
   );
 }

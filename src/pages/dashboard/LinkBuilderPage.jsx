@@ -41,7 +41,7 @@ const LinkBuilderPage = () => {
   const step1ValidationRef = useRef(null);
   const step3ValidationRef = useRef(null);
   const [initialLoading, setInitialLoading] = useState(!!linkIdToLoad);
-  
+
   // Get steps based on plan type
   const steps = getStepsForPlan(planType);
 
@@ -73,7 +73,7 @@ const LinkBuilderPage = () => {
   const [formData, setFormData] = useState(getInitialFormData());
   const [originalLinkData, setOriginalLinkData] = useState(null); // Store original domain/slug for Redis key updates
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
+
   const [modalState, setModalState] = useState({
     isOpen: false,
     type: 'alert',
@@ -87,15 +87,17 @@ const LinkBuilderPage = () => {
   useEffect(() => {
     const fetchPlanType = async () => {
       try {
-        const { data: { user } } = await supabase.auth.getUser();
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
         if (!user) return;
-        
+
         const { data: profile } = await supabase
           .from('profiles')
           .select('plan_type')
           .eq('user_id', user.id)
           .single();
-        
+
         if (profile?.plan_type) {
           setPlanType(profile.plan_type);
         }
@@ -115,7 +117,9 @@ const LinkBuilderPage = () => {
   const fetchLink = async () => {
     try {
       setInitialLoading(true);
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (!user) {
         navigate('/dashboard/links');
         return;
@@ -136,12 +140,8 @@ const LinkBuilderPage = () => {
 
       // For duplicate mode, remove ID and modify name/slug
       const isDuplicate = !!duplicateId;
-      const modifiedName = isDuplicate && data.name 
-        ? `${data.name} (Copy)` 
-        : data.name || '';
-      const modifiedSlug = isDuplicate && data.slug 
-        ? `${data.slug}-copy` 
-        : data.slug || '';
+      const modifiedName = isDuplicate && data.name ? `${data.name} (Copy)` : data.name || '';
+      const modifiedSlug = isDuplicate && data.slug ? `${data.slug}-copy` : data.slug || '';
 
       // Store original domain/slug for Redis key updates (only in edit mode, not duplicate)
       if (!isDuplicate) {
@@ -163,7 +163,8 @@ const LinkBuilderPage = () => {
         utmCampaign: data.utm_campaign || '',
         utmContent: data.utm_content || '',
         utmTerm: data.utm_term || '',
-        parameterPassThrough: data.parameter_pass_through !== undefined ? data.parameter_pass_through : true,
+        parameterPassThrough:
+          data.parameter_pass_through !== undefined ? data.parameter_pass_through : true,
         selectedUtmPresets: Array.isArray(data.utm_presets) ? data.utm_presets : [],
         selectedPixels: data.pixels || [],
         serverSideTracking: data.server_side_tracking || false,
@@ -198,7 +199,7 @@ const LinkBuilderPage = () => {
   };
 
   const updateFormData = (field, value) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
   const generateRandomSlug = () => {
@@ -217,7 +218,7 @@ const LinkBuilderPage = () => {
         return;
       }
     }
-    
+
     // Validate Step 2 (Security) - fallback URL is required if redirect is selected
     if (currentStep === 2 && step3ValidationRef.current) {
       const validationResult = step3ValidationRef.current();
@@ -225,7 +226,7 @@ const LinkBuilderPage = () => {
         return;
       }
     }
-    
+
     if (currentStep < steps.length) {
       setCurrentStep(currentStep + 1);
     }
@@ -252,7 +253,9 @@ const LinkBuilderPage = () => {
 
     setIsSubmitting(true);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (!user) throw new Error('User not authenticated');
 
       if (!formData.targetUrl || !formData.targetUrl.trim()) {
@@ -265,7 +268,7 @@ const LinkBuilderPage = () => {
       }
 
       const finalSlug = formData.slug || generateRandomSlug();
-      
+
       const utmParams = new URLSearchParams();
       if (formData.utmSource) utmParams.append('utm_source', formData.utmSource);
       if (formData.utmMedium) utmParams.append('utm_medium', formData.utmMedium);
@@ -291,7 +294,9 @@ const LinkBuilderPage = () => {
             utm_campaign: formData.utmCampaign || null,
             utm_content: formData.utmContent || null,
             utm_term: formData.utmTerm || null,
-            utm_presets: Array.isArray(formData.selectedUtmPresets) ? formData.selectedUtmPresets : [],
+            utm_presets: Array.isArray(formData.selectedUtmPresets)
+              ? formData.selectedUtmPresets
+              : [],
             parameter_pass_through: formData.parameterPassThrough,
             pixels: formData.selectedPixels,
             server_side_tracking: formData.serverSideTracking,
@@ -319,21 +324,24 @@ const LinkBuilderPage = () => {
         } else if (updatedLink) {
           console.log('✅ [LinkBuilder] Link fetched, updating Redis cache...');
           console.log('🔵 [LinkBuilder] Original link data:', originalLinkData);
-          console.log('🔵 [LinkBuilder] New link data:', { domain: updatedLink.domain, slug: updatedLink.slug });
-          
+          console.log('🔵 [LinkBuilder] New link data:', {
+            domain: updatedLink.domain,
+            slug: updatedLink.slug,
+          });
+
           // Update Redis cache - pass old domain/slug to delete old key if changed
           try {
             const oldDomain = originalLinkData?.domain || null;
             const oldSlug = originalLinkData?.slug || null;
-            
-            console.log('🔵 [LinkBuilder] Sending to Redis - oldDomain:', oldDomain, 'oldSlug:', oldSlug);
-            
-            const redisResult = await updateLinkInRedis(
-              updatedLink, 
-              supabase,
+
+            console.log(
+              '🔵 [LinkBuilder] Sending to Redis - oldDomain:',
               oldDomain,
+              'oldSlug:',
               oldSlug
             );
+
+            const redisResult = await updateLinkInRedis(updatedLink, supabase, oldDomain, oldSlug);
             if (redisResult) {
               console.log('✅ [LinkBuilder] Redis cache updated successfully');
             } else {
@@ -352,47 +360,57 @@ const LinkBuilderPage = () => {
           title: 'Link Updated Successfully!',
           message: (
             <>
-              <p><strong>Short URL:</strong> {shortUrl}</p>
-              <p style={{ marginTop: '12px' }}><strong>Full UTM String:</strong></p>
-              <p style={{ wordBreak: 'break-all', fontSize: '0.9rem', color: '#6B7280' }}>{fullUtmString}</p>
+              <p>
+                <strong>Short URL:</strong> {shortUrl}
+              </p>
+              <p style={{ marginTop: '12px' }}>
+                <strong>Full UTM String:</strong>
+              </p>
+              <p style={{ wordBreak: 'break-all', fontSize: '0.9rem', color: '#6B7280' }}>
+                {fullUtmString}
+              </p>
             </>
           ),
           onConfirm: () => navigate('/dashboard/links'),
           isLoading: false,
         });
       } else {
-        const { error } = await supabase
-          .from('links')
-          .insert({
-            user_id: user.id,
-            name: finalName,
-            target_url: formData.targetUrl,
-            domain: baseUrl,
-            slug: finalSlug,
-            short_url: shortUrl,
-            utm_source: formData.utmSource || null,
-            utm_medium: formData.utmMedium || null,
-            utm_campaign: formData.utmCampaign || null,
-            utm_content: formData.utmContent || null,
-            utm_term: formData.utmTerm || null,
-            utm_presets: Array.isArray(formData.selectedUtmPresets) ? formData.selectedUtmPresets : [],
-            parameter_pass_through: formData.parameterPassThrough,
-            pixels: formData.selectedPixels,
-            server_side_tracking: formData.serverSideTracking,
-            custom_script: formData.customScript || null,
-            fraud_shield: formData.fraudShield,
-            bot_action: formData.botAction,
-            fallback_url: finalFallbackUrl,
-            geo_rules: Array.isArray(formData.geoRules) ? formData.geoRules : [],
-            created_at: new Date().toISOString(),
-          });
+        const { error } = await supabase.from('links').insert({
+          user_id: user.id,
+          name: finalName,
+          target_url: formData.targetUrl,
+          domain: baseUrl,
+          slug: finalSlug,
+          short_url: shortUrl,
+          utm_source: formData.utmSource || null,
+          utm_medium: formData.utmMedium || null,
+          utm_campaign: formData.utmCampaign || null,
+          utm_content: formData.utmContent || null,
+          utm_term: formData.utmTerm || null,
+          utm_presets: Array.isArray(formData.selectedUtmPresets)
+            ? formData.selectedUtmPresets
+            : [],
+          parameter_pass_through: formData.parameterPassThrough,
+          pixels: formData.selectedPixels,
+          server_side_tracking: formData.serverSideTracking,
+          custom_script: formData.customScript || null,
+          fraud_shield: formData.fraudShield,
+          bot_action: formData.botAction,
+          fallback_url: finalFallbackUrl,
+          geo_rules: Array.isArray(formData.geoRules) ? formData.geoRules : [],
+          created_at: new Date().toISOString(),
+        });
 
         if (error) throw error;
 
         // Fetch the created link to get full data for Redis cache
         console.log('🔄 [LinkBuilder] Fetching created link for Redis cache...');
-        console.log('🔄 [LinkBuilder] Searching for link:', { user_id: user.id, slug: finalSlug, domain: baseUrl });
-        
+        console.log('🔄 [LinkBuilder] Searching for link:', {
+          user_id: user.id,
+          slug: finalSlug,
+          domain: baseUrl,
+        });
+
         const { data: newLinks, error: fetchError } = await supabase
           .from('links')
           .select('*')
@@ -408,11 +426,15 @@ const LinkBuilderPage = () => {
           console.error('❌ [LinkBuilder] Fetch error details:', {
             message: fetchError.message,
             details: fetchError.details,
-            hint: fetchError.hint
+            hint: fetchError.hint,
           });
         } else if (newLinks) {
           console.log('✅ [LinkBuilder] Link fetched, updating Redis cache...');
-          console.log('✅ [LinkBuilder] Link data:', { id: newLinks.id, domain: newLinks.domain, slug: newLinks.slug });
+          console.log('✅ [LinkBuilder] Link data:', {
+            id: newLinks.id,
+            domain: newLinks.domain,
+            slug: newLinks.slug,
+          });
           // Update Redis cache
           try {
             const redisResult = await updateLinkInRedis(newLinks, supabase);
@@ -440,9 +462,15 @@ const LinkBuilderPage = () => {
           title: 'Link Created Successfully!',
           message: (
             <>
-              <p><strong>Short URL:</strong> {shortUrl}</p>
-              <p style={{ marginTop: '12px' }}><strong>Full UTM String (copied to clipboard):</strong></p>
-              <p style={{ wordBreak: 'break-all', fontSize: '0.9rem', color: '#6B7280' }}>{fullUtmString}</p>
+              <p>
+                <strong>Short URL:</strong> {shortUrl}
+              </p>
+              <p style={{ marginTop: '12px' }}>
+                <strong>Full UTM String (copied to clipboard):</strong>
+              </p>
+              <p style={{ wordBreak: 'break-all', fontSize: '0.9rem', color: '#6B7280' }}>
+                {fullUtmString}
+              </p>
             </>
           ),
           onConfirm: () => navigate('/dashboard/links'),
@@ -466,9 +494,11 @@ const LinkBuilderPage = () => {
 
   if (initialLoading) {
     return (
-      <div className="min-h-screen bg-[#1e152f] flex items-center justify-center">
+      <div className="min-h-screen bg-[#0b0f19] flex items-center justify-center">
         <div className="text-center">
-          <span className="material-symbols-outlined text-4xl text-slate-600 animate-spin">refresh</span>
+          <span className="material-symbols-outlined text-4xl text-slate-600 animate-spin">
+            refresh
+          </span>
           <p className="text-slate-400 mt-4">Loading...</p>
         </div>
       </div>
@@ -476,9 +506,9 @@ const LinkBuilderPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[#1e152f] pb-8">
+    <div className="min-h-screen bg-[#0b0f19] pb-8">
       {/* Header with back button */}
-      <div className="sticky top-0 z-10 bg-[#1e152f] border-b border-slate-800 px-4 py-4">
+      <div className="sticky top-0 z-10 bg-[#0b0f19] border-b border-slate-800 px-4 py-4">
         <div className="max-w-4xl mx-auto flex items-center gap-4">
           <button
             onClick={() => navigate('/dashboard/links')}
@@ -487,7 +517,9 @@ const LinkBuilderPage = () => {
             <ArrowLeft size={24} />
           </button>
           <div className="flex-1 min-w-0">
-            <h1 className="text-xl font-bold text-white truncate">{isEditMode ? 'Edit Link' : 'Create Your GoodLink'}</h1>
+            <h1 className="text-xl font-bold text-white truncate">
+              {isEditMode ? 'Edit Link' : 'Create Your GoodLink'}
+            </h1>
           </div>
         </div>
       </div>
@@ -505,8 +537,8 @@ const LinkBuilderPage = () => {
                         currentStep === step.number
                           ? 'bg-primary text-white scale-110 shadow-lg shadow-primary/50'
                           : currentStep > step.number
-                          ? 'bg-primary/50 text-white'
-                          : 'bg-slate-800 text-slate-400'
+                            ? 'bg-primary/50 text-white'
+                            : 'bg-slate-800 text-slate-400'
                       }`}
                     >
                       {step.number}
@@ -560,10 +592,7 @@ const LinkBuilderPage = () => {
             />
           )}
           {currentStep === 3 && (
-            <Step2Optimization
-              formData={formData}
-              updateFormData={updateFormData}
-            />
+            <Step2Optimization formData={formData} updateFormData={updateFormData} />
           )}
         </div>
 
@@ -599,7 +628,7 @@ const LinkBuilderPage = () => {
             <button
               onClick={handleSubmit}
               disabled={isSubmitting}
-              className="px-6 py-3 bg-[#e1567c] hover:bg-[#c94669] text-white font-bold rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              className="px-6 py-3 bg-[#FF10F0] hover:bg-[#e00ed0] text-white font-bold rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
             >
               {isSubmitting ? (
                 <>

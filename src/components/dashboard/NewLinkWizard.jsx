@@ -33,10 +33,10 @@ const NewLinkWizard = ({ isOpen, onClose, initialData = null }) => {
   const [planType, setPlanType] = useState('free');
   const step1ValidationRef = useRef(null);
   const step3ValidationRef = useRef(null);
-  
+
   // Get steps based on plan type
   const steps = getStepsForPlan(planType);
-  
+
   // Initialize formData with initialData if in edit mode, otherwise use defaults
   const getInitialFormData = () => {
     if (initialData) {
@@ -53,7 +53,10 @@ const NewLinkWizard = ({ isOpen, onClose, initialData = null }) => {
         utmMedium: initialData.utm_medium || '',
         utmCampaign: initialData.utm_campaign || '',
         utmContent: initialData.utm_content || '',
-        parameterPassThrough: initialData.parameter_pass_through !== undefined ? initialData.parameter_pass_through : true,
+        parameterPassThrough:
+          initialData.parameter_pass_through !== undefined
+            ? initialData.parameter_pass_through
+            : true,
         platformPreset: null,
         // Step 3
         selectedPixels: initialData.pixels || [],
@@ -114,7 +117,7 @@ const NewLinkWizard = ({ isOpen, onClose, initialData = null }) => {
 
   const [formData, setFormData] = useState(getInitialFormData());
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
+
   // Modal state
   const [modalState, setModalState] = useState({
     isOpen: false,
@@ -129,15 +132,17 @@ const NewLinkWizard = ({ isOpen, onClose, initialData = null }) => {
   useEffect(() => {
     const fetchPlanType = async () => {
       try {
-        const { data: { user } } = await supabase.auth.getUser();
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
         if (!user) return;
-        
+
         const { data: profile } = await supabase
           .from('profiles')
           .select('plan_type')
           .eq('user_id', user.id)
           .single();
-        
+
         if (profile?.plan_type) {
           setPlanType(profile.plan_type);
         }
@@ -160,7 +165,7 @@ const NewLinkWizard = ({ isOpen, onClose, initialData = null }) => {
   }, [isOpen, initialData]);
 
   const updateFormData = (field, value) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
   const nextStep = async () => {
@@ -172,7 +177,7 @@ const NewLinkWizard = ({ isOpen, onClose, initialData = null }) => {
         return;
       }
     }
-    
+
     // Validate Step 2 (Security) - fallback URL is required if redirect is selected
     if (currentStep === 2 && step3ValidationRef.current) {
       const validationResult = step3ValidationRef.current();
@@ -180,7 +185,7 @@ const NewLinkWizard = ({ isOpen, onClose, initialData = null }) => {
         return;
       }
     }
-    
+
     if (currentStep < steps.length) {
       setCurrentStep(currentStep + 1);
     }
@@ -207,7 +212,9 @@ const NewLinkWizard = ({ isOpen, onClose, initialData = null }) => {
 
     setIsSubmitting(true);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (!user) throw new Error('User not authenticated');
 
       // Validate required fields
@@ -223,7 +230,7 @@ const NewLinkWizard = ({ isOpen, onClose, initialData = null }) => {
 
       // Generate slug if not provided
       const finalSlug = formData.slug || generateRandomSlug();
-      
+
       // Build UTM string
       const utmParams = new URLSearchParams();
       if (formData.utmSource) utmParams.append('utm_source', formData.utmSource);
@@ -239,7 +246,7 @@ const NewLinkWizard = ({ isOpen, onClose, initialData = null }) => {
       console.log('🔵 [Submit] Saving to database...');
       console.log('🔵 [Submit] isEditMode:', isEditMode);
       console.log('🔵 [Submit] finalFallbackUrl to save:', finalFallbackUrl);
-      
+
       if (isEditMode && initialData.id) {
         // Update existing link
         console.log('🔵 [Submit] Updating link ID:', initialData.id);
@@ -278,9 +285,15 @@ const NewLinkWizard = ({ isOpen, onClose, initialData = null }) => {
           title: 'Link Updated Successfully!',
           message: (
             <>
-              <p><strong>Short URL:</strong> {shortUrl}</p>
-              <p style={{ marginTop: '12px' }}><strong>Full UTM String:</strong></p>
-              <p style={{ wordBreak: 'break-all', fontSize: '0.9rem', color: '#6B7280' }}>{fullUtmString}</p>
+              <p>
+                <strong>Short URL:</strong> {shortUrl}
+              </p>
+              <p style={{ marginTop: '12px' }}>
+                <strong>Full UTM String:</strong>
+              </p>
+              <p style={{ wordBreak: 'break-all', fontSize: '0.9rem', color: '#6B7280' }}>
+                {fullUtmString}
+              </p>
             </>
           ),
           onConfirm: null,
@@ -289,29 +302,27 @@ const NewLinkWizard = ({ isOpen, onClose, initialData = null }) => {
       } else {
         // Create new link
         console.log('🔵 [Submit] Creating new link...');
-        const { error } = await supabase
-          .from('links')
-          .insert({
-            user_id: user.id,
-            name: finalName,
-            target_url: formData.targetUrl,
-            domain: baseUrl,
-            slug: finalSlug,
-            short_url: shortUrl,
-            utm_source: formData.utmSource || null,
-            utm_medium: formData.utmMedium || null,
-            utm_campaign: formData.utmCampaign || null,
-            utm_content: formData.utmContent || null,
-            parameter_pass_through: formData.parameterPassThrough,
-            pixels: formData.selectedPixels,
-            server_side_tracking: formData.serverSideTracking,
-            custom_script: formData.customScript || null,
-            fraud_shield: formData.fraudShield,
-            bot_action: formData.botAction,
-            fallback_url: finalFallbackUrl,
-            geo_rules: Array.isArray(formData.geoRules) ? formData.geoRules : [],
-            created_at: new Date().toISOString(),
-          });
+        const { error } = await supabase.from('links').insert({
+          user_id: user.id,
+          name: finalName,
+          target_url: formData.targetUrl,
+          domain: baseUrl,
+          slug: finalSlug,
+          short_url: shortUrl,
+          utm_source: formData.utmSource || null,
+          utm_medium: formData.utmMedium || null,
+          utm_campaign: formData.utmCampaign || null,
+          utm_content: formData.utmContent || null,
+          parameter_pass_through: formData.parameterPassThrough,
+          pixels: formData.selectedPixels,
+          server_side_tracking: formData.serverSideTracking,
+          custom_script: formData.customScript || null,
+          fraud_shield: formData.fraudShield,
+          bot_action: formData.botAction,
+          fallback_url: finalFallbackUrl,
+          geo_rules: Array.isArray(formData.geoRules) ? formData.geoRules : [],
+          created_at: new Date().toISOString(),
+        });
 
         console.log('🔵 [Submit] Insert result - error:', error);
         if (error) throw error;
@@ -331,9 +342,15 @@ const NewLinkWizard = ({ isOpen, onClose, initialData = null }) => {
           title: 'Link Created Successfully!',
           message: (
             <>
-              <p><strong>Short URL:</strong> {shortUrl}</p>
-              <p style={{ marginTop: '12px' }}><strong>Full UTM String (copied to clipboard):</strong></p>
-              <p style={{ wordBreak: 'break-all', fontSize: '0.9rem', color: '#6B7280' }}>{fullUtmString}</p>
+              <p>
+                <strong>Short URL:</strong> {shortUrl}
+              </p>
+              <p style={{ marginTop: '12px' }}>
+                <strong>Full UTM String (copied to clipboard):</strong>
+              </p>
+              <p style={{ wordBreak: 'break-all', fontSize: '0.9rem', color: '#6B7280' }}>
+                {fullUtmString}
+              </p>
             </>
           ),
           onConfirm: null,
@@ -342,7 +359,7 @@ const NewLinkWizard = ({ isOpen, onClose, initialData = null }) => {
         // Don't close wizard yet - wait for user to close modal
         return;
       }
-      
+
       // Close wizard and reset (only if no modal was shown)
       onClose();
       setCurrentStep(1);
@@ -379,7 +396,9 @@ const NewLinkWizard = ({ isOpen, onClose, initialData = null }) => {
         message: (
           <>
             <p>{errorMessage}</p>
-            <p style={{ marginTop: '8px', fontSize: '0.9rem', color: '#6B7280' }}>Please check the console for more details.</p>
+            <p style={{ marginTop: '8px', fontSize: '0.9rem', color: '#6B7280' }}>
+              Please check the console for more details.
+            </p>
           </>
         ),
         onConfirm: null,
@@ -417,155 +436,165 @@ const NewLinkWizard = ({ isOpen, onClose, initialData = null }) => {
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
-            className="relative bg-[#1e152f] border border-[#584674] rounded-xl sm:rounded-2xl shadow-2xl w-full max-w-4xl max-h-[95vh] sm:max-h-[90vh] flex flex-col overflow-hidden m-2 sm:m-0"
+            className="relative bg-[#101622] border border-[#232f48] rounded-xl sm:rounded-2xl shadow-2xl w-full max-w-4xl max-h-[95vh] sm:max-h-[90vh] flex flex-col overflow-hidden m-2 sm:m-0"
             style={{ overflowX: 'hidden' }}
             onClick={(e) => e.stopPropagation()}
           >
-        {/* Header */}
-        <div className="flex items-center justify-between p-4 sm:p-6 border-b border-[#584674] flex-shrink-0">
-          <div className="flex-1 min-w-0 pr-2">
-            <h2 className="text-xl sm:text-2xl font-bold text-white truncate">{isEditMode ? 'Edit Link' : 'Create Your GoodLink'}</h2>
-          </div>
-          <button
-            onClick={onClose}
-            className="text-slate-400 hover:text-white transition-colors p-2 flex-shrink-0"
-          >
-            <span className="material-symbols-outlined text-xl sm:text-2xl">close</span>
-          </button>
-        </div>
-
-        {/* Stepper - Hidden for FREE users */}
-        {planType?.toLowerCase() !== 'free' && (
-          <div className="px-3 sm:px-6 py-3 sm:py-4 border-b border-[#584674] flex-shrink-0 overflow-x-auto">
-            <div className="flex items-center gap-2 sm:gap-4 min-w-max">
-              {steps.map((step, index) => (
-                <React.Fragment key={step.number}>
-                  <div className="flex items-center gap-3">
-                    <div
-                      className={`flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full font-bold text-sm sm:text-base transition-all flex-shrink-0 ${
-                        currentStep === step.number
-                          ? 'bg-primary text-white scale-110 shadow-lg shadow-primary/50'
-                          : currentStep > step.number
-                          ? 'bg-primary/50 text-white'
-                          : 'bg-[#584674] text-slate-400'
-                      }`}
-                    >
-                      {step.number}
-                    </div>
-                    <div className="hidden sm:block">
-                      <div
-                        className={`text-xs sm:text-sm font-bold ${
-                          currentStep >= step.number ? 'text-white' : 'text-slate-400'
-                        }`}
-                      >
-                        {step.title}
-                      </div>
-                      {step.subtitle && (
-                        <div className="text-xs text-slate-500 mt-0.5 hidden md:block">
-                          {step.subtitle}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                  {index < steps.length - 1 && (
-                    <div
-                      className={`w-6 sm:w-12 h-0.5 flex-shrink-0 ${
-                        currentStep > step.number ? 'bg-primary' : 'bg-[#584674]'
-                      }`}
-                    />
-                  )}
-                </React.Fragment>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Content */}
-        <div className="flex-1 overflow-y-auto overflow-x-hidden p-3 sm:p-6">
-          <AnimatePresence mode="wait">
-            {currentStep === 1 && (
-              <Step1FastTrack
-                key="step1"
-                formData={formData}
-                updateFormData={updateFormData}
-                onQuickCreate={handleSubmit}
-                onSafetyCheckUpdate={(safety) => updateFormData('urlSafety', safety)}
-                onValidationRequest={step1ValidationRef}
-                onContinue={nextStep}
-                planType={planType}
-              />
-            )}
-            {currentStep === 2 && (
-              <Step3Security
-                key="step2"
-                formData={formData}
-                updateFormData={updateFormData}
-                onValidationRequest={step3ValidationRef}
-              />
-            )}
-            {currentStep === 3 && (
-              <Step2Optimization
-                key="step3"
-                formData={formData}
-                updateFormData={updateFormData}
-              />
-            )}
-          </AnimatePresence>
-        </div>
-
-        {/* Footer */}
-        <div className="flex items-center justify-between p-3 sm:p-6 border-t border-[#584674] flex-shrink-0 gap-2">
-          {currentStep === 1 ? (
-            // Step 1: Hide Previous button and Continue button (moved to Step1FastTrack)
-            <div className="text-slate-400 text-xs sm:text-sm whitespace-nowrap">
-              {steps.length > 1 && `Step ${currentStep} of ${steps.length}`}
-            </div>
-          ) : (
-            <>
-              <button
-                onClick={prevStep}
-                className="px-3 sm:px-4 py-2 text-xs sm:text-sm rounded-lg sm:rounded-xl font-bold transition-colors flex-shrink-0 bg-[#584674] text-white hover:bg-[#6b5a87]"
-              >
-                <span className="hidden sm:inline">Previous</span>
-                <span className="sm:hidden">Prev</span>
-              </button>
-              <div className="text-slate-400 text-xs sm:text-sm whitespace-nowrap">
-                Step {currentStep} of {steps.length}
+            {/* Header */}
+            <div className="flex items-center justify-between p-4 sm:p-6 border-b border-[#232f48] flex-shrink-0">
+              <div className="flex-1 min-w-0 pr-2">
+                <h2 className="text-xl sm:text-2xl font-bold text-white truncate">
+                  {isEditMode ? 'Edit Link' : 'Create Your GoodLink'}
+                </h2>
               </div>
-              {currentStep < steps.length ? (
-                <button
-                  onClick={nextStep}
-                  className="px-4 sm:px-6 py-2 sm:py-2.5 text-xs sm:text-sm bg-primary hover:bg-primary/90 text-white font-bold rounded-lg sm:rounded-xl transition-colors flex-shrink-0"
-                >
-                  Continue
-                </button>
-              ) : null}
-            </>
-          )}
-          {/* Show save button on last step, but not on Step 1 (Step 1 has pink button) */}
-          {currentStep >= steps.length && currentStep > 1 && (
-            <button
-              onClick={handleSubmit}
-              disabled={isSubmitting}
-              className="px-4 sm:px-6 py-2 sm:py-2.5 text-xs sm:text-sm bg-primary hover:bg-primary/90 text-white font-bold rounded-lg sm:rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 flex-shrink-0"
-            >
-              {isSubmitting ? (
-                <>
-                  <span className="material-symbols-outlined animate-spin text-base sm:text-lg">refresh</span>
-                  <span className="hidden sm:inline">{isEditMode ? 'Updating...' : 'Creating...'}</span>
-                  <span className="sm:hidden">{isEditMode ? 'Updating...' : 'Creating...'}</span>
-                </>
+              <button
+                onClick={onClose}
+                className="text-slate-400 hover:text-white transition-colors p-2 flex-shrink-0"
+              >
+                <span className="material-symbols-outlined text-xl sm:text-2xl">close</span>
+              </button>
+            </div>
+
+            {/* Stepper - Hidden for FREE users */}
+            {planType?.toLowerCase() !== 'free' && (
+              <div className="px-3 sm:px-6 py-3 sm:py-4 border-b border-[#232f48] flex-shrink-0 overflow-x-auto">
+                <div className="flex items-center gap-2 sm:gap-4 min-w-max">
+                  {steps.map((step, index) => (
+                    <React.Fragment key={step.number}>
+                      <div className="flex items-center gap-3">
+                        <div
+                          className={`flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full font-bold text-sm sm:text-base transition-all flex-shrink-0 ${
+                            currentStep === step.number
+                              ? 'bg-primary text-white scale-110 shadow-lg shadow-primary/50'
+                              : currentStep > step.number
+                                ? 'bg-primary/50 text-white'
+                                : 'bg-[#232f48] text-slate-400'
+                          }`}
+                        >
+                          {step.number}
+                        </div>
+                        <div className="hidden sm:block">
+                          <div
+                            className={`text-xs sm:text-sm font-bold ${
+                              currentStep >= step.number ? 'text-white' : 'text-slate-400'
+                            }`}
+                          >
+                            {step.title}
+                          </div>
+                          {step.subtitle && (
+                            <div className="text-xs text-slate-500 mt-0.5 hidden md:block">
+                              {step.subtitle}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                      {index < steps.length - 1 && (
+                        <div
+                          className={`w-6 sm:w-12 h-0.5 flex-shrink-0 ${
+                            currentStep > step.number ? 'bg-primary' : 'bg-[#232f48]'
+                          }`}
+                        />
+                      )}
+                    </React.Fragment>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Content */}
+            <div className="flex-1 overflow-y-auto overflow-x-hidden p-3 sm:p-6">
+              <AnimatePresence mode="wait">
+                {currentStep === 1 && (
+                  <Step1FastTrack
+                    key="step1"
+                    formData={formData}
+                    updateFormData={updateFormData}
+                    onQuickCreate={handleSubmit}
+                    onSafetyCheckUpdate={(safety) => updateFormData('urlSafety', safety)}
+                    onValidationRequest={step1ValidationRef}
+                    onContinue={nextStep}
+                    planType={planType}
+                  />
+                )}
+                {currentStep === 2 && (
+                  <Step3Security
+                    key="step2"
+                    formData={formData}
+                    updateFormData={updateFormData}
+                    onValidationRequest={step3ValidationRef}
+                  />
+                )}
+                {currentStep === 3 && (
+                  <Step2Optimization
+                    key="step3"
+                    formData={formData}
+                    updateFormData={updateFormData}
+                  />
+                )}
+              </AnimatePresence>
+            </div>
+
+            {/* Footer */}
+            <div className="flex items-center justify-between p-3 sm:p-6 border-t border-[#232f48] flex-shrink-0 gap-2">
+              {currentStep === 1 ? (
+                // Step 1: Hide Previous button and Continue button (moved to Step1FastTrack)
+                <div className="text-slate-400 text-xs sm:text-sm whitespace-nowrap">
+                  {steps.length > 1 && `Step ${currentStep} of ${steps.length}`}
+                </div>
               ) : (
                 <>
-                  <span className="material-symbols-outlined text-base sm:text-lg">check</span>
-                  <span className="hidden sm:inline">{isEditMode ? 'Update Link' : 'Create & Copy Link'}</span>
-                  <span className="sm:hidden">{isEditMode ? 'Update' : 'Create'}</span>
+                  <button
+                    onClick={prevStep}
+                    className="px-3 sm:px-4 py-2 text-xs sm:text-sm rounded-lg sm:rounded-xl font-bold transition-colors flex-shrink-0 bg-[#232f48] text-white hover:bg-[#324467]"
+                  >
+                    <span className="hidden sm:inline">Previous</span>
+                    <span className="sm:hidden">Prev</span>
+                  </button>
+                  <div className="text-slate-400 text-xs sm:text-sm whitespace-nowrap">
+                    Step {currentStep} of {steps.length}
+                  </div>
+                  {currentStep < steps.length ? (
+                    <button
+                      onClick={nextStep}
+                      className="px-4 sm:px-6 py-2 sm:py-2.5 text-xs sm:text-sm bg-primary hover:bg-primary/90 text-white font-bold rounded-lg sm:rounded-xl transition-colors flex-shrink-0"
+                    >
+                      Continue
+                    </button>
+                  ) : null}
                 </>
               )}
-            </button>
-          )}
-        </div>
-      </motion.div>
+              {/* Show save button on last step, but not on Step 1 (Step 1 has pink button) */}
+              {currentStep >= steps.length && currentStep > 1 && (
+                <button
+                  onClick={handleSubmit}
+                  disabled={isSubmitting}
+                  className="px-4 sm:px-6 py-2 sm:py-2.5 text-xs sm:text-sm bg-primary hover:bg-primary/90 text-white font-bold rounded-lg sm:rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 flex-shrink-0"
+                >
+                  {isSubmitting ? (
+                    <>
+                      <span className="material-symbols-outlined animate-spin text-base sm:text-lg">
+                        refresh
+                      </span>
+                      <span className="hidden sm:inline">
+                        {isEditMode ? 'Updating...' : 'Creating...'}
+                      </span>
+                      <span className="sm:hidden">
+                        {isEditMode ? 'Updating...' : 'Creating...'}
+                      </span>
+                    </>
+                  ) : (
+                    <>
+                      <span className="material-symbols-outlined text-base sm:text-lg">check</span>
+                      <span className="hidden sm:inline">
+                        {isEditMode ? 'Update Link' : 'Create & Copy Link'}
+                      </span>
+                      <span className="sm:hidden">{isEditMode ? 'Update' : 'Create'}</span>
+                    </>
+                  )}
+                </button>
+              )}
+            </div>
+          </motion.div>
         </div>
       )}
 
@@ -590,4 +619,3 @@ const NewLinkWizard = ({ isOpen, onClose, initialData = null }) => {
 };
 
 export default NewLinkWizard;
-

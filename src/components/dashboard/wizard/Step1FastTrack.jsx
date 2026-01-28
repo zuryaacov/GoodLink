@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from "react";
-import { motion } from "framer-motion";
-import { supabase } from "../../../lib/supabase";
-import { checkUrlSafety } from "../../../lib/urlSafetyCheck";
-import { validateUrl } from "../../../lib/urlValidation";
-import { validateSlug, validateSlugFormat } from "../../../lib/slugValidation";
+import React, { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
+import { supabase } from '../../../lib/supabase';
+import { checkUrlSafety } from '../../../lib/urlSafetyCheck';
+import { validateUrl } from '../../../lib/urlValidation';
+import { validateSlug, validateSlugFormat } from '../../../lib/slugValidation';
 
 const Step1FastTrack = ({
   formData,
@@ -14,7 +14,7 @@ const Step1FastTrack = ({
   onContinue,
   planType = 'free',
 }) => {
-  const [domains, setDomains] = useState(["glynk.to"]);
+  const [domains, setDomains] = useState(['glynk.to']);
   const [checkingSlug, setCheckingSlug] = useState(false);
   const [validatingButton, setValidatingButton] = useState(null); // 'pink' | 'blue' | null
   const [slugError, setSlugError] = useState(null);
@@ -36,8 +36,8 @@ const Step1FastTrack = ({
     const fetchDomains = async () => {
       // If user is on FREE plan, only allow default domain
       if (planType?.toLowerCase() === 'free') {
-        setDomains(["glynk.to"]);
-        updateFormData("domain", "glynk.to");
+        setDomains(['glynk.to']);
+        updateFormData('domain', 'glynk.to');
         return;
       }
 
@@ -48,24 +48,24 @@ const Step1FastTrack = ({
         if (user) {
           // Fetch active custom domains from custom_domains table
           const { data: customDomains, error: domainsError } = await supabase
-            .from("custom_domains")
-            .select("domain")
-            .eq("user_id", user.id)
-            .eq("status", "active");
+            .from('custom_domains')
+            .select('domain')
+            .eq('user_id', user.id)
+            .eq('status', 'active');
 
           if (!domainsError && customDomains && customDomains.length > 0) {
             // User has active custom domains - show all options including default
             const customDomainList = customDomains.map((d) => d.domain);
-            setDomains(["glynk.to", ...customDomainList]);
+            setDomains(['glynk.to', ...customDomainList]);
           } else {
             // No active custom domains - just show default
-            setDomains(["glynk.to"]);
+            setDomains(['glynk.to']);
           }
         }
       } catch (error) {
-        console.error("Error fetching domains:", error);
+        console.error('Error fetching domains:', error);
         // On error, default to just default domain
-        setDomains(["glynk.to"]);
+        setDomains(['glynk.to']);
       }
     };
     fetchDomains();
@@ -82,7 +82,9 @@ const Step1FastTrack = ({
 
       setCheckingName(true);
       try {
-        const { data: { user } } = await supabase.auth.getUser();
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
         if (!user) {
           setCheckingName(false);
           return;
@@ -90,34 +92,34 @@ const Step1FastTrack = ({
 
         // Check if name already exists for this user (case-insensitive)
         let query = supabase
-          .from("links")
-          .select("id, name")
-          .eq("user_id", user.id)
-          .ilike("name", formData.name.trim())
-          .neq("status", "deleted");
+          .from('links')
+          .select('id, name')
+          .eq('user_id', user.id)
+          .ilike('name', formData.name.trim())
+          .neq('status', 'deleted');
 
         // Exclude the current link if in edit mode
         if (formData.linkId) {
-          query = query.neq("id", formData.linkId);
+          query = query.neq('id', formData.linkId);
         }
 
         const { data: existingLinks, error } = await query.limit(1);
 
         if (error) {
-          console.error("Error checking name availability:", error);
+          console.error('Error checking name availability:', error);
           setCheckingName(false);
           return;
         }
 
         if (existingLinks && existingLinks.length > 0) {
           setIsNameAvailable(false);
-          setNameError("This name already exists in your links. Please use a different name.");
+          setNameError('This name already exists in your links. Please use a different name.');
         } else {
           setIsNameAvailable(true);
           setNameError(null);
         }
       } catch (error) {
-        console.error("Error checking name:", error);
+        console.error('Error checking name:', error);
       } finally {
         setCheckingName(false);
       }
@@ -134,7 +136,7 @@ const Step1FastTrack = ({
       const result = {
         isSafe: false,
         urlExists: false,
-        error: "URL is required",
+        error: 'URL is required',
       };
       setSafetyCheck({
         loading: false,
@@ -153,13 +155,13 @@ const Step1FastTrack = ({
       const result = {
         isSafe: false,
         urlExists: false,
-        error: validation.error || "Invalid URL format",
+        error: validation.error || 'Invalid URL format',
       };
       setSafetyCheck({
         loading: false,
         isSafe: null,
         threatType: null,
-        error: validation.error || "Invalid URL format",
+        error: validation.error || 'Invalid URL format',
         urlExists: false,
       });
       return result;
@@ -171,35 +173,35 @@ const Step1FastTrack = ({
     // Check if URL is pointing to glynk.to (not allowed - cannot redirect to own domain)
     try {
       const urlObj = new URL(normalizedUrl);
-      const hostname = urlObj.hostname.toLowerCase().replace(/^www\./, "");
+      const hostname = urlObj.hostname.toLowerCase().replace(/^www\./, '');
 
-      if (hostname === "glynk.to") {
+      if (hostname === 'glynk.to') {
         const result = {
           isSafe: false,
           urlExists: false,
-          error: "Redirect cannot be to glynk.to. Please use a different URL.",
+          error: 'Redirect cannot be to glynk.to. Please use a different URL.',
         };
         setSafetyCheck({
           loading: false,
           isSafe: false,
           threatType: null,
-          error: "Redirect cannot be to glynk.to. Please use a different URL.",
+          error: 'Redirect cannot be to glynk.to. Please use a different URL.',
           urlExists: false,
         });
         return result;
       }
     } catch (error) {
       // If URL parsing fails, continue with normal validation
-      console.error("Error checking glynk.to domain:", error);
+      console.error('Error checking glynk.to domain:', error);
     }
 
     // Perform safety check with normalized URL (only if validation passed)
-    console.log("🔵 [performSafetyCheckAndGetResult] Starting safety check for:", normalizedUrl);
+    console.log('🔵 [performSafetyCheckAndGetResult] Starting safety check for:', normalizedUrl);
     setSafetyCheck((prev) => ({ ...prev, loading: true }));
-    
+
     // Step 1: Check URL safety (Google Safe Browsing)
     const result = await checkUrlSafety(normalizedUrl);
-    console.log("🔵 [performSafetyCheckAndGetResult] Safety check result:", result);
+    console.log('🔵 [performSafetyCheckAndGetResult] Safety check result:', result);
 
     // Step 2: Check if URL already exists in links table (check always, not just if safe)
     let urlExists = false;
@@ -209,33 +211,37 @@ const Step1FastTrack = ({
       } = await supabase.auth.getUser();
 
       if (user) {
-        console.log("🔵 [performSafetyCheckAndGetResult] Checking if URL exists for user:", user.id);
+        console.log(
+          '🔵 [performSafetyCheckAndGetResult] Checking if URL exists for user:',
+          user.id
+        );
         // Get all links for this user to check for URL matches (exclude deleted links)
         const { data: existingLinks, error: linksError } = await supabase
-          .from("links")
-          .select("id, target_url")
-          .eq("user_id", user.id)
-          .neq("status", "deleted");
+          .from('links')
+          .select('id, target_url')
+          .eq('user_id', user.id)
+          .neq('status', 'deleted');
 
         if (linksError) {
-          console.error("❌ [performSafetyCheckAndGetResult] Error fetching links:", linksError);
+          console.error('❌ [performSafetyCheckAndGetResult] Error fetching links:', linksError);
         } else {
-          console.log("🔵 [performSafetyCheckAndGetResult] Found", existingLinks?.length || 0, "existing links");
+          console.log(
+            '🔵 [performSafetyCheckAndGetResult] Found',
+            existingLinks?.length || 0,
+            'existing links'
+          );
         }
 
         if (!linksError && existingLinks && existingLinks.length > 0) {
           // Normalize URLs for comparison (remove trailing slashes, lowercase, etc.)
           const normalizeForComparison = (url) => {
-            if (!url || typeof url !== "string") return "";
+            if (!url || typeof url !== 'string') return '';
 
             try {
               let urlToNormalize = url.trim().toLowerCase();
 
               // Add https:// if no protocol
-              if (
-                !urlToNormalize.startsWith("http://") &&
-                !urlToNormalize.startsWith("https://")
-              ) {
+              if (!urlToNormalize.startsWith('http://') && !urlToNormalize.startsWith('https://')) {
                 urlToNormalize = `https://${urlToNormalize}`;
               }
 
@@ -243,14 +249,11 @@ const Step1FastTrack = ({
               const urlObj = new URL(urlToNormalize);
 
               // Build normalized URL: protocol + hostname (without www) + pathname (without trailing slash)
-              let normalized = `${urlObj.protocol}//${urlObj.hostname.replace(
-                /^www\./,
-                ""
-              )}`;
+              let normalized = `${urlObj.protocol}//${urlObj.hostname.replace(/^www\./, '')}`;
 
               // Add pathname without trailing slash
-              if (urlObj.pathname && urlObj.pathname !== "/") {
-                normalized += urlObj.pathname.replace(/\/$/, "");
+              if (urlObj.pathname && urlObj.pathname !== '/') {
+                normalized += urlObj.pathname.replace(/\/$/, '');
               }
 
               // Add search params if they exist
@@ -261,12 +264,15 @@ const Step1FastTrack = ({
               return normalized;
             } catch {
               // Fallback: just lowercase and trim, remove trailing slash
-              return url.toLowerCase().trim().replace(/\/$/, "");
+              return url.toLowerCase().trim().replace(/\/$/, '');
             }
           };
 
           const normalizedInputUrl = normalizeForComparison(normalizedUrl);
-          console.log("🔵 [performSafetyCheckAndGetResult] Normalized input URL:", normalizedInputUrl);
+          console.log(
+            '🔵 [performSafetyCheckAndGetResult] Normalized input URL:',
+            normalizedInputUrl
+          );
 
           // Check if any existing link matches the normalized URL
           // Exclude the current link if in edit mode (formData.linkId)
@@ -276,26 +282,27 @@ const Step1FastTrack = ({
               return false;
             }
             if (!link.target_url) return false;
-            const normalizedExistingUrl = normalizeForComparison(
-              link.target_url
-            );
+            const normalizedExistingUrl = normalizeForComparison(link.target_url);
             const matches = normalizedExistingUrl === normalizedInputUrl;
             if (matches) {
-              console.log("🔵 [performSafetyCheckAndGetResult] Found matching URL:", link.target_url);
+              console.log(
+                '🔵 [performSafetyCheckAndGetResult] Found matching URL:',
+                link.target_url
+              );
             }
             return matches;
           });
         }
       }
     } catch (error) {
-      console.error("❌ [performSafetyCheckAndGetResult] Error checking if URL exists:", error);
+      console.error('❌ [performSafetyCheckAndGetResult] Error checking if URL exists:', error);
       // Don't block user on error, just log it
     }
 
-    console.log("🔵 [performSafetyCheckAndGetResult] Final checks:", {
+    console.log('🔵 [performSafetyCheckAndGetResult] Final checks:', {
       safetyCheckIsSafe: result.isSafe,
       urlExists: urlExists,
-      finalIsSafe: result.isSafe && !urlExists
+      finalIsSafe: result.isSafe && !urlExists,
     });
 
     const safetyState = {
@@ -303,7 +310,7 @@ const Step1FastTrack = ({
       isSafe: result.isSafe && !urlExists, // URL is safe only if it's safe AND doesn't exist
       threatType: result.threatType,
       error: urlExists
-        ? "This URL already exists in your links. Please use a different URL."
+        ? 'This URL already exists in your links. Please use a different URL.'
         : result.error || null,
       urlExists: urlExists,
     };
@@ -326,12 +333,12 @@ const Step1FastTrack = ({
 
     // Determine error message based on validation results
     if (urlExists) {
-      finalResult.error = "This URL already exists in your links. Please use a different URL.";
+      finalResult.error = 'This URL already exists in your links. Please use a different URL.';
     } else if (!result.isSafe) {
-      finalResult.error = result.error || "URL safety check failed. This URL may be unsafe.";
+      finalResult.error = result.error || 'URL safety check failed. This URL may be unsafe.';
     }
 
-    console.log("🔵 [performSafetyCheckAndGetResult] Returning final result:", finalResult);
+    console.log('🔵 [performSafetyCheckAndGetResult] Returning final result:', finalResult);
     return finalResult;
   };
 
@@ -342,7 +349,7 @@ const Step1FastTrack = ({
 
   const handleUrlChange = (e) => {
     const url = e.target.value;
-    updateFormData("targetUrl", url);
+    updateFormData('targetUrl', url);
 
     // Clear URL error when user types
     if (urlError) {
@@ -358,40 +365,40 @@ const Step1FastTrack = ({
   const checkNameAvailability = async (name, userId, excludeLinkId = null) => {
     try {
       if (!name || !name.trim()) {
-        return { isAvailable: false, error: "Name is required" };
+        return { isAvailable: false, error: 'Name is required' };
       }
 
       // Case-insensitive name check
       let query = supabase
-        .from("links")
-        .select("id, name")
-        .eq("user_id", userId)
-        .ilike("name", name.trim())
-        .neq("status", "deleted");
+        .from('links')
+        .select('id, name')
+        .eq('user_id', userId)
+        .ilike('name', name.trim())
+        .neq('status', 'deleted');
 
       // Exclude the current link if in edit mode
       if (excludeLinkId) {
-        query = query.neq("id", excludeLinkId);
+        query = query.neq('id', excludeLinkId);
       }
 
       const { data: existingLinks, error } = await query.limit(1);
 
       if (error) {
-        console.error("Error checking name availability:", error);
-        return { isAvailable: false, error: "Error checking name availability" };
+        console.error('Error checking name availability:', error);
+        return { isAvailable: false, error: 'Error checking name availability' };
       }
 
       if (existingLinks && existingLinks.length > 0) {
         return {
           isAvailable: false,
-          error: "This name already exists in your links. Please use a different name.",
+          error: 'This name already exists in your links. Please use a different name.',
         };
       }
 
       return { isAvailable: true };
     } catch (error) {
-      console.error("Error checking name availability:", error);
-      return { isAvailable: false, error: "Error checking name availability" };
+      console.error('Error checking name availability:', error);
+      return { isAvailable: false, error: 'Error checking name availability' };
     }
   };
 
@@ -406,17 +413,18 @@ const Step1FastTrack = ({
     // Debouncing: Don't check the same slug too frequently (wait at least 2 seconds)
     // UNLESS it's a manual check from a button click
     const now = Date.now();
-    const slugToCheck = formData.slug?.trim().toLowerCase() || "";
+    const slugToCheck = formData.slug?.trim().toLowerCase() || '';
     if (
       !isManual &&
       lastSlugCheck &&
       lastSlugCheck.slug === slugToCheck &&
       now - lastSlugCheck.timestamp < 2000
     ) {
-      console.log("⏸️ Debouncing: Skipping automatic check");
-      return { 
-        isValid: isSlugAvailable === true && isNameAvailable === true && safetyCheck.isSafe === true,
-        errors: null 
+      console.log('⏸️ Debouncing: Skipping automatic check');
+      return {
+        isValid:
+          isSlugAvailable === true && isNameAvailable === true && safetyCheck.isSafe === true,
+        errors: null,
       };
     }
 
@@ -431,111 +439,122 @@ const Step1FastTrack = ({
       } = await supabase.auth.getUser();
 
       if (!user) {
-        setUrlError("You must be logged in to check availability");
+        setUrlError('You must be logged in to check availability');
         setIsSlugAvailable(null);
         setCheckingSlug(false);
         return;
       }
 
       // Step 1: Check URL - ALL URL validations must pass before proceeding
-      console.log("🔵 [Check] Step 1: Checking URL (all validations)...");
-      
+      console.log('🔵 [Check] Step 1: Checking URL (all validations)...');
+
       // URL Check 1: Does URL exist in the field?
       if (!formData.targetUrl || !formData.targetUrl.trim()) {
-        setUrlError("Please enter a URL before checking");
+        setUrlError('Please enter a URL before checking');
         setCheckingSlug(false);
-        console.log("❌ [Check] URL validation failed - URL field is empty");
-        return { isValid: false, errors: { url: "Please enter a URL before checking" } };
+        console.log('❌ [Check] URL validation failed - URL field is empty');
+        return { isValid: false, errors: { url: 'Please enter a URL before checking' } };
       }
-      
+
       // URL Check 2-5: Perform ALL URL validations: format, safety, existence
-      console.log("🔵 [Check] URL Check 2-5: Performing format, safety, and existence checks...");
+      console.log('🔵 [Check] URL Check 2-5: Performing format, safety, and existence checks...');
       const safetyCheckResult = await performSafetyCheckAndGetResult();
-      
-      console.log("🔵 [Check] URL validation result:", {
+
+      console.log('🔵 [Check] URL validation result:', {
         isSafe: safetyCheckResult.isSafe,
         urlExists: safetyCheckResult.urlExists,
-        error: safetyCheckResult.error
+        error: safetyCheckResult.error,
       });
-      
+
       // Check ALL URL validations - if ANY fails, stop and show error
       // IMPORTANT: Check error first, then urlExists, then isSafe
       if (safetyCheckResult.error) {
         setUrlError(safetyCheckResult.error);
         setCheckingSlug(false);
-        console.log("❌ [Check] URL validation failed - Error:", safetyCheckResult.error);
+        console.log('❌ [Check] URL validation failed - Error:', safetyCheckResult.error);
         return { isValid: false, errors: { url: safetyCheckResult.error } };
       }
-      
+
       if (safetyCheckResult.urlExists) {
-        setUrlError("This URL already exists in your links. Please use a different URL.");
+        setUrlError('This URL already exists in your links. Please use a different URL.');
         setCheckingSlug(false);
-        console.log("❌ [Check] URL validation failed - URL exists");
-        return { isValid: false, errors: { url: "This URL already exists in your links. Please use a different URL." } };
+        console.log('❌ [Check] URL validation failed - URL exists');
+        return {
+          isValid: false,
+          errors: { url: 'This URL already exists in your links. Please use a different URL.' },
+        };
       }
-      
+
       if (!safetyCheckResult.isSafe) {
-        setUrlError("URL safety check failed. This URL may be unsafe.");
+        setUrlError('URL safety check failed. This URL may be unsafe.');
         setCheckingSlug(false);
-        console.log("❌ [Check] URL validation failed - Not safe");
-        return { isValid: false, errors: { url: "URL safety check failed. This URL may be unsafe." } };
+        console.log('❌ [Check] URL validation failed - Not safe');
+        return {
+          isValid: false,
+          errors: { url: 'URL safety check failed. This URL may be unsafe.' },
+        };
       }
 
       // ALL URL validations passed - clear any previous errors
       setUrlError(null);
-      console.log("✅ [Check] All URL validations passed - proceeding to Name check");
+      console.log('✅ [Check] All URL validations passed - proceeding to Name check');
 
       // Step 2: Check Name - ALL Name validations must pass before proceeding
-      console.log("🔵 [Check] Step 2: Checking Name (all validations)...");
-      
+      console.log('🔵 [Check] Step 2: Checking Name (all validations)...');
+
       // Name Check 1: Does name exist in the field?
       if (!formData.name || !formData.name.trim()) {
-        setNameError("Please enter a name before checking");
+        setNameError('Please enter a name before checking');
         setIsNameAvailable(false);
         setCheckingSlug(false);
-        console.log("❌ [Check] Name validation failed - Name field is empty");
-        return { isValid: false, errors: { name: "Please enter a name before checking" } };
+        console.log('❌ [Check] Name validation failed - Name field is empty');
+        return { isValid: false, errors: { name: 'Please enter a name before checking' } };
       }
-      
+
       // Name Check 2: Check name availability
-      console.log("🔵 [Check] Name Check 2: Checking name availability...");
+      console.log('🔵 [Check] Name Check 2: Checking name availability...');
       const nameCheck = await checkNameAvailability(
         formData.name,
         user.id,
         formData.linkId || null
       );
 
-      console.log("🔵 [Check] Name validation result:", {
+      console.log('🔵 [Check] Name validation result:', {
         isAvailable: nameCheck.isAvailable,
-        error: nameCheck.error
+        error: nameCheck.error,
       });
 
       // Check all name validations before proceeding
       if (!nameCheck.isAvailable || nameCheck.error) {
-        setNameError(nameCheck.error || "Name is not available");
+        setNameError(nameCheck.error || 'Name is not available');
         setIsNameAvailable(false);
         setCheckingSlug(false);
-        console.log("❌ [Check] Name validation failed:", nameCheck.error || "Name is not available");
-        return { isValid: false, errors: { name: nameCheck.error || "Name is not available" } };
+        console.log(
+          '❌ [Check] Name validation failed:',
+          nameCheck.error || 'Name is not available'
+        );
+        return { isValid: false, errors: { name: nameCheck.error || 'Name is not available' } };
       }
 
       // Name is valid - clear any previous errors and mark as available
       setIsNameAvailable(true);
       setNameError(null);
-      console.log("✅ [Check] All Name validations passed - proceeding to SLUG check");
+      console.log('✅ [Check] All Name validations passed - proceeding to SLUG check');
 
       // Step 3: Check SLUG - ALL SLUG validations must pass
-      console.log("🔵 [Check] Step 3: Checking SLUG (all validations including existence check)...");
-      
+      console.log(
+        '🔵 [Check] Step 3: Checking SLUG (all validations including existence check)...'
+      );
+
       // First check: Does slug exist in the field?
       if (!formData.slug || !formData.slug.trim()) {
-        setSlugError("Please enter a slug before checking");
+        setSlugError('Please enter a slug before checking');
         setIsSlugAvailable(false);
         setCheckingSlug(false);
-        console.log("❌ [Check] SLUG validation failed - SLUG field is empty");
-        return { isValid: false, errors: { slug: "Please enter a slug before checking" } };
+        console.log('❌ [Check] SLUG validation failed - SLUG field is empty');
+        return { isValid: false, errors: { slug: 'Please enter a slug before checking' } };
       }
-      
+
       // Perform all slug validations: format, availability, content moderation
       const validationResult = await validateSlug(
         formData.slug,
@@ -547,39 +566,36 @@ const Step1FastTrack = ({
         formData.linkId || null // exclude current link ID if in edit mode
       );
 
-      console.log("🔵 [Check] SLUG validation result:", {
+      console.log('🔵 [Check] SLUG validation result:', {
         isValid: validationResult.isValid,
-        error: validationResult.error
+        error: validationResult.error,
       });
 
       // Check all slug validations before proceeding
       if (!validationResult.isValid || validationResult.error) {
-        setSlugError(validationResult.error || "Invalid slug");
+        setSlugError(validationResult.error || 'Invalid slug');
         setIsSlugAvailable(false);
         setCheckingSlug(false);
-        console.log("❌ [Check] SLUG validation failed:", validationResult.error || "Invalid slug");
-        return { isValid: false, errors: { slug: validationResult.error || "Invalid slug" } };
+        console.log('❌ [Check] SLUG validation failed:', validationResult.error || 'Invalid slug');
+        return { isValid: false, errors: { slug: validationResult.error || 'Invalid slug' } };
       }
 
       // All validations passed - update form data with normalized slug (lowercase)
-      if (
-        validationResult.normalizedSlug &&
-        validationResult.normalizedSlug !== formData.slug
-      ) {
-        updateFormData("slug", validationResult.normalizedSlug);
+      if (validationResult.normalizedSlug && validationResult.normalizedSlug !== formData.slug) {
+        updateFormData('slug', validationResult.normalizedSlug);
       }
 
       // Slug is valid and available - clear any previous errors
       setSlugError(null);
       setIsSlugAvailable(true);
-      
-      console.log("✅ [Check] All validations passed! URL, Name, and SLUG are all valid.");
+
+      console.log('✅ [Check] All validations passed! URL, Name, and SLUG are all valid.');
       return { isValid: true, errors: null };
     } catch (error) {
-      console.error("Error during validation:", error);
-      setSlugError("Error during validation. Please try again.");
+      console.error('Error during validation:', error);
+      setSlugError('Error during validation. Please try again.');
       setIsSlugAvailable(null);
-      return { isValid: false, errors: { slug: "Error during validation. Please try again." } };
+      return { isValid: false, errors: { slug: 'Error during validation. Please try again.' } };
     } finally {
       setCheckingSlug(false);
     }
@@ -593,7 +609,7 @@ const Step1FastTrack = ({
   });
 
   const handleDomainSelect = (domain) => {
-    updateFormData("domain", domain);
+    updateFormData('domain', domain);
   };
 
   // Show "Create Quick Link" button only when:
@@ -637,12 +653,12 @@ const Step1FastTrack = ({
               onChange={handleUrlChange}
               onPaste={handleUrlPaste}
               placeholder="Paste your URL here..."
-              className={`w-full px-4 sm:px-6 py-4 sm:py-5 text-base sm:text-lg bg-[#1e152f] border-2 rounded-xl sm:rounded-2xl text-white placeholder-slate-500 focus:outline-none transition-all shadow-lg ${
+              className={`w-full px-4 sm:px-6 py-4 sm:py-5 text-base sm:text-lg bg-[#0b0f19] border-2 rounded-xl sm:rounded-2xl text-white placeholder-slate-500 focus:outline-none transition-all shadow-lg ${
                 urlError
-                  ? "border-red-500 focus:border-red-500"
+                  ? 'border-red-500 focus:border-red-500'
                   : safetyCheck.isSafe === true && !safetyCheck.loading
-                  ? "border-green-500/50 focus:border-green-500"
-                  : "border-[#584674] focus:border-primary"
+                    ? 'border-green-500/50 focus:border-green-500'
+                    : 'border-[#232f48] focus:border-primary'
               }`}
               autoFocus
             />
@@ -653,19 +669,18 @@ const Step1FastTrack = ({
                   <span className="material-symbols-outlined animate-spin text-primary text-base sm:text-lg">
                     refresh
                   </span>
-                  <span className="hidden sm:inline">
-                    Scanning for safety...
-                  </span>
+                  <span className="hidden sm:inline">Scanning for safety...</span>
                 </div>
               )}
-              {!checkingSlug && !safetyCheck.loading && safetyCheck.isSafe === true && !urlError && (
-                <div className="flex items-center gap-1 sm:gap-1.5 px-1.5 sm:px-2 py-0.5 sm:py-1 bg-green-500/20 text-green-400 rounded-lg text-xs font-medium">
-                  <span className="material-symbols-outlined text-xs sm:text-sm">
-                    verified
-                  </span>
-                  <span className="hidden sm:inline">Secure Link</span>
-                </div>
-              )}
+              {!checkingSlug &&
+                !safetyCheck.loading &&
+                safetyCheck.isSafe === true &&
+                !urlError && (
+                  <div className="flex items-center gap-1 sm:gap-1.5 px-1.5 sm:px-2 py-0.5 sm:py-1 bg-green-500/20 text-green-400 rounded-lg text-xs font-medium">
+                    <span className="material-symbols-outlined text-xs sm:text-sm">verified</span>
+                    <span className="hidden sm:inline">Secure Link</span>
+                  </div>
+                )}
             </div>
           </div>
 
@@ -688,21 +703,23 @@ const Step1FastTrack = ({
 
           {/* Internal Name input - always visible */}
           <div className="mt-4">
-            <label className="block text-sm font-medium text-white mb-2">
-              Internal Name
-            </label>
+            <label className="block text-sm font-medium text-white mb-2">Internal Name</label>
             <div className="relative">
               <input
                 type="text"
-                value={formData.name || ""}
+                value={formData.name || ''}
                 onChange={(e) => {
-                  updateFormData("name", e.target.value);
+                  updateFormData('name', e.target.value);
                   setNameError(null);
                   setIsNameAvailable(null);
                 }}
                 placeholder="Enter internal name for this link"
-                className={`w-full px-4 py-3 bg-[#1e152f] border-2 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-primary transition-colors ${
-                  nameError ? "border-red-500" : isNameAvailable === true ? "border-green-500/50" : "border-[#584674]"
+                className={`w-full px-4 py-3 bg-[#0b0f19] border-2 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-primary transition-colors ${
+                  nameError
+                    ? 'border-red-500'
+                    : isNameAvailable === true
+                      ? 'border-green-500/50'
+                      : 'border-[#232f48]'
                 }`}
               />
               {checkingName && (
@@ -713,9 +730,7 @@ const Step1FastTrack = ({
                 </div>
               )}
             </div>
-            {nameError && (
-              <p className="text-red-400 text-xs mt-1">{nameError}</p>
-            )}
+            {nameError && <p className="text-red-400 text-xs mt-1">{nameError}</p>}
             {isNameAvailable === true && !nameError && formData.name && !checkingName && (
               <p className="text-green-400 text-xs mt-1">✓ Name is available</p>
             )}
@@ -726,9 +741,7 @@ const Step1FastTrack = ({
       {/* Domain Selection - Hidden for FREE users */}
       {planType?.toLowerCase() !== 'free' && (
         <div className="max-w-2xl mx-auto w-full px-2 sm:px-0">
-          <label className="block text-sm font-medium text-white mb-3">
-            Domain
-          </label>
+          <label className="block text-sm font-medium text-white mb-3">Domain</label>
           <div className="flex flex-wrap gap-2">
             {domains.map((domain) => {
               const isSelected = (formData.domain || domains[0]) === domain;
@@ -738,8 +751,8 @@ const Step1FastTrack = ({
                   onClick={() => handleDomainSelect(domain)}
                   className={`px-4 py-2 rounded-lg font-medium text-sm transition-all ${
                     isSelected
-                      ? "bg-primary text-white shadow-lg shadow-primary/30"
-                      : "bg-[#1e152f] border border-[#584674] text-slate-300 hover:border-primary/50"
+                      ? 'bg-primary text-white shadow-lg shadow-primary/30'
+                      : 'bg-[#0b0f19] border border-[#232f48] text-slate-300 hover:border-primary/50'
                   }`}
                 >
                   {domain}
@@ -752,9 +765,7 @@ const Step1FastTrack = ({
 
       {/* Slug with Magic Wand */}
       <div className="max-w-2xl mx-auto w-full px-2 sm:px-0">
-        <label className="block text-sm font-medium text-white mb-2">
-          Slug (URL Path)
-        </label>
+        <label className="block text-sm font-medium text-white mb-2">Slug (URL Path)</label>
         <input
           type="text"
           value={formData.slug}
@@ -765,7 +776,7 @@ const Step1FastTrack = ({
             inputValue = inputValue.toLowerCase();
 
             // Always update the input (allow typing)
-            updateFormData("slug", inputValue);
+            updateFormData('slug', inputValue);
 
             // Clear previous errors and reset availability when user types
             if (slugError) {
@@ -786,12 +797,12 @@ const Step1FastTrack = ({
             }
           }}
           placeholder="e.g., iphone-deal"
-          className={`w-full px-4 py-3 bg-[#1e152f] border rounded-xl text-white placeholder-slate-500 focus:outline-none transition-colors text-sm sm:text-base ${
+          className={`w-full px-4 py-3 bg-[#0b0f19] border rounded-xl text-white placeholder-slate-500 focus:outline-none transition-colors text-sm sm:text-base ${
             slugError
-              ? "border-red-500 focus:border-red-500"
+              ? 'border-red-500 focus:border-red-500'
               : isSlugAvailable === true
-              ? "border-green-500 focus:border-green-500"
-              : "border-[#584674] focus:border-primary"
+                ? 'border-green-500 focus:border-green-500'
+                : 'border-[#232f48] focus:border-primary'
           }`}
         />
         {slugError && (
@@ -819,7 +830,7 @@ const Step1FastTrack = ({
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="max-w-2xl mx-auto w-full px-2 sm:px-0 p-3 sm:p-4 bg-[#1e152f] border border-[#584674] rounded-xl"
+          className="max-w-2xl mx-auto w-full px-2 sm:px-0 p-3 sm:p-4 bg-[#0b0f19] border border-[#232f48] rounded-xl"
         >
           <p className="text-xs text-slate-500 mb-1">Preview:</p>
           <p className="text-[#10b981] font-mono font-bold text-[1.125rem] sm:text-[1.3125rem] break-all">
@@ -850,40 +861,48 @@ const Step1FastTrack = ({
           }}
           disabled={checkingSlug}
           className={`w-full px-4 sm:px-6 py-3 text-sm sm:text-base text-white font-bold rounded-xl transition-all flex items-center justify-center gap-2 ${
-            checkingSlug && validatingButton !== 'pink' ? "opacity-50 cursor-not-allowed" : ""
+            checkingSlug && validatingButton !== 'pink' ? 'opacity-50 cursor-not-allowed' : ''
           }`}
           style={{
-            backgroundColor: "#e1567c",
+            backgroundColor: '#FF10F0',
           }}
           onMouseEnter={(e) => {
             if (!checkingSlug) {
-              e.currentTarget.style.backgroundColor = "#c94669";
+              e.currentTarget.style.backgroundColor = '#e00ed0';
             }
           }}
           onMouseLeave={(e) => {
             if (!checkingSlug) {
-              e.currentTarget.style.backgroundColor = "#e1567c";
+              e.currentTarget.style.backgroundColor = '#FF10F0';
             }
           }}
         >
           {validatingButton === 'pink' ? (
             <>
-              <span className="material-symbols-outlined animate-spin text-base sm:text-lg">refresh</span>
+              <span className="material-symbols-outlined animate-spin text-base sm:text-lg">
+                refresh
+              </span>
               <span className="hidden sm:inline">Validating...</span>
               <span className="sm:hidden">Validating...</span>
             </>
           ) : (
             <>
-              <span className="material-symbols-outlined text-base sm:text-lg">{formData.linkId ? "save" : "bolt"}</span>
+              <span className="material-symbols-outlined text-base sm:text-lg">
+                {formData.linkId ? 'save' : 'bolt'}
+              </span>
               <span className="hidden sm:inline">
-                {formData.linkId 
-                  ? "Update Link" 
-                  : (planType?.toLowerCase() === 'free' ? "Create Link" : "Create Quick Link (Skip Advanced Settings)")}
+                {formData.linkId
+                  ? 'Update Link'
+                  : planType?.toLowerCase() === 'free'
+                    ? 'Create Link'
+                    : 'Create Quick Link (Skip Advanced Settings)'}
               </span>
               <span className="sm:hidden">
-                {formData.linkId 
-                  ? "Update Link" 
-                  : (planType?.toLowerCase() === 'free' ? "Create Link" : "Create Quick Link")}
+                {formData.linkId
+                  ? 'Update Link'
+                  : planType?.toLowerCase() === 'free'
+                    ? 'Create Link'
+                    : 'Create Quick Link'}
               </span>
             </>
           )}
@@ -915,27 +934,31 @@ const Step1FastTrack = ({
             }}
             disabled={checkingSlug}
             className={`w-full px-4 sm:px-6 py-3 text-sm sm:text-base bg-primary hover:bg-primary/90 text-white font-bold rounded-xl transition-all flex items-center justify-center gap-2 ${
-              checkingSlug && validatingButton !== 'blue' ? "opacity-50 cursor-not-allowed" : ""
+              checkingSlug && validatingButton !== 'blue' ? 'opacity-50 cursor-not-allowed' : ''
             }`}
           >
             {validatingButton === 'blue' ? (
               <>
-                <span className="material-symbols-outlined animate-spin text-base sm:text-lg">refresh</span>
+                <span className="material-symbols-outlined animate-spin text-base sm:text-lg">
+                  refresh
+                </span>
                 <span className="hidden sm:inline">Validating...</span>
                 <span className="sm:hidden">Validating...</span>
               </>
             ) : (
               <>
-                <span className="material-symbols-outlined text-base sm:text-lg">arrow_forward</span>
+                <span className="material-symbols-outlined text-base sm:text-lg">
+                  arrow_forward
+                </span>
                 <span className="hidden sm:inline">
-                  {planType?.toLowerCase() === 'advanced' 
-                    ? "Continue to customize security" 
-                    : "Continue to customize UTM, pixels, and security"}
+                  {planType?.toLowerCase() === 'advanced'
+                    ? 'Continue to customize security'
+                    : 'Continue to customize UTM, pixels, and security'}
                 </span>
                 <span className="sm:hidden">
-                  {planType?.toLowerCase() === 'advanced' 
-                    ? "Continue to customize security" 
-                    : "Continue to customize"}
+                  {planType?.toLowerCase() === 'advanced'
+                    ? 'Continue to customize security'
+                    : 'Continue to customize'}
                 </span>
               </>
             )}

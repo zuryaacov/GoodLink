@@ -1,19 +1,19 @@
-import React, { useState, useEffect, useRef } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Link, useNavigate, useSearchParams } from "react-router-dom";
-import { Eye, EyeOff } from "lucide-react";
-import { supabase } from "../lib/supabase";
+import React, { useState, useEffect, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { Eye, EyeOff } from 'lucide-react';
+import { supabase } from '../lib/supabase';
 
 const AuthPage = () => {
   const [searchParams] = useSearchParams();
-  const planParam = searchParams.get("plan");
-  const [view, setView] = useState("login"); // Always start with login view
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+  const planParam = searchParams.get('plan');
+  const [view, setView] = useState('login'); // Always start with login view
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [honeypot, setHoneypot] = useState(""); // Honeypot field for bot detection
+  const [honeypot, setHoneypot] = useState(''); // Honeypot field for bot detection
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [message, setMessage] = useState(null);
@@ -25,10 +25,10 @@ const AuthPage = () => {
   // Plan checkout URLs mapping
   const planCheckoutUrls = {
     start:
-      "https://goodlink.lemonsqueezy.com/checkout/buy/54a3e3e3-3618-4922-bce6-a0617252f1ae?embed=1",
+      'https://goodlink.lemonsqueezy.com/checkout/buy/54a3e3e3-3618-4922-bce6-a0617252f1ae?embed=1',
     advanced:
-      "https://goodlink.lemonsqueezy.com/checkout/buy/81876116-924c-44f7-b61c-f4a8a93e83f1?embed=1",
-    pro: "https://goodlink.lemonsqueezy.com/checkout/buy/924daf77-b7b3-405d-a94a-2ad2cc476da4?embed=1",
+      'https://goodlink.lemonsqueezy.com/checkout/buy/81876116-924c-44f7-b61c-f4a8a93e83f1?embed=1',
+    pro: 'https://goodlink.lemonsqueezy.com/checkout/buy/924daf77-b7b3-405d-a94a-2ad2cc476da4?embed=1',
   };
 
   // Function to open Lemon Squeezy checkout or customer portal
@@ -45,32 +45,26 @@ const AuthPage = () => {
     // Check user profile to see if they have a paid plan
     try {
       const { data: profile } = await supabase
-        .from("profiles")
-        .select("plan_type, lemon_squeezy_customer_portal_url")
-        .eq("user_id", user.id)
+        .from('profiles')
+        .select('plan_type, lemon_squeezy_customer_portal_url')
+        .eq('user_id', user.id)
         .single();
 
       // If user has a paid plan (not FREE) and has customer portal URL, open it
-      if (
-        profile &&
-        profile.plan_type !== "free" &&
-        profile.lemon_squeezy_customer_portal_url
-      ) {
-        const portalUrl = String(
-          profile.lemon_squeezy_customer_portal_url
-        ).trim();
+      if (profile && profile.plan_type !== 'free' && profile.lemon_squeezy_customer_portal_url) {
+        const portalUrl = String(profile.lemon_squeezy_customer_portal_url).trim();
         if (portalUrl) {
-          window.open(portalUrl, "_blank", "noopener,noreferrer");
+          window.open(portalUrl, '_blank', 'noopener,noreferrer');
           return;
         }
       }
     } catch (err) {
-      console.error("Error fetching profile:", err);
+      console.error('Error fetching profile:', err);
     }
 
     // Otherwise, if user is on FREE plan, open checkout
     const finalUrl = `${checkoutUrl}&checkout[custom][user_id]=${user.id}`;
-    window.open(finalUrl, "_blank", "noopener,noreferrer");
+    window.open(finalUrl, '_blank', 'noopener,noreferrer');
   };
 
   // Check if user is already logged in when component mounts with plan param
@@ -97,21 +91,19 @@ const AuthPage = () => {
 
       // Save plan to sessionStorage for OAuth redirect
       if (planParam) {
-        sessionStorage.setItem("pendingPlan", planParam);
+        sessionStorage.setItem('pendingPlan', planParam);
       }
 
       const { error } = await supabase.auth.signInWithOAuth({
-        provider: "google",
+        provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/login${
-            planParam ? `?plan=${planParam}` : ""
-          }`,
+          redirectTo: `${window.location.origin}/login${planParam ? `?plan=${planParam}` : ''}`,
         },
       });
       if (error) throw error;
     } catch (err) {
       setError(err.message);
-      sessionStorage.removeItem("pendingPlan");
+      sessionStorage.removeItem('pendingPlan');
     } finally {
       setLoading(false);
     }
@@ -119,7 +111,7 @@ const AuthPage = () => {
 
   // Check for pending plan after OAuth redirect
   useEffect(() => {
-    const pendingPlan = sessionStorage.getItem("pendingPlan");
+    const pendingPlan = sessionStorage.getItem('pendingPlan');
     if (pendingPlan && supabase) {
       const checkUser = async () => {
         const {
@@ -127,9 +119,9 @@ const AuthPage = () => {
         } = await supabase.auth.getUser();
         if (user) {
           await openCheckout(pendingPlan);
-          sessionStorage.removeItem("pendingPlan");
+          sessionStorage.removeItem('pendingPlan');
           setTimeout(() => {
-            navigate("/dashboard");
+            navigate('/dashboard');
           }, 2000);
         }
       };
@@ -142,7 +134,7 @@ const AuthPage = () => {
     let currentWidgetId = null;
     let timer = null;
 
-    if (view !== "signup") {
+    if (view !== 'signup') {
       // Cleanup when leaving signup view
       if (turnstileWidgetId && window.turnstile) {
         try {
@@ -157,14 +149,14 @@ const AuthPage = () => {
     }
 
     if (!window.turnstile) {
-      console.warn("Turnstile script not loaded yet");
+      console.warn('Turnstile script not loaded yet');
       return;
     }
 
     const siteKey = import.meta.env.VITE_TURNSTILE_SITE_KEY;
     if (!siteKey) {
       console.warn(
-        "Turnstile Site Key not found. Please add VITE_TURNSTILE_SITE_KEY to your environment variables."
+        'Turnstile Site Key not found. Please add VITE_TURNSTILE_SITE_KEY to your environment variables.'
       );
       return;
     }
@@ -182,11 +174,11 @@ const AuthPage = () => {
       }
 
       // Check if widget already exists in the container (cleanup first)
-      const existingWidget = container.querySelector(".cf-turnstile");
+      const existingWidget = container.querySelector('.cf-turnstile');
       if (existingWidget) {
         try {
           // Try to get widget ID from the element
-          const widgetIdAttr = existingWidget.getAttribute("data-widget-id");
+          const widgetIdAttr = existingWidget.getAttribute('data-widget-id');
           if (widgetIdAttr && window.turnstile) {
             window.turnstile.remove(widgetIdAttr);
           }
@@ -194,7 +186,7 @@ const AuthPage = () => {
           // Ignore errors
         }
         // Clear the container
-        container.innerHTML = "";
+        container.innerHTML = '';
       }
 
       // Also cleanup previous widget from state if exists
@@ -213,9 +205,9 @@ const AuthPage = () => {
           callback: (token) => {
             setTurnstileToken(token);
           },
-          "error-callback": () => {
+          'error-callback': () => {
             setTurnstileToken(null);
-            setError("Turnstile verification failed. Please try again.");
+            setError('Turnstile verification failed. Please try again.');
             // Reset the widget so user can try again
             setTimeout(() => {
               if (window.turnstile && widgetId) {
@@ -227,7 +219,7 @@ const AuthPage = () => {
               }
             }, 500);
           },
-          "expired-callback": () => {
+          'expired-callback': () => {
             setTurnstileToken(null);
             // Reset the widget when token expires
             if (window.turnstile && widgetId) {
@@ -243,7 +235,7 @@ const AuthPage = () => {
         currentWidgetId = widgetId;
         setTurnstileWidgetId(widgetId);
       } catch (error) {
-        console.error("Error rendering Turnstile widget:", error);
+        console.error('Error rendering Turnstile widget:', error);
       }
     };
 
@@ -278,7 +270,7 @@ const AuthPage = () => {
     setMessage(null);
 
     try {
-      if (view === "login") {
+      if (view === 'login') {
         const { data, error } = await supabase.auth.signInWithPassword({
           email,
           password,
@@ -289,15 +281,15 @@ const AuthPage = () => {
         if (planParam && data?.user) {
           await openCheckout(planParam);
           setTimeout(() => {
-            navigate("/dashboard");
+            navigate('/dashboard');
           }, 2000);
         } else {
-          navigate("/dashboard");
+          navigate('/dashboard');
         }
-      } else if (view === "signup") {
+      } else if (view === 'signup') {
         // Password validation
         if (password.length < 8) {
-          throw new Error("Password must be at least 8 characters long");
+          throw new Error('Password must be at least 8 characters long');
         }
 
         // Check for at least one uppercase letter, one lowercase letter, and one number
@@ -306,70 +298,61 @@ const AuthPage = () => {
         const hasNumber = /[0-9]/.test(password);
 
         if (!hasUpper) {
-          throw new Error(
-            "Password must contain at least one uppercase letter (A-Z)"
-          );
+          throw new Error('Password must contain at least one uppercase letter (A-Z)');
         }
 
         if (!hasLower) {
-          throw new Error(
-            "Password must contain at least one lowercase letter (a-z)"
-          );
+          throw new Error('Password must contain at least one lowercase letter (a-z)');
         }
 
         if (!hasNumber) {
-          throw new Error("Password must contain at least one number");
+          throw new Error('Password must contain at least one number');
         }
 
         if (password !== confirmPassword) {
-          throw new Error("Passwords do not match");
+          throw new Error('Passwords do not match');
         }
 
         // Honeypot check - if this field is filled, it's a bot
         // Check DOM element directly (bots might fill it directly, bypassing React state)
         const honeypotField = document.querySelector('input[name="website"]');
-        const honeypotValueFromDOM = honeypotField?.value || "";
+        const honeypotValueFromDOM = honeypotField?.value || '';
         const honeypotValue = honeypotValueFromDOM || honeypot;
 
-        if (honeypotValue && honeypotValue.trim() !== "") {
+        if (honeypotValue && honeypotValue.trim() !== '') {
           // Silently block bot without revealing why
-          console.warn("Bot detected via honeypot field");
-          setError("Registration failed. Please try again.");
+          console.warn('Bot detected via honeypot field');
+          setError('Registration failed. Please try again.');
           setLoading(false);
           return;
         }
 
         // Verify Turnstile token before signup
         if (!turnstileToken) {
-          throw new Error("Please complete the security verification");
+          throw new Error('Please complete the security verification');
         }
 
         const turnstileWorkerUrl =
           import.meta.env.VITE_TURNSTILE_WORKER_URL ||
-          "https://turnstile-verification.fancy-sky-7888.workers.dev";
-        const verifyResponse = await fetch(
-          `${turnstileWorkerUrl}/api/verify-turnstile`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              token: turnstileToken,
-            }),
-          }
-        );
+          'https://turnstile-verification.fancy-sky-7888.workers.dev';
+        const verifyResponse = await fetch(`${turnstileWorkerUrl}/api/verify-turnstile`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            token: turnstileToken,
+          }),
+        });
 
         if (!verifyResponse.ok) {
           const errorData = await verifyResponse.json().catch(() => ({}));
-          throw new Error(
-            errorData.error || "Security verification failed. Please try again."
-          );
+          throw new Error(errorData.error || 'Security verification failed. Please try again.');
         }
 
         const verifyResult = await verifyResponse.json();
         if (!verifyResult.success) {
-          throw new Error("Security verification failed. Please try again.");
+          throw new Error('Security verification failed. Please try again.');
         }
 
         // Only proceed with signup if Turnstile verification passed
@@ -378,16 +361,16 @@ const AuthPage = () => {
           password,
           options: {
             emailRedirectTo: `${window.location.origin}/login${
-              planParam ? `?plan=${planParam}` : ""
+              planParam ? `?plan=${planParam}` : ''
             }`,
           },
         });
 
         if (error) {
           // Check if it's an email sending error
-          if (error.message && error.message.includes("confirmation email")) {
+          if (error.message && error.message.includes('confirmation email')) {
             throw new Error(
-              "Email configuration error. Please contact support or check your Supabase email settings."
+              'Email configuration error. Please contact support or check your Supabase email settings.'
             );
           }
           throw error;
@@ -400,23 +383,21 @@ const AuthPage = () => {
           );
         } else if (data?.session) {
           // User is already confirmed (if email confirmation is disabled)
-          navigate("/dashboard");
+          navigate('/dashboard');
         }
         // Note: For signup, checkout will open after email confirmation when user signs in
-      } else if (view === "forgot-password") {
+      } else if (view === 'forgot-password') {
         const { error } = await supabase.auth.resetPasswordForEmail(email, {
-          redirectTo: `${window.location.origin}/login${
-            planParam ? `?plan=${planParam}` : ""
-          }`,
+          redirectTo: `${window.location.origin}/login${planParam ? `?plan=${planParam}` : ''}`,
         });
         if (error) throw error;
-        setMessage("Password reset link sent to your email.");
+        setMessage('Password reset link sent to your email.');
       }
     } catch (err) {
       setError(err.message);
 
       // Reset Turnstile widget if signup/login failed, so user can try again
-      if (view === "signup" && turnstileWidgetId && window.turnstile) {
+      if (view === 'signup' && turnstileWidgetId && window.turnstile) {
         try {
           window.turnstile.reset(turnstileWidgetId);
           setTurnstileToken(null);
@@ -428,7 +409,7 @@ const AuthPage = () => {
             // Clear container to force re-render
             const container = turnstileContainerRef.current;
             if (container) {
-              container.innerHTML = "";
+              container.innerHTML = '';
             }
           } catch (removeError) {
             // Ignore errors
@@ -457,20 +438,20 @@ const AuthPage = () => {
 
     // Colors by strength
     const strengthColor = () => {
-      if (strengthScore === 0) return "bg-slate-600";
-      if (strengthScore === 1) return "bg-red-500";
-      if (strengthScore === 2) return "bg-orange-500";
-      if (strengthScore === 3) return "bg-yellow-500";
-      return "bg-green-500";
+      if (strengthScore === 0) return 'bg-slate-600';
+      if (strengthScore === 1) return 'bg-red-500';
+      if (strengthScore === 2) return 'bg-orange-500';
+      if (strengthScore === 3) return 'bg-yellow-500';
+      return 'bg-green-500';
     };
 
     // Text by strength
     const strengthText = () => {
-      if (strengthScore === 0) return "";
-      if (strengthScore === 1) return "Very Weak";
-      if (strengthScore === 2) return "Weak";
-      if (strengthScore === 3) return "Medium";
-      return "Strong";
+      if (strengthScore === 0) return '';
+      if (strengthScore === 1) return 'Very Weak';
+      if (strengthScore === 2) return 'Weak';
+      if (strengthScore === 3) return 'Medium';
+      return 'Strong';
     };
 
     return (
@@ -481,7 +462,7 @@ const AuthPage = () => {
             <div
               key={step}
               className={`h-1.5 w-full rounded-full transition-colors duration-300 ${
-                step <= strengthScore ? strengthColor() : "bg-slate-700"
+                step <= strengthScore ? strengthColor() : 'bg-slate-700'
               }`}
             />
           ))}
@@ -491,34 +472,34 @@ const AuthPage = () => {
         <ul className="text-xs space-y-1 text-slate-400">
           <li
             className={`flex items-center gap-2 ${
-              checks.length ? "text-green-500 font-medium" : ""
+              checks.length ? 'text-green-500 font-medium' : ''
             }`}
           >
-            <span>{checks.length ? "✓" : "○"}</span>
+            <span>{checks.length ? '✓' : '○'}</span>
             <span>At least 8 characters</span>
           </li>
           <li
             className={`flex items-center gap-2 ${
-              checks.hasUpper ? "text-green-500 font-medium" : ""
+              checks.hasUpper ? 'text-green-500 font-medium' : ''
             }`}
           >
-            <span>{checks.hasUpper ? "✓" : "○"}</span>
+            <span>{checks.hasUpper ? '✓' : '○'}</span>
             <span>One uppercase letter (A-Z)</span>
           </li>
           <li
             className={`flex items-center gap-2 ${
-              checks.hasLower ? "text-green-500 font-medium" : ""
+              checks.hasLower ? 'text-green-500 font-medium' : ''
             }`}
           >
-            <span>{checks.hasLower ? "✓" : "○"}</span>
+            <span>{checks.hasLower ? '✓' : '○'}</span>
             <span>One lowercase letter (a-z)</span>
           </li>
           <li
             className={`flex items-center gap-2 ${
-              checks.hasNumber ? "text-green-500 font-medium" : ""
+              checks.hasNumber ? 'text-green-500 font-medium' : ''
             }`}
           >
-            <span>{checks.hasNumber ? "✓" : "○"}</span>
+            <span>{checks.hasNumber ? '✓' : '○'}</span>
             <span>At least one number</span>
           </li>
         </ul>
@@ -528,12 +509,12 @@ const AuthPage = () => {
           <p
             className={`text-xs mt-2 font-medium ${
               strengthScore === 1
-                ? "text-red-500"
+                ? 'text-red-500'
                 : strengthScore === 2
-                ? "text-orange-500"
-                : strengthScore === 3
-                ? "text-yellow-500"
-                : "text-green-500"
+                  ? 'text-orange-500'
+                  : strengthScore === 3
+                    ? 'text-yellow-500'
+                    : 'text-green-500'
             }`}
           >
             Password strength: {strengthText()}
@@ -544,10 +525,7 @@ const AuthPage = () => {
   };
 
   const Logo = () => (
-    <Link
-      to="/"
-      className="flex items-center gap-3 mb-8 transition-opacity hover:opacity-80"
-    >
+    <Link to="/" className="flex items-center gap-3 mb-8 transition-opacity hover:opacity-80">
       <div className="size-12 text-primary">
         <svg fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
           <path
@@ -578,7 +556,7 @@ const AuthPage = () => {
   );
 
   return (
-    <div className="min-h-screen w-full bg-[#1e152f] flex flex-col items-center justify-center px-6 py-12 relative overflow-hidden">
+    <div className="min-h-screen w-full bg-[#101622] flex flex-col items-center justify-center px-6 py-12 relative overflow-hidden">
       {/* Background Orbs */}
       <div className="absolute top-[-10%] left-[-10%] size-96 bg-primary/20 blur-[120px] rounded-full"></div>
       <div className="absolute bottom-[-10%] right-[-10%] size-96 bg-[#10b981]/10 blur-[120px] rounded-full"></div>
@@ -595,7 +573,7 @@ const AuthPage = () => {
             </div>
           )}
           <AnimatePresence mode="wait">
-            {view === "login" && (
+            {view === 'login' && (
               <motion.div
                 key="login"
                 initial={{ opacity: 0, x: -20 }}
@@ -605,12 +583,8 @@ const AuthPage = () => {
                 className="flex flex-col gap-6"
               >
                 <div className="text-center mb-2">
-                  <h1 className="text-2xl font-bold text-white mb-2">
-                    Welcome Back
-                  </h1>
-                  <p className="text-slate-400">
-                    Log in to your GoodLink.ai account
-                  </p>
+                  <h1 className="text-2xl font-bold text-white mb-2">Welcome Back</h1>
+                  <p className="text-slate-400">Log in to your GoodLink.ai account</p>
                 </div>
 
                 {error && (
@@ -627,9 +601,7 @@ const AuthPage = () => {
 
                 <form onSubmit={handleSubmit} className="flex flex-col gap-4">
                   <div className="flex flex-col gap-2">
-                    <label className="text-sm font-bold text-slate-300 ml-1">
-                      Email Address
-                    </label>
+                    <label className="text-sm font-bold text-slate-300 ml-1">Email Address</label>
                     <input
                       type="email"
                       placeholder="name@example.com"
@@ -641,14 +613,12 @@ const AuthPage = () => {
                   </div>
                   <div className="flex flex-col gap-2">
                     <div className="flex justify-between items-center ml-1">
-                      <label className="text-sm font-bold text-slate-300">
-                        Password
-                      </label>
+                      <label className="text-sm font-bold text-slate-300">Password</label>
                       <button
                         type="button"
                         onClick={() => {
-                          setView("forgot-password");
-                          setHoneypot("");
+                          setView('forgot-password');
+                          setHoneypot('');
                           setError(null);
                           setMessage(null);
                         }}
@@ -659,7 +629,7 @@ const AuthPage = () => {
                     </div>
                     <div className="relative">
                       <input
-                        type={showPassword ? "text" : "password"}
+                        type={showPassword ? 'text' : 'password'}
                         placeholder="••••••••"
                         className="h-12 w-full bg-[#192233] border border-white/10 rounded-xl px-4 pr-12 text-white focus:outline-none focus:border-primary/50 transition-colors"
                         value={password}
@@ -672,11 +642,7 @@ const AuthPage = () => {
                         className="absolute right-3 top-1/2 -translate-y-1/2 text-[#10b981] hover:text-[#10b981]/80 transition-colors"
                         tabIndex={-1}
                       >
-                        {showPassword ? (
-                          <EyeOff size={20} />
-                        ) : (
-                          <Eye size={20} />
-                        )}
+                        {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                       </button>
                     </div>
                   </div>
@@ -728,13 +694,13 @@ const AuthPage = () => {
                 </button>
 
                 <p className="text-center text-sm text-slate-400 mt-2">
-                  Don't have an account?{" "}
+                  Don't have an account?{' '}
                   <button
                     onClick={() => {
-                      setView("signup");
+                      setView('signup');
                       setError(null);
                       setMessage(null);
-                      setHoneypot("");
+                      setHoneypot('');
                     }}
                     className="text-primary hover:text-primary/80 font-bold transition-colors underline-offset-4 hover:underline"
                   >
@@ -744,7 +710,7 @@ const AuthPage = () => {
               </motion.div>
             )}
 
-            {view === "signup" && (
+            {view === 'signup' && (
               <motion.div
                 key="signup"
                 initial={{ opacity: 0, x: 20 }}
@@ -754,12 +720,8 @@ const AuthPage = () => {
                 className="flex flex-col gap-6"
               >
                 <div className="text-center mb-2">
-                  <h1 className="text-2xl font-bold text-white mb-2">
-                    Join GoodLink.ai
-                  </h1>
-                  <p className="text-slate-400">
-                    Start securing your data today
-                  </p>
+                  <h1 className="text-2xl font-bold text-white mb-2">Join GoodLink.ai</h1>
+                  <p className="text-slate-400">Start securing your data today</p>
                 </div>
 
                 {error && (
@@ -776,9 +738,7 @@ const AuthPage = () => {
 
                 <form onSubmit={handleSubmit} className="flex flex-col gap-4">
                   <div className="flex flex-col gap-2">
-                    <label className="text-sm font-bold text-slate-300 ml-1">
-                      Email Address
-                    </label>
+                    <label className="text-sm font-bold text-slate-300 ml-1">Email Address</label>
                     <input
                       type="email"
                       placeholder="name@example.com"
@@ -789,12 +749,10 @@ const AuthPage = () => {
                     />
                   </div>
                   <div className="flex flex-col gap-2">
-                    <label className="text-sm font-bold text-slate-300 ml-1">
-                      Password
-                    </label>
+                    <label className="text-sm font-bold text-slate-300 ml-1">Password</label>
                     <div className="relative">
                       <input
-                        type={showPassword ? "text" : "password"}
+                        type={showPassword ? 'text' : 'password'}
                         placeholder="••••••••"
                         className="h-12 w-full bg-[#192233] border border-white/10 rounded-xl px-4 pr-12 text-white focus:outline-none focus:border-primary/50 transition-colors"
                         value={password}
@@ -807,16 +765,10 @@ const AuthPage = () => {
                         className="absolute right-3 top-1/2 -translate-y-1/2 text-[#10b981] hover:text-[#10b981]/80 transition-colors"
                         tabIndex={-1}
                       >
-                        {showPassword ? (
-                          <EyeOff size={20} />
-                        ) : (
-                          <Eye size={20} />
-                        )}
+                        {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                       </button>
                     </div>
-                    {view === "signup" && (
-                      <PasswordStrengthMeter password={password} />
-                    )}
+                    {view === 'signup' && <PasswordStrengthMeter password={password} />}
                   </div>
                   <div className="flex flex-col gap-2">
                     <label className="text-sm font-bold text-slate-300 ml-1">
@@ -824,7 +776,7 @@ const AuthPage = () => {
                     </label>
                     <div className="relative">
                       <input
-                        type={showConfirmPassword ? "text" : "password"}
+                        type={showConfirmPassword ? 'text' : 'password'}
                         placeholder="••••••••"
                         className="h-12 w-full bg-[#192233] border border-white/10 rounded-xl px-4 pr-12 text-white focus:outline-none focus:border-primary/50 transition-colors"
                         value={confirmPassword}
@@ -833,17 +785,11 @@ const AuthPage = () => {
                       />
                       <button
                         type="button"
-                        onClick={() =>
-                          setShowConfirmPassword(!showConfirmPassword)
-                        }
+                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                         className="absolute right-3 top-1/2 -translate-y-1/2 text-[#10b981] hover:text-[#10b981]/80 transition-colors"
                         tabIndex={-1}
                       >
-                        {showConfirmPassword ? (
-                          <EyeOff size={20} />
-                        ) : (
-                          <Eye size={20} />
-                        )}
+                        {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                       </button>
                     </div>
                   </div>
@@ -857,13 +803,13 @@ const AuthPage = () => {
                     tabIndex={-1}
                     autoComplete="off"
                     style={{
-                      position: "absolute",
-                      left: "-9999px",
+                      position: 'absolute',
+                      left: '-9999px',
                       opacity: 0,
-                      pointerEvents: "auto", // Allow bots to fill it
+                      pointerEvents: 'auto', // Allow bots to fill it
                       zIndex: -1,
-                      width: "1px",
-                      height: "1px",
+                      width: '1px',
+                      height: '1px',
                     }}
                     aria-hidden="true"
                   />
@@ -923,13 +869,13 @@ const AuthPage = () => {
                 </button>
 
                 <p className="text-center text-sm text-slate-400 mt-2">
-                  Already have an account?{" "}
+                  Already have an account?{' '}
                   <button
                     onClick={() => {
-                      setView("login");
+                      setView('login');
                       setError(null);
                       setMessage(null);
-                      setHoneypot("");
+                      setHoneypot('');
                     }}
                     className="text-primary hover:text-primary/80 font-bold transition-colors underline-offset-4 hover:underline"
                   >
@@ -939,7 +885,7 @@ const AuthPage = () => {
               </motion.div>
             )}
 
-            {view === "forgot-password" && (
+            {view === 'forgot-password' && (
               <motion.div
                 key="forgot"
                 initial={{ opacity: 0, y: 10 }}
@@ -949,12 +895,8 @@ const AuthPage = () => {
                 className="flex flex-col gap-6"
               >
                 <div className="text-center mb-2">
-                  <h1 className="text-2xl font-bold text-white mb-2">
-                    Reset Password
-                  </h1>
-                  <p className="text-slate-400">
-                    We'll send you recovery instructions
-                  </p>
+                  <h1 className="text-2xl font-bold text-white mb-2">Reset Password</h1>
+                  <p className="text-slate-400">We'll send you recovery instructions</p>
                 </div>
 
                 {error && (
@@ -971,9 +913,7 @@ const AuthPage = () => {
 
                 <form onSubmit={handleSubmit} className="flex flex-col gap-6">
                   <div className="flex flex-col gap-2">
-                    <label className="text-sm font-bold text-slate-300 ml-1">
-                      Email Address
-                    </label>
+                    <label className="text-sm font-bold text-slate-300 ml-1">Email Address</label>
                     <input
                       type="email"
                       placeholder="name@example.com"
@@ -997,10 +937,10 @@ const AuthPage = () => {
 
                 <button
                   onClick={() => {
-                    setView("login");
+                    setView('login');
                     setError(null);
                     setMessage(null);
-                    setHoneypot("");
+                    setHoneypot('');
                   }}
                   className="flex items-center justify-center gap-2 text-sm text-slate-400 hover:text-white transition-colors group"
                 >
@@ -1015,11 +955,11 @@ const AuthPage = () => {
         </div>
 
         <div className="mt-8 text-xs text-slate-500 text-center max-w-[280px]">
-          By continuing, you agree to GoodLink's{" "}
+          By continuing, you agree to GoodLink's{' '}
           <a href="#" className="underline">
             Terms of Service
-          </a>{" "}
-          and{" "}
+          </a>{' '}
+          and{' '}
           <a href="#" className="underline">
             Privacy Policy
           </a>

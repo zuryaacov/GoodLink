@@ -187,7 +187,7 @@ const UtmPresetManager = () => {
         </div>
         <button
           onClick={handleNewPreset}
-          className="px-6 py-3 bg-[#e1567c] hover:bg-[#c94669] text-white font-bold rounded-xl transition-all shadow-lg shadow-[#e1567c]/20 flex items-center gap-2"
+          className="px-6 py-3 bg-[#FF10F0] hover:bg-[#e00ed0] text-white font-bold rounded-xl transition-all shadow-lg shadow-[#FF10F0]/20 flex items-center gap-2"
         >
           <span className="material-symbols-outlined">add</span>
           New UTM Preset
@@ -203,7 +203,7 @@ const UtmPresetManager = () => {
           </p>
           <button
             onClick={handleNewPreset}
-            className="px-6 py-3 bg-[#e1567c] hover:bg-[#c94669] text-white font-bold rounded-xl transition-all"
+            className="px-6 py-3 bg-[#FF10F0] hover:bg-[#e00ed0] text-white font-bold rounded-xl transition-all"
           >
             Create First Preset
           </button>

@@ -9,7 +9,7 @@ const PLATFORMS = {
   google: { name: 'Google Ads', colorClass: 'text-emerald-400 bg-emerald-400/10' },
   tiktok: { name: 'TikTok Ads', colorClass: 'text-pink-400 bg-pink-400/10' },
   taboola: { name: 'Taboola', colorClass: 'text-orange-400 bg-orange-400/10' },
-  outbrain: { name: 'Outbrain', colorClass: 'text-indigo-400 bg-indigo-400/10' }
+  outbrain: { name: 'Outbrain', colorClass: 'text-indigo-400 bg-indigo-400/10' },
 };
 
 const LinkManager = () => {
@@ -21,7 +21,7 @@ const LinkManager = () => {
     isOpen: false,
     link: null,
   });
-  
+
   // Modal states
   const [modalState, setModalState] = useState({
     isOpen: false,
@@ -38,7 +38,9 @@ const LinkManager = () => {
 
   const fetchLinks = async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (!user) return;
 
       // Fetch links
@@ -50,12 +52,12 @@ const LinkManager = () => {
         .order('created_at', { ascending: false });
 
       if (linksError) throw linksError;
-      
+
       // Collect all unique preset IDs from all links
       const presetIds = new Set();
-      (linksData || []).forEach(link => {
+      (linksData || []).forEach((link) => {
         if (Array.isArray(link.utm_presets)) {
-          link.utm_presets.forEach(id => presetIds.add(id));
+          link.utm_presets.forEach((id) => presetIds.add(id));
         }
       });
 
@@ -132,7 +134,7 @@ const LinkManager = () => {
 
           const platformInfo = PLATFORMS[preset.platform] || {
             name: preset.platform,
-            colorClass: 'text-slate-400 bg-slate-400/10'
+            colorClass: 'text-slate-400 bg-slate-400/10',
           };
 
           const presetUrl = buildPresetUrl(link, preset);
@@ -141,7 +143,7 @@ const LinkManager = () => {
           return (
             <div
               key={presetId}
-              className="p-3 bg-[#1e152f] rounded-lg border border-[#584674] space-y-2"
+              className="p-3 bg-[#0b0f19] rounded-lg border border-[#232f48] space-y-2"
             >
               {/* Preset Header */}
               <div className="flex items-center gap-2">
@@ -149,7 +151,10 @@ const LinkManager = () => {
                   {platformInfo.name}
                 </div>
                 <span className="text-xs text-slate-500">•</span>
-                <span className="text-xs text-slate-300 font-medium truncate flex-1" title={preset.name}>
+                <span
+                  className="text-xs text-slate-300 font-medium truncate flex-1"
+                  title={preset.name}
+                >
                   {preset.name}
                 </span>
                 <span className="text-xs text-slate-500">({link.domain})</span>
@@ -186,17 +191,13 @@ const LinkManager = () => {
     return text.substring(0, maxLength) + '...';
   };
 
-
   const handleToggleStatus = async (linkId, currentStatus) => {
     try {
       // Toggle between 'active' and 'PAUSED'
       // If status is 'active' -> change to 'PAUSED', otherwise change to 'active'
-      const newStatus = (currentStatus === 'active') ? 'PAUSED' : 'active';
-      
-      const { error } = await supabase
-        .from('links')
-        .update({ status: newStatus })
-        .eq('id', linkId);
+      const newStatus = currentStatus === 'active' ? 'PAUSED' : 'active';
+
+      const { error } = await supabase.from('links').update({ status: newStatus }).eq('id', linkId);
 
       if (error) {
         throw error;
@@ -230,7 +231,9 @@ const LinkManager = () => {
     return (
       <div className="flex flex-col gap-8 w-full h-full items-center justify-center">
         <div className="text-center py-12">
-          <span className="material-symbols-outlined text-4xl text-slate-600 animate-spin">refresh</span>
+          <span className="material-symbols-outlined text-4xl text-slate-600 animate-spin">
+            refresh
+          </span>
           <p className="text-slate-400 mt-4">Loading links...</p>
         </div>
       </div>
@@ -246,7 +249,7 @@ const LinkManager = () => {
         </div>
         <button
           onClick={() => navigate('/dashboard/links/new')}
-          className="flex items-center justify-center gap-2 w-full sm:w-auto px-6 py-3 md:py-2.5 text-white font-bold rounded-xl transition-colors shadow-lg text-base md:text-sm bg-[#e1567c] hover:bg-[#c94669]"
+          className="flex items-center justify-center gap-2 w-full sm:w-auto px-6 py-3 md:py-2.5 text-white font-bold rounded-xl transition-colors shadow-lg text-base md:text-sm bg-[#FF10F0] hover:bg-[#e00ed0]"
         >
           <span className="material-symbols-outlined text-xl md:text-base">add</span>
           New Link
@@ -255,7 +258,7 @@ const LinkManager = () => {
 
       {/* Links List */}
       {links.length === 0 ? (
-        <div className="bg-[#1e152f] border border-[#584674] rounded-2xl p-4 md:p-6 w-full">
+        <div className="bg-[#101622] border border-[#232f48] rounded-2xl p-4 md:p-6 w-full">
           <div className="text-center py-12">
             <span className="material-symbols-outlined text-6xl text-slate-600 mb-4">link_off</span>
             <p className="text-slate-400 text-lg mb-2">No links yet</p>
@@ -267,11 +270,14 @@ const LinkManager = () => {
           {links.map((link) => (
             <div
               key={link.id}
-              className="bg-[#1e152f] border border-[#584674] rounded-xl p-5 transition-all hover:bg-white/5 hover:border-primary/30 flex flex-col gap-4"
+              className="bg-[#101622] border border-[#232f48] rounded-xl p-5 transition-all hover:bg-white/5 hover:border-primary/30 flex flex-col gap-4"
             >
               {/* Name & Destination */}
               <div className="flex flex-col gap-2 min-w-0 flex-1">
-                <span className="text-lg font-bold text-white break-words line-clamp-2" title={link.name || 'Untitled'}>
+                <span
+                  className="text-lg font-bold text-white break-words line-clamp-2"
+                  title={link.name || 'Untitled'}
+                >
                   {link.name || 'Untitled'}
                 </span>
                 <span className="text-slate-500 text-sm truncate" title={link.target_url}>
@@ -280,8 +286,12 @@ const LinkManager = () => {
               </div>
 
               {/* Short URL */}
-              <div className="flex items-center gap-2 min-w-0 p-3 bg-[#1e152f] rounded-lg border border-[#584674]">
-                <span className="font-mono font-bold truncate flex-1 min-w-0" style={{ color: "#10b981", fontSize: "1.2em" }} title={link.short_url}>
+              <div className="flex items-center gap-2 min-w-0 p-3 bg-[#0b0f19] rounded-lg border border-[#232f48]">
+                <span
+                  className="font-mono font-bold truncate flex-1 min-w-0"
+                  style={{ color: '#10b981', fontSize: '1.2em' }}
+                  title={link.short_url}
+                >
                   {link.short_url}
                 </span>
                 <button
@@ -294,50 +304,60 @@ const LinkManager = () => {
               </div>
 
               {/* UTM Presets */}
-              <div className="pt-2 border-t border-[#584674]">
+              <div className="pt-2 border-t border-[#232f48]">
                 <div className="flex items-center justify-between gap-3">
                   <div
                     className={`text-xs font-medium ${
-                      link.utm_presets && Array.isArray(link.utm_presets) && link.utm_presets.length > 0
+                      link.utm_presets &&
+                      Array.isArray(link.utm_presets) &&
+                      link.utm_presets.length > 0
                         ? 'text-emerald-400 font-bold'
                         : 'text-slate-500'
                     }`}
                   >
                     UTM Preset Links:
                   </div>
-                  {link.utm_presets && Array.isArray(link.utm_presets) && link.utm_presets.length > 0 && (
-                    <button
-                      onClick={() => setUtmPresetsModal({ isOpen: true, link })}
-                      className="p-2 rounded-lg border border-[#584674] bg-[#e1567c] hover:bg-[#c94669] text-white transition-colors shadow-lg"
-                      title="Open UTM preset links"
-                    >
-                      <span className="material-symbols-outlined text-base leading-none">open_in_new</span>
-                    </button>
-                  )}
+                  {link.utm_presets &&
+                    Array.isArray(link.utm_presets) &&
+                    link.utm_presets.length > 0 && (
+                      <button
+                        onClick={() => setUtmPresetsModal({ isOpen: true, link })}
+                        className="p-2 rounded-lg border border-[#232f48] bg-[#FF10F0] hover:bg-[#e00ed0] text-white transition-colors shadow-lg"
+                        title="Open UTM preset links"
+                      >
+                        <span className="material-symbols-outlined text-base leading-none">
+                          open_in_new
+                        </span>
+                      </button>
+                    )}
                 </div>
 
-                {(!link.utm_presets || !Array.isArray(link.utm_presets) || link.utm_presets.length === 0) && (
-                  <div className="pt-2 text-xs text-slate-400">
-                    NO UTM Preset
-                  </div>
+                {(!link.utm_presets ||
+                  !Array.isArray(link.utm_presets) ||
+                  link.utm_presets.length === 0) && (
+                  <div className="pt-2 text-xs text-slate-400">NO UTM Preset</div>
                 )}
               </div>
 
               {/* Status & Actions */}
-              <div className="flex items-center justify-between gap-3 pt-2 border-t border-[#584674]">
+              <div className="flex items-center justify-between gap-3 pt-2 border-t border-[#232f48]">
                 {/* Status */}
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => handleToggleStatus(link.id, link.status || 'active')}
                     className={`relative w-12 h-6 rounded-full transition-colors flex-shrink-0 ${
-                      (link.status === 'active') ? 'bg-primary' : 'bg-[#584674]'
+                      link.status === 'active' ? 'bg-primary' : 'bg-[#232f48]'
                     }`}
                     aria-label="Toggle link status"
-                    title={link.status === 'active' ? 'Active - Click to pause' : 'Paused - Click to activate'}
+                    title={
+                      link.status === 'active'
+                        ? 'Active - Click to pause'
+                        : 'Paused - Click to activate'
+                    }
                   >
                     <span
                       className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform ${
-                        (link.status === 'active') ? 'translate-x-6' : 'translate-x-0'
+                        link.status === 'active' ? 'translate-x-6' : 'translate-x-0'
                       }`}
                     />
                   </button>
@@ -348,8 +368,8 @@ const LinkManager = () => {
 
                 {/* Actions */}
                 <div className="ml-auto">
-                  <LinkActionsMenu 
-                    link={link} 
+                  <LinkActionsMenu
+                    link={link}
                     onRefresh={fetchLinks}
                     onEdit={(linkToEdit) => {
                       navigate(`/dashboard/links/edit/${linkToEdit.id}`);
@@ -417,9 +437,9 @@ const LinkActionsMenu = ({ link, onRefresh, onEdit, onDuplicate, onShowModal }) 
       const deletedAt = new Date().toISOString();
       const { error } = await supabase
         .from('links')
-        .update({ 
+        .update({
           status: 'deleted',
-          deleted_at: deletedAt
+          deleted_at: deletedAt,
         })
         .eq('id', link.id);
 
@@ -431,7 +451,7 @@ const LinkActionsMenu = ({ link, onRefresh, onEdit, onDuplicate, onShowModal }) 
       } catch (redisError) {
         console.warn('⚠️ [LinkManager] Failed to delete from Redis:', redisError);
       }
-      
+
       setDeleteModalOpen(false);
       setIsOpen(false);
       onRefresh();
@@ -467,11 +487,8 @@ const LinkActionsMenu = ({ link, onRefresh, onEdit, onDuplicate, onShowModal }) 
 
       {isOpen && (
         <>
-          <div
-            className="fixed inset-0 z-10"
-            onClick={() => setIsOpen(false)}
-          />
-          <div className="absolute right-0 mt-2 w-48 bg-[#1e152f] border border-[#584674] rounded-xl shadow-2xl z-20 overflow-hidden min-w-max">
+          <div className="fixed inset-0 z-10" onClick={() => setIsOpen(false)} />
+          <div className="absolute right-0 mt-2 w-48 bg-[#101622] border border-[#232f48] rounded-xl shadow-2xl z-20 overflow-hidden min-w-max">
             <button
               onClick={() => {
                 setIsOpen(false);
@@ -532,7 +549,8 @@ const LinkActionsMenu = ({ link, onRefresh, onEdit, onDuplicate, onShowModal }) 
         title="Delete this link?"
         message={
           <>
-            Are you sure you want to delete <strong>{link.short_url}</strong>? This will stop all traffic to this destination.
+            Are you sure you want to delete <strong>{link.short_url}</strong>? This will stop all
+            traffic to this destination.
           </>
         }
         type="delete"

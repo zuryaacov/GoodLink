@@ -10,7 +10,7 @@ const sidebarLinks = [
   { name: 'Custom Domains', href: '/dashboard/domains', icon: 'public' },
 ];
 
-const Sidebar = ({ className = "", onLinkClick }) => {
+const Sidebar = ({ className = '', onLinkClick }) => {
   const navigate = useNavigate();
   const [userEmail, setUserEmail] = useState('');
   const [planType, setPlanType] = useState('free');
@@ -20,7 +20,9 @@ const Sidebar = ({ className = "", onLinkClick }) => {
     const fetchUserInfo = async () => {
       try {
         // Get current user
-        const { data: { user } } = await supabase.auth.getUser();
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
         if (!user) return;
 
         // Set email
@@ -58,7 +60,9 @@ const Sidebar = ({ className = "", onLinkClick }) => {
     fetchUserInfo();
 
     // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(() => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(() => {
       fetchUserInfo();
     });
 
@@ -103,21 +107,40 @@ const Sidebar = ({ className = "", onLinkClick }) => {
   };
 
   // Base classes with default width if not overridden
-  const baseClasses = `flex flex-col bg-[#1e152f] border-r border-[#584674] pt-6 ${className.includes('w-') ? '' : 'w-64'} ${className.includes('h-') ? '' : 'h-screen'} ${className}`;
+  const baseClasses = `flex flex-col bg-[#101622] border-r border-[#232f48] pt-6 ${className.includes('w-') ? '' : 'w-64'} ${className.includes('h-') ? '' : 'h-screen'} ${className}`;
 
   return (
     <aside className={baseClasses}>
       <div className="px-6 mb-8">
-        <Link to="/" className="flex items-center gap-3 text-white transition-opacity hover:opacity-80">
+        <Link
+          to="/"
+          className="flex items-center gap-3 text-white transition-opacity hover:opacity-80"
+        >
           <div className="size-10 text-primary">
             <svg fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" stroke="#135bec" strokeLinecap="round" strokeLinejoin="round" strokeWidth="3"></path>
-              <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" stroke="#10b981" strokeLinecap="round" strokeLinejoin="round" strokeWidth="3"></path>
+              <path
+                d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"
+                stroke="#135bec"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="3"
+              ></path>
+              <path
+                d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"
+                stroke="#10b981"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="3"
+              ></path>
             </svg>
           </div>
           <h2 className="text-3xl font-bold leading-tight tracking-tight">
-            <b><span className="text-[#10b981]">Good</span></b>
-            <b><span className="text-[#135bec]"> Link</span></b>
+            <b>
+              <span className="text-[#10b981]">Good</span>
+            </b>
+            <b>
+              <span className="text-[#135bec]"> Link</span>
+            </b>
           </h2>
         </Link>
       </div>
@@ -143,18 +166,18 @@ const Sidebar = ({ className = "", onLinkClick }) => {
         ))}
       </nav>
 
-      <div className="p-4 border-t border-[#584674] flex flex-col gap-2">
+      <div className="p-4 border-t border-[#232f48] flex flex-col gap-2">
         <div className="flex items-center gap-3 px-3 py-2">
-            <div className="size-8 rounded-full bg-gradient-to-tr from-primary to-[#10b981] flex items-center justify-center text-white font-bold text-xs">
-                {getInitials(userEmail)}
-            </div>
-            <div className="flex flex-col flex-1 min-w-0">
-                <span className="text-sm font-bold text-white truncate">{userEmail || 'User'}</span>
-                <span className="text-xs text-slate-500">{getPlanDisplayName(planType)}</span>
-            </div>
+          <div className="size-8 rounded-full bg-gradient-to-tr from-primary to-[#10b981] flex items-center justify-center text-white font-bold text-xs">
+            {getInitials(userEmail)}
+          </div>
+          <div className="flex flex-col flex-1 min-w-0">
+            <span className="text-sm font-bold text-white truncate">{userEmail || 'User'}</span>
+            <span className="text-xs text-slate-500">{getPlanDisplayName(planType)}</span>
+          </div>
         </div>
-        
-        <button 
+
+        <button
           onClick={handleLogout}
           className="flex items-center justify-center gap-3 px-3 py-2 w-full text-slate-400 hover:text-white hover:bg-white/5 rounded-xl transition-all duration-200 text-sm font-medium"
         >

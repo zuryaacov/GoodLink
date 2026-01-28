@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from "react";
-import { Check } from "lucide-react";
-import { motion } from "framer-motion";
-import { useNavigate } from "react-router-dom";
-import { supabase } from "../lib/supabase";
+import React, { useEffect, useState } from 'react';
+import { Check } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
+import { supabase } from '../lib/supabase';
 
 const CTASection = () => {
   const [user, setUser] = useState(null);
@@ -22,9 +22,9 @@ const CTASection = () => {
 
       if (user) {
         const { data: profile } = await supabase
-          .from("profiles")
-          .select("plan_type, lemon_squeezy_customer_portal_url")
-          .eq("user_id", user.id)
+          .from('profiles')
+          .select('plan_type, lemon_squeezy_customer_portal_url')
+          .eq('user_id', user.id)
           .single();
         setUserProfile(profile || null);
       } else {
@@ -39,55 +39,55 @@ const CTASection = () => {
 
   const plans = [
     {
-      name: "START",
-      price: "9.99",
-      description: "Perfect for getting started",
+      name: 'START',
+      price: '9.99',
+      description: 'Perfect for getting started',
       features: [
-        "Basic link management",
-        "Up to 1,000 clicks/month",
-        "Standard analytics",
-        "Email support",
+        'Basic link management',
+        'Up to 1,000 clicks/month',
+        'Standard analytics',
+        'Email support',
       ],
       highlighted: false,
       checkoutUrl:
-        "https://goodlink.lemonsqueezy.com/checkout/buy/54a3e3e3-3618-4922-bce6-a0617252f1ae?embed=1",
-      buttonText: "Get Started",
+        'https://goodlink.lemonsqueezy.com/checkout/buy/54a3e3e3-3618-4922-bce6-a0617252f1ae?embed=1',
+      buttonText: 'Get Started',
     },
     {
-      name: "ADVANCED",
-      price: "19.99",
-      description: "For growing businesses",
+      name: 'ADVANCED',
+      price: '19.99',
+      description: 'For growing businesses',
       features: [
-        "Advanced link management",
-        "Up to 10,000 clicks/month",
-        "Real-time analytics",
-        "Priority email support",
-        "Custom domains",
-        "Pixel tracking",
+        'Advanced link management',
+        'Up to 10,000 clicks/month',
+        'Real-time analytics',
+        'Priority email support',
+        'Custom domains',
+        'Pixel tracking',
       ],
       highlighted: true,
       checkoutUrl:
-        "https://goodlink.lemonsqueezy.com/checkout/buy/81876116-924c-44f7-b61c-f4a8a93e83f1?embed=1",
-      buttonText: "Go Advanced",
+        'https://goodlink.lemonsqueezy.com/checkout/buy/81876116-924c-44f7-b61c-f4a8a93e83f1?embed=1',
+      buttonText: 'Go Advanced',
     },
     {
-      name: "PRO",
-      price: "59.99",
-      description: "For power users",
+      name: 'PRO',
+      price: '59.99',
+      description: 'For power users',
       features: [
-        "Unlimited link management",
-        "Unlimited clicks",
-        "Advanced analytics",
-        "24/7 priority support",
-        "Unlimited custom domains",
-        "Advanced pixel tracking",
-        "API access",
-        "White-label options",
+        'Unlimited link management',
+        'Unlimited clicks',
+        'Advanced analytics',
+        '24/7 priority support',
+        'Unlimited custom domains',
+        'Advanced pixel tracking',
+        'API access',
+        'White-label options',
       ],
       highlighted: false,
       checkoutUrl:
-        "https://goodlink.lemonsqueezy.com/checkout/buy/924daf77-b7b3-405d-a94a-2ad2cc476da4?embed=1",
-      buttonText: "Go Pro",
+        'https://goodlink.lemonsqueezy.com/checkout/buy/924daf77-b7b3-405d-a94a-2ad2cc476da4?embed=1',
+      buttonText: 'Go Pro',
     },
   ];
 
@@ -108,7 +108,7 @@ const CTASection = () => {
       y: 0,
       transition: {
         duration: 0.5,
-        ease: "easeOut",
+        ease: 'easeOut',
       },
     },
   };
@@ -134,8 +134,8 @@ const CTASection = () => {
             Choose Your Plan
           </h2>
           <p className="text-slate-600 dark:text-slate-400 text-lg md:text-xl font-normal leading-relaxed">
-            Flexible pricing designed to scale with your business. Start free,
-            upgrade when you're ready.
+            Flexible pricing designed to scale with your business. Start free, upgrade when you're
+            ready.
           </p>
         </motion.div>
 
@@ -153,8 +153,8 @@ const CTASection = () => {
               variants={itemVariants}
               className={`relative flex flex-col rounded-xl border-2 transition-all duration-300 ${
                 plan.highlighted
-                  ? "border-primary bg-primary/5 dark:bg-primary/10 shadow-2xl scale-105 md:scale-110"
-                  : "border-slate-200 dark:border-[#6b5a87] bg-white dark:bg-[#192233]/50 hover:border-primary/50 hover:shadow-xl"
+                  ? 'border-primary bg-primary/5 dark:bg-primary/10 shadow-2xl scale-105 md:scale-110'
+                  : 'border-slate-200 dark:border-[#324467] bg-white dark:bg-[#192233]/50 hover:border-primary/50 hover:shadow-xl'
               }`}
             >
               {plan.highlighted && (
@@ -165,7 +165,7 @@ const CTASection = () => {
 
               <div
                 className={`p-8 flex flex-col gap-6 ${
-                  plan.highlighted ? "bg-primary/5 dark:bg-primary/10" : ""
+                  plan.highlighted ? 'bg-primary/5 dark:bg-primary/10' : ''
                 }`}
               >
                 {/* Plan Header */}
@@ -173,9 +173,7 @@ const CTASection = () => {
                   <h3 className="text-slate-900 dark:text-white text-2xl font-black">
                     {plan.name}
                   </h3>
-                  <p className="text-slate-500 dark:text-slate-400 text-sm">
-                    {plan.description}
-                  </p>
+                  <p className="text-slate-500 dark:text-slate-400 text-sm">{plan.description}</p>
                 </div>
 
                 {/* Price */}
@@ -194,7 +192,7 @@ const CTASection = () => {
                     <li key={featureIndex} className="flex items-start gap-3">
                       <Check
                         className={`w-5 h-5 mt-0.5 flex-shrink-0 ${
-                          plan.highlighted ? "text-primary" : "text-primary"
+                          plan.highlighted ? 'text-primary' : 'text-primary'
                         }`}
                       />
                       <span className="text-slate-700 dark:text-slate-300 text-sm leading-relaxed">
@@ -216,24 +214,22 @@ const CTASection = () => {
 
                     let targetUrl;
                     if (
-                      userProfile?.plan_type !== "free" &&
+                      userProfile?.plan_type !== 'free' &&
                       userProfile?.lemon_squeezy_customer_portal_url
                     ) {
                       targetUrl = userProfile.lemon_squeezy_customer_portal_url;
                     } else {
-                      const separator = plan.checkoutUrl.includes("?")
-                        ? "&"
-                        : "?";
+                      const separator = plan.checkoutUrl.includes('?') ? '&' : '?';
                       targetUrl = `${plan.checkoutUrl}${separator}checkout[custom][user_id]=${user.id}`;
                     }
 
-                    window.open(targetUrl, "_blank", "noopener,noreferrer");
+                    window.open(targetUrl, '_blank', 'noopener,noreferrer');
                   }}
                   type="button"
                   className={`mt-auto w-full py-4 px-6 rounded-lg font-bold text-base transition-all text-center inline-block active:scale-95 ${
                     plan.highlighted
-                      ? "bg-primary hover:bg-primary/90 text-white shadow-lg shadow-primary/30"
-                      : "bg-slate-100 dark:bg-[#584674] hover:bg-slate-200 dark:hover:bg-[#6b5a87] text-slate-900 dark:text-white"
+                      ? 'bg-primary hover:bg-primary/90 text-white shadow-lg shadow-primary/30'
+                      : 'bg-slate-100 dark:bg-[#232f48] hover:bg-slate-200 dark:hover:bg-[#324467] text-slate-900 dark:text-white'
                   }`}
                 >
                   {plan.buttonText}

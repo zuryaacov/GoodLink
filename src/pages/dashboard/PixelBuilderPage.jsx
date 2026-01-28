@@ -7,7 +7,7 @@ import Modal from '../../components/common/Modal';
 // Validation functions for each platform
 const validatePixelId = (pixelId, platform) => {
   const trimmed = pixelId.trim();
-  
+
   switch (platform) {
     case 'meta':
       return /^\d{15,16}$/.test(trimmed);
@@ -30,41 +30,41 @@ const validatePixelId = (pixelId, platform) => {
 };
 
 const PLATFORMS = [
-  { 
-    value: 'meta', 
-    label: 'Meta (Facebook)', 
+  {
+    value: 'meta',
+    label: 'Meta (Facebook)',
     placeholder: 'Enter your 15-16 digit Pixel ID (numbers only)',
-    validate: (id) => validatePixelId(id, 'meta')
+    validate: (id) => validatePixelId(id, 'meta'),
   },
-  { 
-    value: 'tiktok', 
-    label: 'TikTok', 
+  {
+    value: 'tiktok',
+    label: 'TikTok',
     placeholder: 'Enter your 16-character Pixel ID (A-Z, 0-9)',
-    validate: (id) => validatePixelId(id, 'tiktok')
+    validate: (id) => validatePixelId(id, 'tiktok'),
   },
-  { 
-    value: 'google', 
-    label: 'Google Ads', 
+  {
+    value: 'google',
+    label: 'Google Ads',
     placeholder: 'Enter your Conversion ID (e.g., AW-1234567890)',
-    validate: (id) => validatePixelId(id, 'google')
+    validate: (id) => validatePixelId(id, 'google'),
   },
-  { 
-    value: 'snapchat', 
-    label: 'Snapchat', 
+  {
+    value: 'snapchat',
+    label: 'Snapchat',
     placeholder: 'Enter your UUID Pixel ID (36 characters)',
-    validate: (id) => validatePixelId(id, 'snapchat')
+    validate: (id) => validatePixelId(id, 'snapchat'),
   },
-  { 
-    value: 'outbrain', 
-    label: 'Outbrain', 
+  {
+    value: 'outbrain',
+    label: 'Outbrain',
     placeholder: 'Enter your 32-character Marketer ID (0-9, a-f)',
-    validate: (id) => validatePixelId(id, 'outbrain')
+    validate: (id) => validatePixelId(id, 'outbrain'),
   },
-  { 
-    value: 'taboola', 
-    label: 'Taboola', 
+  {
+    value: 'taboola',
+    label: 'Taboola',
     placeholder: 'Enter your Account ID (6-8 digits)',
-    validate: (id) => validatePixelId(id, 'taboola')
+    validate: (id) => validatePixelId(id, 'taboola'),
   },
 ];
 
@@ -74,16 +74,28 @@ const STANDARD_EVENTS = {
     { value: 'ViewContent', label: 'ViewContent', description: 'Viewing content/offer' },
     { value: 'Lead', label: 'Lead', description: 'Most popular for affiliates' },
     { value: 'Contact', label: 'Contact', description: 'Contact initiated' },
-    { value: 'CompleteRegistration', label: 'CompleteRegistration', description: 'Registration completed' },
+    {
+      value: 'CompleteRegistration',
+      label: 'CompleteRegistration',
+      description: 'Registration completed',
+    },
     { value: 'Search', label: 'Search', description: 'Search within page' },
     { value: 'Donate', label: 'Donate', description: 'For donation campaigns' },
   ],
   tiktok: [
     { value: 'PageView', label: 'PageView (Default)', description: 'Recommended for affiliates' },
     { value: 'ViewContent', label: 'ViewContent', description: 'Viewing content/offer' },
-    { value: 'ClickButton', label: 'ClickButton', description: 'Unique to TikTok - great for button clicks' },
+    {
+      value: 'ClickButton',
+      label: 'ClickButton',
+      description: 'Unique to TikTok - great for button clicks',
+    },
     { value: 'Contact', label: 'Contact', description: 'Contact initiated' },
-    { value: 'CompleteRegistration', label: 'CompleteRegistration', description: 'Registration completed' },
+    {
+      value: 'CompleteRegistration',
+      label: 'CompleteRegistration',
+      description: 'Registration completed',
+    },
     { value: 'Download', label: 'Download', description: 'If page leads to download' },
     { value: 'SubmitForm', label: 'SubmitForm', description: 'If there is a form on page' },
   ],
@@ -119,7 +131,7 @@ const PixelBuilderPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const isEditMode = !!id;
-  
+
   const [formData, setFormData] = useState({
     name: '',
     platform: 'meta',
@@ -143,7 +155,9 @@ const PixelBuilderPage = () => {
   const fetchPixel = async () => {
     try {
       setInitialLoading(true);
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (!user) {
         navigate('/dashboard/pixels');
         return;
@@ -188,7 +202,7 @@ const PixelBuilderPage = () => {
     if (!formData.pixelId.trim()) {
       newErrors.pixelId = 'Pixel ID is required';
     } else {
-      const platform = PLATFORMS.find(p => p.value === formData.platform);
+      const platform = PLATFORMS.find((p) => p.value === formData.platform);
       if (platform && !platform.validate(formData.pixelId)) {
         let errorMsg = `Invalid ${platform.label} Pixel ID format. `;
         switch (formData.platform) {
@@ -229,7 +243,7 @@ const PixelBuilderPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!validateForm()) {
       return;
     }
@@ -237,7 +251,9 @@ const PixelBuilderPage = () => {
     setIsSubmitting(true);
 
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (!user) {
         throw new Error('You must be logged in to save pixels');
       }
@@ -252,30 +268,28 @@ const PixelBuilderPage = () => {
         name: formData.name.trim(),
         platform: formData.platform,
         pixel_id: normalizedPixelId,
-        event_type: formData.enableAdvancedEvents 
-          ? (formData.eventType === 'custom' ? 'custom' : formData.eventType)
+        event_type: formData.enableAdvancedEvents
+          ? formData.eventType === 'custom'
+            ? 'custom'
+            : formData.eventType
           : 'PageView',
-        custom_event_name: formData.enableAdvancedEvents && formData.eventType === 'custom' 
-          ? formData.customEventName.trim() 
-          : null,
+        custom_event_name:
+          formData.enableAdvancedEvents && formData.eventType === 'custom'
+            ? formData.customEventName.trim()
+            : null,
         is_active: true,
       };
 
       if (isEditMode) {
-        const { error } = await supabase
-          .from('pixels')
-          .update(pixelData)
-          .eq('id', id);
+        const { error } = await supabase.from('pixels').update(pixelData).eq('id', id);
 
         if (error) throw error;
       } else {
         // Use upsert to handle duplicate key constraint
-        const { error } = await supabase
-          .from('pixels')
-          .upsert(pixelData, {
-            onConflict: 'user_id,pixel_id,platform',
-            ignoreDuplicates: false
-          });
+        const { error } = await supabase.from('pixels').upsert(pixelData, {
+          onConflict: 'user_id,pixel_id,platform',
+          ignoreDuplicates: false,
+        });
 
         if (error) throw error;
       }
@@ -293,22 +307,24 @@ const PixelBuilderPage = () => {
 
   if (initialLoading) {
     return (
-      <div className="min-h-screen bg-[#1e152f] flex items-center justify-center">
+      <div className="min-h-screen bg-[#0b0f19] flex items-center justify-center">
         <div className="text-center">
-          <span className="material-symbols-outlined text-4xl text-slate-600 animate-spin">refresh</span>
+          <span className="material-symbols-outlined text-4xl text-slate-600 animate-spin">
+            refresh
+          </span>
           <p className="text-slate-400 mt-4">Loading...</p>
         </div>
       </div>
     );
   }
 
-  const currentPlatform = PLATFORMS.find(p => p.value === formData.platform);
+  const currentPlatform = PLATFORMS.find((p) => p.value === formData.platform);
   const availableEvents = STANDARD_EVENTS[formData.platform] || [];
 
   return (
-    <div className="min-h-screen bg-[#1e152f] pb-8">
+    <div className="min-h-screen bg-[#0b0f19] pb-8">
       {/* Header with back button */}
-      <div className="sticky top-0 z-10 bg-[#1e152f] border-b border-slate-800 px-4 py-4">
+      <div className="sticky top-0 z-10 bg-[#0b0f19] border-b border-slate-800 px-4 py-4">
         <div className="max-w-4xl mx-auto flex items-center gap-4">
           <button
             onClick={() => navigate('/dashboard/pixels')}
@@ -338,12 +354,12 @@ const PixelBuilderPage = () => {
               }}
               placeholder="e.g., FB - Main Account"
               className={`w-full px-4 py-3 bg-slate-800 border rounded-xl text-white placeholder-slate-500 focus:outline-none transition-colors ${
-                errors.name ? 'border-red-500 focus:border-red-500' : 'border-slate-700 focus:border-primary'
+                errors.name
+                  ? 'border-red-500 focus:border-red-500'
+                  : 'border-slate-700 focus:border-primary'
               }`}
             />
-            {errors.name && (
-              <p className="text-red-400 text-xs mt-1">{errors.name}</p>
-            )}
+            {errors.name && <p className="text-red-400 text-xs mt-1">{errors.name}</p>}
           </div>
 
           {/* Platform Select */}
@@ -357,9 +373,14 @@ const PixelBuilderPage = () => {
                 setFormData({
                   ...formData,
                   platform: e.target.value,
-                  eventType: e.target.value === 'meta' ? 'PageView' : 
-                             e.target.value === 'tiktok' ? 'PageView' :
-                             e.target.value === 'google' ? 'page_view' : 'PAGE_VIEW',
+                  eventType:
+                    e.target.value === 'meta'
+                      ? 'PageView'
+                      : e.target.value === 'tiktok'
+                        ? 'PageView'
+                        : e.target.value === 'google'
+                          ? 'page_view'
+                          : 'PAGE_VIEW',
                 });
                 if (errors.platform) setErrors({ ...errors, platform: null });
               }}
@@ -391,15 +412,13 @@ const PixelBuilderPage = () => {
               }}
               placeholder={currentPlatform?.placeholder || 'Enter Pixel ID'}
               className={`w-full px-4 py-3 bg-slate-800 border rounded-xl text-white placeholder-slate-500 focus:outline-none transition-colors font-mono text-sm ${
-                errors.pixelId ? 'border-red-500 focus:border-red-500' : 'border-slate-700 focus:border-primary'
+                errors.pixelId
+                  ? 'border-red-500 focus:border-red-500'
+                  : 'border-slate-700 focus:border-primary'
               }`}
             />
-            {errors.pixelId && (
-              <p className="text-red-400 text-xs mt-1">{errors.pixelId}</p>
-            )}
-            <p className="text-slate-500 text-xs mt-1">
-              {currentPlatform?.placeholder}
-            </p>
+            {errors.pixelId && <p className="text-red-400 text-xs mt-1">{errors.pixelId}</p>}
+            <p className="text-slate-500 text-xs mt-1">{currentPlatform?.placeholder}</p>
           </div>
 
           {/* Enable Advanced Events Toggle */}
@@ -427,9 +446,7 @@ const PixelBuilderPage = () => {
             <div className="space-y-4">
               {/* Standard Event Dropdown */}
               <div>
-                <label className="block text-sm font-medium text-white mb-2">
-                  Event Type
-                </label>
+                <label className="block text-sm font-medium text-white mb-2">Event Type</label>
                 <select
                   value={formData.eventType}
                   onChange={(e) => {
@@ -466,7 +483,9 @@ const PixelBuilderPage = () => {
                     }}
                     placeholder="e.g., High_Quality_User, ClickedToOffer"
                     className={`w-full px-4 py-3 bg-slate-800 border rounded-xl text-white placeholder-slate-500 focus:outline-none transition-colors ${
-                      errors.customEventName ? 'border-red-500 focus:border-red-500' : 'border-slate-700 focus:border-primary'
+                      errors.customEventName
+                        ? 'border-red-500 focus:border-red-500'
+                        : 'border-slate-700 focus:border-primary'
                     }`}
                   />
                   {errors.customEventName && (
@@ -485,7 +504,7 @@ const PixelBuilderPage = () => {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="flex-1 px-6 py-3 bg-[#e1567c] hover:bg-[#c94669] text-white font-bold rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              className="flex-1 px-6 py-3 bg-[#FF10F0] hover:bg-[#e00ed0] text-white font-bold rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
               {isSubmitting ? (
                 <>

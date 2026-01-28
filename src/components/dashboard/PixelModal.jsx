@@ -6,74 +6,74 @@ import Modal from '../common/Modal';
 // Validation functions for each platform
 const validatePixelId = (pixelId, platform) => {
   const trimmed = pixelId.trim();
-  
+
   switch (platform) {
     case 'meta':
       // Meta: 15 or 16 digits only
       return /^\d{15,16}$/.test(trimmed);
-    
+
     case 'tiktok':
       // TikTok: Exactly 16 characters, uppercase letters (A-Z) and numbers (0-9)
       const upperTrimmed = trimmed.toUpperCase();
       return /^[A-Z0-9]{16}$/.test(upperTrimmed);
-    
+
     case 'snapchat':
       // Snapchat: Exactly 36 characters, UUID format (8-4-4-4-12)
       return /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(trimmed);
-    
+
     case 'google':
       // Google Ads: 11-13 characters total, starts with AW- followed by 9-10 digits
       return /^AW-\d{9,10}$/i.test(trimmed);
-    
+
     case 'outbrain':
       // Outbrain: 32 chars hexadecimal (0-9, a-f)
       return /^[a-f0-9]{32}$/.test(trimmed);
-    
+
     case 'taboola':
       // Taboola: 6-8 digits only
       return /^\d{6,8}$/.test(trimmed);
-    
+
     default:
       return false;
   }
 };
 
 const PLATFORMS = [
-  { 
-    value: 'meta', 
-    label: 'Meta (Facebook)', 
+  {
+    value: 'meta',
+    label: 'Meta (Facebook)',
     placeholder: 'Enter your 15-16 digit Pixel ID (numbers only)',
-    validate: (id) => validatePixelId(id, 'meta')
+    validate: (id) => validatePixelId(id, 'meta'),
   },
-  { 
-    value: 'tiktok', 
-    label: 'TikTok', 
+  {
+    value: 'tiktok',
+    label: 'TikTok',
     placeholder: 'Enter your 16-character Pixel ID (A-Z, 0-9)',
-    validate: (id) => validatePixelId(id, 'tiktok')
+    validate: (id) => validatePixelId(id, 'tiktok'),
   },
-  { 
-    value: 'google', 
-    label: 'Google Ads', 
+  {
+    value: 'google',
+    label: 'Google Ads',
     placeholder: 'Enter your Conversion ID (e.g., AW-1234567890)',
-    validate: (id) => validatePixelId(id, 'google')
+    validate: (id) => validatePixelId(id, 'google'),
   },
-  { 
-    value: 'snapchat', 
-    label: 'Snapchat', 
+  {
+    value: 'snapchat',
+    label: 'Snapchat',
     placeholder: 'Enter your UUID Pixel ID (36 characters)',
-    validate: (id) => validatePixelId(id, 'snapchat')
+    validate: (id) => validatePixelId(id, 'snapchat'),
   },
-  { 
-    value: 'outbrain', 
-    label: 'Outbrain', 
+  {
+    value: 'outbrain',
+    label: 'Outbrain',
     placeholder: 'Enter your 32-character Marketer ID (0-9, a-f)',
-    validate: (id) => validatePixelId(id, 'outbrain')
+    validate: (id) => validatePixelId(id, 'outbrain'),
   },
-  { 
-    value: 'taboola', 
-    label: 'Taboola', 
+  {
+    value: 'taboola',
+    label: 'Taboola',
     placeholder: 'Enter your Account ID (6-8 digits)',
-    validate: (id) => validatePixelId(id, 'taboola')
+    validate: (id) => validatePixelId(id, 'taboola'),
   },
 ];
 
@@ -83,16 +83,28 @@ const STANDARD_EVENTS = {
     { value: 'ViewContent', label: 'ViewContent', description: 'Viewing content/offer' },
     { value: 'Lead', label: 'Lead', description: 'Most popular for affiliates' },
     { value: 'Contact', label: 'Contact', description: 'Contact initiated' },
-    { value: 'CompleteRegistration', label: 'CompleteRegistration', description: 'Registration completed' },
+    {
+      value: 'CompleteRegistration',
+      label: 'CompleteRegistration',
+      description: 'Registration completed',
+    },
     { value: 'Search', label: 'Search', description: 'Search within page' },
     { value: 'Donate', label: 'Donate', description: 'For donation campaigns' },
   ],
   tiktok: [
     { value: 'PageView', label: 'PageView (Default)', description: 'Recommended for affiliates' },
     { value: 'ViewContent', label: 'ViewContent', description: 'Viewing content/offer' },
-    { value: 'ClickButton', label: 'ClickButton', description: 'Unique to TikTok - great for button clicks' },
+    {
+      value: 'ClickButton',
+      label: 'ClickButton',
+      description: 'Unique to TikTok - great for button clicks',
+    },
     { value: 'Contact', label: 'Contact', description: 'Contact initiated' },
-    { value: 'CompleteRegistration', label: 'CompleteRegistration', description: 'Registration completed' },
+    {
+      value: 'CompleteRegistration',
+      label: 'CompleteRegistration',
+      description: 'Registration completed',
+    },
     { value: 'Download', label: 'Download', description: 'If page leads to download' },
     { value: 'SubmitForm', label: 'SubmitForm', description: 'If there is a form on page' },
   ],
@@ -126,7 +138,7 @@ const STANDARD_EVENTS = {
 
 const PixelModal = ({ isOpen, onClose, initialData = null }) => {
   const isEditMode = !!(initialData && initialData.id);
-  
+
   const [formData, setFormData] = useState({
     name: '',
     platform: 'meta',
@@ -173,7 +185,7 @@ const PixelModal = ({ isOpen, onClose, initialData = null }) => {
     if (!formData.pixelId.trim()) {
       newErrors.pixelId = 'Pixel ID is required';
     } else {
-      const platform = PLATFORMS.find(p => p.value === formData.platform);
+      const platform = PLATFORMS.find((p) => p.value === formData.platform);
       if (platform && !platform.validate(formData.pixelId)) {
         // Provide specific error messages based on platform
         let errorMsg = `Invalid ${platform.label} Pixel ID format. `;
@@ -215,7 +227,7 @@ const PixelModal = ({ isOpen, onClose, initialData = null }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!validateForm()) {
       return;
     }
@@ -223,7 +235,9 @@ const PixelModal = ({ isOpen, onClose, initialData = null }) => {
     setIsSubmitting(true);
 
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (!user) {
         throw new Error('You must be logged in to save pixels');
       }
@@ -239,30 +253,28 @@ const PixelModal = ({ isOpen, onClose, initialData = null }) => {
         name: formData.name.trim(),
         platform: formData.platform,
         pixel_id: normalizedPixelId,
-        event_type: formData.enableAdvancedEvents 
-          ? (formData.eventType === 'custom' ? 'custom' : formData.eventType)
+        event_type: formData.enableAdvancedEvents
+          ? formData.eventType === 'custom'
+            ? 'custom'
+            : formData.eventType
           : 'PageView',
-        custom_event_name: formData.enableAdvancedEvents && formData.eventType === 'custom' 
-          ? formData.customEventName.trim() 
-          : null,
+        custom_event_name:
+          formData.enableAdvancedEvents && formData.eventType === 'custom'
+            ? formData.customEventName.trim()
+            : null,
         is_active: true,
       };
 
       if (isEditMode) {
-        const { error } = await supabase
-          .from('pixels')
-          .update(pixelData)
-          .eq('id', initialData.id);
+        const { error } = await supabase.from('pixels').update(pixelData).eq('id', initialData.id);
 
         if (error) throw error;
       } else {
         // Use upsert to handle duplicate key constraint
-        const { error } = await supabase
-          .from('pixels')
-          .upsert(pixelData, {
-            onConflict: 'user_id,pixel_id,platform',
-            ignoreDuplicates: false
-          });
+        const { error } = await supabase.from('pixels').upsert(pixelData, {
+          onConflict: 'user_id,pixel_id,platform',
+          ignoreDuplicates: false,
+        });
 
         if (error) throw error;
       }
@@ -279,7 +291,7 @@ const PixelModal = ({ isOpen, onClose, initialData = null }) => {
     }
   };
 
-  const currentPlatform = PLATFORMS.find(p => p.value === formData.platform);
+  const currentPlatform = PLATFORMS.find((p) => p.value === formData.platform);
   const availableEvents = STANDARD_EVENTS[formData.platform] || [];
 
   return (
@@ -301,11 +313,11 @@ const PixelModal = ({ isOpen, onClose, initialData = null }) => {
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="relative bg-[#1e152f] border border-[#584674] rounded-xl sm:rounded-2xl shadow-2xl w-full max-w-2xl max-h-[95vh] sm:max-h-[90vh] flex flex-col overflow-hidden m-2 sm:m-0"
+              className="relative bg-[#101622] border border-[#232f48] rounded-xl sm:rounded-2xl shadow-2xl w-full max-w-2xl max-h-[95vh] sm:max-h-[90vh] flex flex-col overflow-hidden m-2 sm:m-0"
               onClick={(e) => e.stopPropagation()}
             >
               {/* Header */}
-              <div className="flex items-center justify-between p-4 sm:p-6 border-b border-[#584674] flex-shrink-0">
+              <div className="flex items-center justify-between p-4 sm:p-6 border-b border-[#232f48] flex-shrink-0">
                 <div className="flex-1 min-w-0 pr-2">
                   <h2 className="text-xl sm:text-2xl font-bold text-white">
                     {isEditMode ? 'Edit Pixel' : 'Create New Pixel'}
@@ -338,13 +350,13 @@ const PixelModal = ({ isOpen, onClose, initialData = null }) => {
                         if (errors.name) setErrors({ ...errors, name: null });
                       }}
                       placeholder="e.g., FB - Main Account"
-                      className={`w-full px-4 py-3 bg-[#1e152f] border rounded-xl text-white placeholder-slate-500 focus:outline-none transition-colors ${
-                        errors.name ? 'border-red-500 focus:border-red-500' : 'border-[#584674] focus:border-primary'
+                      className={`w-full px-4 py-3 bg-[#0b0f19] border rounded-xl text-white placeholder-slate-500 focus:outline-none transition-colors ${
+                        errors.name
+                          ? 'border-red-500 focus:border-red-500'
+                          : 'border-[#232f48] focus:border-primary'
                       }`}
                     />
-                    {errors.name && (
-                      <p className="text-red-400 text-xs mt-1">{errors.name}</p>
-                    )}
+                    {errors.name && <p className="text-red-400 text-xs mt-1">{errors.name}</p>}
                   </div>
 
                   {/* Platform Select */}
@@ -358,13 +370,18 @@ const PixelModal = ({ isOpen, onClose, initialData = null }) => {
                         setFormData({
                           ...formData,
                           platform: e.target.value,
-                          eventType: e.target.value === 'meta' ? 'PageView' : 
-                                     e.target.value === 'tiktok' ? 'PageView' :
-                                     e.target.value === 'google' ? 'page_view' : 'PAGE_VIEW',
+                          eventType:
+                            e.target.value === 'meta'
+                              ? 'PageView'
+                              : e.target.value === 'tiktok'
+                                ? 'PageView'
+                                : e.target.value === 'google'
+                                  ? 'page_view'
+                                  : 'PAGE_VIEW',
                         });
                         if (errors.platform) setErrors({ ...errors, platform: null });
                       }}
-                      className="w-full px-4 py-3 bg-[#1e152f] border border-[#584674] rounded-xl text-white focus:outline-none focus:border-primary transition-colors"
+                      className="w-full px-4 py-3 bg-[#0b0f19] border border-[#232f48] rounded-xl text-white focus:outline-none focus:border-primary transition-colors"
                     >
                       {PLATFORMS.map((platform) => (
                         <option key={platform.value} value={platform.value}>
@@ -392,20 +409,20 @@ const PixelModal = ({ isOpen, onClose, initialData = null }) => {
                         if (errors.pixelId) setErrors({ ...errors, pixelId: null });
                       }}
                       placeholder={currentPlatform?.placeholder || 'Enter Pixel ID'}
-                      className={`w-full px-4 py-3 bg-[#1e152f] border rounded-xl text-white placeholder-slate-500 focus:outline-none transition-colors font-mono text-sm ${
-                        errors.pixelId ? 'border-red-500 focus:border-red-500' : 'border-[#584674] focus:border-primary'
+                      className={`w-full px-4 py-3 bg-[#0b0f19] border rounded-xl text-white placeholder-slate-500 focus:outline-none transition-colors font-mono text-sm ${
+                        errors.pixelId
+                          ? 'border-red-500 focus:border-red-500'
+                          : 'border-[#232f48] focus:border-primary'
                       }`}
                     />
                     {errors.pixelId && (
                       <p className="text-red-400 text-xs mt-1">{errors.pixelId}</p>
                     )}
-                    <p className="text-slate-500 text-xs mt-1">
-                      {currentPlatform?.placeholder}
-                    </p>
+                    <p className="text-slate-500 text-xs mt-1">{currentPlatform?.placeholder}</p>
                   </div>
 
                   {/* Enable Advanced Events Toggle */}
-                  <div className="flex items-center gap-3 p-4 bg-[#1e152f] border border-[#584674] rounded-xl">
+                  <div className="flex items-center gap-3 p-4 bg-[#0b0f19] border border-[#232f48] rounded-xl">
                     <input
                       type="checkbox"
                       id="enableAdvancedEvents"
@@ -417,9 +434,12 @@ const PixelModal = ({ isOpen, onClose, initialData = null }) => {
                           eventType: e.target.checked ? formData.eventType : 'PageView',
                         });
                       }}
-                      className="w-5 h-5 rounded border-[#584674] bg-[#1e152f] text-primary focus:ring-primary focus:ring-offset-0"
+                      className="w-5 h-5 rounded border-[#232f48] bg-[#101622] text-primary focus:ring-primary focus:ring-offset-0"
                     />
-                    <label htmlFor="enableAdvancedEvents" className="text-sm text-white cursor-pointer">
+                    <label
+                      htmlFor="enableAdvancedEvents"
+                      className="text-sm text-white cursor-pointer"
+                    >
                       Enable Advanced Events
                     </label>
                   </div>
@@ -438,11 +458,13 @@ const PixelModal = ({ isOpen, onClose, initialData = null }) => {
                             setFormData({
                               ...formData,
                               eventType: e.target.value,
-                              customEventName: e.target.value !== 'custom' ? '' : formData.customEventName,
+                              customEventName:
+                                e.target.value !== 'custom' ? '' : formData.customEventName,
                             });
-                            if (errors.customEventName) setErrors({ ...errors, customEventName: null });
+                            if (errors.customEventName)
+                              setErrors({ ...errors, customEventName: null });
                           }}
-                          className="w-full px-4 py-3 bg-[#1e152f] border border-[#584674] rounded-xl text-white focus:outline-none focus:border-primary transition-colors"
+                          className="w-full px-4 py-3 bg-[#0b0f19] border border-[#232f48] rounded-xl text-white focus:outline-none focus:border-primary transition-colors"
                         >
                           {availableEvents.map((event) => (
                             <option key={event.value} value={event.value}>
@@ -464,11 +486,14 @@ const PixelModal = ({ isOpen, onClose, initialData = null }) => {
                             value={formData.customEventName}
                             onChange={(e) => {
                               setFormData({ ...formData, customEventName: e.target.value });
-                              if (errors.customEventName) setErrors({ ...errors, customEventName: null });
+                              if (errors.customEventName)
+                                setErrors({ ...errors, customEventName: null });
                             }}
                             placeholder="e.g., High_Quality_User, ClickedToOffer"
-                            className={`w-full px-4 py-3 bg-[#1e152f] border rounded-xl text-white placeholder-slate-500 focus:outline-none transition-colors ${
-                              errors.customEventName ? 'border-red-500 focus:border-red-500' : 'border-[#584674] focus:border-primary'
+                            className={`w-full px-4 py-3 bg-[#0b0f19] border rounded-xl text-white placeholder-slate-500 focus:outline-none transition-colors ${
+                              errors.customEventName
+                                ? 'border-red-500 focus:border-red-500'
+                                : 'border-[#232f48] focus:border-primary'
                             }`}
                           />
                           {errors.customEventName && (
@@ -485,10 +510,10 @@ const PixelModal = ({ isOpen, onClose, initialData = null }) => {
               </div>
 
               {/* Footer */}
-              <div className="flex items-center justify-end gap-3 p-4 sm:p-6 border-t border-[#584674] flex-shrink-0">
+              <div className="flex items-center justify-end gap-3 p-4 sm:p-6 border-t border-[#232f48] flex-shrink-0">
                 <button
                   onClick={onClose}
-                  className="px-4 py-2 text-sm bg-[#584674] text-white hover:bg-[#6b5a87] rounded-xl font-bold transition-colors"
+                  className="px-4 py-2 text-sm bg-[#232f48] text-white hover:bg-[#324467] rounded-xl font-bold transition-colors"
                 >
                   Cancel
                 </button>
@@ -497,27 +522,31 @@ const PixelModal = ({ isOpen, onClose, initialData = null }) => {
                   disabled={isSubmitting}
                   className="px-6 py-2.5 text-sm text-white font-bold rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                   style={{
-                    backgroundColor: isSubmitting ? undefined : "#e1567c",
+                    backgroundColor: isSubmitting ? undefined : '#FF10F0',
                   }}
                   onMouseEnter={(e) => {
                     if (!isSubmitting) {
-                      e.currentTarget.style.backgroundColor = "#c94669";
+                      e.currentTarget.style.backgroundColor = '#e00ed0';
                     }
                   }}
                   onMouseLeave={(e) => {
                     if (!isSubmitting) {
-                      e.currentTarget.style.backgroundColor = "#e1567c";
+                      e.currentTarget.style.backgroundColor = '#FF10F0';
                     }
                   }}
                 >
                   {isSubmitting ? (
                     <>
-                      <span className="material-symbols-outlined animate-spin text-base">refresh</span>
+                      <span className="material-symbols-outlined animate-spin text-base">
+                        refresh
+                      </span>
                       {isEditMode ? 'Updating...' : 'Creating...'}
                     </>
                   ) : (
                     <>
-                      <span className="material-symbols-outlined text-base">{isEditMode ? 'save' : 'add'}</span>
+                      <span className="material-symbols-outlined text-base">
+                        {isEditMode ? 'save' : 'add'}
+                      </span>
                       {isEditMode ? 'Update Pixel' : 'Create Pixel'}
                     </>
                   )}
