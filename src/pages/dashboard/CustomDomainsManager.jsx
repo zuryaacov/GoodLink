@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Lock, Zap, ArrowRight, Globe, BarChart3 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import Modal from '../../components/common/Modal';
 
@@ -7,6 +8,7 @@ const CustomDomainsManager = () => {
   const navigate = useNavigate();
   const [domains, setDomains] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [planType, setPlanType] = useState('free');
 
   // Modal states for errors/alerts
   const [modalState, setModalState] = useState({
@@ -35,7 +37,38 @@ const CustomDomainsManager = () => {
       const {
         data: { user },
       } = await supabase.auth.getUser();
-      if (!user) return;
+      if (!user) {
+        setDomains([]);
+        setPlanType('free');
+        return;
+      }
+
+      // Fetch plan type
+      let currentPlanType = 'free';
+      try {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('plan_type')
+          .eq('user_id', user.id)
+          .single();
+
+        if (profile?.plan_type) {
+          currentPlanType = profile.plan_type;
+          setPlanType(profile.plan_type);
+        } else {
+          setPlanType('free');
+        }
+      } catch (planError) {
+        console.error('Error fetching plan type for domains:', planError);
+        setPlanType('free');
+      }
+
+      const normalized = (currentPlanType || '').toLowerCase();
+      // If FREE or STARTER, don't fetch domains – UI will show paywall
+      if (normalized === 'free' || normalized === 'start' || normalized === 'starter') {
+        setDomains([]);
+        return;
+      }
 
       const { data, error } = await supabase
         .from('custom_domains')
@@ -222,6 +255,98 @@ const CustomDomainsManager = () => {
     return (
       <div className="flex items-center justify-center h-full">
         <div className="text-slate-400">Loading domains...</div>
+      </div>
+    );
+  }
+
+  const normalizedPlan = planType?.toLowerCase() || 'free';
+
+  // Show upgrade paywall for FREE or STARTER plans
+  if (normalizedPlan === 'free' || normalizedPlan === 'start' || normalizedPlan === 'starter') {
+    return (
+      <div className="relative min-h-[480px] w-full flex items-center justify-center p-6 overflow-hidden bg-[#0b0f19] rounded-2xl border border-dashed border-[#232f48]">
+        {/* Background mock layout */}
+        <div className="absolute inset-0 opacity-[0.18] blur-[3px] pointer-events-none select-none p-6">
+          <div className="max-w-5xl mx-auto space-y-6">
+            <div className="h-10 bg-[#141b2e] rounded-md w-1/3 mb-8" />
+            <div className="grid grid-cols-2 gap-4">
+              {[1, 2].map((i) => (
+                <div key={i} className="h-28 bg-[#141b2e] rounded-xl" />
+              ))}
+            </div>
+            <div className="h-56 bg-[#141b2e] rounded-xl w-full" />
+          </div>
+        </div>
+
+        {/* Main card */}
+        <div className="relative z-10 max-w-xl w-full bg-[#101622]/90 backdrop-blur-xl border border-[#232f48] shadow-2xl rounded-3xl p-8 md:p-10 text-center">
+          {/* Icon */}
+          <div className="mb-6 flex justify-center">
+            <div className="relative">
+              <div className="absolute inset-0 bg-[#FF10F0] blur-2xl opacity-25 animate-pulse" />
+              <div className="relative bg-gradient-to-br from-[#FF10F0] to-[#7c3aed] p-4 rounded-2xl shadow-lg shadow-[#FF10F0]/40">
+                <Lock className="w-8 h-8 text-white" />
+              </div>
+            </div>
+          </div>
+
+          <h2 className="text-2xl md:text-3xl font-bold text-white mb-4 tracking-tight">
+            Unlock Custom Domains
+          </h2>
+
+          <p className="text-sm md:text-base text-slate-300 mb-8 leading-relaxed">
+            Your current&nbsp;
+            <span className="font-semibold text-white italic capitalize">
+              {normalizedPlan} plan
+            </span>{' '}
+            does not include custom domain management. Upgrade to&nbsp;
+            <span className="text-[#FF10F0] font-bold uppercase tracking-wider">
+              ADVANCED
+            </span> or{' '}
+            <span className="text-[#FF10F0] font-bold uppercase tracking-wider">PRO</span> to
+            connect your own domains and brand your links.
+          </p>
+
+          {/* Value props */}
+          <div className="space-y-4 mb-10 text-left">
+            <div className="flex items-center gap-3 p-3 bg-[#0b0f19]/80 rounded-xl border border-[#232f48] hover:border-[#FF10F0]/40 transition-colors">
+              <Globe className="w-5 h-5 text-[#FF10F0]" />
+              <div>
+                <p className="font-semibold text-sm text-white italic">Brand Your Links</p>
+                <p className="text-xs text-slate-400">
+                  Use your own domain (e.g., go.mybrand.com) instead of the default short links.
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-3 p-3 bg-[#0b0f19]/80 rounded-xl border border-[#232f48] hover:border-[#FF10F0]/40 transition-colors">
+              <BarChart3 className="w-5 h-5 text-[#FF10F0]" />
+              <div>
+                <p className="font-semibold text-sm text-white italic">Professional Appearance</p>
+                <p className="text-xs text-slate-400">
+                  Build trust with branded links that match your business identity.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* CTA */}
+          <button
+            onClick={() => {
+              window.location.href = '/#pricing';
+            }}
+            className="group relative w-full inline-flex items-center justify-center gap-2 bg-[#FF10F0] text-white font-bold py-3.5 px-8 rounded-2xl transition-all duration-300 hover:bg-[#e00ed0] hover:scale-[1.02] active:scale-[0.98] shadow-xl shadow-[#FF10F0]/30"
+          >
+            <Zap className="w-5 h-5" />
+            <span>View Plans & Upgrade</span>
+            <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
+          </button>
+
+          <p className="mt-5 text-xs text-slate-500">
+            Custom Domains are available on the{' '}
+            <span className="font-semibold text-slate-300">ADVANCED</span> and{' '}
+            <span className="font-semibold text-slate-300">PRO</span> plans.
+          </p>
+        </div>
       </div>
     );
   }
