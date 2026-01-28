@@ -32,7 +32,9 @@ const CustomDomainsManager = () => {
 
   const fetchDomains = async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (!user) return;
 
       const { data, error } = await supabase
@@ -64,25 +66,25 @@ const CustomDomainsManager = () => {
 
   const handleDeleteConfirm = async () => {
     if (!deleteModalState.domainId) return;
-    
-    setDeleteModalState(prev => ({ ...prev, isLoading: true }));
-    
+
+    setDeleteModalState((prev) => ({ ...prev, isLoading: true }));
+
     try {
       const { error } = await supabase
         .from('custom_domains')
-        .update({ 
+        .update({
           status: 'deleted',
-          deleted_at: new Date().toISOString()
+          deleted_at: new Date().toISOString(),
         })
         .eq('id', deleteModalState.domainId);
 
       if (error) throw error;
-      
+
       setDeleteModalState({ isOpen: false, domainId: null, domainName: '', isLoading: false });
       fetchDomains();
     } catch (error) {
       console.error('Error deleting domain:', error);
-      setDeleteModalState(prev => ({ ...prev, isLoading: false }));
+      setDeleteModalState((prev) => ({ ...prev, isLoading: false }));
       setModalState({
         isOpen: true,
         type: 'error',
@@ -201,6 +203,21 @@ const CustomDomainsManager = () => {
     }
   };
 
+  const getDnsRecordsArray = (dnsRecords) => {
+    if (!dnsRecords) return null;
+    if (Array.isArray(dnsRecords)) return dnsRecords;
+    if (typeof dnsRecords === 'string') {
+      try {
+        const parsed = JSON.parse(dnsRecords);
+        return Array.isArray(parsed) ? parsed : null;
+      } catch {
+        return null;
+      }
+    }
+    // Sometimes PostgREST can return JSON objects depending on column type
+    return Array.isArray(dnsRecords?.records) ? dnsRecords.records : null;
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-full">
@@ -246,16 +263,23 @@ const CustomDomainsManager = () => {
               {/* Domain Name & Status */}
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b border-[#232f48]">
                 <div className="flex flex-col gap-2">
-                  <h3 className="text-xl md:text-2xl font-bold text-white tracking-tight break-all" title={domain.domain}>
+                  <h3
+                    className="text-xl md:text-2xl font-bold text-white tracking-tight break-all"
+                    title={domain.domain}
+                  >
                     {domain.domain}
                   </h3>
-                  <div className={`inline-flex items-center self-start gap-1.5 px-3 py-1 rounded-lg border text-xs font-bold uppercase tracking-wider ${getStatusColor(domain.status)}`}>
-                    <span className="material-symbols-outlined text-base">{getStatusIcon(domain.status)}</span>
+                  <div
+                    className={`inline-flex items-center self-start gap-1.5 px-3 py-1 rounded-lg border text-xs font-bold uppercase tracking-wider ${getStatusColor(domain.status)}`}
+                  >
+                    <span className="material-symbols-outlined text-base">
+                      {getStatusIcon(domain.status)}
+                    </span>
                     <span>{domain.status}</span>
                   </div>
                 </div>
                 <div className="flex items-center gap-3 self-end sm:self-center">
-                   {/* Verify Button - Show if pending or error */}
+                  {/* Verify Button - Show if pending or error */}
                   {(domain.status === 'pending' || domain.status === 'error') && (
                     <button
                       onClick={() => handleVerifyDNS(domain)}
@@ -276,40 +300,57 @@ const CustomDomainsManager = () => {
               </div>
 
               {/* DNS Records Detail Display */}
-              {domain.dns_records && Array.isArray(domain.dns_records) && (
+              {getDnsRecordsArray(domain.dns_records) && (
                 <div className="space-y-4">
                   <div className="flex items-center gap-2 text-slate-500">
                     <span className="material-symbols-outlined text-sm">dns</span>
-                    <p className="text-xs uppercase tracking-widest font-black">DNS Configuration Required</p>
+                    <p className="text-xs uppercase tracking-widest font-black">
+                      DNS Configuration Required
+                    </p>
                   </div>
-                  
+
                   <div className="grid grid-cols-1 gap-4">
-                    {domain.dns_records.map((record, idx) => (
-                      <div key={idx} className="bg-[#0b0f19] border border-[#232f48] rounded-xl p-4 md:p-6 space-y-4 hover:border-primary/20 transition-all shadow-inner">
+                    {getDnsRecordsArray(domain.dns_records).map((record, idx) => (
+                      <div
+                        key={idx}
+                        className="bg-[#0b0f19] border border-[#232f48] rounded-xl p-4 md:p-6 space-y-4 hover:border-primary/20 transition-all shadow-inner"
+                      >
                         {/* Record Type Header */}
                         <div className="flex items-center gap-3">
-                          <div className="px-3 py-1 bg-primary/20 text-primary border border-primary/30 rounded-lg font-bold text-xs uppercase tracking-wider">Record {idx + 1}</div>
+                          <div className="px-3 py-1 bg-primary/20 text-primary border border-primary/30 rounded-lg font-bold text-xs uppercase tracking-wider">
+                            Record {idx + 1}
+                          </div>
                           <div className="h-px flex-1 bg-[#232f48]"></div>
-                          <span className="text-xl text-primary font-black font-mono uppercase">{record.type}</span>
+                          <span className="text-xl text-primary font-black font-mono uppercase">
+                            {record.type}
+                          </span>
                         </div>
 
                         <div className="grid grid-cols-1 gap-4">
                           {/* Host / Name Section */}
                           <div className="space-y-2">
                             <div className="flex items-center gap-2">
-                              <span className="material-symbols-outlined text-slate-500 text-sm">label</span>
-                              <span className="text-[10px] uppercase font-black text-slate-600 tracking-[0.2em]">Host / Name</span>
+                              <span className="material-symbols-outlined text-slate-500 text-sm">
+                                label
+                              </span>
+                              <span className="text-[10px] uppercase font-black text-slate-600 tracking-[0.2em]">
+                                Host / Name
+                              </span>
                             </div>
                             <div className="flex items-center gap-3 bg-[#101622] p-3 rounded-xl border border-[#232f48] group hover:border-primary/20 transition-all">
                               <code className="text-sm md:text-base text-white font-mono flex-1 truncate selection:bg-primary/40">
                                 {record.host || record.name}
                               </code>
-                              <button 
-                                onClick={() => navigator.clipboard.writeText(record.host || record.name)}
+                              <button
+                                onClick={() =>
+                                  navigator.clipboard.writeText(record.host || record.name)
+                                }
                                 className="w-10 h-10 flex items-center justify-center bg-[#232f48] hover:bg-primary text-white rounded-lg transition-all shadow-xl active:scale-90"
                                 title="Copy Host"
                               >
-                                <span className="material-symbols-outlined text-xl">content_copy</span>
+                                <span className="material-symbols-outlined text-xl">
+                                  content_copy
+                                </span>
                               </button>
                             </div>
                           </div>
@@ -317,19 +358,25 @@ const CustomDomainsManager = () => {
                           {/* Target Value Section */}
                           <div className="space-y-2">
                             <div className="flex items-center gap-2">
-                              <span className="material-symbols-outlined text-slate-500 text-sm">shortcut</span>
-                              <span className="text-[10px] uppercase font-black text-slate-600 tracking-[0.2em]">Target Value</span>
+                              <span className="material-symbols-outlined text-slate-500 text-sm">
+                                shortcut
+                              </span>
+                              <span className="text-[10px] uppercase font-black text-slate-600 tracking-[0.2em]">
+                                Target Value
+                              </span>
                             </div>
                             <div className="flex items-center gap-3 bg-[#101622] p-3 md:p-4 rounded-xl border border-[#232f48] group hover:border-primary/20 transition-all shadow-[inset_0_2px_10px_rgba(0,0,0,0.5)]">
                               <code className="text-sm md:text-lg text-green-400 font-mono flex-1 break-all leading-tight selection:bg-primary/30">
                                 {record.value}
                               </code>
-                              <button 
+                              <button
                                 onClick={() => navigator.clipboard.writeText(record.value)}
                                 className="w-10 h-10 flex items-center justify-center bg-[#232f48] hover:bg-primary text-white rounded-lg transition-all shadow-xl active:scale-90 flex-shrink-0"
                                 title="Copy Value"
                               >
-                                <span className="material-symbols-outlined text-xl">content_copy</span>
+                                <span className="material-symbols-outlined text-xl">
+                                  content_copy
+                                </span>
                               </button>
                             </div>
                           </div>
@@ -345,7 +392,9 @@ const CustomDomainsManager = () => {
                 <div className="pt-4 border-t border-[#232f48] text-[11px] md:text-sm text-slate-500 flex items-center gap-2">
                   <span className="material-symbols-outlined text-lg">calendar_today</span>
                   <span className="font-semibold uppercase tracking-wide">Last Verified:</span>
-                  <span className="text-slate-300">{new Date(domain.verified_at).toLocaleString()}</span>
+                  <span className="text-slate-300">
+                    {new Date(domain.verified_at).toLocaleString()}
+                  </span>
                 </div>
               )}
             </div>
@@ -356,11 +405,14 @@ const CustomDomainsManager = () => {
       {/* Delete Confirmation Modal */}
       <Modal
         isOpen={deleteModalState.isOpen}
-        onClose={() => !deleteModalState.isLoading && setDeleteModalState({ ...deleteModalState, isOpen: false })}
+        onClose={() =>
+          !deleteModalState.isLoading && setDeleteModalState({ ...deleteModalState, isOpen: false })
+        }
         title="Delete this domain?"
         message={
           <>
-            Are you sure you want to delete <strong>{deleteModalState.domainName}</strong>? This action cannot be undone.
+            Are you sure you want to delete <strong>{deleteModalState.domainName}</strong>? This
+            action cannot be undone.
           </>
         }
         type="delete"

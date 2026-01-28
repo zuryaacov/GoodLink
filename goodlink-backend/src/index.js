@@ -522,7 +522,7 @@ export default Sentry.withSentry(
             if (path === "/api/get-domain-records" && request.method === "POST") {
                 try {
                     const body = await request.json();
-                    const { cloudflare_hostname_id } = body;
+                    const { cloudflare_hostname_id, domain_id } = body;
 
                     if (!cloudflare_hostname_id) {
                         return new Response(JSON.stringify({ error: "Missing cloudflare_hostname_id" }), {
@@ -591,24 +591,42 @@ export default Sentry.withSentry(
                         value: "www.glynk.to"
                     });
 
-                    // Update dns_records in Supabase
+                    // Update dns_records in Supabase (so the list shows the 3 records)
                     try {
-                        const updateUrl = `${env.SUPABASE_URL}/rest/v1/custom_domains?cloudflare_hostname_id=eq.${cloudflare_hostname_id}`;
-                        await fetch(updateUrl, {
+                        const filter = domain_id
+                            ? `id=eq.${encodeURIComponent(domain_id)}`
+                            : `cloudflare_hostname_id=eq.${encodeURIComponent(cloudflare_hostname_id)}`;
+
+                        const updateUrl = `${env.SUPABASE_URL}/rest/v1/custom_domains?${filter}`;
+
+                        const supabaseUpdateResponse = await fetch(updateUrl, {
                             method: "PATCH",
                             headers: {
                                 "apikey": env.SUPABASE_SERVICE_ROLE_KEY,
                                 "Authorization": `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}`,
-                                "Content-Type": "application/json"
+                                "Content-Type": "application/json",
+                                "Prefer": "return=representation"
                             },
                             body: JSON.stringify({
                                 dns_records: dnsRecords
                             })
                         });
-                        console.log("✅ DNS records updated in Supabase");
+
+                        const supabaseUpdateData = await supabaseUpdateResponse.json().catch(() => null);
+
+                        if (!supabaseUpdateResponse.ok) {
+                            console.error("⚠️ Failed to update DNS records in Supabase:", {
+                                status: supabaseUpdateResponse.status,
+                                data: supabaseUpdateData
+                            });
+                        } else {
+                            // Helpful debug: confirm we updated at least 1 row
+                            const updatedCount = Array.isArray(supabaseUpdateData) ? supabaseUpdateData.length : 0;
+                            console.log(`✅ DNS records updated in Supabase (rows: ${updatedCount})`);
+                        }
                     } catch (updateError) {
-                        console.error("⚠️ Failed to update DNS records in Supabase:", updateError);
-                        // Continue anyway - this is not critical
+                        console.error("⚠️ Failed to update DNS records in Supabase (exception):", updateError);
+                        // Continue anyway - still return records to the UI
                     }
 
                     return new Response(JSON.stringify({
