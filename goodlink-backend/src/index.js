@@ -208,7 +208,8 @@ async function sendCapiToQStash(env, relayUrl, payload) {
         console.error("QStash CAPI: relay URL missing scheme, got:", relayUrl);
         return;
     }
-    const qstashPublishUrl = `https://qstash.upstash.io/v2/publish/${encodeURIComponent(dest)}`;
+    // Same format as clicks (no encoding): https://qstash.upstash.io/v2/publish/{destination_url}
+    const qstashPublishUrl = `https://qstash.upstash.io/v2/publish/${dest}`;
     console.log("QStash CAPI: publishing to relay:", dest);
     try {
         const res = await fetch(qstashPublishUrl, {
