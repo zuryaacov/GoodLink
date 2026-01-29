@@ -197,14 +197,21 @@ function ensureUrlScheme(url) {
 
 /**
  * Send CAPI job to QStash; QStash will POST to our relay URL.
- * Relay URL must have https:// or QStash returns "invalid destination url: endpoint has invalid scheme".
+ * Relay URL must be absolute with https:// or QStash returns "invalid destination url: endpoint has invalid scheme".
  */
 async function sendCapiToQStash(env, relayUrl, payload) {
-    if (!env.QSTASH_TOKEN || !relayUrl) return;
-    const dest = ensureUrlScheme(relayUrl);
-    const url = `https://qstash.upstash.io/v2/publish/${encodeURIComponent(dest)}`;
+    if (!env.QSTASH_TOKEN) return;
+    let dest = typeof relayUrl === "string" ? relayUrl.trim() : "";
+    if (!dest) return;
+    dest = ensureUrlScheme(dest);
+    if (!dest.startsWith("https://") && !dest.startsWith("http://")) {
+        console.error("QStash CAPI: relay URL missing scheme, got:", relayUrl);
+        return;
+    }
+    const qstashPublishUrl = `https://qstash.upstash.io/v2/publish/${encodeURIComponent(dest)}`;
+    console.log("QStash CAPI: publishing to relay:", dest);
     try {
-        const res = await fetch(url, {
+        const res = await fetch(qstashPublishUrl, {
             method: "POST",
             headers: {
                 "Authorization": `Bearer ${env.QSTASH_TOKEN}`,
@@ -213,6 +220,7 @@ async function sendCapiToQStash(env, relayUrl, payload) {
             body: JSON.stringify(payload),
         });
         if (!res.ok) console.error("QStash CAPI publish error:", await res.text());
+        else console.log("QStash CAPI publish ok:", res.status);
     } catch (e) {
         console.error("QStash CAPI send error:", e.message);
     }
@@ -1115,8 +1123,19 @@ export default Sentry.withSentry(
                     ? firstPixel.custom_event_name
                     : (firstPixel?.event_type || "PageView");
                 const clickIds = getClickIdsFromUrl(url.searchParams);
-                const workerOrigin = new URL(request.url).origin;
-                const relayUrl = ensureUrlScheme(`${workerOrigin || "https://unknown"}/api/capi-relay`);
+                let relayUrl = env.CAPI_RELAY_URL || env.WORKER_PUBLIC_URL;
+                if (!relayUrl || typeof relayUrl !== "string") {
+                    try {
+                        const reqUrl = new URL(request.url);
+                        relayUrl = (reqUrl.origin || "").replace(/\/$/, "") + "/api/capi-relay";
+                    } catch (_) {
+                        relayUrl = "";
+                    }
+                } else {
+                    relayUrl = relayUrl.trim().replace(/\/$/, "");
+                    if (!relayUrl.includes("/api/capi-relay")) relayUrl = relayUrl + "/api/capi-relay";
+                }
+                relayUrl = ensureUrlScheme(relayUrl);
 
                 const capiPixels = pixels.filter((p) => p.capi_token && p.status === "active");
                 const capiPayload = {
