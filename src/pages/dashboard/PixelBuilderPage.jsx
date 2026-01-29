@@ -29,6 +29,135 @@ const validatePixelId = (pixelId, platform) => {
   }
 };
 
+// CAPI Access Token validation by platform
+const validateCapiToken = (token, platform) => {
+  if (!token || token.trim() === '') return { isValid: true, error: null }; // Optional field
+
+  const trimmed = token.trim();
+
+  switch (platform) {
+    case 'meta':
+      // Meta: 180-250 characters, alphanumeric (uppercase/lowercase letters, numbers)
+      if (trimmed.length < 180 || trimmed.length > 250) {
+        return { isValid: false, error: 'Meta Access Token must be 180-250 characters' };
+      }
+      if (!/^[a-zA-Z0-9]+$/.test(trimmed)) {
+        return { isValid: false, error: 'Meta Access Token must contain only letters and numbers' };
+      }
+      return { isValid: true, error: null };
+
+    case 'tiktok':
+      // TikTok: ~40 characters, alphanumeric (lowercase mainly)
+      if (trimmed.length < 35 || trimmed.length > 50) {
+        return { isValid: false, error: 'TikTok Access Token must be approximately 40 characters' };
+      }
+      if (!/^[a-zA-Z0-9]+$/.test(trimmed)) {
+        return {
+          isValid: false,
+          error: 'TikTok Access Token must contain only letters and numbers',
+        };
+      }
+      return { isValid: true, error: null };
+
+    case 'google':
+      // Google Ads: 20-25 characters, letters, numbers and special characters
+      if (trimmed.length < 20 || trimmed.length > 25) {
+        return { isValid: false, error: 'Google Developer Token must be 20-25 characters' };
+      }
+      if (!/^[a-zA-Z0-9_\-]+$/.test(trimmed)) {
+        return {
+          isValid: false,
+          error:
+            'Google Developer Token must contain only letters, numbers, underscores and hyphens',
+        };
+      }
+      return { isValid: true, error: null };
+
+    case 'snapchat':
+      // Snapchat: 30-50 characters, alphanumeric + underscores/hyphens
+      if (trimmed.length < 30 || trimmed.length > 50) {
+        return { isValid: false, error: 'Snapchat Access Token must be 30-50 characters' };
+      }
+      if (!/^[a-zA-Z0-9_\-]+$/.test(trimmed)) {
+        return {
+          isValid: false,
+          error:
+            'Snapchat Access Token must contain only letters, numbers, underscores and hyphens',
+        };
+      }
+      return { isValid: true, error: null };
+
+    case 'outbrain':
+      // Outbrain: 30-40 characters, alphanumeric
+      if (trimmed.length < 30 || trimmed.length > 40) {
+        return { isValid: false, error: 'Outbrain Access Token must be 30-40 characters' };
+      }
+      if (!/^[a-zA-Z0-9]+$/.test(trimmed)) {
+        return {
+          isValid: false,
+          error: 'Outbrain Access Token must contain only letters and numbers',
+        };
+      }
+      return { isValid: true, error: null };
+
+    case 'taboola':
+      // Taboola: 30-45 characters, alphanumeric (Client Secret)
+      if (trimmed.length < 30 || trimmed.length > 45) {
+        return { isValid: false, error: 'Taboola Client Secret must be 30-45 characters' };
+      }
+      if (!/^[a-zA-Z0-9]+$/.test(trimmed)) {
+        return {
+          isValid: false,
+          error: 'Taboola Client Secret must contain only letters and numbers',
+        };
+      }
+      return { isValid: true, error: null };
+
+    default:
+      return { isValid: true, error: null };
+  }
+};
+
+// Get CAPI token label by platform
+const getCapiTokenLabel = (platform) => {
+  switch (platform) {
+    case 'meta':
+      return 'CAPI Access Token';
+    case 'tiktok':
+      return 'Access Token';
+    case 'google':
+      return 'Developer Token';
+    case 'snapchat':
+      return 'Access Token';
+    case 'outbrain':
+      return 'Access Token';
+    case 'taboola':
+      return 'Client Secret';
+    default:
+      return 'CAPI Access Token';
+  }
+};
+
+// Get CAPI token placeholder by platform
+const getCapiTokenPlaceholder = (platform) => {
+  switch (platform) {
+    case 'meta':
+      return 'Enter your 180-250 character Access Token';
+    case 'tiktok':
+      return 'Enter your ~40 character Access Token';
+    case 'google':
+      return 'Enter your 20-25 character Developer Token';
+    case 'snapchat':
+      return 'Enter your 30-50 character Access Token';
+    case 'outbrain':
+      return 'Enter your 30-40 character Access Token';
+    case 'taboola':
+      return 'Enter your 30-45 character Client Secret';
+    default:
+      return 'Enter your CAPI Access Token';
+  }
+};
+
 const PLATFORMS = [
   {
     value: 'meta',
@@ -136,6 +265,7 @@ const PixelBuilderPage = () => {
     name: '',
     platform: 'meta',
     pixelId: '',
+    capiToken: '',
     eventType: 'PageView',
     customEventName: '',
     enableAdvancedEvents: false,
@@ -180,6 +310,7 @@ const PixelBuilderPage = () => {
         name: data.name || '',
         platform: data.platform || 'meta',
         pixelId: data.pixel_id || '',
+        capiToken: data.capi_token || '',
         eventType: data.event_type || 'PageView',
         customEventName: data.custom_event_name || '',
         enableAdvancedEvents: data.event_type !== 'PageView' || false,
@@ -237,6 +368,14 @@ const PixelBuilderPage = () => {
       }
     }
 
+    // Validate CAPI Token if provided
+    if (formData.capiToken.trim()) {
+      const capiValidation = validateCapiToken(formData.capiToken, formData.platform);
+      if (!capiValidation.isValid) {
+        newErrors.capiToken = capiValidation.error;
+      }
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -268,6 +407,7 @@ const PixelBuilderPage = () => {
         name: formData.name.trim(),
         platform: formData.platform,
         pixel_id: normalizedPixelId,
+        capi_token: formData.capiToken.trim() || null,
         event_type: formData.enableAdvancedEvents
           ? formData.eventType === 'custom'
             ? 'custom'
@@ -419,6 +559,31 @@ const PixelBuilderPage = () => {
             />
             {errors.pixelId && <p className="text-red-400 text-xs mt-1">{errors.pixelId}</p>}
             <p className="text-slate-500 text-xs mt-1">{currentPlatform?.placeholder}</p>
+          </div>
+
+          {/* CAPI Access Token */}
+          <div>
+            <label className="block text-sm font-medium text-white mb-2">
+              {getCapiTokenLabel(formData.platform)}
+            </label>
+            <input
+              type="text"
+              value={formData.capiToken}
+              onChange={(e) => {
+                setFormData({ ...formData, capiToken: e.target.value });
+                if (errors.capiToken) setErrors({ ...errors, capiToken: null });
+              }}
+              placeholder={getCapiTokenPlaceholder(formData.platform)}
+              className={`w-full px-4 py-3 bg-slate-800 border rounded-xl text-white placeholder-slate-500 focus:outline-none transition-colors font-mono text-sm ${
+                errors.capiToken
+                  ? 'border-red-500 focus:border-red-500'
+                  : 'border-slate-700 focus:border-primary'
+              }`}
+            />
+            {errors.capiToken && <p className="text-red-400 text-xs mt-1">{errors.capiToken}</p>}
+            <p className="text-slate-500 text-xs mt-1">
+              {getCapiTokenPlaceholder(formData.platform)} (optional - for server-side tracking)
+            </p>
           </div>
 
           {/* Enable Advanced Events Toggle */}
