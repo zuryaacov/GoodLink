@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../../lib/supabase';
+import { refreshRedisForLinksUsingPixel } from '../../lib/redisCache';
 import Modal from '../common/Modal';
 
 // Validation functions for each platform
@@ -407,18 +408,29 @@ const PixelModal = ({ isOpen, onClose, initialData = null }) => {
         is_active: true,
       };
 
+      let savedPixelId = initialData?.id;
       if (isEditMode) {
         const { error } = await supabase.from('pixels').update(pixelData).eq('id', initialData.id);
 
         if (error) throw error;
       } else {
-        // Use upsert to handle duplicate key constraint
-        const { error } = await supabase.from('pixels').upsert(pixelData, {
-          onConflict: 'user_id,pixel_id,platform',
-          ignoreDuplicates: false,
-        });
+        const { data: upserted, error } = await supabase
+          .from('pixels')
+          .upsert(pixelData, {
+            onConflict: 'user_id,pixel_id,platform',
+            ignoreDuplicates: false,
+          })
+          .select('id')
+          .single();
 
         if (error) throw error;
+        if (upserted?.id) savedPixelId = upserted.id;
+      }
+
+      try {
+        if (savedPixelId) await refreshRedisForLinksUsingPixel(savedPixelId, supabase);
+      } catch (redisErr) {
+        console.warn('⚠️ [PixelModal] Redis refresh for links using pixel:', redisErr);
       }
 
       onClose();

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
+import { refreshRedisForLinksUsingPixel } from '../../lib/redisCache';
 import { ArrowLeft } from 'lucide-react';
 import Modal from '../../components/common/Modal';
 
@@ -426,18 +427,29 @@ const PixelBuilderPage = () => {
         is_active: true,
       };
 
+      let savedPixelId = id;
       if (isEditMode) {
         const { error } = await supabase.from('pixels').update(pixelData).eq('id', id);
 
         if (error) throw error;
       } else {
-        // Use upsert to handle duplicate key constraint
-        const { error } = await supabase.from('pixels').upsert(pixelData, {
-          onConflict: 'user_id,pixel_id,platform',
-          ignoreDuplicates: false,
-        });
+        const { data: upserted, error } = await supabase
+          .from('pixels')
+          .upsert(pixelData, {
+            onConflict: 'user_id,pixel_id,platform',
+            ignoreDuplicates: false,
+          })
+          .select('id')
+          .single();
 
         if (error) throw error;
+        if (upserted?.id) savedPixelId = upserted.id;
+      }
+
+      try {
+        await refreshRedisForLinksUsingPixel(savedPixelId, supabase);
+      } catch (redisErr) {
+        console.warn('⚠️ [PixelBuilder] Redis refresh for links using pixel:', redisErr);
       }
 
       navigate('/dashboard/pixels');

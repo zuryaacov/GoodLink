@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../../lib/supabase';
 import { validateUrl } from '../../lib/urlValidation';
+import { updateLinkInRedis } from '../../lib/redisCache';
 import Step1FastTrack from './wizard/Step1FastTrack';
 import Step2Optimization from './wizard/Step2Optimization';
 import Step3Security from './wizard/Step3Security';
@@ -275,7 +276,7 @@ const NewLinkWizard = ({ isOpen, onClose, initialData = null }) => {
       if (isEditMode && initialData.id) {
         // Update existing link
         console.log('🔵 [Submit] Updating link ID:', initialData.id);
-        const { error } = await supabase
+        const { data: updatedRow, error } = await supabase
           .from('links')
           .update({
             name: finalName,
@@ -299,11 +300,23 @@ const NewLinkWizard = ({ isOpen, onClose, initialData = null }) => {
             geo_rules: Array.isArray(formData.geoRules) ? formData.geoRules : [],
             updated_at: new Date().toISOString(),
           })
-          .eq('id', initialData.id);
+          .eq('id', initialData.id)
+          .select()
+          .single();
 
         console.log('🔵 [Submit] Update result - error:', error);
         if (error) throw error;
         console.log('✅ [Submit] Link updated successfully!');
+
+        try {
+          const oldDomain = initialData.domain || null;
+          const oldSlug = initialData.slug || null;
+          if (updatedRow) {
+            await updateLinkInRedis(updatedRow, supabase, oldDomain, oldSlug);
+          }
+        } catch (redisErr) {
+          console.warn('⚠️ [NewLinkWizard] Redis sync after update:', redisErr);
+        }
 
         // Show success modal
         setModalState({
@@ -329,33 +342,43 @@ const NewLinkWizard = ({ isOpen, onClose, initialData = null }) => {
       } else {
         // Create new link
         console.log('🔵 [Submit] Creating new link...');
-        const { error } = await supabase.from('links').insert({
-          user_id: user.id,
-          name: finalName,
-          target_url: formData.targetUrl,
-          domain: baseUrl,
-          slug: finalSlug,
-          short_url: shortUrl,
-          utm_source: formData.utmSource || null,
-          utm_medium: formData.utmMedium || null,
-          utm_campaign: formData.utmCampaign || null,
-          utm_content: formData.utmContent || null,
-          parameter_pass_through: formData.parameterPassThrough,
-          pixels: formData.selectedPixels,
-          tracking_mode: formData.trackingMode || 'pixel',
-          server_side_tracking:
-            formData.trackingMode === 'capi' || formData.trackingMode === 'pixel_and_capi',
-          custom_script: formData.customScript || null,
-          fraud_shield: formData.fraudShield,
-          bot_action: formData.botAction,
-          fallback_url: finalFallbackUrl,
-          geo_rules: Array.isArray(formData.geoRules) ? formData.geoRules : [],
-          created_at: new Date().toISOString(),
-        });
+        const { data: newLink, error } = await supabase
+          .from('links')
+          .insert({
+            user_id: user.id,
+            name: finalName,
+            target_url: formData.targetUrl,
+            domain: baseUrl,
+            slug: finalSlug,
+            short_url: shortUrl,
+            utm_source: formData.utmSource || null,
+            utm_medium: formData.utmMedium || null,
+            utm_campaign: formData.utmCampaign || null,
+            utm_content: formData.utmContent || null,
+            parameter_pass_through: formData.parameterPassThrough,
+            pixels: formData.selectedPixels,
+            tracking_mode: formData.trackingMode || 'pixel',
+            server_side_tracking:
+              formData.trackingMode === 'capi' || formData.trackingMode === 'pixel_and_capi',
+            custom_script: formData.customScript || null,
+            fraud_shield: formData.fraudShield,
+            bot_action: formData.botAction,
+            fallback_url: finalFallbackUrl,
+            geo_rules: Array.isArray(formData.geoRules) ? formData.geoRules : [],
+            created_at: new Date().toISOString(),
+          })
+          .select()
+          .single();
 
         console.log('🔵 [Submit] Insert result - error:', error);
         if (error) throw error;
         console.log('✅ [Submit] Link created successfully!');
+
+        try {
+          if (newLink) await updateLinkInRedis(newLink, supabase);
+        } catch (redisErr) {
+          console.warn('⚠️ [NewLinkWizard] Redis sync after create:', redisErr);
+        }
 
         // Copy to clipboard
         try {

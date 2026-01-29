@@ -132,6 +132,13 @@ const PixelManager = () => {
 
       if (error) throw error;
 
+      try {
+        const { refreshRedisForLinksUsingPixel } = await import('../../lib/redisCache');
+        await refreshRedisForLinksUsingPixel(deleteModalState.pixelId, supabase);
+      } catch (redisErr) {
+        console.warn('⚠️ [PixelManager] Redis refresh after pixel delete:', redisErr);
+      }
+
       setDeleteModalState({ isOpen: false, pixelId: null, pixelName: '', isLoading: false });
       fetchPixels();
     } catch (error) {
@@ -161,6 +168,14 @@ const PixelManager = () => {
       if (error) {
         throw error;
       }
+
+      try {
+        const { refreshRedisForLinksUsingPixel } = await import('../../lib/redisCache');
+        await refreshRedisForLinksUsingPixel(pixelId, supabase);
+      } catch (redisErr) {
+        console.warn('⚠️ [PixelManager] Redis refresh after pixel status toggle:', redisErr);
+      }
+
       fetchPixels(); // Refresh the list
     } catch (error) {
       console.error('Error updating pixel status:', error);

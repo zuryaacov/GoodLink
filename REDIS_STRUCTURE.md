@@ -62,14 +62,21 @@ link:{domain}:{slug}
     }
   ],
 
-  // Pixels (full objects, not just IDs)
+  // Subscription (plan type) - so backend can enforce limits
+  "plan_type": "free",
+
+  // Pixels & CAPI (full row objects, not just IDs) - so backend can run/fire them
   "pixels": [
     {
       "id": "pixel-uuid-1",
       "user_id": "123e4567-e89b-12d3-a456-426614174000",
       "name": "Facebook Pixel",
       "platform": "meta",
-      "code": "<script>...</script>",
+      "pixel_id": "123456789012345",
+      "event_type": "PageView",
+      "custom_event_name": null,
+      "capi_token": "...",
+      "is_active": true,
       "status": "active",
       "created_at": "2024-01-01T00:00:00Z",
       "updated_at": "2024-01-01T00:00:00Z"
@@ -121,6 +128,7 @@ await redis.set(newKey, JSON.stringify(cacheData));
 ```
 
 **למה זה חשוב?**
+
 - ❌ בלי זה: המפתח הישן נשאר "יתום" ב-Redis
 - ❌ בלי זה: הלינק הישן עדיין עובד (cache לא מסונכרן)
 - ✅ עם זה: רק המפתח הנכון קיים, cache מסונכרן
