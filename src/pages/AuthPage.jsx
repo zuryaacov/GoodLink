@@ -755,10 +755,10 @@ const AuthPage = () => {
 
                 <form onSubmit={handleSubmit} className="flex flex-col gap-4">
                   <div className="flex flex-col gap-2">
-                    <label className="text-sm font-bold text-slate-300 ml-1">שם מלא</label>
+                    <label className="text-sm font-bold text-slate-300 ml-1">Full Name</label>
                     <input
                       type="text"
-                      placeholder="השם המלא שלך"
+                      placeholder="Your full name"
                       autoComplete="name"
                       className="h-12 w-full bg-[#192233] border border-white/10 rounded-xl px-4 text-white focus:outline-none focus:border-primary/50 transition-colors"
                       value={fullName}

@@ -12,7 +12,7 @@ const sidebarLinks = [
 
 const Sidebar = ({ className = '', onLinkClick }) => {
   const navigate = useNavigate();
-  const [userEmail, setUserEmail] = useState('');
+  const [userName, setUserName] = useState('');
   const [planType, setPlanType] = useState('free');
   const [customerPortalUrl, setCustomerPortalUrl] = useState(null);
 
@@ -25,15 +25,19 @@ const Sidebar = ({ className = '', onLinkClick }) => {
         } = await supabase.auth.getUser();
         if (!user) return;
 
-        // Set email
-        setUserEmail(user.email || '');
-
-        // Get user profile to check plan and customer portal URL
+        // Get user profile (full_name, plan, customer portal URL)
         const { data: profile, error } = await supabase
           .from('profiles')
-          .select('plan_type, lemon_squeezy_customer_portal_url')
+          .select('full_name, plan_type, lemon_squeezy_customer_portal_url')
           .eq('user_id', user.id)
           .single();
+
+        const displayName =
+          (profile?.full_name && profile.full_name.trim()) ||
+          user.user_metadata?.full_name ||
+          user.user_metadata?.name ||
+          '';
+        setUserName(displayName.trim() || user.email || '');
 
         if (!error && profile) {
           if (profile?.plan_type) {
@@ -83,15 +87,23 @@ const Sidebar = ({ className = '', onLinkClick }) => {
     }
   };
 
-  // Get initials for avatar
-  const getInitials = (email) => {
-    if (!email) return 'U';
-    const parts = email.split('@');
-    const username = parts[0];
-    if (username.length >= 2) {
-      return username.substring(0, 2).toUpperCase();
+  // Get initials for avatar (from name or fallback to email)
+  const getInitials = (nameOrEmail) => {
+    if (!nameOrEmail) return 'U';
+    const trimmed = nameOrEmail.trim();
+    const parts = trimmed.split(/\s+/);
+    if (parts.length >= 2) {
+      return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
     }
-    return username.charAt(0).toUpperCase();
+    if (trimmed.includes('@')) {
+      const username = trimmed.split('@')[0];
+      return username.length >= 2
+        ? username.substring(0, 2).toUpperCase()
+        : username.charAt(0).toUpperCase();
+    }
+    return trimmed.length >= 2
+      ? trimmed.substring(0, 2).toUpperCase()
+      : trimmed.charAt(0).toUpperCase();
   };
 
   const handleLogout = async () => {
@@ -169,10 +181,12 @@ const Sidebar = ({ className = '', onLinkClick }) => {
       <div className="p-4 border-t border-[#232f48] flex flex-col gap-2">
         <div className="flex items-center gap-3 px-3 py-2">
           <div className="size-8 rounded-full bg-gradient-to-tr from-primary to-[#10b981] flex items-center justify-center text-white font-bold text-xs">
-            {getInitials(userEmail)}
+            {getInitials(userName)}
           </div>
           <div className="flex flex-col flex-1 min-w-0">
-            <span className="text-sm font-bold text-white truncate">{userEmail || 'User'}</span>
+            <span className="text-sm font-bold text-white truncate">
+              {userName ? `Hello, ${userName}` : 'Hello'}
+            </span>
             <span className="text-xs text-slate-500">{getPlanDisplayName(planType)}</span>
           </div>
         </div>
