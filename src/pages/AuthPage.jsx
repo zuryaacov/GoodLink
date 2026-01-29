@@ -8,6 +8,7 @@ const AuthPage = () => {
   const [searchParams] = useSearchParams();
   const planParam = searchParams.get('plan');
   const [view, setView] = useState('login'); // Always start with login view
+  const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -109,20 +110,35 @@ const AuthPage = () => {
     }
   };
 
-  // Check for pending plan after OAuth redirect
+  // Sync full_name from Google (or other OAuth) user_metadata to profiles
+  const syncProfileFullName = async (user) => {
+    if (!user) return;
+    const name = user.user_metadata?.full_name || user.user_metadata?.name;
+    if (!name || typeof name !== 'string' || !name.trim()) return;
+    try {
+      await supabase.from('profiles').update({ full_name: name.trim() }).eq('user_id', user.id);
+    } catch (err) {
+      console.warn('Could not sync full_name to profile:', err);
+    }
+  };
+
+  // Check for pending plan after OAuth redirect; sync Google name to profile
   useEffect(() => {
     const pendingPlan = sessionStorage.getItem('pendingPlan');
-    if (pendingPlan && supabase) {
+    if (supabase) {
       const checkUser = async () => {
         const {
           data: { user },
         } = await supabase.auth.getUser();
         if (user) {
-          await openCheckout(pendingPlan);
-          sessionStorage.removeItem('pendingPlan');
-          setTimeout(() => {
-            navigate('/dashboard');
-          }, 2000);
+          await syncProfileFullName(user);
+          if (pendingPlan) {
+            await openCheckout(pendingPlan);
+            sessionStorage.removeItem('pendingPlan');
+            setTimeout(() => {
+              navigate('/dashboard');
+            }, 2000);
+          }
         }
       };
       checkUser();
@@ -360,6 +376,7 @@ const AuthPage = () => {
           email,
           password,
           options: {
+            data: { full_name: fullName.trim() || undefined },
             emailRedirectTo: `${window.location.origin}/login${
               planParam ? `?plan=${planParam}` : ''
             }`,
@@ -737,6 +754,18 @@ const AuthPage = () => {
                 )}
 
                 <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+                  <div className="flex flex-col gap-2">
+                    <label className="text-sm font-bold text-slate-300 ml-1">שם מלא</label>
+                    <input
+                      type="text"
+                      placeholder="השם המלא שלך"
+                      autoComplete="name"
+                      className="h-12 w-full bg-[#192233] border border-white/10 rounded-xl px-4 text-white focus:outline-none focus:border-primary/50 transition-colors"
+                      value={fullName}
+                      onChange={(e) => setFullName(e.target.value)}
+                      required
+                    />
+                  </div>
                   <div className="flex flex-col gap-2">
                     <label className="text-sm font-bold text-slate-300 ml-1">Email Address</label>
                     <input
