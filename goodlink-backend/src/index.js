@@ -405,9 +405,11 @@ export default Sentry.withSentry(
             // === API Endpoint: CAPI Relay (called by QStash) ===
             if (path === "/api/capi-relay" && request.method === "POST") {
                 try {
-                    const body = await request.json();
+                    const body = await request.json().catch(() => ({}));
                     const { pixels = [], event_data = {}, event_id, event_name, user_id, link_id } = body;
                     const { ip, ua, click_ids = {} } = event_data;
+
+                    console.log("CAPI Relay: received POST", { pixelsCount: (pixels || []).length, event_id, event_name, link_id });
 
                     const results = [];
                     for (const pixel of pixels) {
@@ -529,9 +531,10 @@ export default Sentry.withSentry(
                     }
 
                     const supabaseUrl = `${env.SUPABASE_URL}/rest/v1/capi_logs`;
+                    let inserted = 0;
                     for (const r of results) {
                         try {
-                            await fetch(supabaseUrl, {
+                            const logRes = await fetch(supabaseUrl, {
                                 method: "POST",
                                 headers: {
                                     "apikey": env.SUPABASE_SERVICE_ROLE_KEY,
@@ -552,12 +555,15 @@ export default Sentry.withSentry(
                                     pixel_id: r.pixel_id,
                                 }),
                             });
+                            if (logRes.ok) inserted++; else console.error("CAPI log insert failed:", logRes.status, await logRes.text());
                         } catch (e) {
                             console.error("CAPI log insert error:", e.message);
                         }
                     }
 
-                    return new Response(JSON.stringify({ success: true, processed: results.length }), {
+                    console.log("CAPI Relay: done, inserted", inserted, "rows into capi_logs");
+
+                    return new Response(JSON.stringify({ success: true, processed: results.length, inserted }), {
                         status: 200,
                         headers: { ...corsHeaders, "Content-Type": "application/json" }
                     });
