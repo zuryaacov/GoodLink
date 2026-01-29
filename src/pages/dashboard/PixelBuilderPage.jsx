@@ -62,13 +62,13 @@ const validateCapiToken = (token, platform) => {
     case 'google':
       // Google Ads: 20-25 characters, letters, numbers and special characters
       if (trimmed.length < 20 || trimmed.length > 25) {
-        return { isValid: false, error: 'Google Developer Token must be 20-25 characters' };
+        return { isValid: false, error: 'Google CAPI Developer Token must be 20-25 characters' };
       }
       if (!/^[a-zA-Z0-9_\-]+$/.test(trimmed)) {
         return {
           isValid: false,
           error:
-            'Google Developer Token must contain only letters, numbers, underscores and hyphens',
+            'Google CAPI Developer Token must contain only letters, numbers, underscores and hyphens',
         };
       }
       return { isValid: true, error: null };
@@ -126,7 +126,7 @@ const getCapiTokenLabel = (platform) => {
     case 'tiktok':
       return 'Access Token';
     case 'google':
-      return 'Developer Token';
+      return 'CAPI Developer Token';
     case 'snapchat':
       return 'Access Token';
     case 'outbrain':
@@ -146,7 +146,7 @@ const getCapiTokenPlaceholder = (platform) => {
     case 'tiktok':
       return 'Enter your ~40 character Access Token';
     case 'google':
-      return 'Enter your 20-25 character Developer Token';
+      return 'Enter your 20-25 character CAPI Developer Token';
     case 'snapchat':
       return 'Enter your 30-50 character Access Token';
     case 'outbrain':
@@ -268,7 +268,6 @@ const PixelBuilderPage = () => {
     capiToken: '',
     eventType: 'PageView',
     customEventName: '',
-    enableAdvancedEvents: false,
   });
 
   const [errors, setErrors] = useState({});
@@ -313,7 +312,6 @@ const PixelBuilderPage = () => {
         capiToken: data.capi_token || '',
         eventType: data.event_type || 'PageView',
         customEventName: data.custom_event_name || '',
-        enableAdvancedEvents: data.event_type !== 'PageView' || false,
       });
     } catch (error) {
       console.error('Error fetching pixel:', error);
@@ -362,10 +360,8 @@ const PixelBuilderPage = () => {
       }
     }
 
-    if (formData.enableAdvancedEvents) {
-      if (formData.eventType === 'custom' && !formData.customEventName.trim()) {
-        newErrors.customEventName = 'Custom event name is required';
-      }
+    if (formData.eventType === 'custom' && !formData.customEventName.trim()) {
+      newErrors.customEventName = 'Custom event name is required';
     }
 
     // Validate CAPI Token if provided
@@ -408,15 +404,8 @@ const PixelBuilderPage = () => {
         platform: formData.platform,
         pixel_id: normalizedPixelId,
         capi_token: formData.capiToken.trim() || null,
-        event_type: formData.enableAdvancedEvents
-          ? formData.eventType === 'custom'
-            ? 'custom'
-            : formData.eventType
-          : 'PageView',
-        custom_event_name:
-          formData.enableAdvancedEvents && formData.eventType === 'custom'
-            ? formData.customEventName.trim()
-            : null,
+        event_type: formData.eventType === 'custom' ? 'custom' : formData.eventType,
+        custom_event_name: formData.eventType === 'custom' ? formData.customEventName.trim() : null,
         is_active: true,
       };
 
@@ -586,83 +575,60 @@ const PixelBuilderPage = () => {
             </p>
           </div>
 
-          {/* Enable Advanced Events Toggle */}
-          <div className="flex items-center gap-3 p-4 bg-slate-800 border border-slate-700 rounded-xl">
-            <input
-              type="checkbox"
-              id="enableAdvancedEvents"
-              checked={formData.enableAdvancedEvents}
-              onChange={(e) => {
-                setFormData({
-                  ...formData,
-                  enableAdvancedEvents: e.target.checked,
-                  eventType: e.target.checked ? formData.eventType : 'PageView',
-                });
-              }}
-              className="w-5 h-5 rounded border-slate-700 bg-slate-900 text-primary focus:ring-primary focus:ring-offset-0"
-            />
-            <label htmlFor="enableAdvancedEvents" className="text-sm text-white cursor-pointer">
-              Enable Advanced Events
-            </label>
-          </div>
+          {/* Event Type Selection */}
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-white mb-2">Event Type</label>
+              <select
+                value={formData.eventType}
+                onChange={(e) => {
+                  setFormData({
+                    ...formData,
+                    eventType: e.target.value,
+                    customEventName: e.target.value !== 'custom' ? '' : formData.customEventName,
+                  });
+                  if (errors.customEventName) setErrors({ ...errors, customEventName: null });
+                }}
+                className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-primary transition-colors"
+              >
+                {availableEvents.map((event) => (
+                  <option key={event.value} value={event.value}>
+                    {event.label} - {event.description}
+                  </option>
+                ))}
+                <option value="custom">Custom Event</option>
+              </select>
+            </div>
 
-          {/* Event Selection (only if advanced events enabled) */}
-          {formData.enableAdvancedEvents && (
-            <div className="space-y-4">
-              {/* Standard Event Dropdown */}
+            {/* Custom Event Name (only if custom selected) */}
+            {formData.eventType === 'custom' && (
               <div>
-                <label className="block text-sm font-medium text-white mb-2">Event Type</label>
-                <select
-                  value={formData.eventType}
+                <label className="block text-sm font-medium text-white mb-2">
+                  Custom Event Name <span className="text-red-400">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={formData.customEventName}
                   onChange={(e) => {
-                    setFormData({
-                      ...formData,
-                      eventType: e.target.value,
-                      customEventName: e.target.value !== 'custom' ? '' : formData.customEventName,
-                    });
+                    setFormData({ ...formData, customEventName: e.target.value });
                     if (errors.customEventName) setErrors({ ...errors, customEventName: null });
                   }}
-                  className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-primary transition-colors"
-                >
-                  {availableEvents.map((event) => (
-                    <option key={event.value} value={event.value}>
-                      {event.label} - {event.description}
-                    </option>
-                  ))}
-                  <option value="custom">Custom Event</option>
-                </select>
+                  placeholder="e.g., High_Quality_User, ClickedToOffer"
+                  className={`w-full px-4 py-3 bg-slate-800 border rounded-xl text-white placeholder-slate-500 focus:outline-none transition-colors ${
+                    errors.customEventName
+                      ? 'border-red-500 focus:border-red-500'
+                      : 'border-slate-700 focus:border-primary'
+                  }`}
+                />
+                {errors.customEventName && (
+                  <p className="text-red-400 text-xs mt-1">{errors.customEventName}</p>
+                )}
+                <p className="text-slate-500 text-xs mt-1">
+                  Enter a custom event name (case-sensitive)
+                </p>
               </div>
-
-              {/* Custom Event Name (only if custom selected) */}
-              {formData.eventType === 'custom' && (
-                <div>
-                  <label className="block text-sm font-medium text-white mb-2">
-                    Custom Event Name <span className="text-red-400">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.customEventName}
-                    onChange={(e) => {
-                      setFormData({ ...formData, customEventName: e.target.value });
-                      if (errors.customEventName) setErrors({ ...errors, customEventName: null });
-                    }}
-                    placeholder="e.g., High_Quality_User, ClickedToOffer"
-                    className={`w-full px-4 py-3 bg-slate-800 border rounded-xl text-white placeholder-slate-500 focus:outline-none transition-colors ${
-                      errors.customEventName
-                        ? 'border-red-500 focus:border-red-500'
-                        : 'border-slate-700 focus:border-primary'
-                    }`}
-                  />
-                  {errors.customEventName && (
-                    <p className="text-red-400 text-xs mt-1">{errors.customEventName}</p>
-                  )}
-                  <p className="text-slate-500 text-xs mt-1">
-                    Enter a custom event name (case-sensitive)
-                  </p>
-                </div>
-              )}
-            </div>
-          )}
+            )}
+          </div>
 
           {/* Actions */}
           <div className="flex gap-4 pt-4">
