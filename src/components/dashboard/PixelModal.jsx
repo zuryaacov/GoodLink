@@ -549,15 +549,15 @@ const PixelModal = ({ isOpen, onClose, initialData = null }) => {
                     <label className="block text-sm font-medium text-white mb-2">
                       {getCapiTokenLabel(formData.platform)}
                     </label>
-                    <input
-                      type="text"
+                    <textarea
                       value={formData.capiToken}
                       onChange={(e) => {
                         setFormData({ ...formData, capiToken: e.target.value });
                         if (errors.capiToken) setErrors({ ...errors, capiToken: null });
                       }}
                       placeholder={getCapiTokenPlaceholder(formData.platform)}
-                      className={`w-full px-4 py-3 bg-[#1e152f] border rounded-xl text-white placeholder-slate-500 focus:outline-none transition-colors font-mono text-sm ${
+                      rows={5}
+                      className={`w-full min-h-[120px] sm:min-h-[140px] px-4 py-3 bg-[#1e152f] border rounded-xl text-white placeholder-slate-500 focus:outline-none transition-colors font-mono text-sm resize-y ${
                         errors.capiToken
                           ? 'border-red-500 focus:border-red-500'
                           : 'border-[#584674] focus:border-primary'
