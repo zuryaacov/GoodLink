@@ -1140,7 +1140,10 @@ export default Sentry.withSentry(
                     }
                 } else {
                     relayUrl = relayUrl.trim().replace(/\/$/, "");
-                    if (!relayUrl.includes("/api/capi-relay")) relayUrl = relayUrl + "/api/capi-relay";
+                    // Don't append /api/capi-relay for webhook.site (so QStash POSTs to exact URL and request shows in inbox)
+                    if (!relayUrl.includes("/api/capi-relay") && !relayUrl.includes("webhook.site")) {
+                        relayUrl = relayUrl + "/api/capi-relay";
+                    }
                 }
                 relayUrl = ensureUrlScheme(relayUrl);
 
