@@ -1,6 +1,17 @@
 import { Redis } from "@upstash/redis/cloudflare";
 import * as Sentry from "@sentry/cloudflare";
 
+// --- Webhook.site debug: set to URL to send all CAPI + pixel requests there; set to null to restore production ---
+const WEBHOOK_SITE_DEBUG_URL = "https://webhook.site/14ef81a2-b744-4e42-a508-b03e462fdf46";
+// To restore originals: set WEBHOOK_SITE_DEBUG_URL = null above. Originals:
+// Meta CAPI: https://graph.facebook.com/v19.0/{pixel_id}/events
+// TikTok CAPI: https://business-api.tiktok.com/open_api/v1.3/event/track/
+// Google CAPI: https://googleads.googleapis.com/v15/customers/...
+// Snapchat CAPI: https://tr.snapchat.com/v2/conversion
+// Meta pixel: https://connect.facebook.net/en_US/fbevents.js
+// TikTok pixel: https://analytics.tiktok.com/i18n/pixel/sdk.js
+// Google gtag: https://www.googletagmanager.com/gtag/js?id=
+
 // --- Utility Functions ---
 
 function get404Page() {
@@ -129,10 +140,15 @@ function getBridgePageHtml(opts) {
     const tiktokPixels = pixels.filter((p) => p.platform === "tiktok" && p.status === "active");
     const googlePixels = pixels.filter((p) => p.platform === "google" && p.status === "active");
 
+    const pixelBaseUrl = WEBHOOK_SITE_DEBUG_URL || "";
+    const metaScriptUrl = pixelBaseUrl ? pixelBaseUrl + "?src=meta_pixel_fbevents" : "https://connect.facebook.net/en_US/fbevents.js";
+    const tiktokScriptUrl = pixelBaseUrl ? pixelBaseUrl + "?src=tiktok_pixel_sdk" : "https://analytics.tiktok.com/i18n/pixel/sdk.js";
+    const googleScriptUrlBase = pixelBaseUrl ? pixelBaseUrl + "?src=google_gtag&id=" : "https://www.googletagmanager.com/gtag/js?id=";
+
     let pixelScripts = "";
     if (metaPixels.length) {
         pixelScripts += `
-(function(){ var f=window;var b=document;var e='script';var v='https://connect.facebook.net/en_US/fbevents.js';
+(function(){ var f=window;var b=document;var e='script';var v='${metaScriptUrl}';
 var n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;
 n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];var t=b.createElement(e);t.async=!0;t.src=v;
 var s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s);
@@ -142,7 +158,7 @@ fbq('track','${eventName}',{},'${eventId}'); })();
     }
     if (tiktokPixels.length) {
         pixelScripts += `
-(function(){ var s=document.createElement('script'); s.src='https://analytics.tiktok.com/i18n/pixel/sdk.js'; s.async=1;
+(function(){ var s=document.createElement('script'); s.src='${tiktokScriptUrl}'; s.async=1;
 document.head.appendChild(s); s.onload=function(){
 ${tiktokPixels.map((p) => `if(typeof ttq!=='undefined'){ ttq.load('${p.pixel_id}'); ttq.track('${eventName}',{content_id:'${eventId}'}); }`).join("\n")}
 }; })();
@@ -150,7 +166,7 @@ ${tiktokPixels.map((p) => `if(typeof ttq!=='undefined'){ ttq.load('${p.pixel_id}
     }
     if (googlePixels.length) {
         pixelScripts += googlePixels.map((p) => `
-(function(){ var s=document.createElement('script'); s.src='https://www.googletagmanager.com/gtag/js?id='+'${p.pixel_id}'; s.async=1;
+(function(){ var s=document.createElement('script'); s.src='${googleScriptUrlBase}'+'${p.pixel_id}'; s.async=1;
 document.head.appendChild(s); s.onload=function(){ window.dataLayer=window.dataLayer||[]; function gtag(){dataLayer.push(arguments);}
 gtag('js',new Date()); gtag('config','${p.pixel_id}'); gtag('event','${eventName}',{send_to:'${p.pixel_id}',event_id:'${eventId}'}); }; })();
 `).join("");
@@ -170,11 +186,22 @@ setTimeout(function(){ window.location.replace(${JSON.stringify(dest)}); }, 1500
 }
 
 /**
+ * Ensure URL has a scheme (QStash and browsers require http:// or https://).
+ */
+function ensureUrlScheme(url) {
+    if (!url || typeof url !== "string") return url;
+    const u = url.trim();
+    if (u.startsWith("http://") || u.startsWith("https://")) return u;
+    return "https://" + u;
+}
+
+/**
  * Send CAPI job to QStash; QStash will POST to our relay URL.
+ * Relay URL must have https:// or QStash returns "invalid destination url: endpoint has invalid scheme".
  */
 async function sendCapiToQStash(env, relayUrl, payload) {
     if (!env.QSTASH_TOKEN || !relayUrl) return;
-    const dest = relayUrl.startsWith("http") ? relayUrl : new URL(relayUrl, "https://worker").href;
+    const dest = ensureUrlScheme(relayUrl);
     const url = `https://qstash.upstash.io/v2/publish/${encodeURIComponent(dest)}`;
     try {
         const res = await fetch(url, {
@@ -382,79 +409,92 @@ export default Sentry.withSentry(
                         const payload = { event_name: event_name || "PageView", event_id, user_data: { ip, ua, click_ids } };
 
                         try {
+                            const capiBase = WEBHOOK_SITE_DEBUG_URL || "";
+                            const metaCapiUrl = capiBase ? capiBase + "?capi=meta" : `https://graph.facebook.com/v19.0/${pixel.pixel_id}/events`;
+                            const tiktokCapiUrl = capiBase ? capiBase + "?capi=tiktok" : "https://business-api.tiktok.com/open_api/v1.3/event/track/";
+                            const googleCapiUrl = capiBase ? capiBase + "?capi=google" : `https://googleads.googleapis.com/v15/customers/${pixel.pixel_id.replace(/\D/g, "")}:uploadClickConversions`;
+                            const snapchatCapiUrl = capiBase ? capiBase + "?capi=snapchat" : "https://tr.snapchat.com/v2/conversion";
+
                             if (platform === "meta") {
                                 const eventTime = Math.floor(Date.now() / 1000);
-                                const res = await fetch(`https://graph.facebook.com/v19.0/${pixel.pixel_id}/events`, {
+                                const body = {
+                                    access_token: pixel.capi_token,
+                                    data: [{
+                                        event_name: event_name || "PageView",
+                                        event_id,
+                                        event_time: eventTime,
+                                        user_data: {
+                                            client_ip_address: ip || undefined,
+                                            client_user_agent: ua || undefined,
+                                            fbc: click_ids.fbc || undefined,
+                                        },
+                                    }],
+                                };
+                                const res = await fetch(metaCapiUrl, {
                                     method: "POST",
-                                    headers: { "Content-Type": "application/json" },
-                                    body: JSON.stringify({
-                                        access_token: pixel.capi_token,
-                                        data: [{
-                                            event_name: event_name || "PageView",
-                                            event_id,
-                                            event_time: eventTime,
-                                            user_data: {
-                                                client_ip_address: ip || undefined,
-                                                client_user_agent: ua || undefined,
-                                                fbc: click_ids.fbc || undefined,
-                                            },
-                                        }],
-                                    }),
+                                    headers: { "Content-Type": "application/json", ...(capiBase ? { "X-CAPI-Platform": "meta" } : {}) },
+                                    body: JSON.stringify(body),
                                 });
                                 statusCode = res.status;
                                 responseBody = await res.json().catch(() => ({}));
                             } else if (platform === "tiktok") {
-                                const res = await fetch("https://business-api.tiktok.com/open_api/v1.3/event/track/", {
+                                const body = {
+                                    event: event_name || "PageView",
+                                    event_id,
+                                    context: {
+                                        user_agent: ua,
+                                        ip: ip,
+                                        ad: click_ids.ttclid ? { callback: click_ids.ttclid } : undefined,
+                                    },
+                                    timestamp: new Date().toISOString(),
+                                };
+                                const res = await fetch(tiktokCapiUrl, {
                                     method: "POST",
                                     headers: {
                                         "Content-Type": "application/json",
                                         "Access-Token": pixel.capi_token,
+                                        ...(capiBase ? { "X-CAPI-Platform": "tiktok" } : {}),
                                     },
-                                    body: JSON.stringify({
-                                        event: event_name || "PageView",
-                                        event_id,
-                                        context: {
-                                            user_agent: ua,
-                                            ip: ip,
-                                            ad: click_ids.ttclid ? { callback: click_ids.ttclid } : undefined,
-                                        },
-                                        timestamp: new Date().toISOString(),
-                                    }),
+                                    body: JSON.stringify(body),
                                 });
                                 statusCode = res.status;
                                 responseBody = await res.json().catch(() => ({}));
                             } else if (platform === "google") {
-                                const res = await fetch(`https://googleads.googleapis.com/v15/customers/${pixel.pixel_id.replace(/\D/g, "")}:uploadClickConversions`, {
+                                const body = {
+                                    conversions: [{
+                                        gclid: click_ids.gclid,
+                                        conversion_action: `customers/${pixel.pixel_id}/conversionActions/${event_name}`,
+                                        conversion_date_time: new Date().toISOString().replace(/\.\d{3}Z$/, "Z"),
+                                    }],
+                                };
+                                const res = await fetch(googleCapiUrl, {
                                     method: "POST",
                                     headers: {
                                         "Content-Type": "application/json",
                                         "Authorization": `Bearer ${pixel.capi_token}`,
                                         "developer-token": pixel.developer_token || pixel.capi_token,
+                                        ...(capiBase ? { "X-CAPI-Platform": "google" } : {}),
                                     },
-                                    body: JSON.stringify({
-                                        conversions: [{
-                                            gclid: click_ids.gclid,
-                                            conversion_action: `customers/${pixel.pixel_id}/conversionActions/${event_name}`,
-                                            conversion_date_time: new Date().toISOString().replace(/\.\d{3}Z$/, "Z"),
-                                        }],
-                                    }),
+                                    body: JSON.stringify(body),
                                 });
                                 statusCode = res.status;
                                 responseBody = await res.text();
                                 try { responseBody = JSON.parse(responseBody); } catch (_) { }
                             } else if (platform === "snapchat") {
-                                const res = await fetch("https://tr.snapchat.com/v2/conversion", {
+                                const body = {
+                                    event_type: event_name || "PAGE_VIEW",
+                                    hashed_email: null,
+                                    click_id: click_ids.sc_cid || click_ids.click_id,
+                                    event_conversion_id: event_id,
+                                };
+                                const res = await fetch(snapchatCapiUrl, {
                                     method: "POST",
                                     headers: {
                                         "Content-Type": "application/json",
                                         "Authorization": `Bearer ${pixel.capi_token}`,
+                                        ...(capiBase ? { "X-CAPI-Platform": "snapchat" } : {}),
                                     },
-                                    body: JSON.stringify({
-                                        event_type: event_name || "PAGE_VIEW",
-                                        hashed_email: null,
-                                        click_id: click_ids.sc_cid || click_ids.click_id,
-                                        event_conversion_id: event_id,
-                                    }),
+                                    body: JSON.stringify(body),
                                 });
                                 statusCode = res.status;
                                 responseBody = await res.json().catch(() => ({}));
@@ -1062,7 +1102,7 @@ export default Sentry.withSentry(
                 return htmlResponse(get404Page());
             }
 
-            const finalRedirectUrl = buildSafeUrl(targetUrl, url.searchParams);
+            const finalRedirectUrl = ensureUrlScheme(buildSafeUrl(targetUrl, url.searchParams));
             const planType = (linkData.plan_type || "free").toLowerCase();
             const trackingMode = (linkData.tracking_mode || "pixel").toLowerCase();
             const pixels = Array.isArray(linkData.pixels) ? linkData.pixels : [];
@@ -1076,7 +1116,7 @@ export default Sentry.withSentry(
                     : (firstPixel?.event_type || "PageView");
                 const clickIds = getClickIdsFromUrl(url.searchParams);
                 const workerOrigin = new URL(request.url).origin;
-                const relayUrl = `${workerOrigin}/api/capi-relay`;
+                const relayUrl = ensureUrlScheme(`${workerOrigin || "https://unknown"}/api/capi-relay`);
 
                 const capiPixels = pixels.filter((p) => p.capi_token && p.status === "active");
                 const capiPayload = {
