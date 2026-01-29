@@ -201,6 +201,39 @@ const Step2Optimization = ({ formData, updateFormData }) => {
         </div>
       )}
 
+      {/* Tracking mode: Pixel / CAPI / Pixel&CAPI - Only show if pixels exist */}
+      {availablePixels.length > 0 && (
+        <div>
+          <label className="block text-sm font-medium text-white mb-4">
+            How do you want to track conversions?
+          </label>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
+            {[
+              { value: 'pixel', label: 'Pixel', desc: 'Client-side only' },
+              { value: 'capi', label: 'CAPI', desc: 'Server-side only' },
+              { value: 'pixel_and_capi', label: 'Pixel & CAPI', desc: 'Both' },
+            ].map((opt) => {
+              const isSelected = (formData.trackingMode || 'pixel') === opt.value;
+              return (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => updateFormData('trackingMode', opt.value)}
+                  className={`p-4 rounded-xl border-2 text-left transition-all ${
+                    isSelected
+                      ? 'border-primary bg-primary/10'
+                      : 'border-[#232f48] bg-[#0b0f19] hover:border-[#324467]'
+                  }`}
+                >
+                  <p className="font-bold text-white">{opt.label}</p>
+                  <p className="text-xs text-slate-500 mt-0.5">{opt.desc}</p>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       {/* Pixel Selection with Liveness Indicator - Only show if pixels exist */}
       {availablePixels.length > 0 && (
         <div>
@@ -375,44 +408,6 @@ const Step2Optimization = ({ formData, updateFormData }) => {
               })}
             </div>
           )}
-        </div>
-      )}
-
-      {/* Server-Side Tracking (CAPI) - Gold/Neon Toggle - Only show if pixels exist */}
-      {availablePixels.length > 0 && (
-        <div className="p-6 bg-gradient-to-r from-yellow-500/10 to-orange-500/10 border-2 border-yellow-500/30 rounded-2xl">
-          <div className="flex items-center justify-between">
-            <div className="flex-1">
-              <div className="flex items-center gap-2 mb-2">
-                <span className="material-symbols-outlined text-yellow-400">star</span>
-                <label className="block text-base font-bold text-white">
-                  Server-Side Tracking (CAPI)
-                </label>
-                <span className="px-2 py-0.5 bg-yellow-500/20 text-yellow-400 text-xs font-bold rounded">
-                  PREMIUM
-                </span>
-              </div>
-              <p className="text-sm text-slate-300">
-                Enable Conversion API for direct reporting to Facebook/TikTok servers (bypasses ad
-                blockers)
-              </p>
-            </div>
-            <button
-              onClick={() => updateFormData('serverSideTracking', !formData.serverSideTracking)}
-              className={`relative w-16 h-9 rounded-full transition-all flex-shrink-0 shadow-lg ${
-                formData.serverSideTracking
-                  ? 'bg-gradient-to-r from-yellow-400 to-orange-500'
-                  : 'bg-[#232f48]'
-              }`}
-              aria-label="Toggle server-side tracking"
-            >
-              <span
-                className={`absolute top-1 left-1 w-7 h-7 bg-white rounded-full transition-transform shadow-md ${
-                  formData.serverSideTracking ? 'translate-x-7' : 'translate-x-0'
-                }`}
-              />
-            </button>
-          </div>
         </div>
       )}
     </motion.div>

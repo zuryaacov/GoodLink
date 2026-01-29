@@ -60,6 +60,7 @@ const NewLinkWizard = ({ isOpen, onClose, initialData = null }) => {
         platformPreset: null,
         // Step 3
         selectedPixels: initialData.pixels || [],
+        trackingMode: initialData.tracking_mode || 'pixel',
         serverSideTracking: initialData.server_side_tracking || false,
         customScript: initialData.custom_script || '',
         // Step 4
@@ -102,6 +103,7 @@ const NewLinkWizard = ({ isOpen, onClose, initialData = null }) => {
       platformPreset: null,
       // Step 3
       selectedPixels: [],
+      trackingMode: 'pixel',
       serverSideTracking: false,
       customScript: '',
       // Step 4
@@ -264,7 +266,9 @@ const NewLinkWizard = ({ isOpen, onClose, initialData = null }) => {
             utm_content: formData.utmContent || null,
             parameter_pass_through: formData.parameterPassThrough,
             pixels: formData.selectedPixels,
-            server_side_tracking: formData.serverSideTracking,
+            tracking_mode: formData.trackingMode || 'pixel',
+            server_side_tracking:
+              formData.trackingMode === 'capi' || formData.trackingMode === 'pixel_and_capi',
             custom_script: formData.customScript || null,
             fraud_shield: formData.fraudShield,
             bot_action: formData.botAction,
@@ -315,7 +319,9 @@ const NewLinkWizard = ({ isOpen, onClose, initialData = null }) => {
           utm_content: formData.utmContent || null,
           parameter_pass_through: formData.parameterPassThrough,
           pixels: formData.selectedPixels,
-          server_side_tracking: formData.serverSideTracking,
+          tracking_mode: formData.trackingMode || 'pixel',
+          server_side_tracking:
+            formData.trackingMode === 'capi' || formData.trackingMode === 'pixel_and_capi',
           custom_script: formData.customScript || null,
           fraud_shield: formData.fraudShield,
           bot_action: formData.botAction,
@@ -376,6 +382,7 @@ const NewLinkWizard = ({ isOpen, onClose, initialData = null }) => {
         parameterPassThrough: true,
         platformPreset: null,
         selectedPixels: [],
+        trackingMode: 'pixel',
         serverSideTracking: false,
         customScript: '',
         fraudShield: 'none',

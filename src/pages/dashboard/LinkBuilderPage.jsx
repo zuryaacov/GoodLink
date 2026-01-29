@@ -60,6 +60,7 @@ const LinkBuilderPage = () => {
     parameterPassThrough: true,
     selectedUtmPresets: [],
     selectedPixels: [],
+    trackingMode: 'pixel', // 'pixel' | 'capi' | 'pixel_and_capi'
     serverSideTracking: false,
     customScript: '',
     fraudShield: 'none',
@@ -167,6 +168,7 @@ const LinkBuilderPage = () => {
           data.parameter_pass_through !== undefined ? data.parameter_pass_through : true,
         selectedUtmPresets: Array.isArray(data.utm_presets) ? data.utm_presets : [],
         selectedPixels: data.pixels || [],
+        trackingMode: data.tracking_mode || 'pixel',
         serverSideTracking: data.server_side_tracking || false,
         customScript: data.custom_script || '',
         fraudShield: data.fraud_shield || 'none',
@@ -299,7 +301,9 @@ const LinkBuilderPage = () => {
               : [],
             parameter_pass_through: formData.parameterPassThrough,
             pixels: formData.selectedPixels,
-            server_side_tracking: formData.serverSideTracking,
+            tracking_mode: formData.trackingMode || 'pixel',
+            server_side_tracking:
+              formData.trackingMode === 'capi' || formData.trackingMode === 'pixel_and_capi',
             custom_script: formData.customScript || null,
             fraud_shield: formData.fraudShield,
             bot_action: formData.botAction,
@@ -392,7 +396,9 @@ const LinkBuilderPage = () => {
             : [],
           parameter_pass_through: formData.parameterPassThrough,
           pixels: formData.selectedPixels,
-          server_side_tracking: formData.serverSideTracking,
+          tracking_mode: formData.trackingMode || 'pixel',
+          server_side_tracking:
+            formData.trackingMode === 'capi' || formData.trackingMode === 'pixel_and_capi',
           custom_script: formData.customScript || null,
           fraud_shield: formData.fraudShield,
           bot_action: formData.botAction,
