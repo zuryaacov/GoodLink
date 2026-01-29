@@ -446,7 +446,7 @@ const AddDomainModal = ({ isOpen, onClose, domain = null }) => {
                   className="space-y-4 sm:space-y-6"
                 >
                   <div>
-                    <label className="block text-sm font-medium text-white mb-2">Domain Name</label>
+                    <label className="block text-sm font-medium text-white mb-2">Domain URL</label>
                     <input
                       type="text"
                       value={domainName}

@@ -49,6 +49,7 @@ export async function updateLinkInRedis(linkData, supabase, oldDomain = null, ol
       utm_term: linkData.utm_term || null,
       utm_presets: utmPresetsData, // Full preset data, not just IDs
       pixels: linkData.pixels || [],
+      tracking_mode: linkData.tracking_mode || 'pixel',
       server_side_tracking: linkData.server_side_tracking || false,
       custom_script: linkData.custom_script || null,
       fraud_shield: linkData.fraud_shield || 'none',
@@ -63,18 +64,18 @@ export async function updateLinkInRedis(linkData, supabase, oldDomain = null, ol
     // This endpoint should be created in goodlink-backend worker
     // Try to get worker URL from env, otherwise try to construct it
     let workerUrl = import.meta.env.VITE_WORKER_URL;
-    
+
     if (!workerUrl) {
       // If no env var, try to construct from current origin
       // This assumes the worker is on the same domain
       workerUrl = window.location.origin.replace(/:\d+$/, '');
-      
+
       // Check if we're on a custom domain that might have a different worker URL
       // For Cloudflare Workers, the URL is usually: https://<worker-name>.<account>.workers.dev
       // Or if it's on a custom domain, it might be the same domain
       console.warn('⚠️ [RedisCache] VITE_WORKER_URL not set, using:', workerUrl);
     }
-    
+
     console.log('🔄 [RedisCache] Updating Redis cache...');
     console.log('🔄 [RedisCache] Worker URL:', workerUrl);
     console.log('🔄 [RedisCache] Domain:', linkData.domain);
@@ -83,7 +84,7 @@ export async function updateLinkInRedis(linkData, supabase, oldDomain = null, ol
       console.log('🔄 [RedisCache] Old Domain:', oldDomain);
       console.log('🔄 [RedisCache] Old Slug:', oldSlug);
     }
-    
+
     const response = await fetch(`${workerUrl}/api/update-redis-cache`, {
       method: 'POST',
       headers: {
@@ -125,16 +126,16 @@ export async function updateLinkInRedis(linkData, supabase, oldDomain = null, ol
 export async function deleteLinkFromRedis(domain, slug) {
   try {
     let workerUrl = import.meta.env.VITE_WORKER_URL;
-    
+
     if (!workerUrl) {
       workerUrl = window.location.origin.replace(/:\d+$/, '');
       console.warn('⚠️ [RedisCache] VITE_WORKER_URL not set, using:', workerUrl);
     }
-    
+
     console.log('🗑️ [RedisCache] Deleting from Redis cache...');
     console.log('🗑️ [RedisCache] Domain:', domain);
     console.log('🗑️ [RedisCache] Slug:', slug);
-    
+
     const response = await fetch(`${workerUrl}/api/delete-redis-cache`, {
       method: 'POST',
       headers: {

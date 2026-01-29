@@ -269,6 +269,28 @@ const LinkBuilderPage = () => {
         throw new Error('Link name is required. Please enter a name for your link.');
       }
 
+      // Check duplicate link name (same user, case-insensitive)
+      const { data: existingLinks } = await supabase
+        .from('links')
+        .select('id')
+        .eq('user_id', user.id)
+        .ilike('name', finalName)
+        .neq('status', 'deleted');
+      const isDuplicateName =
+        existingLinks?.length > 0 &&
+        (isEditMode && id && !isDuplicateMode ? existingLinks.some((l) => l.id !== id) : true);
+      if (isDuplicateName) {
+        setModalState({
+          isOpen: true,
+          type: 'alert',
+          title: 'Name already in use',
+          message: 'A link with this name already exists. Please choose a different name.',
+          onConfirm: null,
+          isLoading: false,
+        });
+        return;
+      }
+
       const finalSlug = formData.slug || generateRandomSlug();
 
       const utmParams = new URLSearchParams();

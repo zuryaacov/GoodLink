@@ -230,6 +230,29 @@ const NewLinkWizard = ({ isOpen, onClose, initialData = null }) => {
         throw new Error('Link name is required. Please enter a name for your link.');
       }
 
+      // Check duplicate link name (same user, case-insensitive)
+      const { data: existingLinks } = await supabase
+        .from('links')
+        .select('id')
+        .eq('user_id', user.id)
+        .ilike('name', finalName)
+        .neq('status', 'deleted');
+      const isDuplicateName =
+        existingLinks?.length > 0 &&
+        (isEditMode && initialData?.id ? existingLinks.some((l) => l.id !== initialData.id) : true);
+      if (isDuplicateName) {
+        setModalState({
+          isOpen: true,
+          type: 'alert',
+          title: 'Name already in use',
+          message: 'A link with this name already exists. Please choose a different name.',
+          onConfirm: null,
+          isLoading: false,
+        });
+        setIsSubmitting(false);
+        return;
+      }
+
       // Generate slug if not provided
       const finalSlug = formData.slug || generateRandomSlug();
 

@@ -294,8 +294,23 @@ const UtmPresetBuilderPage = () => {
         return;
       }
 
+      // Check duplicate preset name (same user, case-insensitive)
+      const trimmedPresetName = presetName.trim();
+      const { data: existingPresets } = await supabase
+        .from('utm_presets')
+        .select('id')
+        .eq('user_id', user.id)
+        .ilike('name', trimmedPresetName);
+      const isDuplicateName =
+        existingPresets?.length > 0 && (id ? existingPresets.some((p) => p.id !== id) : true);
+      if (isDuplicateName) {
+        setError('A UTM preset with this name already exists. Please choose a different name.');
+        setLoading(false);
+        return;
+      }
+
       const presetData = {
-        name: presetName.trim(),
+        name: trimmedPresetName,
         platform: selectedPlatform,
         slug: null,
         link_id: null,

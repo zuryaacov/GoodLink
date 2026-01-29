@@ -371,6 +371,25 @@ const PixelModal = ({ isOpen, onClose, initialData = null }) => {
         throw new Error('You must be logged in to save pixels');
       }
 
+      // Check duplicate pixel name (same user, case-insensitive)
+      const trimmedName = formData.name.trim();
+      const { data: existingPixels } = await supabase
+        .from('pixels')
+        .select('id')
+        .eq('user_id', user.id)
+        .ilike('name', trimmedName)
+        .neq('status', 'deleted');
+      const isDuplicateName =
+        existingPixels?.length > 0 &&
+        (isEditMode && initialData?.id
+          ? existingPixels.some((p) => p.id !== initialData.id)
+          : true);
+      if (isDuplicateName) {
+        setErrors((prev) => ({ ...prev, name: 'A pixel with this name already exists.' }));
+        setIsSubmitting(false);
+        return;
+      }
+
       // Normalize pixel ID before saving (uppercase for TikTok)
       let normalizedPixelId = formData.pixelId.trim();
       if (formData.platform === 'tiktok') {
