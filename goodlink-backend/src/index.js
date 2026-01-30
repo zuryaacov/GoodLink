@@ -1018,10 +1018,11 @@ export default Sentry.withSentry(
                 const eventTime = Math.floor(Date.now() / 1000);
                 const eventSourceUrl = request.url || `${url.origin}${url.pathname}${url.search}`;
                 const clickIds = getClickIdsFromUrl(url.searchParams);
+                // fbc format: fb.1.[CreationTime in ms].[fbclid from URL]. Only when fbclid exists (do not invent).
                 const userData = {
                     client_ip_address: ip,
                     client_user_agent: userAgent,
-                    ...(clickIds.fbclid && { fbc: `fb.1.${eventTime}.${clickIds.fbclid}` })
+                    ...(clickIds.fbclid && { fbc: `fb.1.${Date.now()}.${clickIds.fbclid}` })
                 };
 
                 if (wantsCapi && capiPixels.length > 0 && env.CAPI_RELAY_URL) {
