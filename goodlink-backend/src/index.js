@@ -157,6 +157,84 @@ function buildClickRecord(request, rayId, ip, slug, domain, userAgent, verdict, 
     };
 }
 
+// --- CAPI (Conversions API) Helpers ---
+
+/** Extract click IDs from URL (fbclid, gclid, etc.) for CAPI user_data */
+function getClickIdsFromUrl(searchParams) {
+    const fbclid = searchParams.get("fbclid") || undefined;
+    const gclid = searchParams.get("gclid") || undefined;
+    return { fbclid, gclid };
+}
+
+/**
+ * Publish CAPI payload to QStash; QStash will POST to relayUrl (our /api/capi-relay).
+ * @param {Object} env - Worker env (QSTASH_TOKEN, etc.)
+ * @param {string} relayUrl - Full URL of the relay (e.g. https://worker.workers.dev/api/capi-relay)
+ * @param {Object} payload - { event_id, event_time, event_source_url, user_data, pixels }
+ */
+async function sendCapiToQStash(env, relayUrl, payload) {
+    if (!env.QSTASH_TOKEN || !relayUrl) {
+        console.warn("CAPI: missing QSTASH_TOKEN or CAPI_RELAY_URL, skipping QStash publish");
+        return;
+    }
+    const qstashPublishUrl = `https://qstash.upstash.io/v2/publish/${relayUrl}`;
+    console.log("QStash CAPI: publishing to relay:", relayUrl);
+    try {
+        const res = await fetch(qstashPublishUrl, {
+            method: "POST",
+            headers: {
+                "Authorization": `Bearer ${env.QSTASH_TOKEN}`,
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(payload)
+        });
+        const text = await res.text();
+        console.log("QStash CAPI publish:", res.status, text);
+        if (!res.ok) console.error("QStash CAPI error:", res.status, text);
+    } catch (e) {
+        console.error("QStash CAPI error:", e.message);
+    }
+}
+
+/**
+ * Bridge page HTML: fires client-side pixels (Meta, TikTok, etc.) then redirects.
+ * @param {Object} opts - { targetUrl, eventId, eventTime, pixels, delayMs }
+ */
+function getBridgePageHtml(opts) {
+    const { targetUrl, eventId, eventTime, pixels, delayMs = 1500 } = opts;
+    const encodedTarget = encodeURIComponent(targetUrl);
+    const encodedPixels = encodeURIComponent(JSON.stringify(pixels || []));
+    const encodedEventId = encodeURIComponent(eventId || "");
+    const encodedEventTime = encodeURIComponent(String(eventTime || 0));
+    return `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Redirecting...</title></head><body>
+<script>
+(function(){
+  var targetUrl = decodeURIComponent("${encodedTarget}");
+  var pixels = JSON.parse(decodeURIComponent("${encodedPixels}"));
+  var eventId = decodeURIComponent("${encodedEventId}");
+  var eventTime = parseInt(decodeURIComponent("${encodedEventTime}"), 10) || Math.floor(Date.now()/1000);
+  function fireMeta(p) {
+    if (typeof fbq !== "undefined") { fbq("trackCustom", p.event_name || "PageView", {}, { eventID: eventId }); }
+  }
+  function fireTikTok(p) {
+    if (typeof ttq !== "undefined") { ttq.track("ClickButton", {}); }
+  }
+  function fireGoogle(p) {
+    if (typeof gtag !== "undefined") { gtag("event", p.event_name || "page_view", { send_to: p.pixel_id, event_callback: function(){} }); }
+  }
+  (pixels || []).forEach(function(p) {
+    if (p.platform === "meta") fireMeta(p);
+    else if (p.platform === "tiktok") fireTikTok(p);
+    else if (p.platform === "google") fireGoogle(p);
+  });
+  setTimeout(function(){ window.location.href = targetUrl; }, ${delayMs});
+})();
+</script>
+<noscript><meta http-equiv="refresh" content="1;url=${targetUrl.replace(/"/g, "&quot;")}"></noscript>
+<p>Redirecting...</p>
+</body></html>`;
+}
+
 export default Sentry.withSentry(
     (env) => ({
         dsn: "https://e771f37fced759ffa221f6b97bdce745@o4510770008293376.ingest.us.sentry.io/4510770172985344",
@@ -264,6 +342,105 @@ export default Sentry.withSentry(
 
                 } catch (error) {
                     console.error("❌ [Redis] Error deleting cache:", error);
+                    return new Response(JSON.stringify({ error: error.message }), {
+                        status: 500,
+                        headers: { ...corsHeaders, "Content-Type": "application/json" }
+                    });
+                }
+            }
+
+            // === CAPI Relay (receives from QStash, forwards to Meta/test endpoint, logs to capi_logs) ===
+            if (path === "/api/capi-relay" && request.method === "POST") {
+                try {
+                    const body = await request.json();
+                    const { event_id, event_time, event_source_url, user_data, pixels } = body;
+
+                    if (!pixels || !Array.isArray(pixels) || pixels.length === 0) {
+                        return new Response(JSON.stringify({ error: "Missing pixels array" }), {
+                            status: 400,
+                            headers: { ...corsHeaders, "Content-Type": "application/json" }
+                        });
+                    }
+
+                    const testEndpoint = env.CAPI_TEST_ENDPOINT || null;
+                    const supabaseUrl = `${env.SUPABASE_URL}/rest/v1/capi_logs`;
+                    const inserted = [];
+
+                    for (const p of pixels) {
+                        if (!p.capi_token || !p.platform) continue;
+                        const eventName = p.event_name || (p.event_type === "custom" ? (p.custom_event_name || "PageView") : (p.event_type || "PageView"));
+                        const metaBody = {
+                            data: [{
+                                event_name: eventName,
+                                event_time: event_time || Math.floor(Date.now() / 1000),
+                                action_source: "website",
+                                event_id: event_id || crypto.randomUUID(),
+                                user_data: {
+                                    ...(user_data?.fbc && { fbc: user_data.fbc }),
+                                    ...(user_data?.client_ip_address && { client_ip_address: user_data.client_ip_address }),
+                                    ...(user_data?.client_user_agent && { client_user_agent: user_data.client_user_agent })
+                                },
+                                event_source_url: event_source_url || undefined
+                            }],
+                            access_token: p.capi_token
+                        };
+
+                        const platformUrl = p.platform === "meta"
+                            ? (testEndpoint || `https://graph.facebook.com/v19.0/${p.pixel_id}/events`)
+                            : (testEndpoint || null);
+                        if (!platformUrl) continue;
+
+                        const start = Date.now();
+                        let statusCode = 0;
+                        let responseBody = "";
+                        try {
+                            const platformRes = await fetch(platformUrl, {
+                                method: "POST",
+                                headers: { "Content-Type": "application/json" },
+                                body: JSON.stringify(metaBody)
+                            });
+                            statusCode = platformRes.status;
+                            responseBody = await platformRes.text();
+                        } catch (err) {
+                            responseBody = err.message || "fetch failed";
+                        }
+                        const relayDurationMs = Date.now() - start;
+
+                        const logRow = {
+                            pixel_id: p.pixel_id,
+                            platform: p.platform,
+                            event_id: event_id,
+                            event_name: eventName,
+                            status_code: statusCode,
+                            response_body: responseBody?.slice(0, 2000) || null,
+                            request_body: { ...metaBody, access_token: metaBody.access_token ? "[REDACTED]" : undefined },
+                            relay_duration_ms: relayDurationMs,
+                            error_message: statusCode >= 200 && statusCode < 300 ? null : (responseBody?.slice(0, 500) || "non-2xx")
+                        };
+
+                        const insertRes = await fetch(supabaseUrl, {
+                            method: "POST",
+                            headers: {
+                                "apikey": env.SUPABASE_SERVICE_ROLE_KEY,
+                                "Authorization": `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}`,
+                                "Content-Type": "application/json",
+                                "Prefer": "return=representation"
+                            },
+                            body: JSON.stringify(logRow)
+                        });
+                        if (insertRes.ok) {
+                            const data = await insertRes.json();
+                            inserted.push(data[0]?.id || "ok");
+                        }
+                    }
+
+                    console.log("CAPI Relay: done, inserted", inserted.length, "rows");
+                    return new Response(JSON.stringify({ ok: true, logged: inserted.length }), {
+                        status: 200,
+                        headers: { ...corsHeaders, "Content-Type": "application/json" }
+                    });
+                } catch (error) {
+                    console.error("❌ CAPI Relay:", error);
                     return new Response(JSON.stringify({ error: error.message }), {
                         status: 500,
                         headers: { ...corsHeaders, "Content-Type": "application/json" }
@@ -809,8 +986,77 @@ export default Sentry.withSentry(
                 return htmlResponse(get404Page());
             }
 
-            // 7. Redirect
+            // 7. Parse linkData (Redis may return string)
+            if (typeof linkData === "string") {
+                try {
+                    linkData = JSON.parse(linkData);
+                } catch (_) {
+                    linkData = {};
+                }
+            }
+
             const finalRedirectUrl = buildSafeUrl(targetUrl, url.searchParams);
+            const planType = (linkData?.plan_type || "").toLowerCase();
+            const pixels = Array.isArray(linkData?.pixels) ? linkData.pixels : [];
+            const trackingMode = linkData?.tracking_mode || "pixel";
+
+            const isPro = planType === "pro";
+            const wantsCapi = trackingMode === "capi" || trackingMode === "pixel_and_capi";
+            const wantsPixel = trackingMode === "pixel" || trackingMode === "pixel_and_capi";
+            const capiPixels = pixels.filter((p) => p?.capi_token && (p?.status === "active"));
+
+            if (isPro && (pixels.length > 0 || capiPixels.length > 0)) {
+                const eventId = crypto.randomUUID();
+                const eventTime = Math.floor(Date.now() / 1000);
+                const eventSourceUrl = request.url || `${url.origin}${url.pathname}${url.search}`;
+                const clickIds = getClickIdsFromUrl(url.searchParams);
+                const userData = {
+                    client_ip_address: ip,
+                    client_user_agent: userAgent,
+                    ...(clickIds.fbclid && { fbc: `fb.1.${eventTime}.${clickIds.fbclid}` })
+                };
+
+                if (wantsCapi && capiPixels.length > 0 && env.CAPI_RELAY_URL) {
+                    const relayUrl = env.CAPI_RELAY_URL.startsWith("http")
+                        ? env.CAPI_RELAY_URL
+                        : `https://${url.host}${env.CAPI_RELAY_URL}`;
+                    const capiPayload = {
+                        event_id: eventId,
+                        event_time: eventTime,
+                        event_source_url: eventSourceUrl,
+                        user_data: userData,
+                        pixels: capiPixels.map((p) => ({
+                            pixel_id: p.pixel_id,
+                            capi_token: p.capi_token,
+                            event_name: p.event_type === "custom" ? (p.custom_event_name || "PageView") : (p.event_type || "PageView"),
+                            platform: p.platform,
+                            event_type: p.event_type,
+                            custom_event_name: p.custom_event_name
+                        }))
+                    };
+                    ctx.waitUntil(sendCapiToQStash(env, relayUrl, capiPayload));
+                }
+
+                if (wantsPixel && pixels.length > 0) {
+                    const bridgePixels = pixels.filter((p) => p?.status === "active");
+                    return htmlResponse(
+                        getBridgePageHtml({
+                            targetUrl: finalRedirectUrl,
+                            eventId,
+                            eventTime,
+                            pixels: bridgePixels,
+                            delayMs: 1500
+                        }),
+                        200
+                    );
+                }
+
+                if (wantsCapi && capiPixels.length > 0) {
+                    return Response.redirect(finalRedirectUrl, 302);
+                }
+            }
+
+            // 8. Default redirect
             return Response.redirect(finalRedirectUrl, 302);
         }
     }
