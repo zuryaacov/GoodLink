@@ -362,7 +362,12 @@ export default Sentry.withSentry(
                         });
                     }
 
-                    const testEndpoint = env.CAPI_TEST_ENDPOINT || null;
+                    // Testing: send CAPI to webhook.site. Set CAPI_TEST_ENDPOINT to "off" for production (Meta).
+                    const DEFAULT_CAPI_TEST_URL = "https://webhook.site/14ef81a2-b744-4e42-a508-b03e462fdf46";
+                    const raw = env.CAPI_TEST_ENDPOINT;
+                    const testEndpoint = (raw === "off" || raw === "false")
+                        ? null
+                        : (raw && String(raw).trim() ? String(raw).trim() : DEFAULT_CAPI_TEST_URL);
                     const supabaseUrl = `${env.SUPABASE_URL}/rest/v1/capi_logs`;
                     const inserted = [];
 
@@ -389,6 +394,9 @@ export default Sentry.withSentry(
                             ? (testEndpoint || `https://graph.facebook.com/v19.0/${p.pixel_id}/events`)
                             : (testEndpoint || null);
                         if (!platformUrl) continue;
+
+                        console.log("CAPI Relay: sending to URL:", platformUrl);
+                        console.log("CAPI Relay: JSON body:", JSON.stringify(metaBody, null, 2));
 
                         const start = Date.now();
                         let statusCode = 0;
