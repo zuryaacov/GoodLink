@@ -211,6 +211,7 @@ async function sendCapiToQStash(env, relayUrl, payload) {
     // Same format as clicks (no encoding): https://qstash.upstash.io/v2/publish/{destination_url}
     const qstashPublishUrl = `https://qstash.upstash.io/v2/publish/${dest}`;
     console.log("QStash CAPI: publishing to relay:", dest);
+    console.log("QStash CAPI: payload JSON", JSON.stringify(payload, null, 2));
     try {
         const res = await fetch(qstashPublishUrl, {
             method: "POST",
