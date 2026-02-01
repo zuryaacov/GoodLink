@@ -11,6 +11,7 @@ const validatePixelId = (pixelId, platform) => {
 
   switch (platform) {
     case 'meta':
+    case 'instagram':
       return /^\d{15,16}$/.test(trimmed);
     case 'tiktok':
       // TikTok: 18 characters, alphanumeric
@@ -39,12 +40,12 @@ const validateCapiToken = (token, platform) => {
 
   switch (platform) {
     case 'meta':
-      // Meta: 180-250 characters, alphanumeric (uppercase/lowercase letters, numbers)
+    case 'instagram':
       if (trimmed.length < 180 || trimmed.length > 250) {
-        return { isValid: false, error: 'Meta Access Token must be 180-250 characters' };
+        return { isValid: false, error: 'Access Token must be 180-250 characters' };
       }
       if (!/^[a-zA-Z0-9]+$/.test(trimmed)) {
-        return { isValid: false, error: 'Meta Access Token must contain only letters and numbers' };
+        return { isValid: false, error: 'Access Token must contain only letters and numbers' };
       }
       return { isValid: true, error: null };
 
@@ -124,6 +125,7 @@ const validateCapiToken = (token, platform) => {
 const getCapiTokenLabel = (platform) => {
   switch (platform) {
     case 'meta':
+    case 'instagram':
       return 'CAPI Access Token';
     case 'tiktok':
       return 'Access Token';
@@ -144,6 +146,7 @@ const getCapiTokenLabel = (platform) => {
 const getCapiTokenPlaceholder = (platform) => {
   switch (platform) {
     case 'meta':
+    case 'instagram':
       return 'Enter your 180-250 character Access Token';
     case 'tiktok':
       return 'Enter your 64-character Access Token';
@@ -163,14 +166,20 @@ const getCapiTokenPlaceholder = (platform) => {
 const PLATFORMS = [
   {
     value: 'meta',
-    label: 'Meta (Facebook)',
+    label: 'Facebook',
     placeholder: 'Enter your 15-16 digit Pixel ID (numbers only)',
     validate: (id) => validatePixelId(id, 'meta'),
   },
   {
+    value: 'instagram',
+    label: 'Instagram',
+    placeholder: 'Enter your 15-16 digit Pixel ID (numbers only)',
+    validate: (id) => validatePixelId(id, 'instagram'),
+  },
+  {
     value: 'tiktok',
     label: 'TikTok',
-    placeholder: 'Enter your 16-character Pixel ID (A-Z, 0-9)',
+    placeholder: 'Enter your 18-character Pixel ID (A-Z, 0-9)',
     validate: (id) => validatePixelId(id, 'tiktok'),
   },
   {
@@ -201,6 +210,19 @@ const PLATFORMS = [
 
 const STANDARD_EVENTS = {
   meta: [
+    { value: 'PageView', label: 'PageView (Default)', description: 'Recommended for affiliates' },
+    { value: 'ViewContent', label: 'ViewContent', description: 'Viewing content/offer' },
+    { value: 'Lead', label: 'Lead', description: 'Most popular for affiliates' },
+    { value: 'Contact', label: 'Contact', description: 'Contact initiated' },
+    {
+      value: 'CompleteRegistration',
+      label: 'CompleteRegistration',
+      description: 'Registration completed',
+    },
+    { value: 'Search', label: 'Search', description: 'Search within page' },
+    { value: 'Donate', label: 'Donate', description: 'For donation campaigns' },
+  ],
+  instagram: [
     { value: 'PageView', label: 'PageView (Default)', description: 'Recommended for affiliates' },
     { value: 'ViewContent', label: 'ViewContent', description: 'Viewing content/offer' },
     { value: 'Lead', label: 'Lead', description: 'Most popular for affiliates' },
@@ -338,6 +360,7 @@ const PixelBuilderPage = () => {
         let errorMsg = `Invalid ${platform.label} Pixel ID format. `;
         switch (formData.platform) {
           case 'meta':
+          case 'instagram':
             errorMsg += 'Must be exactly 15 or 16 digits.';
             break;
           case 'tiktok':

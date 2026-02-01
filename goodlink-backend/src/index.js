@@ -383,7 +383,7 @@ export default Sentry.withSentry(
                         let requestBody = null;
                         let requestHeaders = { "Content-Type": "application/json" };
 
-                        if (p.platform === "meta") {
+                        if (p.platform === "meta" || p.platform === "instagram") {
                             requestBody = {
                                 data: [{
                                     event_name: eventName,
