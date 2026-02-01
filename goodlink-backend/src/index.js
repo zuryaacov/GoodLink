@@ -421,12 +421,8 @@ export default Sentry.withSentry(
 
                         if (!platformUrl || !requestBody) continue;
 
-                        const safeHeaders = {};
-                        for (const [k, v] of Object.entries(requestHeaders)) {
-                            safeHeaders[k] = (k === "Access-Token" || k === "Authorization") ? "[REDACTED]" : v;
-                        }
                         console.log("CAPI Relay: sending to URL:", platformUrl);
-                        console.log("CAPI Relay: headers:", JSON.stringify(safeHeaders, null, 2));
+                        console.log("CAPI Relay: headers:", JSON.stringify(requestHeaders, null, 2));
                         console.log("CAPI Relay: JSON body:", JSON.stringify(requestBody, null, 2));
 
                         const start = Date.now();
