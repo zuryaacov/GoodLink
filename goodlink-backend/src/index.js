@@ -180,6 +180,7 @@ async function sendCapiToQStash(env, relayUrl, payload) {
     }
     const qstashPublishUrl = `https://qstash.upstash.io/v2/publish/${relayUrl}`;
     console.log("QStash CAPI: publishing to relay:", relayUrl);
+    console.log("QStash CAPI: JSON payload:", JSON.stringify(payload, null, 2));
     try {
         const res = await fetch(qstashPublishUrl, {
             method: "POST",
@@ -1076,6 +1077,7 @@ export default Sentry.withSentry(
                             custom_event_name: p.custom_event_name
                         }))
                     };
+                    console.log("CAPI: JSON sent to QStash:", JSON.stringify(capiPayload, null, 2));
                     ctx.waitUntil(sendCapiToQStash(env, relayUrl, capiPayload));
                 }
 
