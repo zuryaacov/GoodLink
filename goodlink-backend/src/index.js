@@ -252,7 +252,8 @@ async function sendCapiToQStash(env, relayUrl, payload) {
     }
     const qstashPublishUrl = `https://qstash.upstash.io/v2/publish/${relayUrl}`;
     console.log("QStash CAPI: publishing to relay:", relayUrl);
-    console.log("QStash CAPI: JSON payload:", JSON.stringify(payload, null, 2));
+    const payloadJson = JSON.stringify(payload, null, 2);
+    console.log("QStash CAPI: JSON sent:", payloadJson);
     try {
         const res = await fetch(qstashPublishUrl, {
             method: "POST",
@@ -523,7 +524,8 @@ export default Sentry.withSentry(
                         const logUrl = p.platform === "google" ? platformUrl.replace(/api_secret=[^&]+/, "api_secret=[REDACTED]") : platformUrl;
                         console.log("CAPI Relay: sending to URL:", logUrl);
                         console.log("CAPI Relay: headers:", JSON.stringify(requestHeaders, null, 2));
-                        console.log("CAPI Relay: JSON body:", JSON.stringify(requestBody, null, 2));
+                        const bodyJson = JSON.stringify(requestBody, null, 2);
+                        console.log("CAPI Relay: JSON sent to platform:", bodyJson);
 
                         const start = Date.now();
                         let statusCode = 0;
@@ -1200,7 +1202,8 @@ export default Sentry.withSentry(
                             custom_event_name: p.custom_event_name
                         }))
                     };
-                    console.log("CAPI: JSON sent to QStash:", JSON.stringify(capiPayload, null, 2));
+                    const capiPayloadJson = JSON.stringify(capiPayload, null, 2);
+                    console.log("CAPI: JSON sent to QStash:", capiPayloadJson);
                     ctx.waitUntil(sendCapiToQStash(env, relayUrl, capiPayload));
                 }
 
