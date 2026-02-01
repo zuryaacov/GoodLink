@@ -427,7 +427,7 @@ export default Sentry.withSentry(
             if (path === "/api/capi-relay" && request.method === "POST") {
                 try {
                     const body = await request.json();
-                    const { event_id, event_time, event_source_url, user_data, pixels } = body;
+                    const { event_id, event_time, event_source_url, destination_url, utm_source, utm_medium, utm_campaign, user_data, pixels } = body;
 
                     if (!pixels || !Array.isArray(pixels) || pixels.length === 0) {
                         return new Response(JSON.stringify({ error: "Missing pixels array" }), {
@@ -490,11 +490,38 @@ export default Sentry.withSentry(
                             };
                             platformUrl = testEndpoint || "https://business-api.tiktok.com/open_api/v1.3/event/track/";
                             requestHeaders = { "Content-Type": "application/json", "Access-Token": p.capi_token };
+                        } else if (p.platform === "google") {
+                            // GA4 Measurement Protocol: measurement_id (pixel_id), api_secret (capi_token), client_id, events
+                            const ga4ClientId = `${Math.floor(Math.random() * 1e10)}.${Math.floor(Date.now() / 1000)}`;
+                            const destUrl = destination_url || event_source_url || "";
+                            let merchantDomain = null;
+                            try {
+                                if (destUrl) merchantDomain = new URL(destUrl).hostname;
+                            } catch (_) { }
+                            const ga4Params = {
+                                ...(user_data?.gclid && { gclid: user_data.gclid }),
+                                ...(destUrl && { page_location: destUrl }),
+                                page_title: "Affiliate Redirect Page",
+                                source: utm_source || "google",
+                                medium: utm_medium || "cpc",
+                                campaign: utm_campaign || "affiliate_promo",
+                                ...(user_data?.client_ip_address && { ip_override: user_data.client_ip_address }),
+                                ...(user_data?.client_user_agent && { user_agent: user_data.client_user_agent }),
+                                outbound: "true",
+                                ...(merchantDomain && { merchant_domain: merchantDomain })
+                            };
+                            requestBody = {
+                                client_id: ga4ClientId,
+                                non_personalized_ads: false,
+                                events: [{ name: eventName, params: ga4Params }]
+                            };
+                            platformUrl = `https://www.google-analytics.com/mp/collect?measurement_id=${encodeURIComponent(p.pixel_id)}&api_secret=${encodeURIComponent(p.capi_token)}`;
                         }
 
                         if (!platformUrl || !requestBody) continue;
 
-                        console.log("CAPI Relay: sending to URL:", platformUrl);
+                        const logUrl = p.platform === "google" ? platformUrl.replace(/api_secret=[^&]+/, "api_secret=[REDACTED]") : platformUrl;
+                        console.log("CAPI Relay: sending to URL:", logUrl);
                         console.log("CAPI Relay: headers:", JSON.stringify(requestHeaders, null, 2));
                         console.log("CAPI Relay: JSON body:", JSON.stringify(requestBody, null, 2));
 
@@ -1159,6 +1186,10 @@ export default Sentry.withSentry(
                         event_id: eventId,
                         event_time: eventTime,
                         event_source_url: eventSourceUrl,
+                        destination_url: finalRedirectUrl,
+                        utm_source: url.searchParams.get("utm_source") || undefined,
+                        utm_medium: url.searchParams.get("utm_medium") || undefined,
+                        utm_campaign: url.searchParams.get("utm_campaign") || undefined,
                         user_data: userData,
                         pixels: capiPixelsToSend.map((p) => ({
                             pixel_id: p.pixel_id,

@@ -65,13 +65,12 @@ const validateCapiToken = (token, platform) => {
     case 'google':
       // Google Ads: 20-25 characters, letters, numbers and special characters
       if (trimmed.length < 20 || trimmed.length > 25) {
-        return { isValid: false, error: 'Google CAPI Developer Token must be 20-25 characters' };
+        return { isValid: false, error: 'Google Api_Secret must be 20-25 characters' };
       }
       if (!/^[a-zA-Z0-9_\-]+$/.test(trimmed)) {
         return {
           isValid: false,
-          error:
-            'Google CAPI Developer Token must contain only letters, numbers, underscores and hyphens',
+          error: 'Google Api_Secret must contain only letters, numbers, underscores and hyphens',
         };
       }
       return { isValid: true, error: null };
@@ -121,6 +120,8 @@ const validateCapiToken = (token, platform) => {
   }
 };
 
+const getPixelIdLabel = (platform) => (platform === 'google' ? 'Measurement_Id' : 'Pixel ID');
+
 // Get CAPI token label by platform
 const getCapiTokenLabel = (platform) => {
   switch (platform) {
@@ -130,7 +131,7 @@ const getCapiTokenLabel = (platform) => {
     case 'tiktok':
       return 'Access Token';
     case 'google':
-      return 'CAPI Developer Token';
+      return 'Api_Secret';
     case 'snapchat':
       return 'Access Token';
     case 'outbrain':
@@ -151,7 +152,7 @@ const getCapiTokenPlaceholder = (platform) => {
     case 'tiktok':
       return 'Enter your 64-character Access Token';
     case 'google':
-      return 'Enter your 20-25 character CAPI Developer Token';
+      return 'Enter your 20-25 character Api_Secret';
     case 'snapchat':
       return 'Enter your 30-50 character Access Token';
     case 'outbrain':
@@ -185,7 +186,7 @@ const PLATFORMS = [
   {
     value: 'google',
     label: 'Google Ads',
-    placeholder: 'Enter your Conversion ID (e.g., AW-1234567890)',
+    placeholder: 'Enter your Measurement_Id (e.g., AW-1234567890)',
     validate: (id) => validatePixelId(id, 'google'),
   },
   {
@@ -258,6 +259,8 @@ const STANDARD_EVENTS = {
     { value: 'qualified_lead', label: 'qualified_lead', description: 'High-quality lead' },
     { value: 'sign_up', label: 'sign_up', description: 'Registration completed' },
     { value: 'view_item', label: 'view_item', description: 'Similar to ViewContent' },
+    { value: 'affiliate_click', label: 'affiliate_click', description: 'Affiliate link click' },
+    { value: 'generate_lead', label: 'generate_lead', description: 'Lead generation' },
   ],
   snapchat: [
     { value: 'PAGE_VIEW', label: 'PAGE_VIEW (Default)', description: 'Recommended for affiliates' },
@@ -353,11 +356,12 @@ const PixelBuilderPage = () => {
     }
 
     if (!formData.pixelId.trim()) {
-      newErrors.pixelId = 'Pixel ID is required';
+      newErrors.pixelId = `${getPixelIdLabel(formData.platform)} is required`;
     } else {
       const platform = PLATFORMS.find((p) => p.value === formData.platform);
       if (platform && !platform.validate(formData.pixelId)) {
-        let errorMsg = `Invalid ${platform.label} Pixel ID format. `;
+        const idLabel = getPixelIdLabel(formData.platform);
+        let errorMsg = `Invalid ${platform.label} ${idLabel} format. `;
         switch (formData.platform) {
           case 'meta':
           case 'instagram':
@@ -576,10 +580,10 @@ const PixelBuilderPage = () => {
             </select>
           </div>
 
-          {/* Pixel ID */}
+          {/* Pixel ID / Measurement_Id (Google) */}
           <div>
             <label className="block text-sm font-medium text-white mb-2">
-              Pixel ID <span className="text-red-400">*</span>
+              {getPixelIdLabel(formData.platform)} <span className="text-red-400">*</span>
             </label>
             <input
               type="text"
@@ -592,7 +596,10 @@ const PixelBuilderPage = () => {
                 setFormData({ ...formData, pixelId: value });
                 if (errors.pixelId) setErrors({ ...errors, pixelId: null });
               }}
-              placeholder={currentPlatform?.placeholder || 'Enter Pixel ID'}
+              placeholder={
+                currentPlatform?.placeholder ||
+                (formData.platform === 'google' ? 'Enter Measurement_Id' : 'Enter Pixel ID')
+              }
               className={`w-full px-4 py-3 bg-slate-800 border rounded-xl text-white placeholder-slate-500 focus:outline-none transition-colors font-mono text-sm ${
                 errors.pixelId
                   ? 'border-red-500 focus:border-red-500'
