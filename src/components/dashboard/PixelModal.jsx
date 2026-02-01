@@ -70,13 +70,14 @@ const validateCapiToken = (token, platform) => {
       return { isValid: true, error: null };
 
     case 'google':
-      if (trimmed.length < 20 || trimmed.length > 25) {
-        return { isValid: false, error: 'Google Api_Secret must be 20-25 characters' };
+      // GA4 Api_Secret: starts with G- followed by ~10 alphanumeric characters
+      if (!trimmed.startsWith('G-')) {
+        return { isValid: false, error: 'Google Api_Secret must start with G-' };
       }
-      if (!/^[a-zA-Z0-9_\-]+$/.test(trimmed)) {
+      if (!/^G-[a-zA-Z0-9]{8,15}$/.test(trimmed)) {
         return {
           isValid: false,
-          error: 'Google Api_Secret must contain only letters, numbers, underscores and hyphens',
+          error: 'Google Api_Secret must be G- followed by 8–15 letters and numbers',
         };
       }
       return { isValid: true, error: null };
@@ -154,7 +155,7 @@ const getCapiTokenPlaceholder = (platform) => {
     case 'tiktok':
       return 'Enter your 64-character Access Token';
     case 'google':
-      return 'Enter your 20-25 character Api_Secret';
+      return 'Enter your Api_Secret (G- followed by ~10 letters and numbers)';
     case 'snapchat':
       return 'Enter your 30-50 character Access Token';
     case 'outbrain':
