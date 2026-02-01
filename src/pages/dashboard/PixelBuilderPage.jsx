@@ -20,7 +20,8 @@ const validatePixelId = (pixelId, platform) => {
     case 'snapchat':
       return /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(trimmed);
     case 'google':
-      return /^AW-\d{9,10}$/i.test(trimmed);
+      // GA4 Measurement_Id: G- + 8–15 alphanumeric; or Google Ads: AW- + 9–10 digits
+      return /^G-[a-zA-Z0-9]{8,15}$/.test(trimmed) || /^AW-\d{9,10}$/i.test(trimmed);
     case 'outbrain':
       // Outbrain: 32 chars hexadecimal (0-9, a-f)
       return /^[a-f0-9]{32}$/.test(trimmed);
@@ -63,14 +64,14 @@ const validateCapiToken = (token, platform) => {
       return { isValid: true, error: null };
 
     case 'google':
-      // GA4 Api_Secret: starts with G- followed by ~10 alphanumeric characters
-      if (!trimmed.startsWith('G-')) {
-        return { isValid: false, error: 'Google Api_Secret must start with G-' };
+      // GA4 Api_Secret: exactly 22 characters
+      if (trimmed.length !== 22) {
+        return { isValid: false, error: 'Google Api_Secret must be exactly 22 characters' };
       }
-      if (!/^G-[a-zA-Z0-9]{8,15}$/.test(trimmed)) {
+      if (!/^[a-zA-Z0-9_-]+$/.test(trimmed)) {
         return {
           isValid: false,
-          error: 'Google Api_Secret must be G- followed by 8–15 letters and numbers',
+          error: 'Google Api_Secret must contain only letters, numbers, underscores and hyphens',
         };
       }
       return { isValid: true, error: null };
@@ -152,7 +153,7 @@ const getCapiTokenPlaceholder = (platform) => {
     case 'tiktok':
       return 'Enter your 64-character Access Token';
     case 'google':
-      return 'Enter your Api_Secret (G- followed by ~10 letters and numbers)';
+      return 'Enter your 22-character Api_Secret';
     case 'snapchat':
       return 'Enter your 30-50 character Access Token';
     case 'outbrain':
@@ -186,7 +187,7 @@ const PLATFORMS = [
   {
     value: 'google',
     label: 'Google Ads',
-    placeholder: 'Enter your Measurement_Id (e.g., AW-1234567890)',
+    placeholder: 'Enter your Measurement_Id (e.g., G-77Y4B2X5Z1 or AW-1234567890)',
     validate: (id) => validatePixelId(id, 'google'),
   },
   {
@@ -371,7 +372,8 @@ const PixelBuilderPage = () => {
             errorMsg += 'Must be exactly 18 characters (uppercase letters A-Z and numbers 0-9).';
             break;
           case 'google':
-            errorMsg += 'Must start with AW- followed by 9-10 digits (e.g., AW-1234567890).';
+            errorMsg +=
+              'Must be G- followed by 8–15 letters/numbers (GA4) or AW- followed by 9–10 digits (Ads).';
             break;
           case 'snapchat':
             errorMsg += 'Must be a valid UUID format (36 characters: 8-4-4-4-12).';
