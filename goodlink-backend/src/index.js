@@ -161,11 +161,11 @@ function buildClickRecord(request, rayId, ip, slug, domain, userAgent, verdict, 
 
 /**
  * Click ID param → platform(s) that get CAPI when this param is present.
- * Meta: fbclid → meta + instagram. Google: gclid/wbraid/gbraid → google.
+ * fbclid is resolved via Referer + utm_source to meta or instagram (or both when unknown).
+ * If URL has multiple params (e.g. ttclid + fbclid), we send to all matching platforms.
  */
 const CLICK_ID_TO_PLATFORMS = {
     ttclid: ["tiktok"],
-    fbclid: ["meta", "instagram"],
     gclid: ["google"],
     wbraid: ["google"],
     gbraid: ["google"],
@@ -187,14 +187,55 @@ function getClickIdsFromUrl(searchParams) {
     return { fbclid, gclid, ttclid, wbraid, gbraid, scid, dicbid, tblci };
 }
 
-/** Return set of pixel platform values that should get CAPI based on URL click IDs */
-function getPlatformsFromClickIds(clickIds) {
+/**
+ * Resolve Meta (Facebook vs Instagram) when fbclid is present: Referer first, then utm_source.
+ * @param {Request} request - Worker request (for Referer header)
+ * @param {URLSearchParams} searchParams - URL query params (for utm_source)
+ * @returns {string[]} ['meta'] | ['instagram'] | ['meta','instagram'] when unknown
+ */
+function resolveMetaPlatformFromRefererAndUtm(request, searchParams) {
+    const referer = (request.headers.get("Referer") || request.headers.get("referer") || "").toLowerCase();
+    const utmSource = (searchParams.get("utm_source") || "").toLowerCase().trim();
+
+    // 1. Referer first (most common): l.instagram.com, instagram.com, l.facebook.com, m.facebook.com
+    if (referer.includes("instagram.com")) {
+        return ["instagram"];
+    }
+    if (referer.includes("facebook.com")) {
+        return ["meta"];
+    }
+
+    // 2. UTM (most reliable when set): utm_source=ig/instagram → Instagram, utm_source=fb/facebook → Facebook
+    if (utmSource === "ig" || utmSource === "instagram") {
+        return ["instagram"];
+    }
+    if (utmSource === "fb" || utmSource === "facebook") {
+        return ["meta"];
+    }
+
+    // Unknown: send to both so we don't miss the conversion
+    return ["meta", "instagram"];
+}
+
+/**
+ * Return set of pixel platform values that should get CAPI: all platforms that have a click ID in the URL.
+ * If URL has one param → one platform (or meta+instagram when fbclid unknown). If multiple params → send to all.
+ * No priority: we send to every company we detected in the URL.
+ */
+function getPlatformsFromClickIds(clickIds, request, searchParams) {
     const platforms = new Set();
+
     for (const [param, platformList] of Object.entries(CLICK_ID_TO_PLATFORMS)) {
         if (clickIds[param]) {
             platformList.forEach((p) => platforms.add(p));
         }
     }
+
+    if (clickIds.fbclid) {
+        const metaPlatforms = resolveMetaPlatformFromRefererAndUtm(request, searchParams);
+        metaPlatforms.forEach((p) => platforms.add(p));
+    }
+
     return platforms;
 }
 
@@ -404,6 +445,7 @@ export default Sentry.withSentry(
                     const supabaseUrl = `${env.SUPABASE_URL}/rest/v1/capi_logs`;
                     const inserted = [];
 
+                    // Each pixel: one CAPI request to platform, then one separate row write to Supabase (capi_logs)
                     for (const p of pixels) {
                         if (!p.capi_token || !p.platform) continue;
                         const eventName = p.event_name || (p.event_type === "custom" ? (p.custom_event_name || "PageView") : (p.event_type || "PageView"));
@@ -489,6 +531,7 @@ export default Sentry.withSentry(
                             error_message: statusCode >= 200 && statusCode < 300 ? null : (responseBody?.slice(0, 500) || "non-2xx")
                         };
 
+                        // One Supabase write per CAPI send (one row in capi_logs per pixel)
                         const insertRes = await fetch(supabaseUrl, {
                             method: "POST",
                             headers: {
@@ -502,6 +545,9 @@ export default Sentry.withSentry(
                         if (insertRes.ok) {
                             const data = await insertRes.json();
                             inserted.push(data[0]?.id || "ok");
+                        } else {
+                            const errText = await insertRes.text();
+                            console.error("CAPI Relay: Supabase insert failed for pixel", p.pixel_id, p.platform, insertRes.status, errText);
                         }
                     }
 
@@ -1081,11 +1127,14 @@ export default Sentry.withSentry(
                 const eventTime = Math.floor(Date.now() / 1000);
                 const eventSourceUrl = request.url || `${url.origin}${url.pathname}${url.search}`;
                 const clickIds = getClickIdsFromUrl(url.searchParams);
-                const platformsFromUrl = getPlatformsFromClickIds(clickIds);
-                // Only send CAPI for pixels whose platform matches a click ID present in the URL
+                const platformsFromUrl = getPlatformsFromClickIds(clickIds, request, url.searchParams);
+                // Send CAPI only to platforms found in URL. If one param → one (or two for meta); if multiple params → send to all. Within each platform, send to every CAPI (e.g. 3 Facebook pixels).
                 const capiPixelsToSend = capiPixels.filter((p) => platformsFromUrl.has(p.platform));
                 if (capiPixels.length && !capiPixelsToSend.length) {
                     console.log("CAPI: no matching click ID in URL for link pixels (URL platforms:", [...platformsFromUrl].join(",") || "none", ")");
+                } else if (capiPixelsToSend.length) {
+                    const byPlatform = capiPixelsToSend.reduce((acc, p) => { acc[p.platform] = (acc[p.platform] || 0) + 1; return acc; }, {});
+                    console.log("CAPI: sending to", capiPixelsToSend.length, "pixel(s), platforms:", JSON.stringify(byPlatform));
                 }
 
                 // fbc format: fb.1.[CreationTime in ms].[fbclid from URL]. Only when fbclid exists (do not invent).
