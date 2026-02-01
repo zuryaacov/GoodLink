@@ -159,12 +159,43 @@ function buildClickRecord(request, rayId, ip, slug, domain, userAgent, verdict, 
 
 // --- CAPI (Conversions API) Helpers ---
 
-/** Extract click IDs from URL (fbclid, gclid, ttclid, etc.) for CAPI user_data */
+/**
+ * Click ID param → platform(s) that get CAPI when this param is present.
+ * Meta: fbclid → meta + instagram. Google: gclid/wbraid/gbraid → google.
+ */
+const CLICK_ID_TO_PLATFORMS = {
+    ttclid: ["tiktok"],
+    fbclid: ["meta", "instagram"],
+    gclid: ["google"],
+    wbraid: ["google"],
+    gbraid: ["google"],
+    scid: ["snapchat"],
+    dicbid: ["outbrain"],
+    tblci: ["taboola"]
+};
+
+/** Extract all platform click IDs from URL for CAPI user_data and platform detection */
 function getClickIdsFromUrl(searchParams) {
     const fbclid = searchParams.get("fbclid") || undefined;
     const gclid = searchParams.get("gclid") || undefined;
     const ttclid = searchParams.get("ttclid") || undefined;
-    return { fbclid, gclid, ttclid };
+    const wbraid = searchParams.get("wbraid") || undefined;
+    const gbraid = searchParams.get("gbraid") || undefined;
+    const scid = searchParams.get("scid") || undefined;
+    const dicbid = searchParams.get("dicbid") || undefined;
+    const tblci = searchParams.get("tblci") || undefined;
+    return { fbclid, gclid, ttclid, wbraid, gbraid, scid, dicbid, tblci };
+}
+
+/** Return set of pixel platform values that should get CAPI based on URL click IDs */
+function getPlatformsFromClickIds(clickIds) {
+    const platforms = new Set();
+    for (const [param, platformList] of Object.entries(CLICK_ID_TO_PLATFORMS)) {
+        if (clickIds[param]) {
+            platformList.forEach((p) => platforms.add(p));
+        }
+    }
+    return platforms;
 }
 
 /**
@@ -1050,15 +1081,28 @@ export default Sentry.withSentry(
                 const eventTime = Math.floor(Date.now() / 1000);
                 const eventSourceUrl = request.url || `${url.origin}${url.pathname}${url.search}`;
                 const clickIds = getClickIdsFromUrl(url.searchParams);
+                const platformsFromUrl = getPlatformsFromClickIds(clickIds);
+                // Only send CAPI for pixels whose platform matches a click ID present in the URL
+                const capiPixelsToSend = capiPixels.filter((p) => platformsFromUrl.has(p.platform));
+                if (capiPixels.length && !capiPixelsToSend.length) {
+                    console.log("CAPI: no matching click ID in URL for link pixels (URL platforms:", [...platformsFromUrl].join(",") || "none", ")");
+                }
+
                 // fbc format: fb.1.[CreationTime in ms].[fbclid from URL]. Only when fbclid exists (do not invent).
                 const userData = {
                     client_ip_address: ip,
                     client_user_agent: userAgent,
                     ...(clickIds.fbclid && { fbc: `fb.1.${Date.now()}.${clickIds.fbclid}` }),
-                    ...(clickIds.ttclid && { ttclid: clickIds.ttclid })
+                    ...(clickIds.ttclid && { ttclid: clickIds.ttclid }),
+                    ...(clickIds.gclid && { gclid: clickIds.gclid }),
+                    ...(clickIds.wbraid && { wbraid: clickIds.wbraid }),
+                    ...(clickIds.gbraid && { gbraid: clickIds.gbraid }),
+                    ...(clickIds.scid && { scid: clickIds.scid }),
+                    ...(clickIds.dicbid && { dicbid: clickIds.dicbid }),
+                    ...(clickIds.tblci && { tblci: clickIds.tblci })
                 };
 
-                if (wantsCapi && capiPixels.length > 0 && env.CAPI_RELAY_URL) {
+                if (wantsCapi && capiPixelsToSend.length > 0 && env.CAPI_RELAY_URL) {
                     const relayUrl = env.CAPI_RELAY_URL.startsWith("http")
                         ? env.CAPI_RELAY_URL
                         : `https://${url.host}${env.CAPI_RELAY_URL}`;
@@ -1067,7 +1111,7 @@ export default Sentry.withSentry(
                         event_time: eventTime,
                         event_source_url: eventSourceUrl,
                         user_data: userData,
-                        pixels: capiPixels.map((p) => ({
+                        pixels: capiPixelsToSend.map((p) => ({
                             pixel_id: p.pixel_id,
                             capi_token: p.capi_token,
                             event_name: p.event_type === "custom" ? (p.custom_event_name || "PageView") : (p.event_type || "PageView"),
@@ -1094,7 +1138,7 @@ export default Sentry.withSentry(
                     );
                 }
 
-                if (wantsCapi && capiPixels.length > 0) {
+                if (wantsCapi && capiPixelsToSend.length > 0) {
                     return Response.redirect(finalRedirectUrl, 302);
                 }
             }
