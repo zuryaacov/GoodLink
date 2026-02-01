@@ -421,7 +421,12 @@ export default Sentry.withSentry(
 
                         if (!platformUrl || !requestBody) continue;
 
+                        const safeHeaders = {};
+                        for (const [k, v] of Object.entries(requestHeaders)) {
+                            safeHeaders[k] = (k === "Access-Token" || k === "Authorization") ? "[REDACTED]" : v;
+                        }
                         console.log("CAPI Relay: sending to URL:", platformUrl);
+                        console.log("CAPI Relay: headers:", JSON.stringify(safeHeaders, null, 2));
                         console.log("CAPI Relay: JSON body:", JSON.stringify(requestBody, null, 2));
 
                         const start = Date.now();
@@ -440,12 +445,10 @@ export default Sentry.withSentry(
                         }
                         const relayDurationMs = Date.now() - start;
 
+                        // Log: body only. Meta token is in body (redacted); TikTok token is in HTTP header only, not in body.
                         const logRequestBody = p.platform === "meta"
                             ? { ...requestBody, access_token: requestBody.access_token ? "[REDACTED]" : undefined }
                             : { ...requestBody };
-                        if (p.platform === "tiktok" && requestHeaders["Access-Token"]) {
-                            logRequestBody._header_access_token = "[REDACTED]";
-                        }
 
                         const logRow = {
                             pixel_id: p.pixel_id,

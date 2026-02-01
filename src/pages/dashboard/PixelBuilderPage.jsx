@@ -13,8 +13,9 @@ const validatePixelId = (pixelId, platform) => {
     case 'meta':
       return /^\d{15,16}$/.test(trimmed);
     case 'tiktok':
+      // TikTok: 18 characters, alphanumeric
       const upperTrimmed = trimmed.toUpperCase();
-      return /^[A-Z0-9]{16}$/.test(upperTrimmed);
+      return /^[A-Z0-9]{18}$/.test(upperTrimmed);
     case 'snapchat':
       return /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(trimmed);
     case 'google':
@@ -48,9 +49,9 @@ const validateCapiToken = (token, platform) => {
       return { isValid: true, error: null };
 
     case 'tiktok':
-      // TikTok: ~40 characters, alphanumeric (lowercase mainly)
-      if (trimmed.length < 35 || trimmed.length > 50) {
-        return { isValid: false, error: 'TikTok Access Token must be approximately 40 characters' };
+      // TikTok: 64 characters, alphanumeric
+      if (trimmed.length !== 64) {
+        return { isValid: false, error: 'TikTok Access Token must be 64 characters' };
       }
       if (!/^[a-zA-Z0-9]+$/.test(trimmed)) {
         return {
@@ -145,7 +146,7 @@ const getCapiTokenPlaceholder = (platform) => {
     case 'meta':
       return 'Enter your 180-250 character Access Token';
     case 'tiktok':
-      return 'Enter your ~40 character Access Token';
+      return 'Enter your 64-character Access Token';
     case 'google':
       return 'Enter your 20-25 character CAPI Developer Token';
     case 'snapchat':
@@ -340,7 +341,7 @@ const PixelBuilderPage = () => {
             errorMsg += 'Must be exactly 15 or 16 digits.';
             break;
           case 'tiktok':
-            errorMsg += 'Must be exactly 16 characters (uppercase letters A-Z and numbers 0-9).';
+            errorMsg += 'Must be exactly 18 characters (uppercase letters A-Z and numbers 0-9).';
             break;
           case 'google':
             errorMsg += 'Must start with AW- followed by 9-10 digits (e.g., AW-1234567890).';
