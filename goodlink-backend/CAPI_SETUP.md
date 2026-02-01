@@ -7,7 +7,7 @@
    - Worker builds CAPI payload (event_id, event_time, event_source_url, user_data, pixels).
    - Worker sends payload to **QStash** with destination = **CAPI Relay URL**.
 3. **QStash** POSTs the payload to your **CAPI Relay** (`/api/capi-relay`).
-4. **Relay** forwards each pixel to the platform API (Meta: `https://graph.facebook.com/v19.0/{pixel_id}/events`) and logs result in **capi_logs**.
+4. **Relay** forwards each pixel to the platform API (Meta or TikTok) and logs result in **capi_logs**.
 
 ## Secrets (Cloudflare)
 
@@ -24,7 +24,7 @@ npx wrangler secret put CAPI_TEST_ENDPOINT
 ```
 
 - **CAPI_RELAY_URL** – Must be the full URL of your worker’s relay (e.g. `https://<worker-domain>/api/capi-relay`). Required for CAPI to work.
-- **CAPI_TEST_ENDPOINT** – If set, the relay sends requests here instead of Meta (for debugging). Leave unset for production.
+- **CAPI_TEST_ENDPOINT** – If set, the relay sends requests here instead of Meta/TikTok (for debugging). Leave unset for production.
 
 ## Supabase
 
@@ -39,3 +39,15 @@ npx wrangler secret put CAPI_TEST_ENDPOINT
 - `user_data.fbc` = `fb.1.{event_time}.{fbclid}` (from URL param `fbclid`).
 - `user_data.client_ip_address` = from request (e.g. `cf-connecting-ip`).
 - `user_data.client_user_agent` = from request `user-agent`.
+
+## TikTok payload (reference)
+
+- **Endpoint:** `https://business-api.tiktok.com/open_api/v1.3/event/track/` (token in header `Access-Token`).
+- `pixel_code` = pixel_id from table.
+- `event` = custom_event_name or PageView.
+- `event_id` = UUID for dedup.
+- `timestamp` = ISO string (e.g. `2024-01-29T10:00:00.000Z`).
+- `context.ad.callback` = ttclid from URL param `ttclid` (only when present).
+- `context.user.ip` = client IP.
+- `context.user.user_agent` = user-agent.
+- `context.page.url` = event_source_url (entry URL).

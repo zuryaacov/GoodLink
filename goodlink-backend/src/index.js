@@ -159,11 +159,12 @@ function buildClickRecord(request, rayId, ip, slug, domain, userAgent, verdict, 
 
 // --- CAPI (Conversions API) Helpers ---
 
-/** Extract click IDs from URL (fbclid, gclid, etc.) for CAPI user_data */
+/** Extract click IDs from URL (fbclid, gclid, ttclid, etc.) for CAPI user_data */
 function getClickIdsFromUrl(searchParams) {
     const fbclid = searchParams.get("fbclid") || undefined;
     const gclid = searchParams.get("gclid") || undefined;
-    return { fbclid, gclid };
+    const ttclid = searchParams.get("ttclid") || undefined;
+    return { fbclid, gclid, ttclid };
 }
 
 /**
@@ -374,29 +375,53 @@ export default Sentry.withSentry(
                     for (const p of pixels) {
                         if (!p.capi_token || !p.platform) continue;
                         const eventName = p.event_name || (p.event_type === "custom" ? (p.custom_event_name || "PageView") : (p.event_type || "PageView"));
-                        const metaBody = {
-                            data: [{
-                                event_name: eventName,
-                                event_time: event_time || Math.floor(Date.now() / 1000),
-                                action_source: "website",
-                                event_id: event_id || crypto.randomUUID(),
-                                user_data: {
-                                    ...(user_data?.fbc && { fbc: user_data.fbc }),
-                                    ...(user_data?.client_ip_address && { client_ip_address: user_data.client_ip_address }),
-                                    ...(user_data?.client_user_agent && { client_user_agent: user_data.client_user_agent })
-                                },
-                                event_source_url: event_source_url || undefined
-                            }],
-                            access_token: p.capi_token
-                        };
+                        const evId = event_id || crypto.randomUUID();
+                        const evTime = event_time || Math.floor(Date.now() / 1000);
 
-                        const platformUrl = p.platform === "meta"
-                            ? (testEndpoint || `https://graph.facebook.com/v19.0/${p.pixel_id}/events`)
-                            : (testEndpoint || null);
-                        if (!platformUrl) continue;
+                        let platformUrl = null;
+                        let requestBody = null;
+                        let requestHeaders = { "Content-Type": "application/json" };
+
+                        if (p.platform === "meta") {
+                            requestBody = {
+                                data: [{
+                                    event_name: eventName,
+                                    event_time: evTime,
+                                    action_source: "website",
+                                    event_id: evId,
+                                    user_data: {
+                                        ...(user_data?.fbc && { fbc: user_data.fbc }),
+                                        ...(user_data?.client_ip_address && { client_ip_address: user_data.client_ip_address }),
+                                        ...(user_data?.client_user_agent && { client_user_agent: user_data.client_user_agent })
+                                    },
+                                    event_source_url: event_source_url || undefined
+                                }],
+                                access_token: p.capi_token
+                            };
+                            platformUrl = testEndpoint || `https://graph.facebook.com/v19.0/${p.pixel_id}/events`;
+                        } else if (p.platform === "tiktok") {
+                            requestBody = {
+                                pixel_code: p.pixel_id,
+                                event: eventName,
+                                event_id: evId,
+                                timestamp: new Date(evTime * 1000).toISOString(),
+                                context: {
+                                    ...(user_data?.ttclid && { ad: { callback: user_data.ttclid } }),
+                                    user: {
+                                        ip: user_data?.client_ip_address || "",
+                                        user_agent: user_data?.client_user_agent || ""
+                                    },
+                                    page: { url: event_source_url || "" }
+                                }
+                            };
+                            platformUrl = testEndpoint || "https://business-api.tiktok.com/open_api/v1.3/event/track/";
+                            requestHeaders = { "Content-Type": "application/json", "Access-Token": p.capi_token };
+                        }
+
+                        if (!platformUrl || !requestBody) continue;
 
                         console.log("CAPI Relay: sending to URL:", platformUrl);
-                        console.log("CAPI Relay: JSON body:", JSON.stringify(metaBody, null, 2));
+                        console.log("CAPI Relay: JSON body:", JSON.stringify(requestBody, null, 2));
 
                         const start = Date.now();
                         let statusCode = 0;
@@ -404,8 +429,8 @@ export default Sentry.withSentry(
                         try {
                             const platformRes = await fetch(platformUrl, {
                                 method: "POST",
-                                headers: { "Content-Type": "application/json" },
-                                body: JSON.stringify(metaBody)
+                                headers: requestHeaders,
+                                body: JSON.stringify(requestBody)
                             });
                             statusCode = platformRes.status;
                             responseBody = await platformRes.text();
@@ -414,6 +439,13 @@ export default Sentry.withSentry(
                         }
                         const relayDurationMs = Date.now() - start;
 
+                        const logRequestBody = p.platform === "meta"
+                            ? { ...requestBody, access_token: requestBody.access_token ? "[REDACTED]" : undefined }
+                            : { ...requestBody };
+                        if (p.platform === "tiktok" && requestHeaders["Access-Token"]) {
+                            logRequestBody._header_access_token = "[REDACTED]";
+                        }
+
                         const logRow = {
                             pixel_id: p.pixel_id,
                             platform: p.platform,
@@ -421,7 +453,7 @@ export default Sentry.withSentry(
                             event_name: eventName,
                             status_code: statusCode,
                             response_body: responseBody?.slice(0, 2000) || null,
-                            request_body: { ...metaBody, access_token: metaBody.access_token ? "[REDACTED]" : undefined },
+                            request_body: logRequestBody,
                             relay_duration_ms: relayDurationMs,
                             error_message: statusCode >= 200 && statusCode < 300 ? null : (responseBody?.slice(0, 500) || "non-2xx")
                         };
@@ -1022,7 +1054,8 @@ export default Sentry.withSentry(
                 const userData = {
                     client_ip_address: ip,
                     client_user_agent: userAgent,
-                    ...(clickIds.fbclid && { fbc: `fb.1.${Date.now()}.${clickIds.fbclid}` })
+                    ...(clickIds.fbclid && { fbc: `fb.1.${Date.now()}.${clickIds.fbclid}` }),
+                    ...(clickIds.ttclid && { ttclid: clickIds.ttclid })
                 };
 
                 if (wantsCapi && capiPixels.length > 0 && env.CAPI_RELAY_URL) {
