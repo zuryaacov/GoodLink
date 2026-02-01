@@ -24,8 +24,8 @@ const validatePixelId = (pixelId, platform) => {
       return /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(trimmed);
 
     case 'google':
-      // GA4 Measurement_Id: G- + 8–15 alphanumeric; or Google Ads: AW- + 9–10 digits
-      return /^G-[a-zA-Z0-9]{8,15}$/.test(trimmed) || /^AW-\d{9,10}$/i.test(trimmed);
+      // GA4 Measurement_Id only: G- + 8–15 alphanumeric (no AW-)
+      return /^G-[a-zA-Z0-9]{8,15}$/.test(trimmed);
 
     case 'outbrain':
       // Outbrain: 32 chars hexadecimal (0-9, a-f)
@@ -189,7 +189,7 @@ const PLATFORMS = [
   {
     value: 'google',
     label: 'Google Ads',
-    placeholder: 'Enter your Measurement_Id (e.g., AW-1234567890)',
+    placeholder: 'Enter your Measurement_Id (e.g., G-77Y4B2X5Z1)',
     validate: (id) => validatePixelId(id, 'google'),
   },
   {
@@ -349,7 +349,7 @@ const PixelModal = ({ isOpen, onClose, initialData = null }) => {
             break;
           case 'google':
             errorMsg +=
-              'Must be G- followed by 8–15 letters/numbers (GA4) or AW- followed by 9–10 digits (Ads).';
+              'Must start with G- followed by 8–15 letters and numbers (GA4 Measurement_Id).';
             break;
           case 'snapchat':
             errorMsg += 'Must be a valid UUID format (36 characters: 8-4-4-4-12).';
