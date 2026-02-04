@@ -77,10 +77,7 @@ const validateCapiToken = (token, platform) => {
       return { isValid: true, error: null };
 
     case 'snapchat':
-      // Snapchat: 30-50 characters, alphanumeric + underscores/hyphens
-      if (trimmed.length < 30 || trimmed.length > 50) {
-        return { isValid: false, error: 'Snapchat Access Token must be 30-50 characters' };
-      }
+      // No length limit on Snapchat Access Token
       if (!/^[a-zA-Z0-9_\-]+$/.test(trimmed)) {
         return {
           isValid: false,
@@ -155,7 +152,7 @@ const getCapiTokenPlaceholder = (platform) => {
     case 'google':
       return 'Enter your 22-character Api_Secret';
     case 'snapchat':
-      return 'Enter your 30-50 character Access Token';
+      return 'Enter your Access Token';
     case 'outbrain':
       return 'Enter your 30-40 character Access Token';
     case 'taboola':
