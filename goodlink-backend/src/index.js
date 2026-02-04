@@ -527,19 +527,21 @@ export default Sentry.withSentry(
                             };
                             platformUrl = `https://www.google-analytics.com/mp/collect?measurement_id=${encodeURIComponent(p.pixel_id)}&api_secret=${encodeURIComponent(p.capi_token)}`;
                         } else if (p.platform === "snapchat") {
-                            // Snapchat CAPI: pixel_id, Bearer token, event_type, hashed_ip_address (recommended), user_agent
+                            // Snapchat CAPI: pixel_id, Bearer token, event_type, hashed_ip_address (SHA-256, IP clean + lowercase), click_id (scid), user_agent
                             const sha256Hex = async (str) => {
                                 if (!str) return null;
                                 const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(str));
                                 return Array.from(new Uint8Array(buf)).map((b) => b.toString(16).padStart(2, "0")).join("");
                             };
-                            const hashedIp = user_data?.client_ip_address ? await sha256Hex(user_data.client_ip_address) : undefined;
+                            const rawIp = (user_data?.client_ip_address || "").trim().toLowerCase();
+                            const hashedIp = rawIp ? await sha256Hex(rawIp) : undefined;
                             requestBody = {
                                 pixel_id: p.pixel_id,
                                 timestamp: Math.floor(Date.now() / 1000).toString(),
                                 event_conversion_type: "WEB",
                                 event_type: eventName,
                                 ...(hashedIp && { hashed_ip_address: hashedIp }),
+                                ...(user_data?.scid && { click_id: user_data.scid }),
                                 ...(user_data?.client_user_agent && { user_agent: user_data.client_user_agent })
                             };
                             platformUrl = testEndpoint || "https://tr.snapchat.com/v2/conversion";
