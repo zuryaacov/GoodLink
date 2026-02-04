@@ -535,7 +535,7 @@ export default Sentry.withSentry(
                             };
                             const rawIp = (user_data?.client_ip_address || "").trim().toLowerCase();
                             const hashedIp = rawIp ? await sha256Hex(rawIp) : undefined;
-                            requestBody = {
+                            const snapchatEvent = {
                                 pixel_id: p.pixel_id,
                                 timestamp: Math.floor(Date.now() / 1000).toString(),
                                 event_conversion_type: "WEB",
@@ -544,6 +544,7 @@ export default Sentry.withSentry(
                                 ...(user_data?.scid && { click_id: user_data.scid }),
                                 ...(user_data?.client_user_agent && { user_agent: user_data.client_user_agent })
                             };
+                            requestBody = { data: [snapchatEvent] };
                             platformUrl = testEndpoint || "https://tr.snapchat.com/v2/conversion";
                             requestHeaders = { "Content-Type": "application/json", "Authorization": `Bearer ${p.capi_token}` };
                             console.log("Snapchat CAPI: HEADERS:", JSON.stringify(requestHeaders, null, 2));
