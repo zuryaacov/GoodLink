@@ -174,16 +174,25 @@ const CLICK_ID_TO_PLATFORMS = {
     tblci: ["taboola"]
 };
 
-/** Extract all platform click IDs from URL for CAPI user_data and platform detection */
+/** Get URL query param value by key, case-insensitive */
+function getParamIgnoreCase(searchParams, key) {
+    const lower = key.toLowerCase();
+    for (const [k, v] of searchParams.entries()) {
+        if (k.toLowerCase() === lower && v != null && v !== "") return v;
+    }
+    return undefined;
+}
+
+/** Extract all platform click IDs from URL for CAPI user_data and platform detection (keys case-insensitive) */
 function getClickIdsFromUrl(searchParams) {
-    const fbclid = searchParams.get("fbclid") || undefined;
-    const gclid = searchParams.get("gclid") || undefined;
-    const ttclid = searchParams.get("ttclid") || undefined;
-    const wbraid = searchParams.get("wbraid") || undefined;
-    const gbraid = searchParams.get("gbraid") || undefined;
-    const scid = searchParams.get("scid") || undefined;
-    const dicbid = searchParams.get("dicbid") || undefined;
-    const tblci = searchParams.get("tblci") || undefined;
+    const fbclid = getParamIgnoreCase(searchParams, "fbclid");
+    const gclid = getParamIgnoreCase(searchParams, "gclid");
+    const ttclid = getParamIgnoreCase(searchParams, "ttclid");
+    const wbraid = getParamIgnoreCase(searchParams, "wbraid");
+    const gbraid = getParamIgnoreCase(searchParams, "gbraid");
+    const scid = getParamIgnoreCase(searchParams, "scid");
+    const dicbid = getParamIgnoreCase(searchParams, "dicbid");
+    const tblci = getParamIgnoreCase(searchParams, "tblci");
     return { fbclid, gclid, ttclid, wbraid, gbraid, scid, dicbid, tblci };
 }
 
