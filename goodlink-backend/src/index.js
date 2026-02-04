@@ -535,6 +535,8 @@ export default Sentry.withSentry(
                             };
                             platformUrl = testEndpoint || "https://tr.snapchat.com/v2/conversion";
                             requestHeaders = { "Content-Type": "application/json", "Authorization": `Bearer ${p.capi_token}` };
+                            console.log("Snapchat CAPI: HEADERS:", JSON.stringify(requestHeaders, null, 2));
+                            console.log("Snapchat CAPI: JSON body:", JSON.stringify(requestBody, null, 2));
                         }
 
                         if (!platformUrl || !requestBody) continue;
