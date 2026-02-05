@@ -953,12 +953,12 @@ const Step1FastTrack = ({
                 <span className="hidden sm:inline">
                   {planType?.toLowerCase() === 'advanced'
                     ? 'Continue to customize security'
-                    : 'Continue to customize UTM, pixels, and security'}
+                    : 'Continue to customize security and CAPI'}
                 </span>
                 <span className="sm:hidden">
                   {planType?.toLowerCase() === 'advanced'
                     ? 'Continue to customize security'
-                    : 'Continue to customize'}
+                    : 'Continue to security and CAPI'}
                 </span>
               </>
             )}
