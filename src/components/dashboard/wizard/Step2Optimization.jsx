@@ -202,7 +202,7 @@ const Step2Optimization = ({ formData, updateFormData }) => {
         </div>
       )}
 
-      {/* Tracking mode: Pixel / CAPI / Pixel&CAPI - Only show if pixels exist */}
+      {/* How do you want to track conversions? - Hidden for now (CAPI only). Restore when Pixel option is reintroduced.
       {availablePixels.length > 0 && (
         <div>
           <label className="block text-sm font-medium text-white mb-4">
@@ -234,11 +234,12 @@ const Step2Optimization = ({ formData, updateFormData }) => {
           </div>
         </div>
       )}
+      */}
 
-      {/* Pixel Selection with Liveness Indicator - Only show if pixels exist */}
+      {/* CAPI Selection with Liveness Indicator - Only show if pixels exist */}
       {availablePixels.length > 0 && (
         <div>
-          <label className="block text-sm font-medium text-white mb-4">Pixel Selection</label>
+          <label className="block text-sm font-medium text-white mb-4">CAPI Selection</label>
           {loadingPixels ? (
             <div className="text-slate-400 text-sm">Loading pixels...</div>
           ) : (

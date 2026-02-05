@@ -365,7 +365,7 @@ const PixelManager = () => {
           </div>
 
           <h2 className="text-2xl md:text-3xl font-bold text-white mb-4 tracking-tight">
-            Unlock Pixel & CAPI Manager
+            Unlock CAPI Manager
           </h2>
 
           <p className="text-sm md:text-base text-slate-300 mb-8 leading-relaxed">
@@ -415,7 +415,7 @@ const PixelManager = () => {
           </button>
 
           <p className="mt-5 text-xs text-slate-500">
-            Pixel & CAPI Manager is available on the{' '}
+            CAPI Manager is available on the{' '}
             <span className="font-semibold text-slate-300">PRO</span> plan.
           </p>
         </div>
@@ -427,10 +427,8 @@ const PixelManager = () => {
     <div className="flex flex-col gap-6 md:gap-8 w-full max-w-7xl mx-auto">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="flex flex-col gap-2">
-          <h1 className="text-2xl md:text-3xl font-bold text-white">Pixel & CAPI Manager</h1>
-          <p className="text-sm md:text-base text-slate-400">
-            Manage your tracking pixels and CAPI tokens
-          </p>
+          <h1 className="text-2xl md:text-3xl font-bold text-white">CAPI Manager</h1>
+          <p className="text-sm md:text-base text-slate-400">Manage your CAPI tracking</p>
         </div>
         <button
           onClick={() => navigate('/dashboard/pixels/new')}

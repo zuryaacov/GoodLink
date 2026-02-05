@@ -76,7 +76,7 @@ export async function updateLinkInRedis(linkData, supabase, oldDomain = null, ol
       utm_term: linkData.utm_term || null,
       utm_presets: utmPresetsData,
       pixels: pixelsData,
-      tracking_mode: linkData.tracking_mode || 'pixel',
+      tracking_mode: linkData.tracking_mode || 'capi',
       server_side_tracking: linkData.server_side_tracking || false,
       custom_script: linkData.custom_script || null,
       fraud_shield: linkData.fraud_shield || 'none',

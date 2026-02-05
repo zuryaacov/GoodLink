@@ -12,7 +12,7 @@ import Modal from '../../components/common/Modal';
 const allSteps = [
   { number: 1, title: 'The Fast Track', subtitle: 'Destination & Identity' },
   { number: 2, title: 'Security & Logic', subtitle: 'Smart Rules & Protection' },
-  { number: 3, title: 'Optimization & Marketing', subtitle: 'UTM & Pixels' },
+  { number: 3, title: 'Optimization & Marketing', subtitle: 'UTM & CAPI' },
 ];
 
 // Get visible steps based on plan type
@@ -60,7 +60,7 @@ const LinkBuilderPage = () => {
     parameterPassThrough: true,
     selectedUtmPresets: [],
     selectedPixels: [],
-    trackingMode: 'pixel', // 'pixel' | 'capi' | 'pixel_and_capi'
+    trackingMode: 'capi', // 'pixel' | 'capi' | 'pixel_and_capi'
     serverSideTracking: false,
     customScript: '',
     fraudShield: 'none',
@@ -168,7 +168,7 @@ const LinkBuilderPage = () => {
           data.parameter_pass_through !== undefined ? data.parameter_pass_through : true,
         selectedUtmPresets: Array.isArray(data.utm_presets) ? data.utm_presets : [],
         selectedPixels: data.pixels || [],
-        trackingMode: data.tracking_mode || 'pixel',
+        trackingMode: data.tracking_mode || 'capi',
         serverSideTracking: data.server_side_tracking || false,
         customScript: data.custom_script || '',
         fraudShield: data.fraud_shield || 'none',
@@ -323,7 +323,7 @@ const LinkBuilderPage = () => {
               : [],
             parameter_pass_through: formData.parameterPassThrough,
             pixels: formData.selectedPixels,
-            tracking_mode: formData.trackingMode || 'pixel',
+            tracking_mode: formData.trackingMode || 'capi',
             server_side_tracking:
               formData.trackingMode === 'capi' || formData.trackingMode === 'pixel_and_capi',
             custom_script: formData.customScript || null,
@@ -418,7 +418,7 @@ const LinkBuilderPage = () => {
             : [],
           parameter_pass_through: formData.parameterPassThrough,
           pixels: formData.selectedPixels,
-          tracking_mode: formData.trackingMode || 'pixel',
+          tracking_mode: formData.trackingMode || 'capi',
           server_side_tracking:
             formData.trackingMode === 'capi' || formData.trackingMode === 'pixel_and_capi',
           custom_script: formData.customScript || null,

@@ -11,7 +11,7 @@ import Modal from '../common/Modal';
 const allSteps = [
   { number: 1, title: 'The Fast Track', subtitle: 'Destination & Identity' },
   { number: 2, title: 'Security & Logic', subtitle: 'Smart Rules & Protection' },
-  { number: 3, title: 'Optimization & Marketing', subtitle: 'UTM & Pixels' },
+  { number: 3, title: 'Optimization & Marketing', subtitle: 'UTM & CAPI' },
 ];
 
 // Get visible steps based on plan type
@@ -61,7 +61,7 @@ const NewLinkWizard = ({ isOpen, onClose, initialData = null }) => {
         platformPreset: null,
         // Step 3
         selectedPixels: initialData.pixels || [],
-        trackingMode: initialData.tracking_mode || 'pixel',
+        trackingMode: initialData.tracking_mode || 'capi',
         serverSideTracking: initialData.server_side_tracking || false,
         customScript: initialData.custom_script || '',
         // Step 4
@@ -104,7 +104,7 @@ const NewLinkWizard = ({ isOpen, onClose, initialData = null }) => {
       platformPreset: null,
       // Step 3
       selectedPixels: [],
-      trackingMode: 'pixel',
+      trackingMode: 'capi',
       serverSideTracking: false,
       customScript: '',
       // Step 4
@@ -290,7 +290,7 @@ const NewLinkWizard = ({ isOpen, onClose, initialData = null }) => {
             utm_content: formData.utmContent || null,
             parameter_pass_through: formData.parameterPassThrough,
             pixels: formData.selectedPixels,
-            tracking_mode: formData.trackingMode || 'pixel',
+            tracking_mode: formData.trackingMode || 'capi',
             server_side_tracking:
               formData.trackingMode === 'capi' || formData.trackingMode === 'pixel_and_capi',
             custom_script: formData.customScript || null,
@@ -357,7 +357,7 @@ const NewLinkWizard = ({ isOpen, onClose, initialData = null }) => {
             utm_content: formData.utmContent || null,
             parameter_pass_through: formData.parameterPassThrough,
             pixels: formData.selectedPixels,
-            tracking_mode: formData.trackingMode || 'pixel',
+            tracking_mode: formData.trackingMode || 'capi',
             server_side_tracking:
               formData.trackingMode === 'capi' || formData.trackingMode === 'pixel_and_capi',
             custom_script: formData.customScript || null,
@@ -428,7 +428,7 @@ const NewLinkWizard = ({ isOpen, onClose, initialData = null }) => {
         parameterPassThrough: true,
         platformPreset: null,
         selectedPixels: [],
-        trackingMode: 'pixel',
+        trackingMode: 'capi',
         serverSideTracking: false,
         customScript: '',
         fraudShield: 'none',
