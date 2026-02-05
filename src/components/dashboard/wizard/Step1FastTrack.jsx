@@ -738,8 +738,8 @@ const Step1FastTrack = ({
         </div>
       </div>
 
-      {/* Domain Selection - Hidden for FREE users */}
-      {planType?.toLowerCase() !== 'free' && (
+      {/* Domain Selection - Only show when user has custom domains (more than glynk.to) */}
+      {domains.length > 1 && (
         <div className="max-w-2xl mx-auto w-full px-2 sm:px-0">
           <label className="block text-sm font-medium text-white mb-3">Domain</label>
           <div className="flex flex-wrap gap-2">
