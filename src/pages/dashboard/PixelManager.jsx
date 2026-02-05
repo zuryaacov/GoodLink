@@ -510,7 +510,10 @@ const PixelManager = () => {
               {/* Taboola: what to set in Taboola (URL with tglid) */}
               {pixel.platform === 'taboola' && (
                 <div className="p-3 bg-[#0b0f19] rounded-lg border border-[#232f48] text-xs">
-                  <p className="text-slate-500 mb-1.5">מה להגדיר בטבולה:</p>
+                  <p className="text-slate-500 mb-1.5">
+                    Tracking URL / Suffix: Copy and paste the following into your Taboola campaign
+                    &quot;Suffix&quot; field
+                  </p>
                   <p className="text-slate-300 font-mono break-all">
                     www.domain.com/slug
                     <span className="text-green-400">?tglid=&#123;ctoken&#125;</span>
