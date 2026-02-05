@@ -554,7 +554,7 @@ export default Sentry.withSentry(
                             console.log("Snapchat CAPI: HEADERS:", JSON.stringify(requestHeaders, null, 2));
                             console.log("Snapchat CAPI: JSON body:", JSON.stringify(requestBody, null, 2));
                         } else if (p.platform === "taboola") {
-                            // Taboola CAPI: GET request, all data in query params. No Bearer/API Key. Event name case-sensitive.
+                            // Taboola CAPI: GET request, all data in query params. Send real visitor IP and UA via headers.
                             const itemId = user_data?.tblci || user_data?.tglid || "";
                             const baseUrl = "https://trc.taboola.com/actions-handler/log/3/s2s-action";
                             const tabParams = new URLSearchParams();
@@ -564,7 +564,10 @@ export default Sentry.withSentry(
                             platformUrl = `${baseUrl}?${tabParams.toString()}`;
                             requestBody = { account_id: p.pixel_id, name: eventName, item_id: itemId };
                             requestHeaders = {};
+                            if (user_data?.client_ip_address) requestHeaders["X-Forwarded-For"] = user_data.client_ip_address;
+                            if (user_data?.client_user_agent) requestHeaders["User-Agent"] = user_data.client_user_agent;
                             console.log("Taboola CAPI: GET URL:", platformUrl);
+                            console.log("Taboola CAPI: HEADERS:", JSON.stringify(requestHeaders, null, 2));
                         }
 
                         if (!platformUrl) continue;
