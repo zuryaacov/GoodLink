@@ -391,7 +391,9 @@ const PixelBuilderPage = () => {
       }
     }
 
-    if (formData.eventType === 'custom' && !formData.customEventName.trim()) {
+    if (formData.platform === 'taboola') {
+      if (!formData.eventType.trim()) newErrors.eventType = 'Name is required';
+    } else if (formData.eventType === 'custom' && !formData.customEventName.trim()) {
       newErrors.customEventName = 'Custom event name is required';
     }
 
@@ -452,8 +454,18 @@ const PixelBuilderPage = () => {
         platform: formData.platform,
         pixel_id: normalizedPixelId,
         capi_token: formData.capiToken.trim() || null,
-        event_type: formData.eventType === 'custom' ? 'custom' : formData.eventType,
-        custom_event_name: formData.eventType === 'custom' ? formData.customEventName.trim() : null,
+        event_type:
+          formData.platform === 'taboola'
+            ? formData.eventType.trim()
+            : formData.eventType === 'custom'
+              ? 'custom'
+              : formData.eventType,
+        custom_event_name:
+          formData.platform === 'taboola'
+            ? null
+            : formData.eventType === 'custom'
+              ? formData.customEventName.trim()
+              : null,
         is_active: true,
       };
 
@@ -643,60 +655,90 @@ const PixelBuilderPage = () => {
             </div>
           )}
 
-          {/* Event Type / Name (Taboola: "Name") */}
+          {/* Event Type / Name (Taboola: single "Name" text input) */}
           <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-white mb-2">
-                {getEventTypeLabel(formData.platform)}
-              </label>
-              <select
-                value={formData.eventType}
-                onChange={(e) => {
-                  setFormData({
-                    ...formData,
-                    eventType: e.target.value,
-                    customEventName: e.target.value !== 'custom' ? '' : formData.customEventName,
-                  });
-                  if (errors.customEventName) setErrors({ ...errors, customEventName: null });
-                }}
-                className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-primary transition-colors"
-              >
-                {availableEvents.map((event) => (
-                  <option key={event.value} value={event.value}>
-                    {event.label} - {event.description}
-                  </option>
-                ))}
-                <option value="custom">Custom Event</option>
-              </select>
-            </div>
-
-            {/* Custom Event Name (only if custom selected) */}
-            {formData.eventType === 'custom' && (
+            {formData.platform === 'taboola' ? (
               <div>
                 <label className="block text-sm font-medium text-white mb-2">
-                  Custom Event Name <span className="text-red-400">*</span>
+                  Name <span className="text-red-400">*</span>
                 </label>
                 <input
                   type="text"
-                  value={formData.customEventName}
+                  value={formData.eventType}
                   onChange={(e) => {
-                    setFormData({ ...formData, customEventName: e.target.value });
-                    if (errors.customEventName) setErrors({ ...errors, customEventName: null });
+                    setFormData({ ...formData, eventType: e.target.value });
+                    if (errors.eventType) setErrors({ ...errors, eventType: null });
                   }}
-                  placeholder="e.g., High_Quality_User, ClickedToOffer"
+                  placeholder="e.g. lead, purchase, PAGE_VIEW (case-sensitive)"
                   className={`w-full px-4 py-3 bg-slate-800 border rounded-xl text-white placeholder-slate-500 focus:outline-none transition-colors ${
-                    errors.customEventName
+                    errors.eventType
                       ? 'border-red-500 focus:border-red-500'
                       : 'border-slate-700 focus:border-primary'
                   }`}
                 />
-                {errors.customEventName && (
-                  <p className="text-red-400 text-xs mt-1">{errors.customEventName}</p>
+                {errors.eventType && (
+                  <p className="text-red-400 text-xs mt-1">{errors.eventType}</p>
                 )}
                 <p className="text-slate-500 text-xs mt-1">
-                  Enter a custom event name (case-sensitive)
+                  Event name as defined in Taboola (case-sensitive)
                 </p>
               </div>
+            ) : (
+              <>
+                <div>
+                  <label className="block text-sm font-medium text-white mb-2">
+                    {getEventTypeLabel(formData.platform)}
+                  </label>
+                  <select
+                    value={formData.eventType}
+                    onChange={(e) => {
+                      setFormData({
+                        ...formData,
+                        eventType: e.target.value,
+                        customEventName:
+                          e.target.value !== 'custom' ? '' : formData.customEventName,
+                      });
+                      if (errors.customEventName) setErrors({ ...errors, customEventName: null });
+                    }}
+                    className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-primary transition-colors"
+                  >
+                    {availableEvents.map((event) => (
+                      <option key={event.value} value={event.value}>
+                        {event.label} - {event.description}
+                      </option>
+                    ))}
+                    <option value="custom">Custom Event</option>
+                  </select>
+                </div>
+
+                {formData.eventType === 'custom' && (
+                  <div>
+                    <label className="block text-sm font-medium text-white mb-2">
+                      Custom Event Name <span className="text-red-400">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.customEventName}
+                      onChange={(e) => {
+                        setFormData({ ...formData, customEventName: e.target.value });
+                        if (errors.customEventName) setErrors({ ...errors, customEventName: null });
+                      }}
+                      placeholder="e.g., High_Quality_User, ClickedToOffer"
+                      className={`w-full px-4 py-3 bg-slate-800 border rounded-xl text-white placeholder-slate-500 focus:outline-none transition-colors ${
+                        errors.customEventName
+                          ? 'border-red-500 focus:border-red-500'
+                          : 'border-slate-700 focus:border-primary'
+                      }`}
+                    />
+                    {errors.customEventName && (
+                      <p className="text-red-400 text-xs mt-1">{errors.customEventName}</p>
+                    )}
+                    <p className="text-slate-500 text-xs mt-1">
+                      Enter a custom event name (case-sensitive)
+                    </p>
+                  </div>
+                )}
+              </>
             )}
           </div>
 
