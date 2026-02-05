@@ -119,9 +119,16 @@ const validateCapiToken = (token, platform) => {
 };
 
 const getPixelIdLabel = (platform) =>
-  platform === 'google' ? 'Measurement_Id' : platform === 'taboola' ? 'Account Id' : 'Pixel ID';
+  platform === 'google'
+    ? 'Measurement_Id'
+    : platform === 'taboola'
+      ? 'Account Id'
+      : platform === 'outbrain'
+        ? 'Outbrain Pixel ID'
+        : 'Pixel ID';
 
-const getEventTypeLabel = (platform) => (platform === 'taboola' ? 'Name' : 'Event Type');
+const getEventTypeLabel = (platform) =>
+  platform === 'taboola' ? 'Name' : platform === 'outbrain' ? 'Conversion Name' : 'Event Type';
 
 // Get CAPI token label by platform
 const getCapiTokenLabel = (platform) => {
@@ -393,6 +400,8 @@ const PixelBuilderPage = () => {
 
     if (formData.platform === 'taboola') {
       if (!formData.eventType.trim()) newErrors.eventType = 'Name is required';
+    } else if (formData.platform === 'outbrain') {
+      if (!formData.eventType.trim()) newErrors.eventType = 'Conversion Name is required';
     } else if (formData.eventType === 'custom' && !formData.customEventName.trim()) {
       newErrors.customEventName = 'Custom event name is required';
     }
@@ -455,13 +464,13 @@ const PixelBuilderPage = () => {
         pixel_id: normalizedPixelId,
         capi_token: formData.capiToken.trim() || null,
         event_type:
-          formData.platform === 'taboola'
+          formData.platform === 'taboola' || formData.platform === 'outbrain'
             ? formData.eventType.trim()
             : formData.eventType === 'custom'
               ? 'custom'
               : formData.eventType,
         custom_event_name:
-          formData.platform === 'taboola'
+          formData.platform === 'taboola' || formData.platform === 'outbrain'
             ? null
             : formData.eventType === 'custom'
               ? formData.customEventName.trim()
@@ -570,17 +579,20 @@ const PixelBuilderPage = () => {
             <select
               value={formData.platform}
               onChange={(e) => {
+                const platform = e.target.value;
                 setFormData({
                   ...formData,
-                  platform: e.target.value,
+                  platform,
                   eventType:
-                    e.target.value === 'meta'
+                    platform === 'meta' || platform === 'tiktok'
                       ? 'PageView'
-                      : e.target.value === 'tiktok'
-                        ? 'PageView'
-                        : e.target.value === 'google'
-                          ? 'page_view'
-                          : 'PAGE_VIEW',
+                      : platform === 'google'
+                        ? 'page_view'
+                        : platform === 'outbrain'
+                          ? 'arrival'
+                          : platform === 'taboola'
+                            ? 'page_view'
+                            : 'PAGE_VIEW',
                 });
                 if (errors.platform) setErrors({ ...errors, platform: null });
               }}
@@ -616,7 +628,9 @@ const PixelBuilderPage = () => {
                   ? 'Enter Measurement_Id'
                   : formData.platform === 'taboola'
                     ? 'Enter Account Id'
-                    : 'Enter Pixel ID')
+                    : formData.platform === 'outbrain'
+                      ? 'Enter Outbrain Pixel ID (value for parameter p)'
+                      : 'Enter Pixel ID')
               }
               className={`w-full px-4 py-3 bg-slate-800 border rounded-xl text-white placeholder-slate-500 focus:outline-none transition-colors font-mono text-sm ${
                 errors.pixelId
@@ -629,7 +643,7 @@ const PixelBuilderPage = () => {
           </div>
 
           {/* CAPI Access Token (not used for Taboola) */}
-          {formData.platform !== 'taboola' && (
+          {formData.platform !== 'taboola' && formData.platform !== 'outbrain' && (
             <div>
               <label className="block text-sm font-medium text-white mb-2">
                 {getCapiTokenLabel(formData.platform)}
@@ -655,7 +669,7 @@ const PixelBuilderPage = () => {
             </div>
           )}
 
-          {/* Event Type / Name (Taboola: single "Name" text input) */}
+          {/* Event Type / Name (Taboola: Name; Outbrain: Conversion Name) */}
           <div className="space-y-4">
             {formData.platform === 'taboola' ? (
               <div>
@@ -681,6 +695,32 @@ const PixelBuilderPage = () => {
                 )}
                 <p className="text-slate-500 text-xs mt-1">
                   Event name as defined in Taboola (case-sensitive)
+                </p>
+              </div>
+            ) : formData.platform === 'outbrain' ? (
+              <div>
+                <label className="block text-sm font-medium text-white mb-2">
+                  Conversion Name <span className="text-red-400">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={formData.eventType}
+                  onChange={(e) => {
+                    setFormData({ ...formData, eventType: e.target.value });
+                    if (errors.eventType) setErrors({ ...errors, eventType: null });
+                  }}
+                  placeholder="e.g. arrival (default), lead, purchase (case-sensitive)"
+                  className={`w-full px-4 py-3 bg-slate-800 border rounded-xl text-white placeholder-slate-500 focus:outline-none transition-colors ${
+                    errors.eventType
+                      ? 'border-red-500 focus:border-red-500'
+                      : 'border-slate-700 focus:border-primary'
+                  }`}
+                />
+                {errors.eventType && (
+                  <p className="text-red-400 text-xs mt-1">{errors.eventType}</p>
+                )}
+                <p className="text-slate-500 text-xs mt-1">
+                  Conversion name as defined in Outbrain (default: arrival)
                 </p>
               </div>
             ) : (
