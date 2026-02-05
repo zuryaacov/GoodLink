@@ -12,7 +12,7 @@ import Modal from '../../components/common/Modal';
 const allSteps = [
   { number: 1, title: 'The Fast Track', subtitle: 'Destination & Identity' },
   { number: 2, title: 'Security & Logic', subtitle: 'Smart Rules & Protection' },
-  { number: 3, title: 'Optimization & Marketing', subtitle: 'UTM & CAPI' },
+  { number: 3, title: 'Optimization & Marketing', subtitle: 'CAPI' },
 ];
 
 // Get visible steps based on plan type
