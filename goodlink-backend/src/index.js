@@ -171,7 +171,8 @@ const CLICK_ID_TO_PLATFORMS = {
     gbraid: ["google"],
     scid: ["snapchat"],
     dicbid: ["outbrain"],
-    tblci: ["taboola"]
+    tblci: ["taboola"],
+    tglid: ["taboola"]
 };
 
 /** Get URL query param value by key, case-insensitive */
@@ -193,7 +194,8 @@ function getClickIdsFromUrl(searchParams) {
     const scid = getParamIgnoreCase(searchParams, "scid");
     const dicbid = getParamIgnoreCase(searchParams, "dicbid");
     const tblci = getParamIgnoreCase(searchParams, "tblci");
-    return { fbclid, gclid, ttclid, wbraid, gbraid, scid, dicbid, tblci };
+    const tglid = getParamIgnoreCase(searchParams, "tglid");
+    return { fbclid, gclid, ttclid, wbraid, gbraid, scid, dicbid, tblci, tglid };
 }
 
 /**
@@ -457,7 +459,8 @@ export default Sentry.withSentry(
 
                     // Each pixel: one CAPI request to platform, then one separate row write to Supabase (capi_logs)
                     for (const p of pixels) {
-                        if (!p.capi_token || !p.platform) continue;
+                        if (!p.platform) continue;
+                        if (p.platform !== "taboola" && !p.capi_token) continue;
                         const eventName = p.event_name || (p.event_type === "custom" ? (p.custom_event_name || "PageView") : (p.event_type || "PageView"));
                         const evId = event_id || crypto.randomUUID();
                         const evTime = event_time || Math.floor(Date.now() / 1000);
@@ -535,9 +538,10 @@ export default Sentry.withSentry(
                             };
                             const rawIp = (user_data?.client_ip_address || "").trim().toLowerCase();
                             const hashedIp = rawIp ? await sha256Hex(rawIp) : undefined;
+                            // Snapchat requires timestamp as string (not number); success response: { status: "SUCCESS", reason: "Event received", events_received: 1 }
                             const snapchatEvent = {
                                 pixel_id: p.pixel_id,
-                                timestamp: Math.floor(Date.now() / 1000).toString(),
+                                timestamp: String(Math.floor(Date.now() / 1000)),
                                 event_conversion_type: "WEB",
                                 event_type: eventName,
                                 ...(hashedIp && { hashed_ip_address: hashedIp }),
@@ -549,25 +553,38 @@ export default Sentry.withSentry(
                             requestHeaders = { "Content-Type": "application/json", "Authorization": `Bearer ${p.capi_token}` };
                             console.log("Snapchat CAPI: HEADERS:", JSON.stringify(requestHeaders, null, 2));
                             console.log("Snapchat CAPI: JSON body:", JSON.stringify(requestBody, null, 2));
+                        } else if (p.platform === "taboola") {
+                            // Taboola CAPI: GET request, all data in query params. No Bearer/API Key. Event name case-sensitive.
+                            const itemId = user_data?.tblci || user_data?.tglid || "";
+                            const baseUrl = "https://trc.taboola.com/actions-handler/log/3/s2s-action";
+                            const tabParams = new URLSearchParams();
+                            tabParams.set("account-id", p.pixel_id || "");
+                            tabParams.set("name", eventName);
+                            tabParams.set("item-id", itemId);
+                            platformUrl = `${baseUrl}?${tabParams.toString()}`;
+                            requestBody = { account_id: p.pixel_id, name: eventName, item_id: itemId };
+                            requestHeaders = {};
+                            console.log("Taboola CAPI: GET URL:", platformUrl);
                         }
 
-                        if (!platformUrl || !requestBody) continue;
+                        if (!platformUrl) continue;
+                        if (p.platform !== "taboola" && !requestBody) continue;
 
                         const logUrl = p.platform === "google" ? platformUrl.replace(/api_secret=[^&]+/, "api_secret=[REDACTED]") : platformUrl;
                         console.log("CAPI Relay: sending to URL:", logUrl);
                         console.log("CAPI Relay: headers:", JSON.stringify(requestHeaders, null, 2));
-                        const bodyJson = JSON.stringify(requestBody, null, 2);
+                        const bodyJson = requestBody != null ? JSON.stringify(requestBody, null, 2) : "(GET – no body)";
                         console.log("CAPI Relay: JSON sent to platform:", bodyJson);
 
                         const start = Date.now();
                         let statusCode = 0;
                         let responseBody = "";
                         try {
-                            const platformRes = await fetch(platformUrl, {
-                                method: "POST",
-                                headers: requestHeaders,
-                                body: JSON.stringify(requestBody)
-                            });
+                            const isGet = p.platform === "taboola";
+                            const fetchOpts = isGet
+                                ? { method: "GET", headers: requestHeaders }
+                                : { method: "POST", headers: requestHeaders, body: JSON.stringify(requestBody) };
+                            const platformRes = await fetch(platformUrl, fetchOpts);
                             statusCode = platformRes.status;
                             responseBody = await platformRes.text();
                         } catch (err) {
@@ -1181,7 +1198,7 @@ export default Sentry.withSentry(
             const isPro = planType === "pro";
             const wantsCapi = trackingMode === "capi" || trackingMode === "pixel_and_capi";
             const wantsPixel = trackingMode === "pixel" || trackingMode === "pixel_and_capi";
-            const capiPixels = pixels.filter((p) => p?.capi_token && (p?.status === "active"));
+            const capiPixels = pixels.filter((p) => p?.status === "active" && (p?.capi_token || p?.platform === "taboola"));
 
             if (isPro && (pixels.length > 0 || capiPixels.length > 0)) {
                 const eventId = crypto.randomUUID();
@@ -1209,7 +1226,8 @@ export default Sentry.withSentry(
                     ...(clickIds.gbraid && { gbraid: clickIds.gbraid }),
                     ...(clickIds.scid && { scid: clickIds.scid }),
                     ...(clickIds.dicbid && { dicbid: clickIds.dicbid }),
-                    ...(clickIds.tblci && { tblci: clickIds.tblci })
+                    ...(clickIds.tblci && { tblci: clickIds.tblci }),
+                    ...(clickIds.tglid && { tglid: clickIds.tglid })
                 };
 
                 if (wantsCapi && capiPixelsToSend.length > 0 && env.CAPI_RELAY_URL) {

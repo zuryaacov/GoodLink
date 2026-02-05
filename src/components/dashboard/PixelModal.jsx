@@ -123,7 +123,10 @@ const validateCapiToken = (token, platform) => {
 };
 
 // Get CAPI token label by platform
-const getPixelIdLabel = (platform) => (platform === 'google' ? 'Measurement_Id' : 'Pixel ID');
+const getPixelIdLabel = (platform) =>
+  platform === 'google' ? 'Measurement_Id' : platform === 'taboola' ? 'Account Id' : 'Pixel ID';
+
+const getEventTypeLabel = (platform) => (platform === 'taboola' ? 'Name' : 'Event Type');
 
 const getCapiTokenLabel = (platform) => {
   switch (platform) {
@@ -590,7 +593,11 @@ const PixelModal = ({ isOpen, onClose, initialData = null }) => {
                       }}
                       placeholder={
                         currentPlatform?.placeholder ||
-                        (formData.platform === 'google' ? 'Enter Measurement_Id' : 'Enter Pixel ID')
+                        (formData.platform === 'google'
+                          ? 'Enter Measurement_Id'
+                          : formData.platform === 'taboola'
+                            ? 'Enter Account Id'
+                            : 'Enter Pixel ID')
                       }
                       className={`w-full px-4 py-3 bg-[#0b0f19] border rounded-xl text-white placeholder-slate-500 focus:outline-none transition-colors font-mono text-sm ${
                         errors.pixelId
@@ -604,38 +611,40 @@ const PixelModal = ({ isOpen, onClose, initialData = null }) => {
                     <p className="text-slate-500 text-xs mt-1">{currentPlatform?.placeholder}</p>
                   </div>
 
-                  {/* CAPI Access Token */}
-                  <div>
-                    <label className="block text-sm font-medium text-white mb-2">
-                      {getCapiTokenLabel(formData.platform)}
-                    </label>
-                    <textarea
-                      value={formData.capiToken}
-                      onChange={(e) => {
-                        setFormData({ ...formData, capiToken: e.target.value });
-                        if (errors.capiToken) setErrors({ ...errors, capiToken: null });
-                      }}
-                      placeholder={getCapiTokenPlaceholder(formData.platform)}
-                      rows={5}
-                      className={`w-full min-h-[120px] sm:min-h-[140px] px-4 py-3 bg-[#1e152f] border rounded-xl text-white placeholder-slate-500 focus:outline-none transition-colors font-mono text-sm resize-y ${
-                        errors.capiToken
-                          ? 'border-red-500 focus:border-red-500'
-                          : 'border-[#584674] focus:border-primary'
-                      }`}
-                    />
-                    {errors.capiToken && (
-                      <p className="text-red-400 text-xs mt-1">{errors.capiToken}</p>
-                    )}
-                    <p className="text-slate-500 text-xs mt-1">
-                      {getCapiTokenPlaceholder(formData.platform)} (optional)
-                    </p>
-                  </div>
+                  {/* CAPI Access Token (not used for Taboola) */}
+                  {formData.platform !== 'taboola' && (
+                    <div>
+                      <label className="block text-sm font-medium text-white mb-2">
+                        {getCapiTokenLabel(formData.platform)}
+                      </label>
+                      <textarea
+                        value={formData.capiToken}
+                        onChange={(e) => {
+                          setFormData({ ...formData, capiToken: e.target.value });
+                          if (errors.capiToken) setErrors({ ...errors, capiToken: null });
+                        }}
+                        placeholder={getCapiTokenPlaceholder(formData.platform)}
+                        rows={5}
+                        className={`w-full min-h-[120px] sm:min-h-[140px] px-4 py-3 bg-[#1e152f] border rounded-xl text-white placeholder-slate-500 focus:outline-none transition-colors font-mono text-sm resize-y ${
+                          errors.capiToken
+                            ? 'border-red-500 focus:border-red-500'
+                            : 'border-[#584674] focus:border-primary'
+                        }`}
+                      />
+                      {errors.capiToken && (
+                        <p className="text-red-400 text-xs mt-1">{errors.capiToken}</p>
+                      )}
+                      <p className="text-slate-500 text-xs mt-1">
+                        {getCapiTokenPlaceholder(formData.platform)} (optional)
+                      </p>
+                    </div>
+                  )}
 
-                  {/* Event Type Selection */}
+                  {/* Event Type / Name (Taboola: "Name") */}
                   <div className="space-y-4">
                     <div>
                       <label className="block text-sm font-medium text-white mb-2">
-                        Event Type
+                        {getEventTypeLabel(formData.platform)}
                       </label>
                       <select
                         value={formData.eventType}
