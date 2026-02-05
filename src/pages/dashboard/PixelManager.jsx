@@ -190,16 +190,6 @@ const PixelManager = () => {
     }
   };
 
-  const maskPixelId = (pixelId) => {
-    if (!pixelId) return '';
-    if (pixelId.length <= 8) return '••••••••';
-    // Show first 4 and last 4 characters, mask the middle
-    const start = pixelId.substring(0, 4);
-    const end = pixelId.substring(pixelId.length - 4);
-    const masked = '•'.repeat(Math.min(8, pixelId.length - 8));
-    return `${start}${masked}${end}`;
-  };
-
   const getPlatformLogo = (platform) => {
     switch (platform) {
       case 'meta':
@@ -491,12 +481,10 @@ const PixelManager = () => {
                 </div>
               </div>
 
-              {/* Pixel ID (Masked) */}
+              {/* Pixel ID */}
               <div className="p-3 bg-[#0b0f19] rounded-lg border border-[#232f48]">
                 <p className="text-xs text-slate-500 mb-1">Pixel ID</p>
-                <p className="font-mono text-sm text-slate-300 break-all">
-                  {maskPixelId(pixel.pixel_id)}
-                </p>
+                <p className="font-mono text-sm text-slate-300 break-all">{pixel.pixel_id || ''}</p>
               </div>
 
               {/* Event Info */}
