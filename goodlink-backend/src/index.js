@@ -576,8 +576,12 @@ export default Sentry.withSentry(
                         const logUrl = p.platform === "google" ? platformUrl.replace(/api_secret=[^&]+/, "api_secret=[REDACTED]") : platformUrl;
                         console.log("CAPI Relay: sending to URL:", logUrl);
                         console.log("CAPI Relay: headers:", JSON.stringify(requestHeaders, null, 2));
-                        const bodyJson = requestBody != null ? JSON.stringify(requestBody, null, 2) : "(GET – no body)";
-                        console.log("CAPI Relay: JSON sent to platform:", bodyJson);
+                        if (p.platform === "taboola") {
+                            console.log("CAPI Relay: Taboola GET (params in query string only, no body). Params sent:", requestBody != null ? JSON.stringify(requestBody, null, 2) : "—");
+                        } else {
+                            const bodyJson = requestBody != null ? JSON.stringify(requestBody, null, 2) : "(GET – no body)";
+                            console.log("CAPI Relay: JSON sent to platform:", bodyJson);
+                        }
 
                         const start = Date.now();
                         let statusCode = 0;
