@@ -219,6 +219,7 @@ export default function LinkWizardOnePerPage({
         highlight: 'Targeting',
         highlightClass: 'text-orange-500',
         subtitle: 'Optional routing by country.',
+        show: planType?.toLowerCase() !== 'free',
       },
       {
         id: 'capi',
@@ -228,6 +229,7 @@ export default function LinkWizardOnePerPage({
         highlight: 'Select',
         highlightClass: 'text-purple-500',
         subtitle: 'Select Conversions API to fire events.',
+        show: planType?.toLowerCase() === 'pro',
       },
       {
         id: 'review',
@@ -247,6 +249,13 @@ export default function LinkWizardOnePerPage({
   const currentStep = steps[stepIndex];
   const isFirst = stepIndex === 0;
   const isLast = stepIndex === totalSteps - 1;
+
+  // Clamp step index when steps list shrinks (e.g. plan change: free hides geo/capi)
+  useEffect(() => {
+    if (totalSteps > 0 && stepIndex >= totalSteps) {
+      setStepIndex(Math.max(0, totalSteps - 1));
+    }
+  }, [totalSteps, stepIndex]);
 
   // Fetch domains
   useEffect(() => {
