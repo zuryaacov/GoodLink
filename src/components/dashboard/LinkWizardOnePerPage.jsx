@@ -599,7 +599,7 @@ export default function LinkWizardOnePerPage({
   const progressPct = totalSteps ? ((stepIndex + 1) / totalSteps) * 100 : 0;
 
   return (
-    <div className="flex flex-col min-h-full">
+    <div className="flex flex-col flex-1 min-h-0">
       {/* Progress bar */}
       <div className="h-1 bg-[#232f48] flex-shrink-0">
         <div
@@ -614,7 +614,7 @@ export default function LinkWizardOnePerPage({
         aria-hidden="true"
       />
 
-      <div className="flex-1 flex flex-col justify-center px-6 pb-32 pt-8 max-w-2xl mx-auto w-full relative z-10">
+      <div className="flex-1 min-h-0 flex flex-col justify-center px-6 pb-32 pt-8 max-w-2xl mx-auto w-full relative z-10">
         <AnimatePresence mode="wait">
           {currentStep && !currentStep.isReview && (
             <motion.div
