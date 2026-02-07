@@ -1,32 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
-import { validateUrl } from '../../lib/urlValidation';
 import { updateLinkInRedis } from '../../lib/redisCache';
 import { ArrowLeft } from 'lucide-react';
-import Step1FastTrack from '../../components/dashboard/wizard/Step1FastTrack';
-import Step2Optimization from '../../components/dashboard/wizard/Step2Optimization';
-import Step3Security from '../../components/dashboard/wizard/Step3Security';
+import LinkWizardOnePerPage from '../../components/dashboard/LinkWizardOnePerPage';
 import Modal from '../../components/common/Modal';
-
-const allSteps = [
-  { number: 1, title: 'The Fast Track', subtitle: 'Destination & Identity' },
-  { number: 2, title: 'Security & Logic', subtitle: 'Smart Rules & Protection' },
-  { number: 3, title: 'Optimization & Marketing', subtitle: 'CAPI' },
-];
-
-// Get visible steps based on plan type
-const getStepsForPlan = (planType) => {
-  switch (planType?.toLowerCase()) {
-    case 'pro':
-      return allSteps; // All 3 steps
-    case 'advanced':
-      return allSteps.slice(0, 2); // Steps 1 and 2
-    case 'free':
-    default:
-      return allSteps.slice(0, 1); // Only Step 1
-  }
-};
 
 const LinkBuilderPage = () => {
   const { id } = useParams();
@@ -34,16 +12,10 @@ const LinkBuilderPage = () => {
   const searchParams = new URLSearchParams(window.location.search);
   const duplicateId = searchParams.get('duplicate');
   const isEditMode = !!id;
-  const isDuplicateMode = !!duplicateId;
   const linkIdToLoad = id || duplicateId;
-  const [currentStep, setCurrentStep] = useState(1);
   const [planType, setPlanType] = useState('free');
-  const step1ValidationRef = useRef(null);
-  const step3ValidationRef = useRef(null);
+  const wizardRef = useRef(null);
   const [initialLoading, setInitialLoading] = useState(!!linkIdToLoad);
-
-  // Get steps based on plan type
-  const steps = getStepsForPlan(planType);
 
   const getInitialFormData = () => ({
     linkId: id || null,
@@ -213,44 +185,12 @@ const LinkBuilderPage = () => {
     return slug;
   };
 
-  const nextStep = async () => {
-    if (currentStep === 1 && step1ValidationRef.current) {
-      const validationResult = await step1ValidationRef.current(true);
-      if (!validationResult || !validationResult.isValid) {
-        return;
-      }
-    }
-
-    // Validate Step 2 (Security) - fallback URL is required if redirect is selected
-    if (currentStep === 2 && step3ValidationRef.current) {
-      const validationResult = step3ValidationRef.current();
-      if (!validationResult || !validationResult.isValid) {
-        return;
-      }
-    }
-
-    if (currentStep < steps.length) {
-      setCurrentStep(currentStep + 1);
-    }
-  };
-
-  const prevStep = () => {
-    if (currentStep > 1) {
-      setCurrentStep(currentStep - 1);
-    }
-  };
-
   const handleSubmit = async () => {
-    // Validate Step 2 (Security) before submitting
     let finalFallbackUrl = null;
-    if (step3ValidationRef.current) {
-      const step3Validation = step3ValidationRef.current();
-      if (!step3Validation.isValid) {
-        // Validation failed - error is already shown inline, just return
-        return;
-      }
-      // Use the normalized URL from validation
-      finalFallbackUrl = step3Validation.normalizedUrl;
+    if (wizardRef.current?.validateBeforeSubmit) {
+      const result = wizardRef.current.validateBeforeSubmit();
+      if (!result.isValid) return;
+      finalFallbackUrl = result.normalizedUrl;
     }
 
     setIsSubmitting(true);
@@ -533,10 +473,12 @@ const LinkBuilderPage = () => {
     );
   }
 
+  const initialDataForWizard = formData.linkId ? { id: formData.linkId } : null;
+
   return (
-    <div className="min-h-screen bg-[#0b0f19] pb-8">
+    <div className="min-h-screen bg-[#0b0f19] flex flex-col">
       {/* Header with back button */}
-      <div className="sticky top-0 z-10 bg-[#0b0f19] border-b border-slate-800 px-4 py-4">
+      <div className="flex-shrink-0 z-10 bg-[#0b0f19] border-b border-slate-800 px-4 py-4">
         <div className="max-w-4xl mx-auto flex items-center gap-4">
           <button
             onClick={() => navigate('/dashboard/links')}
@@ -546,132 +488,23 @@ const LinkBuilderPage = () => {
           </button>
           <div className="flex-1 min-w-0">
             <h1 className="text-xl font-bold text-white truncate">
-              {isEditMode ? 'Edit Link' : 'Create Your GoodLink'}
+              {isEditMode ? 'Edit Link' : 'Add New Link'}
             </h1>
           </div>
         </div>
       </div>
 
-      <div className="max-w-4xl mx-auto px-4 py-6">
-        {/* Stepper - Hidden for FREE users */}
-        {planType?.toLowerCase() !== 'free' && (
-          <div className="mb-8 pb-6 border-b border-slate-800">
-            <div className="flex items-center gap-4 overflow-x-auto">
-              {steps.map((step, index) => (
-                <React.Fragment key={step.number}>
-                  <div className="flex items-center gap-3 flex-shrink-0">
-                    <div
-                      className={`flex items-center justify-center w-10 h-10 rounded-full font-bold text-base transition-all ${
-                        currentStep === step.number
-                          ? 'bg-primary text-white scale-110 shadow-lg shadow-primary/50'
-                          : currentStep > step.number
-                            ? 'bg-primary/50 text-white'
-                            : 'bg-slate-800 text-slate-400'
-                      }`}
-                    >
-                      {step.number}
-                    </div>
-                    <div className="hidden sm:block">
-                      <div
-                        className={`text-sm font-bold ${
-                          currentStep >= step.number ? 'text-white' : 'text-slate-400'
-                        }`}
-                      >
-                        {step.title}
-                      </div>
-                      {step.subtitle && (
-                        <div className="text-xs text-slate-500 mt-0.5 hidden md:block">
-                          {step.subtitle}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                  {index < steps.length - 1 && (
-                    <div
-                      className={`w-12 h-0.5 flex-shrink-0 ${
-                        currentStep > step.number ? 'bg-primary' : 'bg-slate-800'
-                      }`}
-                    />
-                  )}
-                </React.Fragment>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Content */}
-        <div className="space-y-6">
-          {currentStep === 1 && (
-            <Step1FastTrack
-              formData={formData}
-              updateFormData={updateFormData}
-              onQuickCreate={handleSubmit}
-              onSafetyCheckUpdate={(safety) => updateFormData('urlSafety', safety)}
-              onValidationRequest={step1ValidationRef}
-              onContinue={nextStep}
-              planType={planType}
-            />
-          )}
-          {currentStep === 2 && (
-            <Step3Security
-              formData={formData}
-              updateFormData={updateFormData}
-              onValidationRequest={step3ValidationRef}
-            />
-          )}
-          {currentStep === 3 && (
-            <Step2Optimization formData={formData} updateFormData={updateFormData} />
-          )}
-        </div>
-
-        {/* Footer */}
-        <div className="flex items-center justify-between mt-8 pt-6 border-t border-slate-800 gap-4">
-          {currentStep === 1 ? (
-            <div className="text-slate-400 text-sm whitespace-nowrap">
-              {steps.length > 1 && `Step ${currentStep} of ${steps.length}`}
-            </div>
-          ) : (
-            <>
-              <button
-                onClick={prevStep}
-                className="px-4 py-2 text-sm bg-slate-700 hover:bg-slate-600 text-white font-bold rounded-xl transition-colors"
-              >
-                Previous
-              </button>
-              <div className="text-slate-400 text-sm whitespace-nowrap">
-                Step {currentStep} of {steps.length}
-              </div>
-              {currentStep < steps.length ? (
-                <button
-                  onClick={nextStep}
-                  className="px-6 py-3 bg-primary hover:bg-primary/90 text-white font-bold rounded-xl transition-colors"
-                >
-                  Continue
-                </button>
-              ) : null}
-            </>
-          )}
-          {/* Show save button on last step, but not on Step 1 (Step 1 has pink button) */}
-          {currentStep >= steps.length && currentStep > 1 && (
-            <button
-              onClick={handleSubmit}
-              disabled={isSubmitting}
-              className="px-6 py-3 bg-[#FF10F0] hover:bg-[#e00ed0] text-white font-bold rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-            >
-              {isSubmitting ? (
-                <>
-                  <span className="material-symbols-outlined animate-spin">refresh</span>
-                  {isEditMode ? 'Updating...' : 'Creating...'}
-                </>
-              ) : (
-                <>
-                  <span className="material-symbols-outlined">check</span>
-                  {isEditMode ? 'Update Link' : 'Create & Copy Link'}
-                </>
-              )}
-            </button>
-          )}
-        </div>
+      {/* New one-per-page wizard */}
+      <div className="flex-1 min-h-0 flex flex-col">
+        <LinkWizardOnePerPage
+          formData={formData}
+          updateFormData={updateFormData}
+          planType={planType}
+          isEditMode={isEditMode && !duplicateId}
+          initialData={initialDataForWizard}
+          onValidateAndSubmit={handleSubmit}
+          stepRefs={wizardRef}
+        />
       </div>
 
       {/* Success/Error Modal */}
