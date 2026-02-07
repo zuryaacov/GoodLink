@@ -140,6 +140,7 @@ export default function LinkWizardOnePerPage({
   stepRefs,
 }) {
   const [domains, setDomains] = useState(['glynk.to']);
+  const [domainStatuses, setDomainStatuses] = useState({}); // domain -> 'active' | 'pending'
   const [availablePixels, setAvailablePixels] = useState([]);
   const [loadingPixels, setLoadingPixels] = useState(false);
   const [stepIndex, setStepIndex] = useState(0);
@@ -157,9 +158,16 @@ export default function LinkWizardOnePerPage({
   const [newGeoRule, setNewGeoRule] = useState({ country: '', url: '' });
   const [geoRuleErrors, setGeoRuleErrors] = useState({ country: null, url: null });
 
-  // Build step list: domain step only if PRO (or non-free) AND has custom domains
-  // highlightClass = color for the last word in the big title (from reference design)
+  // Step visibility by plan:
+  // FREE & START: Name, Target URL, Custom Slug only.
+  // ADVANCED: + Select Domain (if multiple), Bot Protection.
+  // PRO: + Geo Targeting, CAPI Select.
   const steps = useMemo(() => {
+    const plan = (planType || '').toLowerCase();
+    const isFreeOrStart = plan === 'free' || plan === 'start' || plan === 'starter';
+    const isAdvancedOrPro = plan === 'advanced' || plan === 'pro';
+    const isPro = plan === 'pro';
+
     const list = [
       {
         id: 'name',
@@ -190,7 +198,8 @@ export default function LinkWizardOnePerPage({
         highlightClass:
           'bg-gradient-to-r from-[#FF10F0] to-[#bc13fe] bg-clip-text text-transparent',
         subtitle: 'Choose the base for your short link.',
-        show: planType?.toLowerCase() !== 'free' && domains.length > 1,
+        // For testing: show when plan fits (even with only glynk.to). Normally: && domains.length > 1
+        show: isAdvancedOrPro,
       },
       {
         id: 'slug',
@@ -210,6 +219,7 @@ export default function LinkWizardOnePerPage({
         highlight: 'Protection',
         highlightClass: 'text-yellow-500',
         subtitle: 'How should we handle automated traffic?',
+        show: isAdvancedOrPro,
       },
       {
         id: 'geo',
@@ -219,7 +229,7 @@ export default function LinkWizardOnePerPage({
         highlight: 'Targeting',
         highlightClass: 'text-orange-500',
         subtitle: 'Optional routing by country.',
-        show: planType?.toLowerCase() !== 'free',
+        show: isPro,
       },
       {
         id: 'capi',
@@ -229,7 +239,7 @@ export default function LinkWizardOnePerPage({
         highlight: 'Select',
         highlightClass: 'text-purple-500',
         subtitle: 'Select Conversions API to fire events.',
-        show: planType?.toLowerCase() === 'pro',
+        show: isPro,
       },
       {
         id: 'review',
@@ -257,9 +267,10 @@ export default function LinkWizardOnePerPage({
     }
   }, [totalSteps, stepIndex]);
 
-  // Fetch domains
+  // Fetch domains (FREE/START: default only; ADVANCED/PRO: fetch custom domains)
   useEffect(() => {
-    if (planType?.toLowerCase() === 'free') {
+    const plan = (planType || '').toLowerCase();
+    if (plan === 'free' || plan === 'start' || plan === 'starter') {
       setDomains(['glynk.to']);
       updateFormData('domain', 'glynk.to');
       return;
@@ -270,18 +281,26 @@ export default function LinkWizardOnePerPage({
           data: { user },
         } = await supabase.auth.getUser();
         if (!user) return;
+        // Include both active and pending (for testing: show pending in Select Domain)
         const { data: customDomains, error } = await supabase
           .from('custom_domains')
-          .select('domain')
+          .select('domain, status')
           .eq('user_id', user.id)
-          .eq('status', 'active');
+          .in('status', ['active', 'pending']);
         if (!error && customDomains?.length > 0) {
           const list = customDomains.map((d) => d.domain);
+          const statusMap = {};
+          customDomains.forEach((d) => {
+            statusMap[d.domain] = d.status || 'active';
+          });
+          setDomainStatuses(statusMap);
           setDomains(['glynk.to', ...list]);
         } else {
+          setDomainStatuses({});
           setDomains(['glynk.to']);
         }
       } catch (e) {
+        setDomainStatuses({});
         setDomains(['glynk.to']);
       }
     };
@@ -722,6 +741,8 @@ export default function LinkWizardOnePerPage({
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {domains.map((d) => {
                     const isSelected = selectedDomain === d;
+                    const status = domainStatuses[d];
+                    const isPending = status === 'pending';
                     return (
                       <button
                         key={d}
@@ -735,7 +756,11 @@ export default function LinkWizardOnePerPage({
                       >
                         <span className="text-xl font-bold text-white">{d}</span>
                         <span className="block text-xs text-gray-500 uppercase mt-1">
-                          {d === 'glynk.to' ? 'Short & Sweet' : 'Custom'}
+                          {d === 'glynk.to'
+                            ? 'Short & Sweet'
+                            : isPending
+                              ? 'Custom · Pending'
+                              : 'Custom'}
                         </span>
                       </button>
                     );
