@@ -614,7 +614,7 @@ export default function LinkWizardOnePerPage({
         aria-hidden="true"
       />
 
-      <div className="flex-1 px-6 pb-32 pt-8 max-w-2xl mx-auto w-full relative z-10">
+      <div className="flex-1 flex flex-col justify-center px-6 pb-32 pt-8 max-w-2xl mx-auto w-full relative z-10">
         <AnimatePresence mode="wait">
           {currentStep && !currentStep.isReview && (
             <motion.div
