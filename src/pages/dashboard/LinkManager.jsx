@@ -12,10 +12,13 @@ const PLATFORMS = {
   outbrain: { name: 'Outbrain', colorClass: 'text-indigo-400 bg-indigo-400/10' },
 };
 
+const linkClickKey = (link) => `${link.domain ?? ''}/${link.slug ?? ''}`;
+
 const LinkManager = () => {
   const navigate = useNavigate();
   const [links, setLinks] = useState([]);
   const [presetsMap, setPresetsMap] = useState({}); // Map of preset ID to preset data
+  const [clickCountsMap, setClickCountsMap] = useState({}); // key: domain/slug -> count
   const [loading, setLoading] = useState(true);
   const [utmPresetsModal, setUtmPresetsModal] = useState({
     isOpen: false,
@@ -79,6 +82,21 @@ const LinkManager = () => {
       }
 
       setPresetsMap(presetsDataMap);
+
+      // Fetch click counts per link (clicks match by domain + slug)
+      const { data: clicksData, error: clicksError } = await supabase
+        .from('clicks')
+        .select('domain, slug')
+        .eq('user_id', user.id);
+
+      const counts = {};
+      if (!clicksError && clicksData) {
+        clicksData.forEach((c) => {
+          const key = `${c.domain ?? ''}/${c.slug ?? ''}`;
+          counts[key] = (counts[key] || 0) + 1;
+        });
+      }
+      setClickCountsMap(counts);
       setLinks(linksData || []);
     } catch (error) {
       console.error('Error fetching links:', error);
@@ -280,7 +298,7 @@ const LinkManager = () => {
                 <div className="flex justify-between items-start mb-6">
                   <div className="flex-1 min-w-0 pr-4">
                     <h3
-                      className="text-lg font-bold text-white mb-1 truncate"
+                      className="text-xl font-bold text-white mb-1 truncate"
                       title={link.name || 'Untitled'}
                     >
                       {link.name || 'Untitled'}
@@ -324,33 +342,6 @@ const LinkManager = () => {
                   </div>
                 </div>
 
-                {/* UTM Presets */}
-                <div className="pt-2 border-t border-[#232f48]">
-                  <div className="flex items-center justify-between gap-3">
-                    <div
-                      className={`text-xs font-medium ${
-                        link.utm_presets?.length ? 'text-emerald-400 font-bold' : 'text-slate-500'
-                      }`}
-                    >
-                      UTM Preset Links:
-                    </div>
-                    {link.utm_presets?.length > 0 && (
-                      <button
-                        onClick={() => setUtmPresetsModal({ isOpen: true, link })}
-                        className="p-2 rounded-lg border border-[#232f48] bg-[#FF10F0] hover:bg-[#e00ed0] text-white transition-colors shadow-lg"
-                        title="Open UTM preset links"
-                      >
-                        <span className="material-symbols-outlined text-base leading-none">
-                          open_in_new
-                        </span>
-                      </button>
-                    )}
-                  </div>
-                  {(!link.utm_presets || link.utm_presets.length === 0) && (
-                    <div className="pt-2 text-xs text-slate-400">NO UTM Preset</div>
-                  )}
-                </div>
-
                 {/* Footer: toggle + status, clicks */}
                 <div className="mt-auto flex justify-between items-center pt-4 border-t border-[#232f48]">
                   <div className="flex items-center gap-3">
@@ -376,9 +367,9 @@ const LinkManager = () => {
                   >
                     <span className="material-symbols-outlined text-base">bar_chart</span>
                     <span className="text-xs font-bold">
-                      {typeof link.clicks_count === 'number'
-                        ? new Intl.NumberFormat('en-US').format(link.clicks_count)
-                        : '0'}{' '}
+                      {new Intl.NumberFormat('en-US').format(
+                        clickCountsMap[linkClickKey(link)] ?? 0
+                      )}{' '}
                       Clicks
                     </span>
                   </div>
