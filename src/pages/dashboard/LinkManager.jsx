@@ -292,7 +292,7 @@ const LinkManager = () => {
                 key={link.id}
                 className={`bg-[#101622] border border-[#232f48] rounded-[1.25rem] p-6 flex flex-col h-full transition-all duration-300 ease-out overflow-hidden ${
                   !isActive ? 'opacity-70' : ''
-                } ${isActive ? 'hover:border-[#135bec] hover:-translate-y-1 hover:shadow-[0_12px_30px_rgba(19,91,236,0.15)]' : ''}`}
+                } ${isActive ? 'hover:border-[#135bec] hover:shadow-[0_12px_30px_rgba(19,91,236,0.15)]' : ''}`}
               >
                 {/* Header: title, destination, menu */}
                 <div className="flex justify-between items-start mb-6">
@@ -326,7 +326,7 @@ const LinkManager = () => {
                         Short Link
                       </span>
                       <span
-                        className={`font-bold text-lg tracking-wide truncate ${isActive ? 'text-[#FF10F0]' : 'text-gray-500'}`}
+                        className={`font-bold text-lg tracking-wide break-all whitespace-normal ${isActive ? 'text-[#FF10F0]' : 'text-gray-500'}`}
                         title={link.short_url}
                       >
                         {link.short_url}
