@@ -210,11 +210,12 @@ const LinkManager = () => {
   };
 
   const handleToggleStatus = async (linkId, currentStatus) => {
-    try {
-      // Toggle between 'active' and 'PAUSED'
-      // If status is 'active' -> change to 'PAUSED', otherwise change to 'active'
-      const newStatus = currentStatus === 'active' ? 'PAUSED' : 'active';
+    const newStatus = currentStatus === 'active' ? 'PAUSED' : 'active';
 
+    // Optimistic update: change UI immediately so the toggle moves right away
+    setLinks((prev) => prev.map((l) => (l.id === linkId ? { ...l, status: newStatus } : l)));
+
+    try {
       const { error } = await supabase.from('links').update({ status: newStatus }).eq('id', linkId);
 
       if (error) {
@@ -230,10 +231,10 @@ const LinkManager = () => {
       } catch (redisError) {
         console.warn('⚠️ [LinkManager] Failed to sync Redis after status toggle:', redisError);
       }
-
-      fetchLinks(); // Refresh the list
     } catch (error) {
       console.error('Error updating link status:', error);
+      // Revert optimistic update on error
+      setLinks((prev) => prev.map((l) => (l.id === linkId ? { ...l, status: currentStatus } : l)));
       setModalState({
         isOpen: true,
         type: 'error',
