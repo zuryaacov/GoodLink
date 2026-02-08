@@ -46,12 +46,21 @@ const UtmPresetManager = () => {
 
       let currentPlanType = null;
       try {
-        const { data: profile } = await supabase
+        let { data: profile, error: profileError } = await supabase
           .from('profiles')
           .select('plan_type')
           .eq('user_id', user.id)
-          .single();
-        if (profile?.plan_type) {
+          .maybeSingle();
+        if (profileError || !profile) {
+          const res = await supabase
+            .from('profiles')
+            .select('plan_type')
+            .eq('id', user.id)
+            .maybeSingle();
+          profile = res.data;
+          profileError = res.error;
+        }
+        if (!profileError && profile?.plan_type) {
           currentPlanType = profile.plan_type;
           setPlanType(profile.plan_type);
         }
