@@ -67,6 +67,7 @@ const Step2Optimization = ({ formData, updateFormData }) => {
           data: { user },
         } = await supabase.auth.getUser();
         if (user) {
+          // Include active and pending (same as UTM Preset Manager / Select Domain)
           const { data, error } = await supabase
             .from('utm_presets')
             .select('*')
@@ -171,12 +172,17 @@ const Step2Optimization = ({ formData, updateFormData }) => {
                         )}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
+                        <div className="flex items-center gap-2 mb-1 flex-wrap">
                           <div
                             className={`px-2 py-1 rounded-lg text-xs font-bold ${platformInfo.colorClass}`}
                           >
                             {platformInfo.name}
                           </div>
+                          {preset.status === 'pending' && (
+                            <span className="px-2 py-1 rounded-lg text-xs font-bold text-amber-400 bg-amber-400/10">
+                              Pending
+                            </span>
+                          )}
                           <h4
                             className={`font-bold text-sm ${isSelected ? 'text-white' : 'text-slate-300'}`}
                           >

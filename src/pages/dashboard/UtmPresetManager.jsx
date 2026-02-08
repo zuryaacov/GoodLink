@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Lock } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import Modal from '../../components/common/Modal';
 import { Copy, Trash2, Edit2 } from 'lucide-react';
@@ -19,6 +20,7 @@ const UtmPresetManager = () => {
   const [links, setLinks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [copiedId, setCopiedId] = useState(null);
+  const [planType, setPlanType] = useState(null);
 
   const [modalState, setModalState] = useState({
     isOpen: false,
@@ -30,17 +32,37 @@ const UtmPresetManager = () => {
   });
 
   useEffect(() => {
-    fetchPresets();
+    fetchPlanAndPresets();
     fetchLinks();
   }, []);
 
-  const fetchPresets = async () => {
+  const fetchPlanAndPresets = async () => {
     try {
       setLoading(true);
       const {
         data: { user },
       } = await supabase.auth.getUser();
       if (!user) return;
+
+      let currentPlanType = null;
+      try {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('plan_type')
+          .eq('user_id', user.id)
+          .single();
+        if (profile?.plan_type) {
+          currentPlanType = profile.plan_type;
+          setPlanType(profile.plan_type);
+        }
+      } catch (_) {}
+
+      const normalized = (currentPlanType || '').toLowerCase();
+      if (normalized === 'free' || normalized === 'start' || normalized === 'starter') {
+        setPresets([]);
+        setLoading(false);
+        return;
+      }
 
       const { data, error } = await supabase
         .from('utm_presets')
@@ -176,6 +198,58 @@ const UtmPresetManager = () => {
     );
   }
 
+  const normalizedPlan = (planType || '').toLowerCase();
+  if (normalizedPlan === 'free' || normalizedPlan === 'start' || normalizedPlan === 'starter') {
+    return (
+      <div className="relative min-h-[480px] w-full flex items-center justify-center p-6 overflow-hidden bg-[#0b0f19] rounded-2xl border border-dashed border-[#232f48]">
+        <div className="absolute inset-0 opacity-[0.18] blur-[3px] pointer-events-none select-none p-6">
+          <div className="max-w-5xl mx-auto space-y-6">
+            <div className="h-10 bg-[#141b2e] rounded-md w-1/3 mb-8" />
+            <div className="grid grid-cols-2 gap-4">
+              {[1, 2].map((i) => (
+                <div key={i} className="h-28 bg-[#141b2e] rounded-xl" />
+              ))}
+            </div>
+            <div className="h-56 bg-[#141b2e] rounded-xl w-full" />
+          </div>
+        </div>
+        <div className="relative z-10 max-w-xl w-full bg-[#101622]/90 backdrop-blur-xl border border-[#232f48] shadow-2xl rounded-3xl p-8 md:p-10 text-center">
+          <div className="mb-6 flex justify-center">
+            <div className="relative">
+              <div className="absolute inset-0 bg-[#FF10F0] blur-2xl opacity-25 animate-pulse" />
+              <div className="relative bg-gradient-to-br from-[#FF10F0] to-[#7c3aed] p-4 rounded-2xl shadow-lg shadow-[#FF10F0]/40">
+                <Lock className="w-8 h-8 text-white" />
+              </div>
+            </div>
+          </div>
+          <h2 className="text-2xl md:text-3xl font-bold text-white mb-4 tracking-tight">
+            Unlock UTM Presets
+          </h2>
+          <p className="text-sm md:text-base text-slate-300 mb-8 leading-relaxed">
+            Your current&nbsp;
+            <span className="font-semibold text-white italic capitalize">
+              {normalizedPlan} plan
+            </span>
+            &nbsp;does not include UTM preset management. Upgrade to&nbsp;
+            <span className="text-[#FF10F0] font-bold uppercase tracking-wider">
+              ADVANCED
+            </span> or{' '}
+            <span className="text-[#FF10F0] font-bold uppercase tracking-wider">PRO</span> to create
+            and manage UTM presets for your campaigns.
+          </p>
+          <button
+            onClick={() => {
+              window.location.href = '/#pricing';
+            }}
+            className="w-full inline-flex items-center justify-center gap-2 bg-[#FF10F0] text-white font-bold py-3.5 px-8 rounded-2xl transition-all hover:bg-[#e00ed0] shadow-xl shadow-[#FF10F0]/30"
+          >
+            View Plans & Upgrade
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="w-full max-w-7xl mx-auto">
       <div className="flex items-center justify-between mb-8">
@@ -226,11 +300,18 @@ const UtmPresetManager = () => {
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex-1">
                     <h3 className="text-lg font-bold text-white mb-1">{preset.name}</h3>
-                    <span
-                      className={`inline-block px-2 py-1 rounded-lg text-xs font-bold ${platform.colorClass}`}
-                    >
-                      {platform.name}
-                    </span>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span
+                        className={`inline-block px-2 py-1 rounded-lg text-xs font-bold ${platform.colorClass}`}
+                      >
+                        {platform.name}
+                      </span>
+                      {preset.status === 'pending' && (
+                        <span className="inline-block px-2 py-1 rounded-lg text-xs font-bold text-amber-400 bg-amber-400/10">
+                          Pending
+                        </span>
+                      )}
+                    </div>
                   </div>
                   <div className="flex gap-2">
                     <button
