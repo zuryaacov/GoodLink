@@ -13,6 +13,15 @@ const STEPS = [
     subtitle: 'Your custom domain (e.g. mybrand.com). We’ll use www by default.',
   },
   {
+    id: 'rootRedirect',
+    badge: 'Redirect',
+    badgeColor: 'text-orange-500 bg-orange-500/10',
+    title: 'Root',
+    highlight: 'Redirect',
+    highlightClass: 'text-orange-500',
+    subtitle: 'Optional. Where to send visitors who open the domain without a slug.',
+  },
+  {
     id: 'dns',
     badge: 'DNS',
     badgeColor: 'text-[#135bec] bg-[#135bec]/10',
@@ -60,10 +69,15 @@ export default function DomainWizardOnePerPage({
 
   const goNext = async () => {
     if (currentStep.id === 'domain') {
+      setStepIndex(1);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+    if (currentStep.id === 'rootRedirect') {
       setLocalError(null);
       try {
         await onRegister(domainName, rootRedirect);
-        setStepIndex(1);
+        setStepIndex(2);
         window.scrollTo({ top: 0, behavior: 'smooth' });
       } catch (e) {
         setLocalError(e.message || 'Failed to register domain.');
@@ -71,7 +85,7 @@ export default function DomainWizardOnePerPage({
       return;
     }
     if (currentStep.id === 'dns') {
-      setStepIndex(2);
+      setStepIndex(3);
       window.scrollTo({ top: 0, behavior: 'smooth' });
       return;
     }
@@ -162,25 +176,24 @@ export default function DomainWizardOnePerPage({
                 <p className="text-slate-500 text-xs">
                   We’ll use www (e.g. www.mybrand.com) for the hostname.
                 </p>
+              </div>
+            )}
 
-                <div>
-                  <p className="text-sm font-bold text-white mb-2">Root Redirect (optional)</p>
-                  <p className="text-xs text-slate-400 mb-2">
-                    Where to send visitors who open the domain without a slug.
-                  </p>
-                  <div className="rounded-2xl bg-[#101622] border-2 border-[#232f48] focus-within:border-[#135bec] transition-all">
-                    <input
-                      type="text"
-                      value={rootRedirect}
-                      onChange={(e) => onRootRedirectChange?.(e.target.value)}
-                      placeholder="https://example.com"
-                      className="w-full bg-transparent py-5 px-6 text-lg outline-none border-none text-white placeholder-slate-500"
-                    />
-                  </div>
-                  {rootRedirectError && (
-                    <p className="text-red-400 text-xs mt-1">{rootRedirectError}</p>
-                  )}
+            {currentStep?.id === 'rootRedirect' && (
+              <div className="space-y-5">
+                <div className="rounded-2xl bg-[#101622] border-2 border-[#232f48] focus-within:border-[#135bec] transition-all">
+                  <input
+                    type="text"
+                    value={rootRedirect}
+                    onChange={(e) => onRootRedirectChange?.(e.target.value)}
+                    placeholder="https://example.com"
+                    className="w-full bg-transparent py-5 px-6 text-xl outline-none border-none text-white placeholder-slate-500"
+                  />
                 </div>
+                {rootRedirectError && <p className="text-red-400 text-xs">{rootRedirectError}</p>}
+                <p className="text-slate-500 text-xs">
+                  Leave empty if you don’t need a redirect for the root URL.
+                </p>
               </div>
             )}
 
@@ -257,13 +270,16 @@ export default function DomainWizardOnePerPage({
           <button
             type="button"
             onClick={goNext}
-            disabled={currentStep?.id === 'domain' && (!canProceed() || isSubmitting)}
+            disabled={
+              (currentStep?.id === 'domain' && !canProceed()) ||
+              (currentStep?.id === 'rootRedirect' && isSubmitting)
+            }
             className="flex-1 flex items-center justify-center gap-3 py-5 rounded-2xl font-extrabold text-xl tracking-tight transition-all bg-[#FF10F0] hover:bg-[#e00ed0] text-white disabled:opacity-60 disabled:cursor-not-allowed shadow-xl"
           >
             {isSubmitting ? (
               <>
                 <span className="material-symbols-outlined animate-spin text-2xl">refresh</span>
-                {stepIndex === 0 ? 'Preparing records...' : 'Loading...'}
+                {currentStep?.id === 'rootRedirect' ? 'Preparing records...' : 'Loading...'}
               </>
             ) : currentStep?.id === 'verify' ? (
               <>
