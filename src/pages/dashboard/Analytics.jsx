@@ -6,9 +6,12 @@ import Modal from '../../components/common/Modal';
 const countryToFlag = (country) => {
   if (!country || country === 'Unknown') return '🌐';
   const nameToCode = {
-    'United States': 'US', USA: 'US', America: 'US',
+    'United States': 'US',
+    USA: 'US',
+    America: 'US',
     Israel: 'IL',
-    'United Kingdom': 'GB', UK: 'GB',
+    'United Kingdom': 'GB',
+    UK: 'GB',
     Germany: 'DE',
     France: 'FR',
     Canada: 'CA',
@@ -27,7 +30,10 @@ const countryToFlag = (country) => {
   };
   const code = nameToCode[country] || (country.length === 2 ? country.toUpperCase() : null);
   if (code && code.length === 2) {
-    return code.split('').map((c) => String.fromCodePoint(0x1f1e6 - 65 + c.charCodeAt(0))).join('');
+    return code
+      .split('')
+      .map((c) => String.fromCodePoint(0x1f1e6 - 65 + c.charCodeAt(0)))
+      .join('');
   }
   return '🌐';
 };
@@ -48,7 +54,9 @@ const relativeTime = (dateString) => {
 const KPICard = ({ title, value, change, trend, icon, iconBgClass, iconColorClass }) => (
   <div className="bg-[#101622] border border-[#232f48] rounded-2xl p-5 transition-all hover:border-[#135bec] hover:shadow-[0_4px_20px_rgba(19,91,236,0.1)]">
     <div className="flex justify-between items-start mb-4">
-      <div className={`p-2 rounded-lg ${iconBgClass || 'bg-[#135bec]/10'} ${iconColorClass || 'text-[#135bec]'}`}>
+      <div
+        className={`p-2 rounded-lg ${iconBgClass || 'bg-[#135bec]/10'} ${iconColorClass || 'text-[#135bec]'}`}
+      >
         <span className="material-symbols-outlined text-[20px]">{icon}</span>
       </div>
       {change != null && change !== '' && (
@@ -132,7 +140,9 @@ const GeoProgressCard = ({ geographic }) => {
         ) : (
           geographic.slice(0, 15).map((item, i) => {
             const pct = total ? Math.round((item.value / total) * 100) : 0;
-            const flag = item.name.includes(',') ? countryToFlag(item.name.split(',')[1]?.trim() || item.name) : countryToFlag(item.name);
+            const flag = item.name.includes(',')
+              ? countryToFlag(item.name.split(',')[1]?.trim() || item.name)
+              : countryToFlag(item.name);
             return (
               <div key={item.name}>
                 <div className="flex justify-between text-xs mb-1">
@@ -211,7 +221,9 @@ const Analytics = () => {
           (click.fraud_score && click.fraud_score > 80)
       ).length;
 
-      const uniqueVisitors = new Set(clicks.map((c) => c.session_id || c.ip_address).filter(Boolean)).size;
+      const uniqueVisitors = new Set(
+        clicks.map((c) => c.session_id || c.ip_address).filter(Boolean)
+      ).size;
 
       const { count: activeLinksCount } = await supabase
         .from('links')
@@ -304,7 +316,9 @@ const Analytics = () => {
   };
 
   const getDeviceOsLabel = (click) => {
-    const device = click.device_type || (click.user_agent && /mobile/i.test(click.user_agent) ? 'Mobile' : 'Desktop');
+    const device =
+      click.device_type ||
+      (click.user_agent && /mobile/i.test(click.user_agent) ? 'Mobile' : 'Desktop');
     const os = click.os ? (click.os_version ? `${click.os} ${click.os_version}` : click.os) : '—';
     const browser = click.browser || '';
     if (device.toLowerCase() === 'mobile' || device.toLowerCase() === 'smartphone')
@@ -318,9 +332,10 @@ const Analytics = () => {
     return new Intl.NumberFormat('en-US').format(num);
   };
 
-  const conversionEst = stats.totalClicks > 0 && stats.uniqueVisitors > 0
-    ? `${((stats.uniqueVisitors / stats.totalClicks) * 100).toFixed(1)}%`
-    : '—';
+  const conversionEst =
+    stats.totalClicks > 0 && stats.uniqueVisitors > 0
+      ? `${((stats.uniqueVisitors / stats.totalClicks) * 100).toFixed(1)}%`
+      : '—';
 
   if (loading) {
     return (
@@ -334,7 +349,9 @@ const Analytics = () => {
     <div className="flex flex-col gap-6 max-w-7xl mx-auto">
       <div className="flex flex-col gap-2">
         <h1 className="text-3xl font-bold text-white">Analytics</h1>
-        <p className="text-slate-400 text-sm">Welcome back! Here&apos;s what&apos;s happening with your links.</p>
+        <p className="text-slate-400 text-sm">
+          Welcome back! Here&apos;s what&apos;s happening with your links.
+        </p>
       </div>
 
       {/* KPI Cards - 4 columns */}
@@ -356,7 +373,11 @@ const Analytics = () => {
         <KPICard
           title="Bot Traffic"
           value={formatNumber(stats.botDetected)}
-          change={stats.totalClicks ? `${Math.round((stats.botDetected / stats.totalClicks) * 100)}%` : '0%'}
+          change={
+            stats.totalClicks
+              ? `${Math.round((stats.botDetected / stats.totalClicks) * 100)}%`
+              : '0%'
+          }
           trend={stats.botDetected > 0 ? 'down' : 'up'}
           icon="smart_toy"
           iconBgClass="bg-yellow-500/10"
@@ -406,19 +427,31 @@ const Analytics = () => {
         <div className="overflow-x-auto">
           {trafficData.length === 0 ? (
             <div className="text-center py-12">
-              <span className="material-symbols-outlined text-6xl text-slate-600 mb-4 block">traffic</span>
+              <span className="material-symbols-outlined text-6xl text-slate-600 mb-4 block">
+                traffic
+              </span>
               <p className="text-slate-400 text-lg mb-2">No traffic data yet</p>
-              <p className="text-slate-500 text-sm">Traffic will appear here once users click your links</p>
+              <p className="text-slate-500 text-sm">
+                Traffic will appear here once users click your links
+              </p>
             </div>
           ) : (
             <table className="w-full text-left text-sm">
               <thead>
                 <tr className="text-gray-500 border-b border-[#232f48] bg-[#0b0f19]/50">
                   <th className="px-6 py-3 font-bold uppercase text-[10px] tracking-wider">Time</th>
-                  <th className="px-6 py-3 font-bold uppercase text-[10px] tracking-wider">Location</th>
-                  <th className="px-6 py-3 font-bold uppercase text-[10px] tracking-wider">Device / OS</th>
-                  <th className="px-6 py-3 font-bold uppercase text-[10px] tracking-wider">Status</th>
-                  <th className="px-6 py-3 font-bold uppercase text-[10px] tracking-wider text-right">Action</th>
+                  <th className="px-6 py-3 font-bold uppercase text-[10px] tracking-wider">
+                    Location
+                  </th>
+                  <th className="px-6 py-3 font-bold uppercase text-[10px] tracking-wider">
+                    Device / OS
+                  </th>
+                  <th className="px-6 py-3 font-bold uppercase text-[10px] tracking-wider">
+                    Status
+                  </th>
+                  <th className="px-6 py-3 font-bold uppercase text-[10px] tracking-wider text-right">
+                    Action
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#232f48]">
@@ -446,7 +479,9 @@ const Analytics = () => {
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center gap-2 text-gray-400">
                           <span className="material-symbols-outlined text-base">
-                            {/(mobile|phone|iphone|android)/i.test(click.device_type || click.user_agent || '')
+                            {/(mobile|phone|iphone|android)/i.test(
+                              click.device_type || click.user_agent || ''
+                            )
                               ? 'smartphone'
                               : 'monitor'}
                           </span>
@@ -483,7 +518,10 @@ const Analytics = () => {
 
         {trafficData.length > 0 && (
           <div className="p-4 border-t border-[#232f48] flex justify-center">
-            <button type="button" className="text-xs text-gray-500 hover:text-white transition-colors font-medium">
+            <button
+              type="button"
+              className="text-xs text-gray-500 hover:text-white transition-colors font-medium"
+            >
               View All Logs
             </button>
           </div>

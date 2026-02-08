@@ -266,60 +266,75 @@ const LinkManager = () => {
           </div>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 w-full">
-          {links.map((link) => (
-            <div
-              key={link.id}
-              className="bg-[#101622] border border-[#232f48] rounded-xl p-5 transition-all hover:bg-white/5 hover:border-primary/30 flex flex-col gap-4"
-            >
-              {/* Name & Destination */}
-              <div className="flex flex-col gap-2 min-w-0 flex-1">
-                <span
-                  className="text-lg font-bold text-white break-words line-clamp-2"
-                  title={link.name || 'Untitled'}
-                >
-                  {link.name || 'Untitled'}
-                </span>
-                <span className="text-slate-500 text-sm truncate" title={link.target_url}>
-                  {truncateText(link.target_url, 60)}
-                </span>
-              </div>
-
-              {/* Short URL */}
-              <div className="flex items-center gap-2 min-w-0 p-3 bg-[#0b0f19] rounded-lg border border-[#232f48]">
-                <span
-                  className="font-mono font-bold truncate flex-1 min-w-0"
-                  style={{ color: '#10b981', fontSize: '1.2em' }}
-                  title={link.short_url}
-                >
-                  {link.short_url}
-                </span>
-                <button
-                  onClick={() => handleCopy(link.short_url)}
-                  className="text-slate-400 hover:text-primary transition-colors p-1.5 rounded flex-shrink-0"
-                  title="Copy URL"
-                >
-                  <span className="material-symbols-outlined text-base">content_copy</span>
-                </button>
-              </div>
-
-              {/* UTM Presets */}
-              <div className="pt-2 border-t border-[#232f48]">
-                <div className="flex items-center justify-between gap-3">
-                  <div
-                    className={`text-xs font-medium ${
-                      link.utm_presets &&
-                      Array.isArray(link.utm_presets) &&
-                      link.utm_presets.length > 0
-                        ? 'text-emerald-400 font-bold'
-                        : 'text-slate-500'
-                    }`}
-                  >
-                    UTM Preset Links:
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full">
+          {links.map((link) => {
+            const isActive = link.status === 'active';
+            return (
+              <div
+                key={link.id}
+                className={`bg-[#101622] border border-[#232f48] rounded-[1.25rem] p-6 flex flex-col h-full transition-all duration-300 ease-out overflow-hidden ${
+                  !isActive ? 'opacity-70' : ''
+                } ${isActive ? 'hover:border-[#135bec] hover:-translate-y-1 hover:shadow-[0_12px_30px_rgba(19,91,236,0.15)]' : ''}`}
+              >
+                {/* Header: title, destination, menu */}
+                <div className="flex justify-between items-start mb-6">
+                  <div className="flex-1 min-w-0 pr-4">
+                    <h3
+                      className="text-lg font-bold text-white mb-1 truncate"
+                      title={link.name || 'Untitled'}
+                    >
+                      {link.name || 'Untitled'}
+                    </h3>
+                    <p className="text-xs text-gray-500 truncate" title={link.target_url}>
+                      {truncateText(link.target_url, 60)}
+                    </p>
                   </div>
-                  {link.utm_presets &&
-                    Array.isArray(link.utm_presets) &&
-                    link.utm_presets.length > 0 && (
+                  <LinkActionsMenu
+                    link={link}
+                    onRefresh={fetchLinks}
+                    onEdit={(linkToEdit) => navigate(`/dashboard/links/edit/${linkToEdit.id}`)}
+                    onDuplicate={(linkToDuplicate) =>
+                      navigate(`/dashboard/links/new?duplicate=${linkToDuplicate.id}`)
+                    }
+                    onShowModal={(modalConfig) => setModalState(modalConfig)}
+                  />
+                </div>
+
+                {/* Short Link box */}
+                <div className="bg-[#0b0f19] border border-[#232f48] rounded-xl p-4 mb-6">
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex flex-col min-w-0 flex-1">
+                      <span className="text-[10px] text-gray-500 font-bold uppercase mb-1 tracking-widest">
+                        Short Link
+                      </span>
+                      <span
+                        className={`font-bold text-lg tracking-wide truncate ${isActive ? 'text-[#FF10F0]' : 'text-gray-500'}`}
+                        title={link.short_url}
+                      >
+                        {link.short_url}
+                      </span>
+                    </div>
+                    <button
+                      onClick={() => handleCopy(link.short_url)}
+                      className="copy-btn p-2 bg-[#232f48] hover:bg-gray-600 text-gray-300 rounded-lg transition-all flex-shrink-0 active:scale-90"
+                      title="Copy to clipboard"
+                    >
+                      <span className="material-symbols-outlined text-base">content_copy</span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* UTM Presets */}
+                <div className="pt-2 border-t border-[#232f48]">
+                  <div className="flex items-center justify-between gap-3">
+                    <div
+                      className={`text-xs font-medium ${
+                        link.utm_presets?.length ? 'text-emerald-400 font-bold' : 'text-slate-500'
+                      }`}
+                    >
+                      UTM Preset Links:
+                    </div>
+                    {link.utm_presets?.length > 0 && (
                       <button
                         onClick={() => setUtmPresetsModal({ isOpen: true, link })}
                         className="p-2 rounded-lg border border-[#232f48] bg-[#FF10F0] hover:bg-[#e00ed0] text-white transition-colors shadow-lg"
@@ -330,61 +345,47 @@ const LinkManager = () => {
                         </span>
                       </button>
                     )}
+                  </div>
+                  {(!link.utm_presets || link.utm_presets.length === 0) && (
+                    <div className="pt-2 text-xs text-slate-400">NO UTM Preset</div>
+                  )}
                 </div>
 
-                {(!link.utm_presets ||
-                  !Array.isArray(link.utm_presets) ||
-                  link.utm_presets.length === 0) && (
-                  <div className="pt-2 text-xs text-slate-400">NO UTM Preset</div>
-                )}
-              </div>
-
-              {/* Status & Actions */}
-              <div className="flex items-center justify-between gap-3 pt-2 border-t border-[#232f48]">
-                {/* Status */}
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => handleToggleStatus(link.id, link.status || 'active')}
-                    className={`relative w-12 h-6 rounded-full transition-colors flex-shrink-0 ${
-                      link.status === 'active' ? 'bg-primary' : 'bg-[#232f48]'
-                    }`}
-                    aria-label="Toggle link status"
-                    title={
-                      link.status === 'active'
-                        ? 'Active - Click to pause'
-                        : 'Paused - Click to activate'
-                    }
-                  >
+                {/* Footer: toggle + status, clicks */}
+                <div className="mt-auto flex justify-between items-center pt-4 border-t border-[#232f48]">
+                  <div className="flex items-center gap-3">
+                    <label className="relative inline-block w-11 h-6 cursor-pointer select-none">
+                      <input
+                        type="checkbox"
+                        checked={isActive}
+                        onChange={() => handleToggleStatus(link.id, link.status || 'active')}
+                        className="absolute opacity-0 w-0 h-0 peer"
+                        aria-label="Toggle link status"
+                      />
+                      <span className="absolute inset-0 rounded-full bg-[#374151] transition-colors peer-checked:bg-[#10b981]" />
+                      <span className="absolute left-[3px] bottom-[3px] w-[18px] h-[18px] bg-white rounded-full transition-transform pointer-events-none peer-checked:translate-x-5" />
+                    </label>
                     <span
-                      className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform ${
-                        link.status === 'active' ? 'translate-x-6' : 'translate-x-0'
-                      }`}
-                    />
-                  </button>
-                  <span className="text-sm text-slate-400 font-medium">
-                    {link.status === 'active' ? 'ACTIVE' : 'PAUSED'}
-                  </span>
-                </div>
-
-                {/* Actions */}
-                <div className="ml-auto">
-                  <LinkActionsMenu
-                    link={link}
-                    onRefresh={fetchLinks}
-                    onEdit={(linkToEdit) => {
-                      navigate(`/dashboard/links/edit/${linkToEdit.id}`);
-                    }}
-                    onDuplicate={(linkToDuplicate) => {
-                      navigate(`/dashboard/links/new?duplicate=${linkToDuplicate.id}`);
-                    }}
-                    onShowModal={(modalConfig) => {
-                      setModalState(modalConfig);
-                    }}
-                  />
+                      className={`text-sm font-semibold ${isActive ? 'text-gray-300' : 'text-gray-500'}`}
+                    >
+                      {isActive ? 'Active' : 'Paused'}
+                    </span>
+                  </div>
+                  <div
+                    className={`flex items-center gap-2 ${isActive ? 'text-gray-500' : 'text-gray-600'}`}
+                  >
+                    <span className="material-symbols-outlined text-base">bar_chart</span>
+                    <span className="text-xs font-bold">
+                      {typeof link.clicks_count === 'number'
+                        ? new Intl.NumberFormat('en-US').format(link.clicks_count)
+                        : '0'}{' '}
+                      Clicks
+                    </span>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
 
