@@ -1,8 +1,21 @@
 /**
  * URL Validation Utility
- * 
+ *
  * Comprehensive URL validation before making API calls.
  * This prevents unnecessary calls to Cloudflare Worker and Google Safe Browsing API.
+ *
+ * **WWW:** URLs are accepted and preserved both with and without www.
+ *
+ * **Protocol:** "https:/" / "http:/" (single slash) are normalized to "https://" / "http://".
+ * If no protocol is given, "https://" is prepended.
+ *
+ * **How it is stored (examples):**
+ *   https:/www.google.com  → https://www.google.com
+ *   www.google.com         → https://www.google.com
+ *   https:/google.com      → https://google.com
+ *   google.com             → https://google.com
+ *   http:/www.google2.com  → http://www.google2.com
+ *   http:/google.com       → http://google.com
  */
 
 import isFQDN from 'validator/lib/isFQDN';
@@ -47,27 +60,29 @@ export function validateUrl(urlString) {
     };
   }
 
-  // 2. Lowercase - Domains are case-insensitive (but preserve original for protocol check)
-  const lowercased = trimmed.toLowerCase();
+  // 2. Normalize common protocol typo: "https:/" or "http:/" (one slash) → "https://" / "http://"
+  let normalizedInput = trimmed.replace(/^(https?):\/(?!\/)/i, '$1://');
 
-  // 3. Check for basic structure
+  // 3. Lowercase - Domains are case-insensitive (but preserve for protocol check)
+  const lowercased = normalizedInput.toLowerCase();
+
+  // 4. Check for basic structure
   let urlToValidate = lowercased;
   let hasProtocol = false;
   let protocol = null;
 
-  // Check 4: Protocol
+  // Check 5: Protocol
   const protocolRegex = /^[a-zA-Z][a-zA-Z0-9+.-]*:\/\//;
-  if (!protocolRegex.test(trimmed)) {
+  if (!protocolRegex.test(normalizedInput)) {
     // No protocol - add https:// for validation
     urlToValidate = `https://${lowercased}`;
     hasProtocol = false;
   } else {
     hasProtocol = true;
-    urlToValidate = trimmed; // Keep original case for protocol check
 
     // Check for valid protocol
     const validProtocols = ['http', 'https'];
-    protocol = trimmed.split('://')[0].toLowerCase();
+    protocol = normalizedInput.split('://')[0].toLowerCase();
     if (!validProtocols.includes(protocol)) {
       return {
         isValid: false,
@@ -75,11 +90,10 @@ export function validateUrl(urlString) {
       };
     }
 
-    // Use lowercase version for further validation
     urlToValidate = lowercased;
   }
 
-  // 4. Try to parse as URL (basic syntax check)
+  // 6. Try to parse as URL (basic syntax check)
   let urlObj;
   try {
     urlObj = new URL(urlToValidate);
@@ -368,13 +382,12 @@ export function validateUrl(urlString) {
     }
   }
 
-  // 17. Normalize URL - return with https:// if no protocol
+  // 17. Normalize URL - add https:// if no protocol; do NOT strip www (allow with or without www)
   const normalizedUrl = hasProtocol ? lowercased : `https://${lowercased}`;
 
-  // All validations passed
   return {
     isValid: true,
-    normalizedUrl: normalizedUrl,
+    normalizedUrl,
   };
 }
 
