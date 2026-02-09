@@ -204,32 +204,33 @@ export function payloadFromCleanJson(obj) {
 
 /**
  * Aggressive string cleaner: removes BOTH literal null bytes (\x00) AND escaped sequences (\\u0000).
- * Use on the final JSON body string before sending to ensure PostgreSQL never sees null.
+ * Uses split/join which is more reliable than regex for some edge cases.
  */
 function stripAllNullFromString(str) {
   if (typeof str !== 'string') return str;
   let cleaned = str;
   const lenBefore = cleaned.length;
 
-  // Remove literal null bytes (ASCII 0x00)
-  cleaned = cleaned.replace(/\x00/g, '');
-  cleaned = cleaned.replace(/\0/g, '');
+  // Remove literal null bytes (ASCII 0x00) - use split/join for reliability
+  cleaned = cleaned.split('\0').join('');
+  cleaned = cleaned.split('\x00').join('');
+  cleaned = cleaned.split('\u0000').join('');
 
-  // Remove escaped unicode null (\u0000 in JSON)
-  cleaned = cleaned.replace(/\\u0000/g, '');
+  // Remove escaped unicode null (\\u0000 in JSON strings)
+  cleaned = cleaned.split('\\u0000').join('');
 
-  // Remove any remaining control characters that might slip through
-  cleaned = cleaned.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g, '');
+  // Remove other control characters that might slip through
+  cleaned = cleaned.replace(/[\x01-\x08\x0B\x0C\x0E-\x1F]/g, '');
 
   const lenAfter = cleaned.length;
   if (lenBefore !== lenAfter) {
     console.warn(
       '[stripAllNullFromString] Removed',
       lenBefore - lenAfter,
-      'characters (null/control chars)'
+      'characters (null/control chars) from string'
     );
   }
-  return cleaned;
+  return cleaned.trim();
 }
 
 /**
@@ -424,4 +425,43 @@ export function findNullCharsInPayload(obj, prefix = '') {
     }
   }
   return paths;
+}
+
+/**
+ * CRITICAL DEBUG: Scan every top-level key and check if its JSON contains null character.
+ * Prints big red console error for each key that has null. Use this right before sending
+ * the payload to Supabase to identify the exact field causing "null character not permitted".
+ *
+ * @param {object} payload
+ */
+export function debugFindNullInPayload(payload) {
+  if (!payload || typeof payload !== 'object') return;
+
+  console.log('%c=== NULL CHARACTER DEBUG SCAN ===', 'background: yellow; color: black; font-size: 14px; font-weight: bold;');
+
+  let foundNull = false;
+  Object.entries(payload).forEach(([key, value]) => {
+    const str = JSON.stringify(value);
+    const hasLiteralNull = str && (str.includes('\u0000') || str.includes('\0') || str.includes('\x00'));
+    const hasEscapedNull = str && str.includes('\\u0000');
+
+    if (hasLiteralNull || hasEscapedNull) {
+      foundNull = true;
+      console.error(
+        `%c !!! האשם נמצא: השדה "${key}" מכיל תו NULL !!!`,
+        'background: red; color: white; font-size: 16px; font-weight: bold; padding: 4px;'
+      );
+      console.log(`   Field: ${key}`);
+      console.log(`   Literal null: ${hasLiteralNull}`);
+      console.log(`   Escaped null: ${hasEscapedNull}`);
+      console.log('   Value:', value);
+      console.log('   JSON:', str.substring(0, 200) + (str.length > 200 ? '...' : ''));
+    }
+  });
+
+  if (!foundNull) {
+    console.log('%c✅ No null characters found in payload', 'background: green; color: white; font-size: 14px; padding: 4px;');
+  }
+
+  console.log('%c=== END DEBUG SCAN ===', 'background: yellow; color: black; font-size: 14px; font-weight: bold;');
 }

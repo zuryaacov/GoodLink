@@ -3,8 +3,8 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { updateLinkInRedis } from '../../lib/redisCache';
 import {
-  buildCleanBodyString,
   cleanPayloadForDb,
+  debugFindNullInPayload,
   findNullCharsInPayload,
   manualSupabasePatch,
   normalizeJsonColumnsForPostgrest,
@@ -299,6 +299,10 @@ const LinkBuilderPage = () => {
         }
         const payloadToSend = payloadFromCleanJson(payloadSafeForSupabase(updatePayload));
         console.log('[LinkBuilder] UPDATE links – payload keys:', Object.keys(payloadToSend));
+
+        // CRITICAL DEBUG: Scan for null characters in payload BEFORE sending
+        debugFindNullInPayload(payloadToSend);
+
         const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
         const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
         const session = (await supabase.auth.getSession()).data.session;
