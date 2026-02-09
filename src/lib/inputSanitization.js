@@ -155,20 +155,51 @@ export function cleanPayloadForDb(obj) {
 /**
  * Final safety: remove null character from JSON serialization of payload.
  * Always does JSON round-trip and strips \\u0000 so PostgreSQL never receives null.
+ * If parse fails after replace, returns deep-cleaned copy via cleanPayloadForDb.
  */
 export function ensureNoNullInPayload(obj) {
   try {
     let s = JSON.stringify(obj);
-    const hadNull = s.includes('\\u0000');
+    const lenBefore = s.length;
     s = s.replace(/\\u0000/g, '');
-    if (hadNull) {
-      console.warn('[ensureNoNullInPayload] Stripped \\u0000 from JSON before send');
+    const lenAfter = s.length;
+    if (lenBefore !== lenAfter) {
+      console.warn('[ensureNoNullInPayload] Stripped', (lenBefore - lenAfter) / 6, '\\u0000 from JSON');
     }
     return JSON.parse(s);
   } catch (e) {
-    console.error('[ensureNoNullInPayload] Error:', e);
+    console.error('[ensureNoNullInPayload] Parse failed after strip, using cleanPayloadForDb fallback:', e);
+    return cleanPayloadForDb(obj);
   }
-  return obj;
+}
+
+/**
+ * Build a payload that is guaranteed safe for Supabase: clone via JSON and strip null.
+ * Use this as the single source before .update() / .insert().
+ */
+export function payloadSafeForSupabase(obj) {
+  const once = ensureNoNullInPayload(obj);
+  const twice = ensureNoNullInPayload(once);
+  const jsonCheck = JSON.stringify(twice);
+  if (jsonCheck.includes('\\u0000')) {
+    console.warn('[payloadSafeForSupabase] Still had \\u0000 after two passes, using cleanPayloadForDb');
+    return cleanPayloadForDb(twice);
+  }
+  return twice;
+}
+
+/**
+ * Last-resort: build body string, strip \\u0000, parse. The returned object is the only
+ * one that ever gets sent – Supabase will stringify it again, so no null can remain.
+ */
+export function payloadFromCleanJson(obj) {
+  try {
+    const s = JSON.stringify(obj).replace(/\\u0000/g, '');
+    return JSON.parse(s);
+  } catch (e) {
+    console.error('[payloadFromCleanJson]', e);
+    return cleanPayloadForDb(obj);
+  }
 }
 
 /**

@@ -4,8 +4,9 @@ import { supabase } from '../../lib/supabase';
 import { updateLinkInRedis } from '../../lib/redisCache';
 import {
   cleanPayloadForDb,
-  ensureNoNullInPayload,
   findNullCharsInPayload,
+  payloadFromCleanJson,
+  payloadSafeForSupabase,
 } from '../../lib/inputSanitization';
 import { ArrowLeft } from 'lucide-react';
 import LinkWizardOnePerPage from '../../components/dashboard/LinkWizardOnePerPage';
@@ -292,13 +293,7 @@ const LinkBuilderPage = () => {
             nullPathsAfterClean
           );
         }
-        const payloadToSend = ensureNoNullInPayload(updatePayload);
-        const jsonStr = JSON.stringify(payloadToSend);
-        if (jsonStr.includes('\\u0000')) {
-          console.warn(
-            '[LinkBuilder] UPDATE payload (after ensureNoNullInPayload) – JSON still contained \\u0000'
-          );
-        }
+        const payloadToSend = payloadFromCleanJson(payloadSafeForSupabase(updatePayload));
         console.log('[LinkBuilder] UPDATE links – payload keys:', Object.keys(payloadToSend));
         const { error } = await supabase.from('links').update(payloadToSend).eq('id', id);
 
@@ -410,12 +405,7 @@ const LinkBuilderPage = () => {
             nullPathsAfterCleanInsert
           );
         }
-        const payloadToSendInsert = ensureNoNullInPayload(insertPayload);
-        if (JSON.stringify(payloadToSendInsert).includes('\\u0000')) {
-          console.warn(
-            '[LinkBuilder] INSERT payload (after ensureNoNullInPayload) – JSON still contained \\u0000'
-          );
-        }
+        const payloadToSendInsert = payloadFromCleanJson(payloadSafeForSupabase(insertPayload));
         console.log('[LinkBuilder] INSERT links – payload keys:', Object.keys(payloadToSendInsert));
         const { error } = await supabase.from('links').insert(payloadToSendInsert);
 
