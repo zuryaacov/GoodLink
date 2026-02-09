@@ -472,7 +472,7 @@ const PixelManager = () => {
               <div className="flex items-start gap-3">
                 {getPlatformLogo(pixel.platform)}
                 <div className="flex-1 min-w-0">
-                  <h3 className="text-lg font-bold text-white break-words line-clamp-2">
+                  <h3 className="text-4xl font-bold text-white break-words line-clamp-2">
                     {pixel.name}
                   </h3>
                   <p className="text-slate-500 text-sm mt-1">{getPlatformName(pixel.platform)}</p>

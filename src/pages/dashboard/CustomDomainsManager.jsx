@@ -416,7 +416,7 @@ const CustomDomainsManager = () => {
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b border-[#232f48]">
                 <div className="flex flex-col gap-2">
                   <h3
-                    className="text-xl md:text-2xl font-bold text-white tracking-tight break-all"
+                    className="text-4xl font-bold text-white tracking-tight break-all"
                     title={domain.domain}
                   >
                     {domain.domain}
