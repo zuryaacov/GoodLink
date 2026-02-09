@@ -299,7 +299,7 @@ const LinkManager = () => {
                 <div className="flex justify-between items-start mb-6">
                   <div className="flex-1 min-w-0 pr-4">
                     <h3
-                      className="text-xl font-bold text-white mb-1 truncate"
+                      className="text-4xl font-bold text-white mb-1 truncate"
                       title={link.name || 'Untitled'}
                     >
                       {link.name || 'Untitled'}
