@@ -5,6 +5,7 @@ import { updateLinkInRedis } from '../../lib/redisCache';
 import {
   cleanPayloadForDb,
   findNullCharsInPayload,
+  normalizeJsonColumnsForPostgrest,
   payloadFromCleanJson,
   payloadSafeForSupabase,
 } from '../../lib/inputSanitization';
@@ -285,7 +286,8 @@ const LinkBuilderPage = () => {
             nullPathsRaw
           );
         }
-        const updatePayload = cleanPayloadForDb(updatePayloadRaw);
+        const updatePayloadNormalized = normalizeJsonColumnsForPostgrest(updatePayloadRaw);
+        const updatePayload = cleanPayloadForDb(updatePayloadNormalized);
         const nullPathsAfterClean = findNullCharsInPayload(updatePayload);
         if (nullPathsAfterClean.length > 0) {
           console.warn(
@@ -295,8 +297,62 @@ const LinkBuilderPage = () => {
         }
         const payloadToSend = payloadFromCleanJson(payloadSafeForSupabase(updatePayload));
         console.log('[LinkBuilder] UPDATE links – payload keys:', Object.keys(payloadToSend));
-        const { error } = await supabase.from('links').update(payloadToSend).eq('id', id);
+        let error = (await supabase.from('links').update(payloadToSend).eq('id', id)).error;
 
+        if (error) {
+          const errMsg = String(error.message || '');
+          const errDetails = String(error.details || '');
+          const errHint = String(error.hint || '');
+          const is54000 =
+            error.code === '54000' ||
+            errMsg.includes('54000') ||
+            errDetails.includes('54000') ||
+            errHint.includes('54000') ||
+            errMsg.includes('program_limit_exceeded');
+          if (is54000) {
+            const minimalPayload = payloadFromCleanJson(
+              payloadSafeForSupabase(
+                cleanPayloadForDb({
+                  name: finalName,
+                  target_url: formData.targetUrl,
+                  updated_at: new Date().toISOString(),
+                })
+              )
+            );
+            console.warn(
+              '[LinkBuilder] UPDATE failed with 54000 (program_limit_exceeded), retrying with minimal payload (name, target_url, updated_at)'
+            );
+            const { error: minimalError } = await supabase
+              .from('links')
+              .update(minimalPayload)
+              .eq('id', id);
+            if (!minimalError) {
+              const { name: _n, target_url: _t, ...rest } = payloadToSend;
+              const restPayload = payloadFromCleanJson(
+                payloadSafeForSupabase(
+                  cleanPayloadForDb({
+                    ...rest,
+                    updated_at: new Date().toISOString(),
+                  })
+                )
+              );
+              const { error: restError } = await supabase
+                .from('links')
+                .update(restPayload)
+                .eq('id', id);
+              if (restError) {
+                console.warn(
+                  '[LinkBuilder] Second PATCH (JSON/other fields) still failed with:',
+                  restError.code,
+                  restError.message
+                );
+              }
+              error = null;
+            } else {
+              console.warn('[LinkBuilder] Minimal payload update also failed:', minimalError);
+            }
+          }
+        }
         if (error) throw error;
 
         // Fetch the updated link to get full data for Redis cache
@@ -397,7 +453,8 @@ const LinkBuilderPage = () => {
             nullPathsRawInsert
           );
         }
-        const insertPayload = cleanPayloadForDb(insertPayloadRaw);
+        const insertPayloadNormalized = normalizeJsonColumnsForPostgrest(insertPayloadRaw);
+        const insertPayload = cleanPayloadForDb(insertPayloadNormalized);
         const nullPathsAfterCleanInsert = findNullCharsInPayload(insertPayload);
         if (nullPathsAfterCleanInsert.length > 0) {
           console.warn(

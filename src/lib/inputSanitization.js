@@ -202,6 +202,63 @@ export function payloadFromCleanJson(obj) {
   }
 }
 
+/** Max depth for JSON normalization to avoid PostgREST/DB "program_limit_exceeded" (54000). */
+const MAX_JSON_DEPTH = 15;
+
+/**
+ * Recursively normalize a value for PostgREST: clean strings, remove null from arrays,
+ * enforce depth limit to avoid regex/stack issues in DB. Use for payloads that include
+ * pixels, geo_rules, utm_presets.
+ *
+ * @param {*} value
+ * @param {number} depth
+ * @returns {*} normalized value
+ */
+function normalizeValueForPostgrest(value, depth) {
+  if (depth > MAX_JSON_DEPTH) {
+    return Array.isArray(value) ? [] : typeof value === 'object' ? {} : value;
+  }
+  if (value == null) return null;
+  if (typeof value === 'string') return stripNullAndControlChars(value);
+  if (Array.isArray(value)) {
+    const arr = value
+      .map((item) => normalizeValueForPostgrest(item, depth + 1))
+      .filter((item) => item !== undefined && item !== null);
+    return arr;
+  }
+  if (typeof value === 'object') {
+    const out = {};
+    for (const key of Object.keys(value)) {
+      const v = normalizeValueForPostgrest(value[key], depth + 1);
+      if (v !== undefined) out[key] = v;
+    }
+    return out;
+  }
+  return value;
+}
+
+/** Keys that are JSON/JSONB columns and can trigger 54000 if too complex. */
+const JSON_COLUMN_KEYS = ['pixels', 'geo_rules', 'utm_presets'];
+
+/**
+ * Normalize JSON-like columns in a links payload to reduce risk of PostgREST 54000
+ * (program_limit_exceeded): deep clean strings, remove nulls from arrays, depth limit.
+ * Other fields are left as-is; run cleanPayloadForDb after if you want full clean.
+ *
+ * @param {object} payload – raw links update/insert payload
+ * @returns {object} new payload with normalized JSON columns
+ */
+export function normalizeJsonColumnsForPostgrest(payload) {
+  if (payload == null || typeof payload !== 'object') return payload;
+  const out = { ...payload };
+  for (const key of JSON_COLUMN_KEYS) {
+    if (key in out && out[key] != null) {
+      out[key] = normalizeValueForPostgrest(out[key], 0);
+    }
+  }
+  return out;
+}
+
 /**
  * Debug: find and log any path in obj that contains a null byte. Log to console for tail.
  * @param {object} obj
