@@ -530,99 +530,82 @@ export async function checkSlugContent(slug) {
                 }
             }
 
-            status: response.status,
-                statusText: response.statusText,
-                    error: errorData,
-                        parsedError: response.status === 403 ? (() => {
-                            try {
-                                return JSON.parse(errorData);
-                            } catch {
-                                return errorData;
-                            }
-                        })() : undefined,
-                            message: errorMessage,
-            });
 
-        // For all errors, fail open (don't block the user)
-        const result = {
-            isSafe: true,
-            error: errorMessage,
-            rateLimited: response.status === 429,
-        };
-        moderationCache.set(cacheKey, { result, timestamp: Date.now() });
-        return result;
-    }
+            // For all errors, fail open (don't block the user)
+            const result = {
+                isSafe: true,
+                error: errorMessage,
+                rateLimited: response.status === 429,
+            };
+            moderationCache.set(cacheKey, { result, timestamp: Date.now() });
+            return result;
+        }
 
         // Parse the successful response
         const data = await response.json();
 
-    // Perspective API returns attribute scores (0-1, where higher = more toxic)
-    // Threshold: 0.3 (30%) - if any attribute exceeds this, flag as unsafe
-    const TOXICITY_THRESHOLD = 0.3;
+        // Perspective API returns attribute scores (0-1, where higher = more toxic)
+        // Threshold: 0.3 (30%) - if any attribute exceeds this, flag as unsafe
+        const TOXICITY_THRESHOLD = 0.3;
 
-    let result;
-    const flaggedCategories = [];
-    const scores = {};
+        let result;
+        const flaggedCategories = [];
+        const scores = {};
 
-    if (data.attributeScores) {
-        // Check each attribute
-        for (const [attribute, attributeData] of Object.entries(data.attributeScores)) {
-            const score = attributeData.summaryScore?.value || 0;
-            scores[attribute] = score;
+        if (data.attributeScores) {
+            // Check each attribute
+            for (const [attribute, attributeData] of Object.entries(data.attributeScores)) {
+                const score = attributeData.summaryScore?.value || 0;
+                scores[attribute] = score;
 
-            if (score >= TOXICITY_THRESHOLD) {
-                flaggedCategories.push(attribute);
+                if (score >= TOXICITY_THRESHOLD) {
+                    flaggedCategories.push(attribute);
+                }
             }
-        }
 
-        if (flaggedCategories.length > 0) {
-            slug,
-                flaggedCategories,
-                scores,
-                });
+            if (flaggedCategories.length > 0) {
+                result = {
+                    isSafe: false,
+                    flaggedCategories,
+                    error: `This slug contains inappropriate content and cannot be used.`,
+                };
+            } else {
 
-        result = {
-            isSafe: false,
-            flaggedCategories,
-            error: `This slug contains inappropriate content and cannot be used.`,
-        };
-    } else {
+                // After Perspective API passes, check with Natural Language API
+                const naturalLanguageResult = await checkSlugWithNaturalLanguage(slugForAnalysis);
 
-        // After Perspective API passes, check with Natural Language API
-        const naturalLanguageResult = await checkSlugWithNaturalLanguage(slugForAnalysis);
-
-        if (!naturalLanguageResult.isSafe) {
-            // Natural Language API flagged the slug
-            result = {
-                isSafe: false,
-                error: naturalLanguageResult.error || `This slug contains inappropriate content and cannot be used.`,
-                sentiment: naturalLanguageResult.sentiment,
-            };
+                if (!naturalLanguageResult.isSafe) {
+                    // Natural Language API flagged the slug
+                    result = {
+                        isSafe: false,
+                        error: naturalLanguageResult.error || `This slug contains inappropriate content and cannot be used.`,
+                        sentiment: naturalLanguageResult.sentiment,
+                    };
+                } else {
+                    // Both checks passed
+                    result = {
+                        isSafe: true,
+                        sentiment: naturalLanguageResult.sentiment,
+                    };
+                }
+            }
         } else {
-            // Both checks passed
+            // No scores returned - assume safe
             result = {
                 isSafe: true,
-                sentiment: naturalLanguageResult.sentiment,
             };
         }
-    }
-} else {
-    // No scores returned - assume safe
-    result = {
-        isSafe: true,
-    };
-}
 
-// Cache the result
-moderationCache.set(cacheKey, { result, timestamp: Date.now() });
-return result;
+        // Cache the result
+        moderationCache.set(cacheKey, { result, timestamp: Date.now() });
+        return result;
     } catch (error) {
-    // Fail open - if check fails, allow the slug
-    return {
-        isSafe: true,
-        error: 'Content moderation check failed. Please try again.',
-    };
-}
+        // Fail open - if check fails, allow the slug
+        return {
+            isSafe: true,
+            error: 'Content moderation check failed. Please try again.',
+        };
+    }
 }
 
 /**
@@ -693,78 +676,68 @@ async function checkSlugWithNaturalLanguage(slug) {
             }
 
             const errorMsg = parsedError?.error?.message || errorData;
-            status: response.status,
-                statusText: response.statusText,
-                    error: errorData,
-                        parsedError: parsedError,
-                            message: errorMsg,
-            });
 
-        // If it's a 400 error, log more details for debugging
-        if (response.status === 400) {
+            // If it's a 400 error, log more details for debugging
+            if (response.status === 400) {
 
-            // Check if error mentions the endpoint or feature
-            if (errorMsg && (errorMsg.includes('moderateText') || errorMsg.includes('not found') || errorMsg.includes('not available'))) {
+                // Check if error mentions the endpoint or feature
+                if (errorMsg && (errorMsg.includes('moderateText') || errorMsg.includes('not found') || errorMsg.includes('not available'))) {
+                }
             }
-        }
 
-        // Fail open - don't block if Natural Language API fails
-        return {
-            isSafe: true,
-            error: `Natural Language API moderation check unavailable: ${errorMsg}`,
-        };
-    }
+            // Fail open - don't block if Natural Language API fails
+            return {
+                isSafe: true,
+                error: `Natural Language API moderation check unavailable: ${errorMsg}`,
+            };
+        }
 
         // Parse the successful response
         const data = await response.json();
 
-    // Natural Language API moderation returns moderationCategories with confidence scores (0..1)
-    // Block if ANY category confidence >= 0.5 per your requirement
-    const BLOCK_THRESHOLD = 0.5;
-    const categories = Array.isArray(data.moderationCategories) ? data.moderationCategories : [];
+        // Natural Language API moderation returns moderationCategories with confidence scores (0..1)
+        // Block if ANY category confidence >= 0.5 per your requirement
+        const BLOCK_THRESHOLD = 0.5;
+        const categories = Array.isArray(data.moderationCategories) ? data.moderationCategories : [];
 
-    // Normalize category objects and extract confidence fields
-    const normalized = categories.map((c) => {
-        const name = c.name || c.category || c.label || 'unknown';
-        // confidence field may be named differently; try common options
-        const confidence = typeof c.confidence === 'number'
-            ? c.confidence
-            : (typeof c.score === 'number' ? c.score
-                : (typeof c.probability === 'number' ? c.probability : 0));
-        return { name, confidence };
-    });
+        // Normalize category objects and extract confidence fields
+        const normalized = categories.map((c) => {
+            const name = c.name || c.category || c.label || 'unknown';
+            // confidence field may be named differently; try common options
+            const confidence = typeof c.confidence === 'number'
+                ? c.confidence
+                : (typeof c.score === 'number' ? c.score
+                    : (typeof c.probability === 'number' ? c.probability : 0));
+            return { name, confidence };
+        });
 
-    const blocked = normalized.filter((c) => c.confidence >= BLOCK_THRESHOLD).map((c) => c.name);
+        const blocked = normalized.filter((c) => c.confidence >= BLOCK_THRESHOLD).map((c) => c.name);
 
-    if (blocked.length > 0) {
-        slug,
-            blockedCategories: blocked,
+        if (blocked.length > 0) {
+            return {
+                isSafe: false,
+                moderation: {
+                    blockedCategories: blocked,
+                    categories: normalized,
+                },
+                error: `This slug contains inappropriate content and cannot be used.`,
+            };
+        }
+
+        return {
+            isSafe: true,
+            moderation: {
+                blockedCategories: [],
                 categories: normalized,
-            });
-    return {
-        isSafe: false,
-        moderation: {
-            blockedCategories: blocked,
-            categories: normalized,
-        },
-        error: `This slug contains inappropriate content and cannot be used.`,
-    };
-}
-
-return {
-    isSafe: true,
-    moderation: {
-        blockedCategories: [],
-        categories: normalized,
-    },
-};
+            },
+        };
     } catch (error) {
-    // Fail open - if check fails, allow the slug
-    return {
-        isSafe: true,
-        error: 'Natural Language API moderation check failed. Please try again.',
-    };
-}
+        // Fail open - if check fails, allow the slug
+        return {
+            isSafe: true,
+            error: 'Natural Language API moderation check failed. Please try again.',
+        };
+    }
 }
 
 /**
