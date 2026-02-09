@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { Eye, EyeOff } from 'lucide-react';
 import { supabase } from '../lib/supabase';
+import { isValidEmail } from '../lib/emailValidation';
 
 const AuthPage = () => {
   const [searchParams] = useSearchParams();
@@ -319,9 +320,8 @@ const AuthPage = () => {
           throw new Error(nameCheck.error);
         }
 
-        // Email format validation (beyond browser type="email")
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
-        if (!emailRegex.test(email.trim())) {
+        // Email format validation (professional validation: length, regex, edge cases)
+        if (!isValidEmail(email)) {
           throw new Error('Please enter a valid email address (e.g. name@example.com)');
         }
 
@@ -430,6 +430,9 @@ const AuthPage = () => {
         }
         // Note: For signup, checkout will open after email confirmation when user signs in
       } else if (view === 'forgot-password') {
+        if (!isValidEmail(email)) {
+          throw new Error('Please enter a valid email address (e.g. name@example.com)');
+        }
         const { error } = await supabase.auth.resetPasswordForEmail(email, {
           redirectTo: `${window.location.origin}/login${planParam ? `?plan=${planParam}` : ''}`,
         });
