@@ -114,3 +114,39 @@ export function sanitizeInput(value) {
 
   return { safe: true, sanitized: stripped };
 }
+
+/**
+ * Strip null bytes and C0 control characters from a string.
+ * PostgreSQL (and Supabase) do not allow null character in text fields ("null character not permitted").
+ * Use this on any user-supplied string before sending to the database.
+ *
+ * @param {string} str
+ * @returns {string}
+ */
+export function stripNullAndControlChars(str) {
+  if (str == null || typeof str !== 'string') return str;
+  return str
+    .replace(/\x00/g, '')
+    .replace(/[\x01-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '');
+}
+
+/**
+ * Recursively clean all string values in an object (strip null bytes and control chars).
+ * Use before supabase.from().insert() or .update() to avoid "null character not permitted".
+ *
+ * @param {object} obj - Plain object or value
+ * @returns {object} - New object with cleaned strings (arrays and nested objects processed)
+ */
+export function cleanPayloadForDb(obj) {
+  if (obj == null) return obj;
+  if (typeof obj === 'string') return stripNullAndControlChars(obj);
+  if (Array.isArray(obj)) return obj.map((item) => cleanPayloadForDb(item));
+  if (typeof obj === 'object') {
+    const out = {};
+    for (const key of Object.keys(obj)) {
+      out[key] = cleanPayloadForDb(obj[key]);
+    }
+    return out;
+  }
+  return obj;
+}

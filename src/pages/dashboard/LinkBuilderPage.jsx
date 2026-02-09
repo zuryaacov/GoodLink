@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { updateLinkInRedis } from '../../lib/redisCache';
+import { cleanPayloadForDb } from '../../lib/inputSanitization';
 import { ArrowLeft } from 'lucide-react';
 import LinkWizardOnePerPage from '../../components/dashboard/LinkWizardOnePerPage';
 import Modal from '../../components/common/Modal';
@@ -246,35 +247,33 @@ const LinkBuilderPage = () => {
       const fullUtmString = utmParams.toString() ? `${shortUrl}?${utmParams.toString()}` : shortUrl;
 
       if (isEditMode && id && !isDuplicateMode) {
-        const { error } = await supabase
-          .from('links')
-          .update({
-            name: finalName,
-            target_url: formData.targetUrl,
-            domain: baseUrl,
-            slug: finalSlug,
-            short_url: shortUrl,
-            utm_source: formData.utmSource || null,
-            utm_medium: formData.utmMedium || null,
-            utm_campaign: formData.utmCampaign || null,
-            utm_content: formData.utmContent || null,
-            utm_term: formData.utmTerm || null,
-            utm_presets: Array.isArray(formData.selectedUtmPresets)
-              ? formData.selectedUtmPresets
-              : [],
-            parameter_pass_through: formData.parameterPassThrough,
-            pixels: formData.selectedPixels,
-            tracking_mode: formData.trackingMode || 'capi',
-            server_side_tracking:
-              formData.trackingMode === 'capi' || formData.trackingMode === 'pixel_and_capi',
-            custom_script: formData.customScript || null,
-            fraud_shield: formData.fraudShield,
-            bot_action: formData.botAction,
-            fallback_url: finalFallbackUrl,
-            geo_rules: Array.isArray(formData.geoRules) ? formData.geoRules : [],
-            updated_at: new Date().toISOString(),
-          })
-          .eq('id', id);
+        const updatePayload = cleanPayloadForDb({
+          name: finalName,
+          target_url: formData.targetUrl,
+          domain: baseUrl,
+          slug: finalSlug,
+          short_url: shortUrl,
+          utm_source: formData.utmSource || null,
+          utm_medium: formData.utmMedium || null,
+          utm_campaign: formData.utmCampaign || null,
+          utm_content: formData.utmContent || null,
+          utm_term: formData.utmTerm || null,
+          utm_presets: Array.isArray(formData.selectedUtmPresets)
+            ? formData.selectedUtmPresets
+            : [],
+          parameter_pass_through: formData.parameterPassThrough,
+          pixels: formData.selectedPixels,
+          tracking_mode: formData.trackingMode || 'capi',
+          server_side_tracking:
+            formData.trackingMode === 'capi' || formData.trackingMode === 'pixel_and_capi',
+          custom_script: formData.customScript || null,
+          fraud_shield: formData.fraudShield,
+          bot_action: formData.botAction,
+          fallback_url: finalFallbackUrl,
+          geo_rules: Array.isArray(formData.geoRules) ? formData.geoRules : [],
+          updated_at: new Date().toISOString(),
+        });
+        const { error } = await supabase.from('links').update(updatePayload).eq('id', id);
 
         if (error) throw error;
 
@@ -342,7 +341,7 @@ const LinkBuilderPage = () => {
           isLoading: false,
         });
       } else {
-        const { error } = await supabase.from('links').insert({
+        const insertPayload = cleanPayloadForDb({
           user_id: user.id,
           name: finalName,
           target_url: formData.targetUrl,
@@ -369,6 +368,7 @@ const LinkBuilderPage = () => {
           geo_rules: Array.isArray(formData.geoRules) ? formData.geoRules : [],
           created_at: new Date().toISOString(),
         });
+        const { error } = await supabase.from('links').insert(insertPayload);
 
         if (error) throw error;
 
