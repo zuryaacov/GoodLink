@@ -2,7 +2,11 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { updateLinkInRedis } from '../../lib/redisCache';
-import { cleanPayloadForDb, ensureNoNullInPayload } from '../../lib/inputSanitization';
+import {
+  cleanPayloadForDb,
+  ensureNoNullInPayload,
+  findNullCharsInPayload,
+} from '../../lib/inputSanitization';
 import { ArrowLeft } from 'lucide-react';
 import LinkWizardOnePerPage from '../../components/dashboard/LinkWizardOnePerPage';
 import Modal from '../../components/common/Modal';
@@ -247,7 +251,7 @@ const LinkBuilderPage = () => {
       const fullUtmString = utmParams.toString() ? `${shortUrl}?${utmParams.toString()}` : shortUrl;
 
       if (isEditMode && id && !isDuplicateMode) {
-        const updatePayload = cleanPayloadForDb({
+        const updatePayloadRaw = {
           name: finalName,
           target_url: formData.targetUrl,
           domain: baseUrl,
@@ -272,10 +276,25 @@ const LinkBuilderPage = () => {
           fallback_url: finalFallbackUrl,
           geo_rules: Array.isArray(formData.geoRules) ? formData.geoRules : [],
           updated_at: new Date().toISOString(),
-        });
+        };
+        const nullPathsRaw = findNullCharsInPayload(updatePayloadRaw);
+        if (nullPathsRaw.length > 0) {
+          console.warn('[LinkBuilder] UPDATE payload (before clean) – fields with null char:', nullPathsRaw);
+        }
+        const updatePayload = cleanPayloadForDb(updatePayloadRaw);
+        const nullPathsAfterClean = findNullCharsInPayload(updatePayload);
+        if (nullPathsAfterClean.length > 0) {
+          console.warn('[LinkBuilder] UPDATE payload (after cleanPayloadForDb) – still has null:', nullPathsAfterClean);
+        }
+        const payloadToSend = ensureNoNullInPayload(updatePayload);
+        const jsonStr = JSON.stringify(payloadToSend);
+        if (jsonStr.includes('\\u0000')) {
+          console.warn('[LinkBuilder] UPDATE payload (after ensureNoNullInPayload) – JSON still contained \\u0000');
+        }
+        console.log('[LinkBuilder] UPDATE links – payload keys:', Object.keys(payloadToSend));
         const { error } = await supabase
           .from('links')
-          .update(ensureNoNullInPayload(updatePayload))
+          .update(payloadToSend)
           .eq('id', id);
 
         if (error) throw error;
@@ -344,7 +363,7 @@ const LinkBuilderPage = () => {
           isLoading: false,
         });
       } else {
-        const insertPayload = cleanPayloadForDb({
+        const insertPayloadRaw = {
           user_id: user.id,
           name: finalName,
           target_url: formData.targetUrl,
@@ -370,10 +389,22 @@ const LinkBuilderPage = () => {
           fallback_url: finalFallbackUrl,
           geo_rules: Array.isArray(formData.geoRules) ? formData.geoRules : [],
           created_at: new Date().toISOString(),
-        });
-        const { error } = await supabase
-          .from('links')
-          .insert(ensureNoNullInPayload(insertPayload));
+        };
+        const nullPathsRawInsert = findNullCharsInPayload(insertPayloadRaw);
+        if (nullPathsRawInsert.length > 0) {
+          console.warn('[LinkBuilder] INSERT payload (before clean) – fields with null char:', nullPathsRawInsert);
+        }
+        const insertPayload = cleanPayloadForDb(insertPayloadRaw);
+        const nullPathsAfterCleanInsert = findNullCharsInPayload(insertPayload);
+        if (nullPathsAfterCleanInsert.length > 0) {
+          console.warn('[LinkBuilder] INSERT payload (after cleanPayloadForDb) – still has null:', nullPathsAfterCleanInsert);
+        }
+        const payloadToSendInsert = ensureNoNullInPayload(insertPayload);
+        if (JSON.stringify(payloadToSendInsert).includes('\\u0000')) {
+          console.warn('[LinkBuilder] INSERT payload (after ensureNoNullInPayload) – JSON still contained \\u0000');
+        }
+        console.log('[LinkBuilder] INSERT links – payload keys:', Object.keys(payloadToSendInsert));
+        const { error } = await supabase.from('links').insert(payloadToSendInsert);
 
         if (error) throw error;
 
@@ -453,6 +484,9 @@ const LinkBuilderPage = () => {
       }
     } catch (error) {
       console.error('Error saving link:', error);
+      if (error?.message?.includes('null character') || error?.message?.includes('not permitted')) {
+        console.error('[LinkBuilder] NULL CHARACTER ERROR – check logs above for which field had null before clean');
+      }
       setModalState({
         isOpen: true,
         type: 'error',

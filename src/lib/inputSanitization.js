@@ -160,9 +160,46 @@ export function ensureNoNullInPayload(obj) {
   try {
     let s = JSON.stringify(obj);
     if (s.includes('\\u0000')) {
+      console.warn('[ensureNoNullInPayload] Stripped \\u0000 from JSON before send');
       s = s.replace(/\\u0000/g, '');
       return JSON.parse(s);
     }
-  } catch (_) {}
+  } catch (e) {
+    console.error('[ensureNoNullInPayload] Error:', e);
+  }
   return obj;
+}
+
+/**
+ * Debug: find and log any path in obj that contains a null byte. Log to console for tail.
+ * @param {object} obj
+ * @param {string} prefix
+ * @returns {string[]} paths that contain null
+ */
+export function findNullCharsInPayload(obj, prefix = '') {
+  const paths = [];
+  const hasNull = (s) => typeof s === 'string' && (s.includes('\0') || s.includes('\u0000'));
+  if (obj == null) return paths;
+  if (typeof obj === 'string') {
+    if (hasNull(obj)) paths.push(prefix || '(root)');
+    return paths;
+  }
+  if (Array.isArray(obj)) {
+    obj.forEach((item, i) => {
+      paths.push(...findNullCharsInPayload(item, `${prefix}[${i}]`));
+    });
+    return paths;
+  }
+  if (typeof obj === 'object') {
+    for (const key of Object.keys(obj)) {
+      const path = prefix ? `${prefix}.${key}` : key;
+      const val = obj[key];
+      if (typeof val === 'string') {
+        if (hasNull(val)) paths.push(path);
+      } else {
+        paths.push(...findNullCharsInPayload(val, path));
+      }
+    }
+  }
+  return paths;
 }
