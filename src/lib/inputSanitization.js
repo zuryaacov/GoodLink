@@ -154,16 +154,17 @@ export function cleanPayloadForDb(obj) {
 
 /**
  * Final safety: remove null character from JSON serialization of payload.
- * Call right before supabase.from().insert/update to catch any remaining \\u0000.
+ * Always does JSON round-trip and strips \\u0000 so PostgreSQL never receives null.
  */
 export function ensureNoNullInPayload(obj) {
   try {
     let s = JSON.stringify(obj);
-    if (s.includes('\\u0000')) {
+    const hadNull = s.includes('\\u0000');
+    s = s.replace(/\\u0000/g, '');
+    if (hadNull) {
       console.warn('[ensureNoNullInPayload] Stripped \\u0000 from JSON before send');
-      s = s.replace(/\\u0000/g, '');
-      return JSON.parse(s);
     }
+    return JSON.parse(s);
   } catch (e) {
     console.error('[ensureNoNullInPayload] Error:', e);
   }
