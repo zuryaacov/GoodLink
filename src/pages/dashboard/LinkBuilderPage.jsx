@@ -12,6 +12,7 @@ const LinkBuilderPage = () => {
   const searchParams = new URLSearchParams(window.location.search);
   const duplicateId = searchParams.get('duplicate');
   const isEditMode = !!id;
+  const isDuplicateMode = !!duplicateId;
   const linkIdToLoad = id || duplicateId;
   const [planType, setPlanType] = useState('free');
   const wizardRef = useRef(null);
