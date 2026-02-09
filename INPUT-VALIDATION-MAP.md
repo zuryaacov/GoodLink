@@ -437,3 +437,10 @@ _מסמך זה עודכן לאחר תיקון כל בעיות הולידציה �
    הסרת console.log מ-handleSave
 7. INPUT-VALIDATION-MAP.md – עדכון:
    עודכן עם כל השינויים החדשים
+8. inputSanitization.js – הוספת הגנה על 54000 + null character:
+   normalizeJsonColumnsForPostgrest() – מנרמל pixels, geo_rules, utm_presets (ניקוי מחרוזות, הסרת null ממערכים, הגבלת עומק ל-15)
+   buildCleanBodyString() – בונה JSON string מנוקה ומחזיר bodyString + payload
+   manualSupabasePatch() – שולח PATCH דרך fetch ישיר ל-PostgREST (עוקף Supabase client)
+9. LinkBuilderPage.jsx – UPDATE דרך fetch ישיר:
+   Payload עובר: normalizeJsonColumnsForPostgrest → cleanPayloadForDb → payloadSafeForSupabase → payloadFromCleanJson → manualSupabasePatch
+   On error (54000 או "null character not permitted"): retry עם minimal payload (name, target_url, updated_at), ואז PATCH שני עם שאר השדות

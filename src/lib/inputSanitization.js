@@ -202,6 +202,77 @@ export function payloadFromCleanJson(obj) {
   }
 }
 
+/**
+ * Build a JSON body string that is 100% guaranteed to not contain null bytes (\u0000).
+ * Use this when Supabase client still fails with "null character not permitted" despite
+ * all the cleaning. Returns { bodyString, payload } so you can send bodyString via fetch.
+ */
+export function buildCleanBodyString(obj) {
+  const cleaned = payloadFromCleanJson(payloadSafeForSupabase(cleanPayloadForDb(obj)));
+  let bodyStr = JSON.stringify(cleaned);
+  const lenBefore = bodyStr.length;
+  bodyStr = bodyStr.replace(/\\u0000/g, '');
+  if (lenBefore !== bodyStr.length) {
+    console.warn(
+      '[buildCleanBodyString] Stripped',
+      (lenBefore - bodyStr.length) / 6,
+      'null chars from final body string'
+    );
+  }
+  try {
+    return { bodyString: bodyStr, payload: JSON.parse(bodyStr) };
+  } catch (e) {
+    console.error('[buildCleanBodyString] Parse failed after strip:', e);
+    return { bodyString: bodyStr, payload: cleaned };
+  }
+}
+
+/**
+ * Send a PATCH request directly to Supabase REST API (PostgREST) with a manually cleaned body string.
+ * Bypasses Supabase JS client to ensure the exact body we build (without \u0000) is sent.
+ *
+ * @param {object} opts - { supabaseUrl, anonKey, accessToken, table, filter, payload }
+ * @returns {Promise<{ data, error }>}
+ */
+export async function manualSupabasePatch({ supabaseUrl, anonKey, accessToken, table, filter, payload }) {
+  const { bodyString } = buildCleanBodyString(payload);
+  if (bodyString.includes('\u0000') || bodyString.includes('\\u0000')) {
+    console.error(
+      '[manualSupabasePatch] CRITICAL: body string still contains null after cleaning! Length:',
+      bodyString.length
+    );
+  } else {
+    console.log('[manualSupabasePatch] Body string clean, length:', bodyString.length);
+  }
+  const url = `${supabaseUrl}/rest/v1/${table}?${filter}`;
+  const headers = {
+    'Content-Type': 'application/json',
+    apikey: anonKey,
+    Authorization: `Bearer ${accessToken}`,
+    Prefer: 'return=minimal',
+  };
+  try {
+    const response = await fetch(url, {
+      method: 'PATCH',
+      headers,
+      body: bodyString,
+    });
+    if (!response.ok) {
+      const errorText = await response.text();
+      let errorObj;
+      try {
+        errorObj = JSON.parse(errorText);
+      } catch {
+        errorObj = { message: errorText, code: String(response.status) };
+      }
+      return { data: null, error: errorObj };
+    }
+    return { data: {}, error: null };
+  } catch (e) {
+    return { data: null, error: { message: e.message, code: 'FETCH_ERROR' } };
+  }
+}
+
 /** Max depth for JSON normalization to avoid PostgREST/DB "program_limit_exceeded" (54000). */
 const MAX_JSON_DEPTH = 15;
 

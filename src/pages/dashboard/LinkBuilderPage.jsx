@@ -3,8 +3,10 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { updateLinkInRedis } from '../../lib/redisCache';
 import {
+  buildCleanBodyString,
   cleanPayloadForDb,
   findNullCharsInPayload,
+  manualSupabasePatch,
   normalizeJsonColumnsForPostgrest,
   payloadFromCleanJson,
   payloadSafeForSupabase,
@@ -297,7 +299,20 @@ const LinkBuilderPage = () => {
         }
         const payloadToSend = payloadFromCleanJson(payloadSafeForSupabase(updatePayload));
         console.log('[LinkBuilder] UPDATE links – payload keys:', Object.keys(payloadToSend));
-        let error = (await supabase.from('links').update(payloadToSend).eq('id', id)).error;
+        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+        const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+        const session = (await supabase.auth.getSession()).data.session;
+        const accessToken = session?.access_token || anonKey;
+        console.log('[LinkBuilder] Sending PATCH via manual fetch (bypassing client)...');
+        const { error: manualError } = await manualSupabasePatch({
+          supabaseUrl,
+          anonKey,
+          accessToken,
+          table: 'links',
+          filter: `id=eq.${id}`,
+          payload: payloadToSend,
+        });
+        let error = manualError;
 
         if (error) {
           const errMsg = String(error.message || '');
@@ -309,7 +324,9 @@ const LinkBuilderPage = () => {
             errDetails.includes('54000') ||
             errHint.includes('54000') ||
             errMsg.includes('program_limit_exceeded');
-          if (is54000) {
+          const isNullChar =
+            errMsg.includes('null character') || errDetails.includes('null character');
+          if (is54000 || isNullChar) {
             const minimalPayload = payloadFromCleanJson(
               payloadSafeForSupabase(
                 cleanPayloadForDb({
@@ -320,12 +337,18 @@ const LinkBuilderPage = () => {
               )
             );
             console.warn(
-              '[LinkBuilder] UPDATE failed with 54000 (program_limit_exceeded), retrying with minimal payload (name, target_url, updated_at)'
+              '[LinkBuilder] UPDATE failed (',
+              is54000 ? '54000/program_limit_exceeded' : 'null character',
+              '), retrying with minimal payload (name, target_url, updated_at) via manual fetch'
             );
-            const { error: minimalError } = await supabase
-              .from('links')
-              .update(minimalPayload)
-              .eq('id', id);
+            const { error: minimalError } = await manualSupabasePatch({
+              supabaseUrl,
+              anonKey,
+              accessToken,
+              table: 'links',
+              filter: `id=eq.${id}`,
+              payload: minimalPayload,
+            });
             if (!minimalError) {
               const { name: _n, target_url: _t, ...rest } = payloadToSend;
               const restPayload = payloadFromCleanJson(
@@ -336,13 +359,18 @@ const LinkBuilderPage = () => {
                   })
                 )
               );
-              const { error: restError } = await supabase
-                .from('links')
-                .update(restPayload)
-                .eq('id', id);
+              console.log('[LinkBuilder] Minimal update succeeded, trying rest of fields...');
+              const { error: restError } = await manualSupabasePatch({
+                supabaseUrl,
+                anonKey,
+                accessToken,
+                table: 'links',
+                filter: `id=eq.${id}`,
+                payload: restPayload,
+              });
               if (restError) {
                 console.warn(
-                  '[LinkBuilder] Second PATCH (JSON/other fields) still failed with:',
+                  '[LinkBuilder] Second PATCH (JSON/other fields) still failed:',
                   restError.code,
                   restError.message
                 );
