@@ -223,15 +223,13 @@ const AddDomainPage = () => {
     } = await supabase.auth.getUser();
     if (!user) throw new Error('User not authenticated');
 
-    let finalDomain = validation.sanitized;
-    if (!finalDomain.startsWith('www.')) finalDomain = `www.${finalDomain}`;
+    // Use sanitized domain as-is (naked or with subdomain per user input – no forcing www.)
+    const finalDomain = validation.sanitized;
     setDomainName(finalDomain);
 
     let finalRootRedirect = null;
     if (rootValidation.sanitized) {
-      let rootDomain = rootValidation.sanitized.replace(/^https?:\/\//, '');
-      if (!rootDomain.startsWith('www.')) rootDomain = `www.${rootDomain}`;
-      finalRootRedirect = rootDomain;
+      finalRootRedirect = rootValidation.sanitized.replace(/^https?:\/\//, '').replace(/\/$/, '');
     }
 
     const response = await fetch(`${workerUrl}/api/add-custom-domain`, {

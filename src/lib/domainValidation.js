@@ -240,13 +240,12 @@ export function validateDomain(domain, options = {}) {
       domainNameLabel = labels[0];
     }
 
-    // בדיקת אורך מינימלי של שם הדומיין (לפחות 3 תווים)
-    // מסירים נקודות כדי לבדוק רק את האותיות בשם הדומיין הראשי
+    // בדיקת אורך מינימלי של שם הדומיין (לפחות תו אחד – מאפשר ai.com, x.com, db.com וכו')
     const mainDomainPart = domainNameLabel.split('.').pop() || domainNameLabel;
-    if (mainDomainPart.length < 3) {
+    if (mainDomainPart.length < 1) {
       return {
         isValid: false,
-        error: 'Domain name must be at least 3 characters',
+        error: 'Domain name cannot be empty',
         sanitized: null
       };
     }

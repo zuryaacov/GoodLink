@@ -65,7 +65,10 @@
 | תווים      | רק a-z, 0-9, מקף, נקודה; Punycode רק אם `allowPunycode`.                                    |
 | TLD        | חובה לפחות 2 חלקים (domain.tld); TLD לפחות 2 תווים, רק אותיות.                              |
 | Labels     | כל label עד 63 תווים; לא להתחיל/להסתיים במקף.                                               |
+| אורך label | שם הדומיין הראשי (ללא TLD) – מינימום תו אחד (מאפשר ai.com, x.com, db.com וכו').           |
 | רשימת TLDs | תמיכה ב־TLD דו־חלקי (co.il, co.uk, com.au וכו') לפי `domainValidation.js`.                  |
+
+**שמירה:** הדומיין נשמר כפי שעבר sanitization (ללא כפיית www.). המשתמש יכול להשתמש ב־naked domain או ב־subdomain כרצונו.
 
 **אפשרויות קריאה:** `validateDomain(name, { allowSubdomains: true, allowPunycode: true, requireTLD: true, allowLocalhost: false, allowIP: false })`.  
 בהצלחה מחזיר `sanitized` לשימוש בשמירה.
@@ -79,7 +82,7 @@
 | בדיקה       | תיאור                                                                                                                                 |
 | ----------- | ------------------------------------------------------------------------------------------------------------------------------------- |
 | פורמט URL   | אותן בדיקות כמו ב־`validateUrl()` (ראו סעיף "בדיקות URL כלליות" למטה).                                                                |
-| אורך דומיין | אחרי פירוק ה־URL, שם הדומיין (ללא www) חייב להיות לפחות 3 תווים (או "www"). הודעת שגיאה: "Domain name must be at least 3 characters". |
+| אורך דומיין | אחרי פירוק ה־URL, שם הדומיין (ללא www) חייב להיות לפחות תו אחד. אין כפיית www. בשמירה.     |
 
 **אם השדה ריק:** נחשב תקין (שדה אופציונלי).  
 **מקום הבדיקה:** `AddDomainPage` – `validateRootRedirectUrl`; `AddDomainModal` – `validateRootRedirectUrl` (כולל רשימת two-part TLDs לזיהוי שם הדומיין).
