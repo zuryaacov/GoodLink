@@ -203,26 +203,82 @@ export function payloadFromCleanJson(obj) {
 }
 
 /**
+ * Aggressive string cleaner: removes BOTH literal null bytes (\x00) AND escaped sequences (\\u0000).
+ * Use on the final JSON body string before sending to ensure PostgreSQL never sees null.
+ */
+function stripAllNullFromString(str) {
+  if (typeof str !== 'string') return str;
+  let cleaned = str;
+  const lenBefore = cleaned.length;
+
+  // Remove literal null bytes (ASCII 0x00)
+  cleaned = cleaned.replace(/\x00/g, '');
+  cleaned = cleaned.replace(/\0/g, '');
+
+  // Remove escaped unicode null (\u0000 in JSON)
+  cleaned = cleaned.replace(/\\u0000/g, '');
+
+  // Remove any remaining control characters that might slip through
+  cleaned = cleaned.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g, '');
+
+  const lenAfter = cleaned.length;
+  if (lenBefore !== lenAfter) {
+    console.warn(
+      '[stripAllNullFromString] Removed',
+      lenBefore - lenAfter,
+      'characters (null/control chars)'
+    );
+  }
+  return cleaned;
+}
+
+/**
+ * Deep recursive cleaner: ensures EVERY string in the object tree is null-free.
+ * More aggressive than cleanPayloadForDb - runs stripAllNullFromString on each string.
+ */
+function deepCleanAllStrings(obj, depth = 0) {
+  if (depth > 20) return obj; // safety limit
+  if (obj == null) return obj;
+  if (typeof obj === 'string') return stripAllNullFromString(obj);
+  if (Array.isArray(obj)) {
+    return obj.map((item) => deepCleanAllStrings(item, depth + 1));
+  }
+  if (typeof obj === 'object') {
+    const out = {};
+    for (const key of Object.keys(obj)) {
+      out[key] = deepCleanAllStrings(obj[key], depth + 1);
+    }
+    return out;
+  }
+  return obj;
+}
+
+/**
  * Build a JSON body string that is 100% guaranteed to not contain null bytes (\u0000).
  * Use this when Supabase client still fails with "null character not permitted" despite
  * all the cleaning. Returns { bodyString, payload } so you can send bodyString via fetch.
  */
 export function buildCleanBodyString(obj) {
-  const cleaned = payloadFromCleanJson(payloadSafeForSupabase(cleanPayloadForDb(obj)));
+  // Step 1: Deep clean every string in the object tree
+  const deepCleaned = deepCleanAllStrings(obj);
+
+  // Step 2: Run through the standard cleaning pipeline
+  const cleaned = payloadFromCleanJson(payloadSafeForSupabase(cleanPayloadForDb(deepCleaned)));
+
+  // Step 3: Stringify and strip any remaining null from the JSON string itself
   let bodyStr = JSON.stringify(cleaned);
-  const lenBefore = bodyStr.length;
-  bodyStr = bodyStr.replace(/\\u0000/g, '');
-  if (lenBefore !== bodyStr.length) {
-    console.warn(
-      '[buildCleanBodyString] Stripped',
-      (lenBefore - bodyStr.length) / 6,
-      'null chars from final body string'
-    );
+  bodyStr = stripAllNullFromString(bodyStr);
+
+  // Step 4: Verify the body is clean
+  if (bodyStr.includes('\x00') || bodyStr.includes('\0') || bodyStr.includes('\\u0000')) {
+    console.error('[buildCleanBodyString] CRITICAL: Body still has null after all cleaning!');
   }
+
   try {
     return { bodyString: bodyStr, payload: JSON.parse(bodyStr) };
   } catch (e) {
     console.error('[buildCleanBodyString] Parse failed after strip:', e);
+    // Return bodyString even if parse fails - we'll send it anyway
     return { bodyString: bodyStr, payload: cleaned };
   }
 }
@@ -236,13 +292,19 @@ export function buildCleanBodyString(obj) {
  */
 export async function manualSupabasePatch({ supabaseUrl, anonKey, accessToken, table, filter, payload }) {
   const { bodyString } = buildCleanBodyString(payload);
-  if (bodyString.includes('\u0000') || bodyString.includes('\\u0000')) {
+
+  // Final verification: check for ANY form of null character
+  const hasLiteralNull = bodyString.includes('\x00') || bodyString.includes('\0');
+  const hasEscapedNull = bodyString.includes('\\u0000');
+
+  if (hasLiteralNull || hasEscapedNull) {
     console.error(
-      '[manualSupabasePatch] CRITICAL: body string still contains null after cleaning! Length:',
-      bodyString.length
+      '[manualSupabasePatch] CRITICAL: body string still contains null after cleaning!',
+      'Literal null:', hasLiteralNull, 'Escaped null:', hasEscapedNull,
+      'Length:', bodyString.length
     );
   } else {
-    console.log('[manualSupabasePatch] Body string clean, length:', bodyString.length);
+    console.log('[manualSupabasePatch] ✅ Body string clean, length:', bodyString.length);
   }
   const url = `${supabaseUrl}/rest/v1/${table}?${filter}`;
   const headers = {
