@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
+import { sanitizeInput } from '../../lib/inputSanitization';
 import { X, CheckCircle2, Zap } from 'lucide-react';
 import outbrainLogo from '../../assets/id-bNajMAc_1769618145922.svg';
 import taboolaLogo from '../../assets/idRS-vCmxj_1769618141092.svg';
@@ -307,6 +308,39 @@ const UtmPresetBuilder = ({ isOpen, onClose, editingPreset, links }) => {
         return;
       }
 
+      if (presetName.trim().length > 100) {
+        setError('Preset name cannot exceed 100 characters');
+        setLoading(false);
+        return;
+      }
+
+      // XSS / injection check on preset name
+      const nameCheck = sanitizeInput(presetName);
+      if (!nameCheck.safe) {
+        setError(nameCheck.error);
+        setLoading(false);
+        return;
+      }
+
+      // Validate UTM parameter lengths (max 250 chars each – browser/GA limits)
+      // + XSS / injection check on each UTM parameter
+      const utmMaxLen = 250;
+      for (const field of ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term']) {
+        if (params[field] && params[field].length > utmMaxLen) {
+          setError(`${field.replace('utm_', 'UTM ')} cannot exceed ${utmMaxLen} characters`);
+          setLoading(false);
+          return;
+        }
+        if (params[field]) {
+          const utmCheck = sanitizeInput(params[field]);
+          if (!utmCheck.safe) {
+            setError(`${field.replace('utm_', 'UTM ')}: ${utmCheck.error}`);
+            setLoading(false);
+            return;
+          }
+        }
+      }
+
       const {
         data: { user },
       } = await supabase.auth.getUser();
@@ -343,8 +377,6 @@ const UtmPresetBuilder = ({ isOpen, onClose, editingPreset, links }) => {
         utm_content: params.utm_content || null,
         utm_term: params.utm_term || null,
       };
-
-      console.log('Saving preset:', presetData);
 
       if (editingPreset) {
         const { data, error } = await supabase

@@ -2,135 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../../lib/supabase';
 import { refreshRedisForLinksUsingPixel } from '../../lib/redisCache';
+import {
+  validatePixelId,
+  validateCapiToken,
+  getPixelIdLabel,
+  PLATFORMS,
+} from '../../lib/pixelValidation';
 import Modal from '../common/Modal';
-
-// Validation functions for each platform
-const validatePixelId = (pixelId, platform) => {
-  const trimmed = pixelId.trim();
-
-  switch (platform) {
-    case 'meta':
-    case 'instagram':
-      // Facebook / Instagram: 15 or 16 digits only (Meta Pixel)
-      return /^\d{15,16}$/.test(trimmed);
-
-    case 'tiktok':
-      // TikTok: 18 characters, uppercase letters (A-Z) and numbers (0-9)
-      const upperTrimmed = trimmed.toUpperCase();
-      return /^[A-Z0-9]{18}$/.test(upperTrimmed);
-
-    case 'snapchat':
-      // Snapchat: Exactly 36 characters, UUID format (8-4-4-4-12)
-      return /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(trimmed);
-
-    case 'google':
-      // GA4 Measurement_Id only: G- + 8–15 alphanumeric (no AW-)
-      return /^G-[a-zA-Z0-9]{8,15}$/.test(trimmed);
-
-    case 'outbrain':
-      // Outbrain: 32 chars hexadecimal (0-9, a-f)
-      return /^[a-f0-9]{32}$/.test(trimmed);
-
-    case 'taboola':
-      // Taboola: 6-8 digits only
-      return /^\d{6,8}$/.test(trimmed);
-
-    default:
-      return false;
-  }
-};
-
-// CAPI Access Token validation by platform
-const validateCapiToken = (token, platform) => {
-  if (!token || token.trim() === '') return { isValid: true, error: null }; // Optional field
-
-  const trimmed = token.trim();
-
-  switch (platform) {
-    case 'meta':
-    case 'instagram':
-      if (trimmed.length < 180 || trimmed.length > 250) {
-        return { isValid: false, error: 'Access Token must be 180-250 characters' };
-      }
-      if (!/^[a-zA-Z0-9]+$/.test(trimmed)) {
-        return { isValid: false, error: 'Access Token must contain only letters and numbers' };
-      }
-      return { isValid: true, error: null };
-
-    case 'tiktok':
-      if (trimmed.length !== 64) {
-        return { isValid: false, error: 'TikTok Access Token must be 64 characters' };
-      }
-      if (!/^[a-zA-Z0-9]+$/.test(trimmed)) {
-        return {
-          isValid: false,
-          error: 'TikTok Access Token must contain only letters and numbers',
-        };
-      }
-      return { isValid: true, error: null };
-
-    case 'google':
-      // GA4 Api_Secret: exactly 22 characters
-      if (trimmed.length !== 22) {
-        return { isValid: false, error: 'Google Api_Secret must be exactly 22 characters' };
-      }
-      if (!/^[a-zA-Z0-9_-]+$/.test(trimmed)) {
-        return {
-          isValid: false,
-          error: 'Google Api_Secret must contain only letters, numbers, underscores and hyphens',
-        };
-      }
-      return { isValid: true, error: null };
-
-    case 'snapchat':
-      // No length limit on Snapchat Access Token
-      if (!/^[a-zA-Z0-9_\-]+$/.test(trimmed)) {
-        return {
-          isValid: false,
-          error:
-            'Snapchat Access Token must contain only letters, numbers, underscores and hyphens',
-        };
-      }
-      return { isValid: true, error: null };
-
-    case 'outbrain':
-      if (trimmed.length < 30 || trimmed.length > 40) {
-        return { isValid: false, error: 'Outbrain Access Token must be 30-40 characters' };
-      }
-      if (!/^[a-zA-Z0-9]+$/.test(trimmed)) {
-        return {
-          isValid: false,
-          error: 'Outbrain Access Token must contain only letters and numbers',
-        };
-      }
-      return { isValid: true, error: null };
-
-    case 'taboola':
-      if (trimmed.length < 30 || trimmed.length > 45) {
-        return { isValid: false, error: 'Taboola Client Secret must be 30-45 characters' };
-      }
-      if (!/^[a-zA-Z0-9]+$/.test(trimmed)) {
-        return {
-          isValid: false,
-          error: 'Taboola Client Secret must contain only letters and numbers',
-        };
-      }
-      return { isValid: true, error: null };
-
-    default:
-      return { isValid: true, error: null };
-  }
-};
-
-// Get CAPI token label by platform
-const getPixelIdLabel = (platform) =>
-  platform === 'google'
-    ? 'Measurement_Id'
-    : platform === 'taboola'
-      ? 'Account Id'
-      : platform === 'outbrain'
-        ? 'Outbrain Pixel ID'
-        : 'Pixel ID';
 
 const getEventTypeLabel = (platform) =>
   platform === 'taboola' ? 'Name' : platform === 'outbrain' ? 'Conversion Name' : 'Event Type';
@@ -175,48 +53,35 @@ const getCapiTokenPlaceholder = (platform) => {
   }
 };
 
-const PLATFORMS = [
+// Extend shared PLATFORMS with placeholder text for the modal UI
+const PLATFORMS_WITH_PLACEHOLDERS = [
   {
-    value: 'meta',
-    label: 'Facebook',
+    ...PLATFORMS.find((p) => p.value === 'meta'),
     placeholder: 'Enter your 15-16 digit Pixel ID (numbers only)',
-    validate: (id) => validatePixelId(id, 'meta'),
   },
   {
-    value: 'instagram',
-    label: 'Instagram',
+    ...PLATFORMS.find((p) => p.value === 'instagram'),
     placeholder: 'Enter your 15-16 digit Pixel ID (numbers only)',
-    validate: (id) => validatePixelId(id, 'instagram'),
   },
   {
-    value: 'tiktok',
-    label: 'TikTok',
+    ...PLATFORMS.find((p) => p.value === 'tiktok'),
     placeholder: 'Enter your 18-character Pixel ID (A-Z, 0-9)',
-    validate: (id) => validatePixelId(id, 'tiktok'),
   },
   {
-    value: 'google',
-    label: 'Google Ads',
+    ...PLATFORMS.find((p) => p.value === 'google'),
     placeholder: 'Enter your Measurement_Id (e.g., G-77Y4B2X5Z1)',
-    validate: (id) => validatePixelId(id, 'google'),
   },
   {
-    value: 'snapchat',
-    label: 'Snapchat',
+    ...PLATFORMS.find((p) => p.value === 'snapchat'),
     placeholder: 'Enter your UUID Pixel ID (36 characters)',
-    validate: (id) => validatePixelId(id, 'snapchat'),
   },
   {
-    value: 'outbrain',
-    label: 'Outbrain',
+    ...PLATFORMS.find((p) => p.value === 'outbrain'),
     placeholder: 'Enter your 32-character Marketer ID (0-9, a-f)',
-    validate: (id) => validatePixelId(id, 'outbrain'),
   },
   {
-    value: 'taboola',
-    label: 'Taboola',
+    ...PLATFORMS.find((p) => p.value === 'taboola'),
     placeholder: 'Enter your Account ID (6-8 digits)',
-    validate: (id) => validatePixelId(id, 'taboola'),
   },
 ];
 
@@ -343,7 +208,7 @@ const PixelModal = ({ isOpen, onClose, initialData = null }) => {
     if (!formData.pixelId.trim()) {
       newErrors.pixelId = `${getPixelIdLabel(formData.platform)} is required`;
     } else {
-      const platform = PLATFORMS.find((p) => p.value === formData.platform);
+      const platform = PLATFORMS_WITH_PLACEHOLDERS.find((p) => p.value === formData.platform);
       if (platform && !platform.validate(formData.pixelId)) {
         const idLabel = getPixelIdLabel(formData.platform);
         let errorMsg = `Invalid ${platform.label} ${idLabel} format. `;
@@ -493,7 +358,7 @@ const PixelModal = ({ isOpen, onClose, initialData = null }) => {
     }
   };
 
-  const currentPlatform = PLATFORMS.find((p) => p.value === formData.platform);
+  const currentPlatform = PLATFORMS_WITH_PLACEHOLDERS.find((p) => p.value === formData.platform);
   const availableEvents = STANDARD_EVENTS[formData.platform] || [];
 
   return (
@@ -587,7 +452,7 @@ const PixelModal = ({ isOpen, onClose, initialData = null }) => {
                       }}
                       className="w-full px-4 py-3 bg-[#0b0f19] border border-[#232f48] rounded-xl text-white focus:outline-none focus:border-primary transition-colors"
                     >
-                      {PLATFORMS.map((platform) => (
+                      {PLATFORMS_WITH_PLACEHOLDERS.map((platform) => (
                         <option key={platform.value} value={platform.value}>
                           {platform.label}
                         </option>

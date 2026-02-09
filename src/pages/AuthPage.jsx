@@ -303,9 +303,35 @@ const AuthPage = () => {
           navigate('/dashboard');
         }
       } else if (view === 'signup') {
+        // Full name validation
+        const trimmedName = fullName.trim();
+        if (!trimmedName || trimmedName.length < 2) {
+          throw new Error('Full name must be at least 2 characters');
+        }
+        if (trimmedName.length > 20) {
+          throw new Error('Full name cannot exceed 20 characters');
+        }
+
+        // XSS / injection check on full name
+        const { checkForMaliciousInput } = await import('../lib/inputSanitization');
+        const nameCheck = checkForMaliciousInput(trimmedName);
+        if (!nameCheck.safe) {
+          throw new Error(nameCheck.error);
+        }
+
+        // Email format validation (beyond browser type="email")
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+        if (!emailRegex.test(email.trim())) {
+          throw new Error('Please enter a valid email address (e.g. name@example.com)');
+        }
+
         // Password validation
         if (password.length < 8) {
           throw new Error('Password must be at least 8 characters long');
+        }
+
+        if (password.length > 15) {
+          throw new Error('Password cannot exceed 15 characters');
         }
 
         // Check for at least one uppercase letter, one lowercase letter, and one number

@@ -223,7 +223,6 @@ export async function checkSlugAvailability(slug, domain, userId, supabase, excl
         const { data: existingLinks, error } = await query.limit(1);
 
         if (error) {
-            console.error('Error checking slug availability:', error);
             return {
                 isAvailable: false,
                 error: 'Error checking slug availability. Please try again.',
@@ -243,7 +242,6 @@ export async function checkSlugAvailability(slug, domain, userId, supabase, excl
             isAvailable: true,
         };
     } catch (error) {
-        console.error('Error checking slug availability:', error);
         return {
             isAvailable: false,
             error: 'Error checking slug availability. Please try again.',
@@ -363,47 +361,8 @@ const BLOCKED_WORDS = [
     'hacked', 'crypto-scam', 'giveaway', 'prize-winner', 'claim-reward', 'bank-transfer',
     'western-union', 'paypal-hack',
 
-    // --- SPAM & MARKETING SCAMS ---
-    '100% more', '100% free', '100% satisfied', 'additional income', 'be your own boss',
-    'best price', 'big bucks', 'billion', 'cash bonus', 'cents on the dollar',
-    'consolidate debt', 'double your cash', 'double your income', 'earn extra cash',
-    'earn money', 'eliminate bad credit', 'extra cash', 'extra income', 'expect to earn',
-    'fast cash', 'financial freedom', 'free access', 'free consultation', 'free gift',
-    'free hosting', 'free info', 'free investment', 'free membership', 'free preview',
-    'free quote', 'free trial', 'full refund', 'get out of debt', 'get paid', 'guaranteed',
-    'increase sales', 'increase traffic', 'incredible deal', 'lower rates', 'lowest price',
-    'make money', 'million dollars', 'miracle', 'money back', 'once in a lifetime',
-    'one time', 'pennies a day', 'potential earnings', 'prize', 'promise', 'pure profit',
-    'risk-free', 'satisfaction guaranteed', 'save big money', 'save up to', 'special promotion',
-    'act now', 'apply now', 'become a member', 'call now', 'click below', 'click here',
-    'get it now', 'do it today', 'don\'t delete', 'exclusive deal', 'get started now',
-    'important information regarding', 'information you requested', 'instant', 'limited time',
-    'new customers only', 'order now', 'please read', 'see for yourself', 'sign up free',
-    'take action', 'this won\'t last', 'urgent', 'what are you waiting for',
-    'while supplies last', 'will not believe your eyes', 'winner', 'winning',
-    'you are a winner', 'you have been selected', 'bulk email', 'buy direct',
-    'cancel at any time', 'check or money order', 'congratulations', 'confidentiality',
-    'cures', 'dear friend', 'direct email', 'direct marketing', 'hidden charges',
-    'human growth hormone', 'internet marketing', 'lose weight', 'mass email',
-    'meet singles', 'multi-level marketing', 'no catch', 'no cost', 'no credit check',
-    'no fees', 'no gimmick', 'no hidden costs', 'no hidden fees', 'no interest',
-    'no investment', 'no obligation', 'no purchase necessary', 'no questions asked',
-    'no strings attached', 'not junk', 'notspam', 'obligation', 'passwords',
-    'requires initial investment', 'social security number', 'this isn\'t a scam',
-    'this isn\'t junk', 'this isn\'t spam', 'undisclosed', 'unsecured credit',
-    'unsecured debt', 'unsolicited', 'we hate spam', 'weight loss',
-    'accept credit cards', 'ad', 'all new', 'as seen on', 'bargain', 'beneficiary',
-    'billing', 'bonus', 'cards accepted', 'cash', 'certified', 'cheap', 'claims',
-    'clearance', 'compare rates', 'credit card offers', 'debt', 'discount', 'fantastic',
-    'in accordance with laws', 'income', 'investment', 'join millions', 'lifetime',
-    'loans', 'luxury', 'marketing solution', 'message contains', 'mortgage rates',
-    'name brand', 'offer', 'online marketing', 'opt in', 'pre-approved', 'quote',
-    'rates', 'refinance', 'removal', 'reserves the right', 'score', 'search engine',
-    'sent in compliance', 'subject to', 'terms and conditions', 'trial', 'unlimited',
-    'warranty', 'web traffic', 'work from home',
-
     // --- OTHER SENSITIVE TOPICS ---
-    'abortion', 'darknet', 'darkweb', 'tor-link', 'hitman', 'deepfake'
+    'darknet', 'darkweb', 'tor-link', 'hitman', 'deepfake'
 ];
 
 /**
@@ -417,36 +376,30 @@ function checkBlockedWords(slug) {
     const slugLower = slug.toLowerCase();
     const slugWords = slugLower.split(/[\s-]+/); // Split by spaces or hyphens
 
-    // Check each word in the slug against blocked words list
+    // Build a Set for O(1) lookups of single-word blocked terms
+    const singleWordBlocked = new Set(BLOCKED_WORDS.filter((w) => !w.includes(' ')));
+
+    // Multi-word blocked phrases (contain spaces – check against full slug text)
+    const multiWordBlocked = BLOCKED_WORDS.filter((w) => w.includes(' '));
+
+    // 1. Check each slug word for an exact match against single-word blocked terms
     for (const word of slugWords) {
-        // Check exact match
-        if (BLOCKED_WORDS.includes(word)) {
+        if (singleWordBlocked.has(word)) {
             return {
                 isSafe: false,
                 blockedWord: word,
-                error: `This slug contains inappropriate content and cannot be used.`,
+                error: 'This slug contains inappropriate content and cannot be used.',
             };
-        }
-
-        // Check if any blocked word appears in this word (for partial matches)
-        for (const blockedWord of BLOCKED_WORDS) {
-            if (word.includes(blockedWord) || blockedWord.includes(word)) {
-                return {
-                    isSafe: false,
-                    blockedWord: blockedWord,
-                    error: `This slug contains inappropriate content and cannot be used.`,
-                };
-            }
         }
     }
 
-    // Also check if slug contains any blocked word as substring
-    for (const blockedWord of BLOCKED_WORDS) {
-        if (slugLower.includes(blockedWord)) {
+    // 2. Check if the full slug text (hyphens → spaces) contains any multi-word blocked phrase
+    for (const phrase of multiWordBlocked) {
+        if (slugLower.includes(phrase)) {
             return {
                 isSafe: false,
-                blockedWord: blockedWord,
-                error: `This slug contains inappropriate content and cannot be used.`,
+                blockedWord: phrase,
+                error: 'This slug contains inappropriate content and cannot be used.',
             };
         }
     }
@@ -471,7 +424,6 @@ export async function checkSlugContent(slug) {
     const cacheKey = `moderation_${slug}`;
     const cached = moderationCache.get(cacheKey);
     if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
-        console.log('💾 Using cached moderation result for slug:', slug);
         return cached.result;
     }
 
@@ -479,13 +431,8 @@ export async function checkSlugContent(slug) {
     const slugForAnalysis = slug.replace(/-/g, ' ');
 
     // First check against blocked words list (before API calls)
-    console.log('🔍 Checking slug against blocked words list...');
     const blockedWordsCheck = checkBlockedWords(slugForAnalysis);
     if (!blockedWordsCheck.isSafe) {
-        console.warn('🚫 Slug blocked by word filter:', {
-            slug,
-            blockedWord: blockedWordsCheck.blockedWord,
-        });
         const result = {
             isSafe: false,
             error: blockedWordsCheck.error || 'This slug contains inappropriate content and cannot be used.',
@@ -495,21 +442,8 @@ export async function checkSlugContent(slug) {
         moderationCache.set(cacheKey, { result, timestamp: Date.now() });
         return result;
     }
-    console.log('✅ Slug passed word filter check');
-
-    console.log('🔍 Checking slug content with Google Perspective API:', {
-        slug,
-        slugForAnalysis, // Show the converted version (hyphens → spaces)
-        hasApiKey: !!perspectiveApiKey,
-        apiKeyLength: perspectiveApiKey ? perspectiveApiKey.length : 0,
-        isLocalhost,
-    });
 
     if (!perspectiveApiKey) {
-        // If no API key, skip moderation (fail open)
-        console.warn('⚠️ Perspective API key not configured. Skipping content moderation.');
-        console.warn('💡 To enable content moderation, add VITE_PERSPECTIVE_API_KEY to your environment variables.');
-        console.warn('💡 Get your API key from: https://developers.perspectiveapi.com/');
         const result = { isSafe: true };
         // Cache the result
         moderationCache.set(cacheKey, { result, timestamp: Date.now() });
@@ -519,10 +453,6 @@ export async function checkSlugContent(slug) {
     // Skip moderation on localhost due to CORS restrictions
     // Perspective API blocks localhost by default - need to configure API key restrictions
     if (isLocalhost) {
-        console.warn('⚠️ Skipping Perspective API check on localhost (CORS restrictions).');
-        console.warn('💡 To enable on localhost, configure API key restrictions in Google Cloud Console:');
-        console.warn('💡 Allow HTTP referrers: http://localhost:5173/*');
-        console.warn('💡 See FIX_PERSPECTIVE_API_CORS.md for instructions.');
         const result = {
             isSafe: true,
             error: 'Content moderation skipped on localhost (CORS restrictions).',
@@ -533,8 +463,6 @@ export async function checkSlugContent(slug) {
     }
 
     try {
-        console.log('📤 Sending request to Google Perspective API...');
-
         // Perspective API endpoint
         const apiUrl = `https://commentanalyzer.googleapis.com/v1alpha1/comments:analyze?key=${perspectiveApiKey}`;
 
@@ -562,16 +490,12 @@ export async function checkSlugContent(slug) {
             body: JSON.stringify(requestBody),
         });
 
-        console.log('📥 Perspective API response status:', response.status, response.statusText);
-
         if (!response.ok) {
             const errorData = await response.text();
             let errorMessage = 'Content moderation check unavailable.';
 
             // Handle specific error codes
             if (response.status === 429) {
-                // Too Many Requests - rate limit exceeded
-                console.warn('⚠️ Rate limit exceeded (429). Skipping moderation check (fail open).');
                 const result = {
                     isSafe: true,
                     error: 'Content moderation temporarily unavailable due to rate limiting.',
@@ -597,8 +521,6 @@ export async function checkSlugContent(slug) {
                 // Check if it's a CORS/localhost issue
                 if (errorMsg.includes('localhost') || errorMsg.includes('blocked') || errorMsg.includes('referer')) {
                     errorMessage = 'CORS error: localhost is blocked. You need to configure API key restrictions in Google Cloud Console to allow localhost, or use a proxy.';
-                    console.warn('⚠️ CORS Issue: Perspective API blocks localhost by default.');
-                    console.warn('💡 Solution: Configure API key restrictions in Google Cloud Console to allow localhost:5173');
                 } else if (errorMsg.includes('quota') || errorMsg.includes('Quota')) {
                     errorMessage = 'Quota exceeded. You have reached the daily limit (1,000 requests/day).';
                 } else if (errorMsg.includes('API key') || errorMsg.includes('invalid')) {
@@ -608,107 +530,99 @@ export async function checkSlugContent(slug) {
                 }
             }
 
-            console.error('❌ Perspective API error:', {
-                status: response.status,
+            status: response.status,
                 statusText: response.statusText,
-                error: errorData,
-                parsedError: response.status === 403 ? (() => {
-                    try {
-                        return JSON.parse(errorData);
-                    } catch {
-                        return errorData;
-                    }
-                })() : undefined,
-                message: errorMessage,
+                    error: errorData,
+                        parsedError: response.status === 403 ? (() => {
+                            try {
+                                return JSON.parse(errorData);
+                            } catch {
+                                return errorData;
+                            }
+                        })() : undefined,
+                            message: errorMessage,
             });
 
-            // For all errors, fail open (don't block the user)
-            const result = {
-                isSafe: true,
-                error: errorMessage,
-                rateLimited: response.status === 429,
-            };
-            moderationCache.set(cacheKey, { result, timestamp: Date.now() });
-            return result;
-        }
+        // For all errors, fail open (don't block the user)
+        const result = {
+            isSafe: true,
+            error: errorMessage,
+            rateLimited: response.status === 429,
+        };
+        moderationCache.set(cacheKey, { result, timestamp: Date.now() });
+        return result;
+    }
 
         // Parse the successful response
         const data = await response.json();
-        console.log('✅ Perspective API response:', data);
 
-        // Perspective API returns attribute scores (0-1, where higher = more toxic)
-        // Threshold: 0.3 (30%) - if any attribute exceeds this, flag as unsafe
-        const TOXICITY_THRESHOLD = 0.3;
+    // Perspective API returns attribute scores (0-1, where higher = more toxic)
+    // Threshold: 0.3 (30%) - if any attribute exceeds this, flag as unsafe
+    const TOXICITY_THRESHOLD = 0.3;
 
-        let result;
-        const flaggedCategories = [];
-        const scores = {};
+    let result;
+    const flaggedCategories = [];
+    const scores = {};
 
-        if (data.attributeScores) {
-            // Check each attribute
-            for (const [attribute, attributeData] of Object.entries(data.attributeScores)) {
-                const score = attributeData.summaryScore?.value || 0;
-                scores[attribute] = score;
+    if (data.attributeScores) {
+        // Check each attribute
+        for (const [attribute, attributeData] of Object.entries(data.attributeScores)) {
+            const score = attributeData.summaryScore?.value || 0;
+            scores[attribute] = score;
 
-                if (score >= TOXICITY_THRESHOLD) {
-                    flaggedCategories.push(attribute);
-                }
+            if (score >= TOXICITY_THRESHOLD) {
+                flaggedCategories.push(attribute);
             }
-
-            if (flaggedCategories.length > 0) {
-                console.warn('🚫 Slug flagged by Perspective API:', {
-                    slug,
-                    flaggedCategories,
-                    scores,
-                });
-
-                result = {
-                    isSafe: false,
-                    flaggedCategories,
-                    error: `This slug contains inappropriate content and cannot be used.`,
-                };
-            } else {
-                console.log('✅ Slug passed Perspective API check:', scores);
-
-                // After Perspective API passes, check with Natural Language API
-                console.log('🔍 Running additional check with Google Natural Language API...');
-                const naturalLanguageResult = await checkSlugWithNaturalLanguage(slugForAnalysis);
-
-                if (!naturalLanguageResult.isSafe) {
-                    // Natural Language API flagged the slug
-                    console.warn('🚫 Slug flagged by Natural Language API:', naturalLanguageResult);
-                    result = {
-                        isSafe: false,
-                        error: naturalLanguageResult.error || `This slug contains inappropriate content and cannot be used.`,
-                        sentiment: naturalLanguageResult.sentiment,
-                    };
-                } else {
-                    // Both checks passed
-                    result = {
-                        isSafe: true,
-                        sentiment: naturalLanguageResult.sentiment,
-                    };
-                }
-            }
-        } else {
-            // No scores returned - assume safe
-            console.warn('⚠️ No attribute scores in Perspective API response');
-            result = {
-                isSafe: true,
-            };
         }
 
-        // Cache the result
-        moderationCache.set(cacheKey, { result, timestamp: Date.now() });
-        return result;
-    } catch (error) {
-        console.error('❌ Error checking slug content:', error);
-        // Fail open - if check fails, allow the slug
-        return {
-            isSafe: true,
-            error: 'Content moderation check failed. Please try again.',
+        if (flaggedCategories.length > 0) {
+            slug,
+                flaggedCategories,
+                scores,
+                });
+
+        result = {
+            isSafe: false,
+            flaggedCategories,
+            error: `This slug contains inappropriate content and cannot be used.`,
         };
+    } else {
+
+        // After Perspective API passes, check with Natural Language API
+        const naturalLanguageResult = await checkSlugWithNaturalLanguage(slugForAnalysis);
+
+        if (!naturalLanguageResult.isSafe) {
+            // Natural Language API flagged the slug
+            result = {
+                isSafe: false,
+                error: naturalLanguageResult.error || `This slug contains inappropriate content and cannot be used.`,
+                sentiment: naturalLanguageResult.sentiment,
+            };
+        } else {
+            // Both checks passed
+            result = {
+                isSafe: true,
+                sentiment: naturalLanguageResult.sentiment,
+            };
+        }
     }
+} else {
+    // No scores returned - assume safe
+    result = {
+        isSafe: true,
+    };
+}
+
+// Cache the result
+moderationCache.set(cacheKey, { result, timestamp: Date.now() });
+return result;
+    } catch (error) {
+    // Fail open - if check fails, allow the slug
+    return {
+        isSafe: true,
+        error: 'Content moderation check failed. Please try again.',
+    };
+}
 }
 
 /**
@@ -723,8 +637,6 @@ async function checkSlugWithNaturalLanguage(slug) {
 
     // Use Perspective API key if Natural Language API key not set (same Google Cloud project)
     if (!naturalLanguageApiKey) {
-        console.warn('⚠️ Google Natural Language API key not configured. Skipping Natural Language check.');
-        console.warn('💡 To enable, add VITE_GOOGLE_NATURAL_LANGUAGE_API_KEY (or use Perspective API key).');
         return {
             isSafe: true,
         };
@@ -738,12 +650,10 @@ async function checkSlugWithNaturalLanguage(slug) {
             window.location.hostname === '');
 
     if (isLocalhost) {
-        console.warn('⚠️ Skipping Natural Language API check on localhost (CORS restrictions).');
         return { isSafe: true };
     }
 
     try {
-        console.log('📤 Sending request to Google Natural Language API (Content Moderation)...');
 
         // Natural Language API endpoint for content moderation
         // moderateText endpoint format
@@ -763,7 +673,6 @@ async function checkSlugWithNaturalLanguage(slug) {
             },
         };
 
-        console.log('📋 Request body:', JSON.stringify(requestBody, null, 2));
 
         const response = await fetch(apiUrl, {
             method: 'POST',
@@ -773,7 +682,6 @@ async function checkSlugWithNaturalLanguage(slug) {
             body: JSON.stringify(requestBody),
         });
 
-        console.log('📥 Natural Language API (moderation) response status:', response.status, response.statusText);
 
         if (!response.ok) {
             const errorData = await response.text();
@@ -785,89 +693,78 @@ async function checkSlugWithNaturalLanguage(slug) {
             }
 
             const errorMsg = parsedError?.error?.message || errorData;
-            console.error('❌ Natural Language API (moderation) error:', {
-                status: response.status,
+            status: response.status,
                 statusText: response.statusText,
-                error: errorData,
-                parsedError: parsedError,
-                message: errorMsg,
+                    error: errorData,
+                        parsedError: parsedError,
+                            message: errorMsg,
             });
 
-            // If it's a 400 error, log more details for debugging
-            if (response.status === 400) {
-                console.warn('⚠️ Bad Request (400) - Check API request format or API availability');
-                console.warn('💡 moderateText endpoint format: { document: { type: "PLAIN_TEXT", content: "text" } }');
-                console.warn('💡 Make sure Natural Language API is enabled and moderateText feature is available');
-                console.warn('💡 Note: moderateText might require specific API version or permissions');
+        // If it's a 400 error, log more details for debugging
+        if (response.status === 400) {
 
-                // Check if error mentions the endpoint or feature
-                if (errorMsg && (errorMsg.includes('moderateText') || errorMsg.includes('not found') || errorMsg.includes('not available'))) {
-                    console.warn('⚠️ moderateText endpoint might not be available with this API key');
-                    console.warn('💡 Try using analyzeSentiment instead, or check API permissions');
-                }
+            // Check if error mentions the endpoint or feature
+            if (errorMsg && (errorMsg.includes('moderateText') || errorMsg.includes('not found') || errorMsg.includes('not available'))) {
             }
-
-            // Fail open - don't block if Natural Language API fails
-            return {
-                isSafe: true,
-                error: `Natural Language API moderation check unavailable: ${errorMsg}`,
-            };
         }
+
+        // Fail open - don't block if Natural Language API fails
+        return {
+            isSafe: true,
+            error: `Natural Language API moderation check unavailable: ${errorMsg}`,
+        };
+    }
 
         // Parse the successful response
         const data = await response.json();
-        console.log('✅ Natural Language API (moderation) response:', data);
 
-        // Natural Language API moderation returns moderationCategories with confidence scores (0..1)
-        // Block if ANY category confidence >= 0.5 per your requirement
-        const BLOCK_THRESHOLD = 0.5;
-        const categories = Array.isArray(data.moderationCategories) ? data.moderationCategories : [];
+    // Natural Language API moderation returns moderationCategories with confidence scores (0..1)
+    // Block if ANY category confidence >= 0.5 per your requirement
+    const BLOCK_THRESHOLD = 0.5;
+    const categories = Array.isArray(data.moderationCategories) ? data.moderationCategories : [];
 
-        // Normalize category objects and extract confidence fields
-        const normalized = categories.map((c) => {
-            const name = c.name || c.category || c.label || 'unknown';
-            // confidence field may be named differently; try common options
-            const confidence = typeof c.confidence === 'number'
-                ? c.confidence
-                : (typeof c.score === 'number' ? c.score
-                    : (typeof c.probability === 'number' ? c.probability : 0));
-            return { name, confidence };
-        });
+    // Normalize category objects and extract confidence fields
+    const normalized = categories.map((c) => {
+        const name = c.name || c.category || c.label || 'unknown';
+        // confidence field may be named differently; try common options
+        const confidence = typeof c.confidence === 'number'
+            ? c.confidence
+            : (typeof c.score === 'number' ? c.score
+                : (typeof c.probability === 'number' ? c.probability : 0));
+        return { name, confidence };
+    });
 
-        const blocked = normalized.filter((c) => c.confidence >= BLOCK_THRESHOLD).map((c) => c.name);
+    const blocked = normalized.filter((c) => c.confidence >= BLOCK_THRESHOLD).map((c) => c.name);
 
-        if (blocked.length > 0) {
-            console.warn('🚫 Slug flagged by Natural Language API (moderation):', {
-                slug,
-                blockedCategories: blocked,
+    if (blocked.length > 0) {
+        slug,
+            blockedCategories: blocked,
                 categories: normalized,
             });
-            return {
-                isSafe: false,
-                moderation: {
-                    blockedCategories: blocked,
-                    categories: normalized,
-                },
-                error: `This slug contains inappropriate content and cannot be used.`,
-            };
-        }
+    return {
+        isSafe: false,
+        moderation: {
+            blockedCategories: blocked,
+            categories: normalized,
+        },
+        error: `This slug contains inappropriate content and cannot be used.`,
+    };
+}
 
-        console.log('✅ Slug passed Natural Language API moderation check:', normalized);
-        return {
-            isSafe: true,
-            moderation: {
-                blockedCategories: [],
-                categories: normalized,
-            },
-        };
+return {
+    isSafe: true,
+    moderation: {
+        blockedCategories: [],
+        categories: normalized,
+    },
+};
     } catch (error) {
-        console.error('❌ Error checking slug with Natural Language API (moderation):', error);
-        // Fail open - if check fails, allow the slug
-        return {
-            isSafe: true,
-            error: 'Natural Language API moderation check failed. Please try again.',
-        };
-    }
+    // Fail open - if check fails, allow the slug
+    return {
+        isSafe: true,
+        error: 'Natural Language API moderation check failed. Please try again.',
+    };
+}
 }
 
 /**
@@ -905,25 +802,20 @@ export async function validateSlug(
     // 2. Content moderation (if enabled)
     let contentCheck = { isSafe: true };
     if (checkContent) {
-        console.log('🔍 [validateSlug] Starting content moderation check for slug:', normalizedSlug);
 
         try {
             contentCheck = await checkSlugContent(normalizedSlug);
-            console.log('📊 [validateSlug] Content moderation result:', contentCheck);
         } catch (error) {
             // If moderation check throws an error, fail open
-            console.warn('⚠️ [validateSlug] Content moderation check failed with error:', error);
             contentCheck = { isSafe: true, error: 'Content moderation check unavailable' };
         }
 
         // If content check failed due to rate limiting, skip it entirely (fail open)
         if (contentCheck.rateLimited) {
-            console.warn('⚠️ [validateSlug] Rate limited - skipping moderation check and allowing slug');
             // Skip moderation entirely - don't block the user
             // Continue with validation
         } else if (!contentCheck.isSafe) {
             // Content is actually flagged as inappropriate (not rate limited)
-            console.warn('🚫 [validateSlug] Slug failed content moderation:', normalizedSlug);
             return {
                 isValid: false,
                 error: contentCheck.error || 'Slug contains inappropriate content.',
@@ -931,10 +823,8 @@ export async function validateSlug(
                 isContentSafe: false,
             };
         } else {
-            console.log('✅ [validateSlug] Slug passed content moderation');
         }
     } else {
-        console.log('⏭️ [validateSlug] Content moderation check skipped (checkContent = false)');
     }
 
     // 3. Availability check (if enabled)

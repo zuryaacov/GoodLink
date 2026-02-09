@@ -4,6 +4,7 @@ import { supabase } from '../../lib/supabase';
 import { validateUrl } from '../../lib/urlValidation';
 import { checkUrlSafety } from '../../lib/urlSafetyCheck';
 import { validateSlug } from '../../lib/slugValidation';
+import { sanitizeInput } from '../../lib/inputSanitization';
 import countriesData from '../../data/countries.json';
 import taboolaLogo from '../../assets/idRS-vCmxj_1769618141092.svg';
 import outbrainLogo from '../../assets/id-bNajMAc_1769618145922.svg';
@@ -339,6 +340,12 @@ export default function LinkWizardOnePerPage({
       setNameError('Please enter a name for your link.');
       return false;
     }
+    // XSS / injection check
+    const nameCheck = sanitizeInput(name);
+    if (!nameCheck.safe) {
+      setNameError(nameCheck.error);
+      return false;
+    }
     setValidating(true);
     setNameError(null);
     try {
@@ -597,6 +604,12 @@ export default function LinkWizardOnePerPage({
       setGeoRuleErrors((e) => ({ ...e, country: 'Please select a country' }));
       return;
     }
+    // Check for duplicate country
+    const rules = Array.isArray(formData.geoRules) ? formData.geoRules : [];
+    if (rules.some((r) => r.country === newGeoRule.country)) {
+      setGeoRuleErrors((e) => ({ ...e, country: 'A rule for this country already exists' }));
+      return;
+    }
     if (!newGeoRule.url?.trim()) {
       setGeoRuleErrors((e) => ({ ...e, url: 'Please enter a URL' }));
       return;
@@ -606,7 +619,21 @@ export default function LinkWizardOnePerPage({
       setGeoRuleErrors((e) => ({ ...e, url: v.error || 'Invalid URL' }));
       return;
     }
-    const rules = Array.isArray(formData.geoRules) ? formData.geoRules : [];
+    // Block glynk.to as geo redirect target
+    try {
+      const geoHost = new URL(v.normalizedUrl || newGeoRule.url).hostname
+        .toLowerCase()
+        .replace(/^www\./, '');
+      if (geoHost === 'glynk.to') {
+        setGeoRuleErrors((e) => ({
+          ...e,
+          url: 'Redirect cannot be to glynk.to. Please use a different URL.',
+        }));
+        return;
+      }
+    } catch {
+      /* URL constructor failed – already caught by validateUrl */
+    }
     updateFormData('geoRules', [
       ...rules,
       { country: newGeoRule.country, url: v.normalizedUrl || newGeoRule.url },

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { getPixelIdLabel } from '../../lib/pixelValidation';
 import taboolaLogo from '../../assets/idRS-vCmxj_1769618141092.svg';
 import outbrainLogo from '../../assets/id-bNajMAc_1769618145922.svg';
 
@@ -120,14 +121,7 @@ const PLATFORMS = [
   { value: 'taboola', label: 'Taboola', placeholder: 'Account ID (6-8 digits)' },
 ];
 
-const getPixelIdLabel = (platform) =>
-  platform === 'google'
-    ? 'Measurement_Id'
-    : platform === 'taboola'
-      ? 'Account Id'
-      : platform === 'outbrain'
-        ? 'Outbrain Pixel ID'
-        : 'Pixel ID';
+// getPixelIdLabel imported from ../../lib/pixelValidation
 
 const getCapiTokenLabel = (platform) => {
   switch (platform) {
