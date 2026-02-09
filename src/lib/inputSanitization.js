@@ -126,7 +126,8 @@ export function sanitizeInput(value) {
 export function stripNullAndControlChars(str) {
   if (str == null || typeof str !== 'string') return str;
   return str
-    .replace(/\x00/g, '')
+    .replace(/\0/g, '')           // null byte (ASCII 0)
+    .replace(/\u0000/g, '')       // Unicode null
     .replace(/[\x01-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '');
 }
 
@@ -148,5 +149,20 @@ export function cleanPayloadForDb(obj) {
     }
     return out;
   }
+  return obj;
+}
+
+/**
+ * Final safety: remove null character from JSON serialization of payload.
+ * Call right before supabase.from().insert/update to catch any remaining \\u0000.
+ */
+export function ensureNoNullInPayload(obj) {
+  try {
+    let s = JSON.stringify(obj);
+    if (s.includes('\\u0000')) {
+      s = s.replace(/\\u0000/g, '');
+      return JSON.parse(s);
+    }
+  } catch (_) {}
   return obj;
 }

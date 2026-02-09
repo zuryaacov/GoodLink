@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { updateLinkInRedis } from '../../lib/redisCache';
-import { cleanPayloadForDb } from '../../lib/inputSanitization';
+import { cleanPayloadForDb, ensureNoNullInPayload } from '../../lib/inputSanitization';
 import { ArrowLeft } from 'lucide-react';
 import LinkWizardOnePerPage from '../../components/dashboard/LinkWizardOnePerPage';
 import Modal from '../../components/common/Modal';
@@ -273,7 +273,10 @@ const LinkBuilderPage = () => {
           geo_rules: Array.isArray(formData.geoRules) ? formData.geoRules : [],
           updated_at: new Date().toISOString(),
         });
-        const { error } = await supabase.from('links').update(updatePayload).eq('id', id);
+        const { error } = await supabase
+          .from('links')
+          .update(ensureNoNullInPayload(updatePayload))
+          .eq('id', id);
 
         if (error) throw error;
 
@@ -368,7 +371,9 @@ const LinkBuilderPage = () => {
           geo_rules: Array.isArray(formData.geoRules) ? formData.geoRules : [],
           created_at: new Date().toISOString(),
         });
-        const { error } = await supabase.from('links').insert(insertPayload);
+        const { error } = await supabase
+          .from('links')
+          .insert(ensureNoNullInPayload(insertPayload));
 
         if (error) throw error;
 
