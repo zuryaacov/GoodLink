@@ -66,12 +66,12 @@ export function validateUrl(urlString) {
     urlToValidate = trimmed; // Keep original case for protocol check
 
     // Check for valid protocol
-    const validProtocols = ['http', 'https', 'ftp', 'ftps', 'ws', 'wss'];
+    const validProtocols = ['http', 'https'];
     protocol = trimmed.split('://')[0].toLowerCase();
     if (!validProtocols.includes(protocol)) {
       return {
         isValid: false,
-        error: `Invalid protocol: ${protocol}. Only http, https, ftp, ftps, ws, and wss are allowed.`,
+        error: `Invalid protocol: ${protocol}. Only http and https are allowed.`,
       };
     }
 
