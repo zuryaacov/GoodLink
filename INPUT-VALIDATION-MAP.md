@@ -393,7 +393,11 @@
 
 ### 9.2 הגנה בצד ה-Database (Supabase Triggers)
 
-**קובץ:** `supabase-xss-protection.sql` – להרצה ידנית ב-SQL Editor של Supabase.
+**קבצים:**
+
+- `supabase-xss-protection.sql` – טריגרים מלאים (בודק ומנקה)
+- `supabase-xss-links-sanitize-only.sql` – לינקים: רק מנקה, לא זורק exception
+- **`supabase-fix-all-links-null.sql`** ← **הרץ את זה אם מקבלים "null character not permitted"**
 
 | טבלה          | עמודות מוגנות                                                                 | טריגר                       |
 | ------------- | ----------------------------------------------------------------------------- | --------------------------- |
@@ -403,6 +407,19 @@
 | `profiles`    | `full_name`                                                                   | `trg_profiles_xss_check`    |
 
 הטריגרים פועלים על כל INSERT ו-UPDATE, בודקים עם `is_safe_text()` ומנקים עם `sanitize_text()`.
+
+#### תיקון "null character not permitted" (54000)
+
+אם מקבלים שגיאה `null character not permitted` גם אחרי שה-payload נקי (הסורק מראה ✅), **הבעיה היא ב-DB**:
+
+1. שדה `name` בשורה הקיימת **כבר** מכיל null character מעדכון קודם
+2. הטריגר `validate_links_input()` עדיין בגרסה ישנה שזורקת exception
+
+**הפתרון:** הרץ `supabase-fix-all-links-null.sql` ב-SQL Editor:
+
+- יוצר/מעדכן `sanitize_text()` אם חסר
+- מעדכן את הטריגר לגרסה שרק מנקה (לא זורק exception)
+- מנקה null characters מכל השורות הקיימות בטבלת `links`
 
 ---
 
