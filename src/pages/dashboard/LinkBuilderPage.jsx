@@ -18,9 +18,10 @@ const LinkBuilderPage = () => {
   const navigate = useNavigate();
   const searchParams = new URLSearchParams(window.location.search);
   const duplicateId = searchParams.get('duplicate');
-  const isEditMode = !!id;
+  const isEditMode = !!id && id !== 'new';
   const isDuplicateMode = !!duplicateId;
-  const linkIdToLoad = id || duplicateId;
+  // When duplicating we're on /links/new?duplicate=ID – load by duplicateId, not by route id "new"
+  const linkIdToLoad = duplicateId || (id && id !== 'new' ? id : null);
   const [planType, setPlanType] = useState('free');
   const wizardRef = useRef(null);
   const [initialLoading, setInitialLoading] = useState(!!linkIdToLoad);
@@ -119,9 +120,10 @@ const LinkBuilderPage = () => {
         return;
       }
 
-      // For duplicate mode, remove ID; keep name as-is; make slug unique with short random suffix (no "copy")
+      // For duplicate mode, remove ID; keep full name but strip only trailing " (Copy)" if present; unique slug
       const isDuplicate = !!duplicateId;
-      const modifiedName = data.name || '';
+      let modifiedName = data.name || '';
+      if (isDuplicate && modifiedName.endsWith(' (Copy)')) modifiedName = modifiedName.slice(0, -7);
       const modifiedSlug =
         isDuplicate && data.slug
           ? `${data.slug}-${Math.random().toString(36).slice(2, 8)}`.slice(0, 30)
