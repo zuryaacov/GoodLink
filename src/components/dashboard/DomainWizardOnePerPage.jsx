@@ -60,6 +60,7 @@ export default function DomainWizardOnePerPage({
 }) {
   const [stepIndex, setStepIndex] = useState(0);
   const [localError, setLocalError] = useState(null);
+  const [fieldErrors, setFieldErrors] = useState({});
 
   const totalSteps = STEPS.length;
   const currentStep = STEPS[stepIndex];
@@ -69,11 +70,24 @@ export default function DomainWizardOnePerPage({
 
   const goNext = async () => {
     if (currentStep.id === 'domain') {
+      if (!domainName?.trim()) {
+        setFieldErrors((prev) => ({ ...prev, domain: 'Domain is required.' }));
+        return;
+      }
+      setFieldErrors((prev) => ({ ...prev, domain: null }));
       setStepIndex(1);
       window.scrollTo({ top: 0, behavior: 'smooth' });
       return;
     }
     if (currentStep.id === 'rootRedirect') {
+      if (rootRedirectError) {
+        setFieldErrors((prev) => ({
+          ...prev,
+          rootRedirect: rootRedirectError || 'Please fix the redirect URL first.',
+        }));
+        return;
+      }
+      setFieldErrors((prev) => ({ ...prev, rootRedirect: null }));
       setLocalError(null);
       try {
         await onRegister(domainName, rootRedirect);
@@ -104,10 +118,6 @@ export default function DomainWizardOnePerPage({
   };
 
   const errorToShow = localError || saveError;
-  const canProceed = () => {
-    if (currentStep.id === 'domain') return domainName?.trim().length > 0;
-    return true;
-  };
 
   return (
     <div className="flex flex-col flex-1 min-h-0">
@@ -167,12 +177,16 @@ export default function DomainWizardOnePerPage({
                   <input
                     type="text"
                     value={domainName}
-                    onChange={(e) => onDomainNameChange?.(e.target.value)}
+                    onChange={(e) => {
+                      onDomainNameChange?.(e.target.value);
+                      setFieldErrors((prev) => ({ ...prev, domain: null }));
+                    }}
                     placeholder="mybrand.com"
                     disabled={!!isEdit}
                     className="w-full bg-transparent py-5 px-6 text-xl outline-none border-none text-white placeholder-slate-500 disabled:opacity-60"
                   />
                 </div>
+                {fieldErrors.domain && <p className="text-red-400 text-xs">{fieldErrors.domain}</p>}
                 <p className="text-slate-500 text-xs">
                   We’ll use www (e.g. www.mybrand.com) for the hostname.
                 </p>
@@ -185,11 +199,17 @@ export default function DomainWizardOnePerPage({
                   <input
                     type="text"
                     value={rootRedirect}
-                    onChange={(e) => onRootRedirectChange?.(e.target.value)}
+                    onChange={(e) => {
+                      onRootRedirectChange?.(e.target.value);
+                      setFieldErrors((prev) => ({ ...prev, rootRedirect: null }));
+                    }}
                     placeholder="https://example.com"
                     className="w-full bg-transparent py-5 px-6 text-xl outline-none border-none text-white placeholder-slate-500"
                   />
                 </div>
+                {fieldErrors.rootRedirect && (
+                  <p className="text-red-400 text-xs">{fieldErrors.rootRedirect}</p>
+                )}
                 {rootRedirectError && <p className="text-red-400 text-xs">{rootRedirectError}</p>}
                 <p className="text-slate-500 text-xs">
                   Leave empty if you don’t need a redirect for the root URL.
@@ -270,10 +290,7 @@ export default function DomainWizardOnePerPage({
           <button
             type="button"
             onClick={goNext}
-            disabled={
-              (currentStep?.id === 'domain' && !canProceed()) ||
-              (currentStep?.id === 'rootRedirect' && isSubmitting)
-            }
+            disabled={currentStep?.id === 'rootRedirect' && isSubmitting}
             className="flex-1 flex items-center justify-center gap-3 py-5 rounded-2xl font-extrabold text-xl tracking-tight transition-all bg-[#FF10F0] hover:bg-[#e00ed0] text-white disabled:opacity-60 disabled:cursor-not-allowed shadow-xl"
           >
             {isSubmitting ? (

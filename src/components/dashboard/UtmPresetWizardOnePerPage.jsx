@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import taboolaLogo from '../../assets/idRS-vCmxj_1769618141092.svg';
 import outbrainLogo from '../../assets/id-bNajMAc_1769618145922.svg';
+import { sanitizeInput } from '../../lib/inputSanitization';
 
 const getPlatformLogo = (platform) => {
   const w = 'w-12 h-12 rounded-xl';
@@ -292,6 +293,7 @@ export default function UtmPresetWizardOnePerPage({ initialData, onSave, onBack,
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [fieldErrors, setFieldErrors] = useState({});
 
   useEffect(() => {
     if (initialData) {
@@ -318,9 +320,41 @@ export default function UtmPresetWizardOnePerPage({ initialData, onSave, onBack,
   const handleChipClick = (utmKey, value) => {
     const current = params[utmKey];
     setParams((prev) => ({ ...prev, [utmKey]: current === value ? '' : value }));
+    setFieldErrors((prev) => ({ ...prev, [utmKey]: null }));
   };
 
   const goNext = async () => {
+    const validateCurrentStep = () => {
+      const nextErrors = {};
+      if (currentStep?.id === 'name') {
+        const name = (presetName || '').trim();
+        if (!name) {
+          nextErrors.name = 'Preset name is required.';
+        } else if (name.length > 100) {
+          nextErrors.name = 'Preset name cannot exceed 100 characters.';
+        } else {
+          const check = sanitizeInput(name);
+          if (!check.safe) nextErrors.name = check.error || 'Invalid preset name.';
+        }
+      }
+      if (currentStep?.id && UTM_STEPS.some((s) => s.id === currentStep.id)) {
+        const utmStep = UTM_STEPS.find((s) => s.id === currentStep.id);
+        const value = params[utmStep.key];
+        if (value) {
+          if (value.length > 250) {
+            nextErrors[utmStep.key] = `${utmStep.label} cannot exceed 250 characters.`;
+          } else {
+            const check = sanitizeInput(value);
+            if (!check.safe) nextErrors[utmStep.key] = check.error || `Invalid ${utmStep.label}.`;
+          }
+        }
+      }
+      setFieldErrors(nextErrors);
+      return Object.keys(nextErrors).length === 0;
+    };
+
+    if (!validateCurrentStep()) return;
+
     if (isLast) {
       setError(null);
       setLoading(true);
@@ -349,11 +383,6 @@ export default function UtmPresetWizardOnePerPage({ initialData, onSave, onBack,
       setStepIndex((i) => i - 1);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } else if (onBack) onBack();
-  };
-
-  const canProceed = () => {
-    if (currentStep?.id === 'name') return presetName.trim().length > 0;
-    return true;
   };
 
   const PreviewBlock = () => (
@@ -448,11 +477,15 @@ export default function UtmPresetWizardOnePerPage({ initialData, onSave, onBack,
                 <input
                   type="text"
                   value={presetName}
-                  onChange={(e) => setPresetName(e.target.value)}
+                  onChange={(e) => {
+                    setPresetName(e.target.value);
+                    setFieldErrors((prev) => ({ ...prev, name: null }));
+                  }}
                   placeholder="e.g. Summer Campaign Meta"
                   className="w-full bg-transparent py-5 px-6 text-xl outline-none border-none text-white placeholder-slate-500"
                 />
               </div>
+              {fieldErrors.name && <p className="text-red-400 text-xs">{fieldErrors.name}</p>}
             )}
 
             {currentStep?.id === 'platform' && (
@@ -503,6 +536,9 @@ export default function UtmPresetWizardOnePerPage({ initialData, onSave, onBack,
                         })}
                       </div>
                       <PreviewBlock />
+                      {fieldErrors[utmStep.key] && (
+                        <p className="text-red-400 text-xs mt-2">{fieldErrors[utmStep.key]}</p>
+                      )}
                     </div>
                   );
                 })()
@@ -523,7 +559,7 @@ export default function UtmPresetWizardOnePerPage({ initialData, onSave, onBack,
           <button
             type="button"
             onClick={goNext}
-            disabled={!canProceed() || loading}
+            disabled={loading}
             className="flex-1 flex items-center justify-center gap-3 py-5 rounded-2xl font-extrabold text-xl tracking-tight transition-all bg-[#FF10F0] hover:bg-[#e00ed0] text-white disabled:opacity-60 disabled:cursor-not-allowed shadow-xl"
           >
             {loading ? (

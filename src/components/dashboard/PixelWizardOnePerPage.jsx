@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { getPixelIdLabel } from '../../lib/pixelValidation';
+import { getPixelIdLabel, validateCapiToken, validatePixelId } from '../../lib/pixelValidation';
+import { checkForMaliciousInput } from '../../lib/inputSanitization';
 import taboolaLogo from '../../assets/idRS-vCmxj_1769618141092.svg';
 import outbrainLogo from '../../assets/id-bNajMAc_1769618145922.svg';
 
@@ -292,6 +293,7 @@ export default function PixelWizardOnePerPage({ initialData, onSave, onBack, isE
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [fieldErrors, setFieldErrors] = useState({});
 
   useEffect(() => {
     if (initialData) {
@@ -316,6 +318,53 @@ export default function PixelWizardOnePerPage({ initialData, onSave, onBack, isE
   const needsCapiInput = formData.platform !== 'taboola' && formData.platform !== 'outbrain';
 
   const goNext = async () => {
+    const validateCurrentStep = () => {
+      const nextErrors = {};
+      if (currentStep?.id === 'name') {
+        const name = formData.name?.trim() || '';
+        if (!name) nextErrors.name = 'Friendly name is required.';
+        else if (name.length > 100) nextErrors.name = 'Friendly name cannot exceed 100 characters.';
+        else {
+          const check = checkForMaliciousInput(name);
+          if (!check.safe) nextErrors.name = check.error;
+        }
+      }
+      if (currentStep?.id === 'pixelId') {
+        const pixelId = formData.pixelId?.trim() || '';
+        if (!pixelId) {
+          nextErrors.pixelId = `${getPixelIdLabel(formData.platform)} is required.`;
+        } else if (!validatePixelId(pixelId, formData.platform)) {
+          nextErrors.pixelId = `Invalid ${getPixelIdLabel(formData.platform)} format for ${formData.platform}.`;
+        }
+      }
+      if (currentStep?.id === 'capiToken') {
+        if (needsCapiInput && formData.capiToken?.trim()) {
+          const tokenCheck = validateCapiToken(formData.capiToken, formData.platform);
+          if (!tokenCheck.isValid) nextErrors.capiToken = tokenCheck.error || 'Invalid token format.';
+        }
+      }
+      if (currentStep?.id === 'eventType') {
+        if (
+          (formData.platform === 'taboola' || formData.platform === 'outbrain') &&
+          !formData.eventType?.trim()
+        ) {
+          nextErrors.eventType =
+            formData.platform === 'taboola' ? 'Name is required.' : 'Conversion Name is required.';
+        } else if (formData.eventType === 'custom') {
+          if (!formData.customEventName?.trim()) {
+            nextErrors.customEventName = 'Custom event name is required.';
+          } else {
+            const check = checkForMaliciousInput(formData.customEventName);
+            if (!check.safe) nextErrors.customEventName = check.error;
+          }
+        }
+      }
+      setFieldErrors(nextErrors);
+      return Object.keys(nextErrors).length === 0;
+    };
+
+    if (!validateCurrentStep()) return;
+
     if (isLast) {
       setError(null);
       setLoading(true);
@@ -365,18 +414,7 @@ export default function PixelWizardOnePerPage({ initialData, onSave, onBack, isE
       eventType: defaultEventForPlatform(value),
       customEventName: '',
     }));
-  };
-
-  const canProceed = () => {
-    if (currentStep?.id === 'name') return formData.name.trim().length > 0;
-    if (currentStep?.id === 'pixelId') return formData.pixelId.trim().length > 0;
-    if (currentStep?.id === 'eventType') {
-      if (formData.platform === 'taboola' || formData.platform === 'outbrain')
-        return formData.eventType.trim().length > 0;
-      if (formData.eventType === 'custom') return formData.customEventName.trim().length > 0;
-      return true;
-    }
-    return true;
+    setFieldErrors((prev) => ({ ...prev, pixelId: null, capiToken: null, eventType: null }));
   };
 
   return (
@@ -436,11 +474,15 @@ export default function PixelWizardOnePerPage({ initialData, onSave, onBack, isE
                 <input
                   type="text"
                   value={formData.name}
-                  onChange={(e) => setFormData((p) => ({ ...p, name: e.target.value }))}
+                  onChange={(e) => {
+                    setFormData((p) => ({ ...p, name: e.target.value }));
+                    setFieldErrors((prev) => ({ ...prev, name: null }));
+                  }}
                   placeholder="e.g. FB - Main Account"
                   className="w-full bg-transparent py-5 px-6 text-xl outline-none border-none text-white placeholder-slate-500"
                 />
               </div>
+              {fieldErrors.name && <p className="text-red-400 text-xs">{fieldErrors.name}</p>}
             )}
 
             {currentStep?.id === 'platform' && (
@@ -470,18 +512,22 @@ export default function PixelWizardOnePerPage({ initialData, onSave, onBack, isE
                     type="text"
                     value={formData.pixelId}
                     onChange={(e) =>
-                      setFormData((p) => ({
-                        ...p,
-                        pixelId:
-                          formData.platform === 'tiktok'
-                            ? e.target.value.toUpperCase()
-                            : e.target.value,
-                      }))
+                      {
+                        setFormData((p) => ({
+                          ...p,
+                          pixelId:
+                            formData.platform === 'tiktok'
+                              ? e.target.value.toUpperCase()
+                              : e.target.value,
+                        }));
+                        setFieldErrors((prev) => ({ ...prev, pixelId: null }));
+                      }
                     }
                     placeholder={currentPlatform?.placeholder}
                     className="w-full bg-transparent py-5 px-6 text-xl outline-none border-none text-white placeholder-slate-500 font-mono"
                   />
                 </div>
+                {fieldErrors.pixelId && <p className="text-red-400 text-xs">{fieldErrors.pixelId}</p>}
                 <p className="text-slate-500 text-xs">
                   {getPixelIdLabel(formData.platform)} • {currentPlatform?.placeholder}
                 </p>
@@ -495,12 +541,18 @@ export default function PixelWizardOnePerPage({ initialData, onSave, onBack, isE
                     <div className="rounded-2xl bg-[#101622] border-2 border-[#232f48] focus-within:border-[#135bec] transition-all">
                       <textarea
                         value={formData.capiToken}
-                        onChange={(e) => setFormData((p) => ({ ...p, capiToken: e.target.value }))}
+                        onChange={(e) => {
+                          setFormData((p) => ({ ...p, capiToken: e.target.value }));
+                          setFieldErrors((prev) => ({ ...prev, capiToken: null }));
+                        }}
                         placeholder={getCapiTokenPlaceholder(formData.platform)}
                         rows={4}
                         className="w-full bg-transparent py-4 px-6 text-base outline-none border-none text-white placeholder-slate-500 font-mono resize-y"
                       />
                     </div>
+                    {fieldErrors.capiToken && (
+                      <p className="text-red-400 text-xs">{fieldErrors.capiToken}</p>
+                    )}
                     <p className="text-slate-500 text-xs">
                       {getCapiTokenLabel(formData.platform)} (optional – for server-side tracking)
                     </p>
@@ -522,7 +574,10 @@ export default function PixelWizardOnePerPage({ initialData, onSave, onBack, isE
                     <input
                       type="text"
                       value={formData.eventType}
-                      onChange={(e) => setFormData((p) => ({ ...p, eventType: e.target.value }))}
+                      onChange={(e) => {
+                        setFormData((p) => ({ ...p, eventType: e.target.value }));
+                        setFieldErrors((prev) => ({ ...prev, eventType: null }));
+                      }}
                       placeholder={
                         formData.platform === 'taboola'
                           ? 'e.g. lead, purchase, page_view'
@@ -531,6 +586,9 @@ export default function PixelWizardOnePerPage({ initialData, onSave, onBack, isE
                       className="w-full bg-transparent py-5 px-6 text-xl outline-none border-none text-white placeholder-slate-500"
                     />
                   </div>
+                  {fieldErrors.eventType && (
+                    <p className="text-red-400 text-xs">{fieldErrors.eventType}</p>
+                  )}
                 ) : (
                   <>
                     <div className="rounded-2xl bg-[#101622] border-2 border-[#232f48] focus-within:border-[#135bec] transition-all overflow-hidden">
@@ -564,13 +622,17 @@ export default function PixelWizardOnePerPage({ initialData, onSave, onBack, isE
                         <input
                           type="text"
                           value={formData.customEventName}
-                          onChange={(e) =>
-                            setFormData((p) => ({ ...p, customEventName: e.target.value }))
-                          }
+                          onChange={(e) => {
+                            setFormData((p) => ({ ...p, customEventName: e.target.value }));
+                            setFieldErrors((prev) => ({ ...prev, customEventName: null }));
+                          }}
                           placeholder="e.g. High_Quality_User"
                           className="w-full bg-transparent py-5 px-6 text-xl outline-none border-none text-white placeholder-slate-500"
                         />
                       </div>
+                    )}
+                    {fieldErrors.customEventName && (
+                      <p className="text-red-400 text-xs">{fieldErrors.customEventName}</p>
                     )}
                   </>
                 )}
@@ -593,7 +655,7 @@ export default function PixelWizardOnePerPage({ initialData, onSave, onBack, isE
           <button
             type="button"
             onClick={goNext}
-            disabled={!canProceed() || loading}
+            disabled={loading}
             className="flex-1 flex items-center justify-center gap-3 py-5 rounded-2xl font-extrabold text-xl tracking-tight transition-all bg-[#FF10F0] hover:bg-[#e00ed0] text-white disabled:opacity-60 disabled:cursor-not-allowed shadow-xl"
           >
             {loading ? (
