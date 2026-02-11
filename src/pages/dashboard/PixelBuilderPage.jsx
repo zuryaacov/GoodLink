@@ -105,13 +105,19 @@ const PixelBuilderPage = () => {
       const { error } = await supabase.from('pixels').update(pixelData).eq('id', id);
       if (error) throw error;
     } else {
-      const { data: upserted, error } = await supabase
+      const { data: inserted, error } = await supabase
         .from('pixels')
-        .upsert(pixelData, { onConflict: 'user_id,pixel_id,platform', ignoreDuplicates: false })
+        .insert(pixelData)
         .select('id')
         .single();
-      if (error) throw error;
-      if (upserted?.id) savedPixelId = upserted.id;
+      if (error) {
+        // Unique index conflict (same user/platform/pixel_id)
+        if (error.code === '23505') {
+          throw new Error('This Pixel ID already exists for this platform.');
+        }
+        throw error;
+      }
+      if (inserted?.id) savedPixelId = inserted.id;
     }
 
     try {
