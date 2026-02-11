@@ -473,19 +473,21 @@ export default function UtmPresetWizardOnePerPage({ initialData, onSave, onBack,
             </div>
 
             {currentStep?.id === 'name' && (
-              <div className="rounded-2xl bg-[#101622] border-2 border-[#232f48] focus-within:border-[#135bec] transition-all">
-                <input
-                  type="text"
-                  value={presetName}
-                  onChange={(e) => {
-                    setPresetName(e.target.value);
-                    setFieldErrors((prev) => ({ ...prev, name: null }));
-                  }}
-                  placeholder="e.g. Summer Campaign Meta"
-                  className="w-full bg-transparent py-5 px-6 text-xl outline-none border-none text-white placeholder-slate-500"
-                />
-              </div>
-              {fieldErrors.name && <p className="text-red-400 text-xs">{fieldErrors.name}</p>}
+              <>
+                <div className="rounded-2xl bg-[#101622] border-2 border-[#232f48] focus-within:border-[#135bec] transition-all">
+                  <input
+                    type="text"
+                    value={presetName}
+                    onChange={(e) => {
+                      setPresetName(e.target.value);
+                      setFieldErrors((prev) => ({ ...prev, name: null }));
+                    }}
+                    placeholder="e.g. Summer Campaign Meta"
+                    className="w-full bg-transparent py-5 px-6 text-xl outline-none border-none text-white placeholder-slate-500"
+                  />
+                </div>
+                {fieldErrors.name && <p className="text-red-400 text-xs">{fieldErrors.name}</p>}
+              </>
             )}
 
             {currentStep?.id === 'platform' && (
