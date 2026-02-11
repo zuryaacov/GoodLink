@@ -224,7 +224,7 @@ const AuthPage = () => {
           },
           'error-callback': () => {
             setTurnstileToken(null);
-            setError('Turnstile verification failed. Please try again.');
+            setError('Security verification failed. Please try again.');
             // Reset the widget so user can try again
             setTimeout(() => {
               if (window.turnstile && widgetId) {

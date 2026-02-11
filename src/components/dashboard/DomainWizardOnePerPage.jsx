@@ -83,7 +83,7 @@ export default function DomainWizardOnePerPage({
       if (rootRedirectError) {
         setFieldErrors((prev) => ({
           ...prev,
-          rootRedirect: rootRedirectError || 'Please fix the redirect URL first.',
+          rootRedirect: rootRedirectError || 'Please enter a valid redirect URL first.',
         }));
         return;
       }
@@ -240,7 +240,7 @@ export default function DomainWizardOnePerPage({
                   <DNSRecordsDisplay records={dnsRecords} domain={domainName} />
                 ) : (
                   <div className="rounded-2xl bg-[#101622] border border-[#232f48] p-6 text-slate-400 text-sm">
-                    No DNS records yet. Complete the previous step to generate records.
+                    Almost done — please complete the previous step and then continue.
                   </div>
                 )}
               </div>

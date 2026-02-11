@@ -239,7 +239,7 @@ const LinkManager = () => {
         isOpen: true,
         type: 'error',
         title: 'Error',
-        message: 'Error updating link status. Please try again.',
+        message: 'Failed to change link state (Active/Paused). Please try again.',
         onConfirm: null,
         isLoading: false,
       });

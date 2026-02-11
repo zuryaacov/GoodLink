@@ -315,8 +315,6 @@ export default function PixelWizardOnePerPage({ initialData, onSave, onBack, isE
   const progressPct = totalSteps ? ((stepIndex + 1) / totalSteps) * 100 : 0;
   const currentPlatform = PLATFORMS.find((p) => p.value === formData.platform);
   const availableEvents = STANDARD_EVENTS[formData.platform] || [];
-  const needsCapiInput = formData.platform !== 'taboola' && formData.platform !== 'outbrain';
-
   const goNext = async () => {
     const validateCurrentStep = () => {
       const nextErrors = {};
@@ -338,11 +336,8 @@ export default function PixelWizardOnePerPage({ initialData, onSave, onBack, isE
         }
       }
       if (currentStep?.id === 'capiToken') {
-        if (needsCapiInput && formData.capiToken?.trim()) {
-          const tokenCheck = validateCapiToken(formData.capiToken, formData.platform);
-          if (!tokenCheck.isValid)
-            nextErrors.capiToken = tokenCheck.error || 'Invalid token format.';
-        }
+        const tokenCheck = validateCapiToken(formData.capiToken, formData.platform);
+        if (!tokenCheck.isValid) nextErrors.capiToken = tokenCheck.error || 'Invalid token format.';
       }
       if (currentStep?.id === 'eventType') {
         if (
@@ -539,34 +534,24 @@ export default function PixelWizardOnePerPage({ initialData, onSave, onBack, isE
 
             {currentStep?.id === 'capiToken' && (
               <div className="space-y-2">
-                {needsCapiInput ? (
-                  <>
-                    <div className="rounded-2xl bg-[#101622] border-2 border-[#232f48] focus-within:border-[#135bec] transition-all">
-                      <textarea
-                        value={formData.capiToken}
-                        onChange={(e) => {
-                          setFormData((p) => ({ ...p, capiToken: e.target.value }));
-                          setFieldErrors((prev) => ({ ...prev, capiToken: null }));
-                        }}
-                        placeholder={getCapiTokenPlaceholder(formData.platform)}
-                        rows={4}
-                        className="w-full bg-transparent py-4 px-6 text-base outline-none border-none text-white placeholder-slate-500 font-mono resize-y"
-                      />
-                    </div>
-                    {fieldErrors.capiToken && (
-                      <p className="text-red-400 text-xs">{fieldErrors.capiToken}</p>
-                    )}
-                    <p className="text-slate-500 text-xs">
-                      {getCapiTokenLabel(formData.platform)} (optional – for server-side tracking)
-                    </p>
-                  </>
-                ) : (
-                  <div className="rounded-2xl bg-[#101622] border border-[#232f48] p-6 text-slate-400 text-sm">
-                    CAPI token is not used for{' '}
-                    {formData.platform === 'taboola' ? 'Taboola' : 'Outbrain'}. You can continue to
-                    the next step.
-                  </div>
+                <div className="rounded-2xl bg-[#101622] border-2 border-[#232f48] focus-within:border-[#135bec] transition-all">
+                  <textarea
+                    value={formData.capiToken}
+                    onChange={(e) => {
+                      setFormData((p) => ({ ...p, capiToken: e.target.value }));
+                      setFieldErrors((prev) => ({ ...prev, capiToken: null }));
+                    }}
+                    placeholder={getCapiTokenPlaceholder(formData.platform)}
+                    rows={4}
+                    className="w-full bg-transparent py-4 px-6 text-base outline-none border-none text-white placeholder-slate-500 font-mono resize-y"
+                  />
+                </div>
+                {fieldErrors.capiToken && (
+                  <p className="text-red-400 text-xs">{fieldErrors.capiToken}</p>
                 )}
+                <p className="text-slate-500 text-xs">
+                  {getCapiTokenLabel(formData.platform)} (required)
+                </p>
               </div>
             )}
 

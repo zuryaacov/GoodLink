@@ -34,13 +34,22 @@ export function validatePixelId(pixelId, platform) {
 
 /**
  * Validate CAPI / Access Token per platform.
- * Field is optional – empty string returns valid.
+ * Field is required – empty string is invalid.
  * @param {string} token
  * @param {string} platform
  * @returns {{ isValid: boolean, error: string|null }}
  */
 export function validateCapiToken(token, platform) {
-  if (!token || token.trim() === '') return { isValid: true, error: null };
+  if (!token || token.trim() === '') {
+    switch (platform) {
+      case 'google':
+        return { isValid: false, error: 'Api_Secret is required' };
+      case 'taboola':
+        return { isValid: false, error: 'Client Secret is required' };
+      default:
+        return { isValid: false, error: 'Access Token is required' };
+    }
+  }
   const trimmed = token.trim();
 
   // Only validate allowed characters per platform – no length restrictions
@@ -156,9 +165,7 @@ export function validatePixelPayload(data) {
     const evtTypeXss = checkForMaliciousInput(data.eventType);
     if (!evtTypeXss.safe) return { valid: false, message: evtTypeXss.error };
   }
-  if (data.capiToken?.trim()) {
-    const capi = validateCapiToken(data.capiToken, data.platform);
-    if (!capi.isValid) return { valid: false, message: capi.error };
-  }
+  const capi = validateCapiToken(data.capiToken, data.platform);
+  if (!capi.isValid) return { valid: false, message: capi.error };
   return { valid: true, message: null };
 }
