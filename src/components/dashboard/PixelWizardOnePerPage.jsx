@@ -470,19 +470,21 @@ export default function PixelWizardOnePerPage({ initialData, onSave, onBack, isE
             </div>
 
             {currentStep?.id === 'name' && (
-              <div className="rounded-2xl bg-[#101622] border-2 border-[#232f48] focus-within:border-[#135bec] transition-all">
-                <input
-                  type="text"
-                  value={formData.name}
-                  onChange={(e) => {
-                    setFormData((p) => ({ ...p, name: e.target.value }));
-                    setFieldErrors((prev) => ({ ...prev, name: null }));
-                  }}
-                  placeholder="e.g. FB - Main Account"
-                  className="w-full bg-transparent py-5 px-6 text-xl outline-none border-none text-white placeholder-slate-500"
-                />
-              </div>
-              {fieldErrors.name && <p className="text-red-400 text-xs">{fieldErrors.name}</p>}
+              <>
+                <div className="rounded-2xl bg-[#101622] border-2 border-[#232f48] focus-within:border-[#135bec] transition-all">
+                  <input
+                    type="text"
+                    value={formData.name}
+                    onChange={(e) => {
+                      setFormData((p) => ({ ...p, name: e.target.value }));
+                      setFieldErrors((prev) => ({ ...prev, name: null }));
+                    }}
+                    placeholder="e.g. FB - Main Account"
+                    className="w-full bg-transparent py-5 px-6 text-xl outline-none border-none text-white placeholder-slate-500"
+                  />
+                </div>
+                {fieldErrors.name && <p className="text-red-400 text-xs">{fieldErrors.name}</p>}
+              </>
             )}
 
             {currentStep?.id === 'platform' && (
