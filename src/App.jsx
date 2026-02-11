@@ -93,6 +93,7 @@ function App() {
         }
       >
         <Route index element={<Analytics />} />
+        <Route path="analytics" element={<Analytics />} />
         {/* Placeholders for future phases */}
         <Route path="links" element={<LinkManager />} />
         <Route path="utm-presets" element={<UtmPresetManager />} />

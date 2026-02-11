@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { NavLink, useNavigate, Link } from 'react-router-dom';
+import { NavLink, useNavigate, useLocation, Link } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 
 const sidebarLinks = [
@@ -12,6 +12,7 @@ const sidebarLinks = [
 
 const Sidebar = ({ className = '', onLinkClick }) => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [userName, setUserName] = useState('');
   const [planType, setPlanType] = useState('free');
   const [customerPortalUrl, setCustomerPortalUrl] = useState(null);
@@ -162,7 +163,13 @@ const Sidebar = ({ className = '', onLinkClick }) => {
           <NavLink
             key={link.name}
             to={link.href}
-            end={link.href === '/dashboard'} // Only match exact path for Overview
+            end={link.href !== '/dashboard'}
+            isActive={
+              link.href === '/dashboard'
+                ? (_, loc) =>
+                    loc.pathname === '/dashboard' || loc.pathname === '/dashboard/analytics'
+                : undefined
+            }
             onClick={onLinkClick}
             className={({ isActive }) =>
               `flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium transition-all duration-200 ${
