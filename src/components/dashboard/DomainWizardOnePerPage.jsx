@@ -207,10 +207,11 @@ export default function DomainWizardOnePerPage({
                     className="w-full bg-transparent py-5 px-6 text-xl outline-none border-none text-white placeholder-slate-500"
                   />
                 </div>
-                {fieldErrors.rootRedirect && (
-                  <p className="text-red-400 text-xs">{fieldErrors.rootRedirect}</p>
+                {(fieldErrors.rootRedirect || rootRedirectError) && (
+                  <p className="text-red-400 text-xs">
+                    {fieldErrors.rootRedirect || rootRedirectError}
+                  </p>
                 )}
-                {rootRedirectError && <p className="text-red-400 text-xs">{rootRedirectError}</p>}
                 <p className="text-slate-500 text-xs">
                   Leave empty if you don’t need a redirect for the root URL.
                 </p>
