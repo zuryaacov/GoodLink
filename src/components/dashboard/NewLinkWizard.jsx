@@ -260,17 +260,9 @@ const NewLinkWizard = ({ isOpen, onClose, initialData = null }) => {
           type: 'success',
           title: 'Link Updated Successfully!',
           message: (
-            <>
-              <p>
-                <strong>Short URL:</strong> {shortUrl}
-              </p>
-              <p style={{ marginTop: '12px' }}>
-                <strong>Full UTM String:</strong>
-              </p>
-              <p style={{ wordBreak: 'break-all', fontSize: '0.9rem', color: '#6B7280' }}>
-                {fullUtmString}
-              </p>
-            </>
+            <p>
+              <strong>Short URL:</strong> {shortUrl}
+            </p>
           ),
           onConfirm: null,
           isLoading: false,
@@ -329,17 +321,9 @@ const NewLinkWizard = ({ isOpen, onClose, initialData = null }) => {
           type: 'success',
           title: 'Link Created Successfully!',
           message: (
-            <>
-              <p>
-                <strong>Short URL:</strong> {shortUrl}
-              </p>
-              <p style={{ marginTop: '12px' }}>
-                <strong>Full UTM String (copied to clipboard):</strong>
-              </p>
-              <p style={{ wordBreak: 'break-all', fontSize: '0.9rem', color: '#6B7280' }}>
-                {fullUtmString}
-              </p>
-            </>
+            <p>
+              <strong>Short URL:</strong> {shortUrl}
+            </p>
           ),
           onConfirm: null,
           isLoading: false,
@@ -447,6 +431,7 @@ const NewLinkWizard = ({ isOpen, onClose, initialData = null }) => {
                 initialData={initialData}
                 onValidateAndSubmit={handleSubmit}
                 stepRefs={wizardRef}
+                isSubmitting={isSubmitting}
               />
             </div>
           </motion.div>

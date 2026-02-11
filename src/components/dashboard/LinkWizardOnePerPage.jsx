@@ -139,6 +139,7 @@ export default function LinkWizardOnePerPage({
   initialData,
   onValidateAndSubmit,
   stepRefs,
+  isSubmitting = false,
 }) {
   const [domains, setDomains] = useState(['glynk.to']);
   const [domainStatuses, setDomainStatuses] = useState({}); // domain -> 'active' | 'pending'
@@ -1115,13 +1116,22 @@ export default function LinkWizardOnePerPage({
           <button
             type="button"
             onClick={goNext}
-            disabled={validating || urlSafety.loading}
+            disabled={validating || urlSafety.loading || (isLast && isSubmitting)}
             className="flex-1 flex items-center justify-center gap-3 py-5 rounded-2xl font-extrabold text-xl tracking-tight transition-all active:scale-[0.98] shadow-xl bg-[#FF10F0] hover:bg-[#e00ed0] text-white disabled:opacity-60 disabled:cursor-not-allowed"
           >
-            <span>{isLast ? 'Complete Setup' : 'Next Step'}</span>
-            <span className="material-symbols-outlined text-2xl">
-              {isLast ? 'rocket_launch' : 'arrow_forward'}
-            </span>
+            {isLast && isSubmitting ? (
+              <>
+                <span className="material-symbols-outlined text-2xl animate-spin">refresh</span>
+                <span>Saving...</span>
+              </>
+            ) : (
+              <>
+                <span>{isLast ? 'Complete Setup' : 'Next Step'}</span>
+                <span className="material-symbols-outlined text-2xl">
+                  {isLast ? 'rocket_launch' : 'arrow_forward'}
+                </span>
+              </>
+            )}
           </button>
         </div>
       </footer>

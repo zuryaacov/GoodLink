@@ -119,10 +119,13 @@ const LinkBuilderPage = () => {
         return;
       }
 
-      // For duplicate mode, remove ID and modify name/slug
+      // For duplicate mode, remove ID; keep name as-is; make slug unique with short random suffix (no "copy")
       const isDuplicate = !!duplicateId;
-      const modifiedName = isDuplicate && data.name ? `${data.name} (Copy)` : data.name || '';
-      const modifiedSlug = isDuplicate && data.slug ? `${data.slug}-copy` : data.slug || '';
+      const modifiedName = data.name || '';
+      const modifiedSlug =
+        isDuplicate && data.slug
+          ? `${data.slug}-${Math.random().toString(36).slice(2, 8)}`.slice(0, 30)
+          : data.slug || '';
 
       // Store original domain/slug for Redis key updates (only in edit mode, not duplicate)
       if (!isDuplicate) {
@@ -348,17 +351,9 @@ const LinkBuilderPage = () => {
           type: 'success',
           title: 'Link Updated Successfully!',
           message: (
-            <>
-              <p>
-                <strong>Short URL:</strong> {shortUrl}
-              </p>
-              <p style={{ marginTop: '12px' }}>
-                <strong>Full UTM String:</strong>
-              </p>
-              <p style={{ wordBreak: 'break-all', fontSize: '0.9rem', color: '#6B7280' }}>
-                {fullUtmString}
-              </p>
-            </>
+            <p>
+              <strong>Short URL:</strong> {shortUrl}
+            </p>
           ),
           onConfirm: () => navigate('/dashboard/links'),
           isLoading: false,
@@ -471,17 +466,9 @@ const LinkBuilderPage = () => {
           type: 'success',
           title: 'Link Created Successfully!',
           message: (
-            <>
-              <p>
-                <strong>Short URL:</strong> {shortUrl}
-              </p>
-              <p style={{ marginTop: '12px' }}>
-                <strong>Full UTM String (copied to clipboard):</strong>
-              </p>
-              <p style={{ wordBreak: 'break-all', fontSize: '0.9rem', color: '#6B7280' }}>
-                {fullUtmString}
-              </p>
-            </>
+            <p>
+              <strong>Short URL:</strong> {shortUrl}
+            </p>
           ),
           onConfirm: () => navigate('/dashboard/links'),
           isLoading: false,
@@ -551,6 +538,7 @@ const LinkBuilderPage = () => {
           initialData={initialDataForWizard}
           onValidateAndSubmit={handleSubmit}
           stepRefs={wizardRef}
+          isSubmitting={isSubmitting}
         />
       </div>
 
