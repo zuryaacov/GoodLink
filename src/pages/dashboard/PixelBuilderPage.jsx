@@ -63,7 +63,7 @@ const PixelBuilderPage = () => {
     const {
       data: { user },
     } = await supabase.auth.getUser();
-    if (!user) throw new Error('You must be logged in to save pixels');
+    if (!user) throw new Error('You must be logged in to save CAPI');
 
     const trimmedName = payload.name.trim();
     const { data: existingPixels } = await supabase
@@ -75,7 +75,7 @@ const PixelBuilderPage = () => {
     const isDuplicate =
       existingPixels?.length > 0 &&
       (isEditMode && id ? existingPixels.some((p) => p.id !== id) : true);
-    if (isDuplicate) throw new Error('A pixel with this name already exists.');
+    if (isDuplicate) throw new Error('A CAPI profile with this name already exists.');
 
     const normalizedPixelId =
       payload.platform === 'tiktok' ? payload.pixelId.trim().toUpperCase() : payload.pixelId.trim();
@@ -151,7 +151,7 @@ const PixelBuilderPage = () => {
           >
             <ArrowLeft size={24} />
           </button>
-          <h1 className="text-xl font-bold text-white">{id ? 'Edit Pixel' : 'Create New Pixel'}</h1>
+          <h1 className="text-xl font-bold text-white">{id ? 'Edit CAPI' : 'Create New CAPI'}</h1>
         </div>
       </div>
       <div className="flex-1 min-h-0 flex flex-col">

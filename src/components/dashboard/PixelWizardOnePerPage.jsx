@@ -238,9 +238,9 @@ const STEPS = [
     badge: 'Start',
     badgeColor: 'text-[#10b981] bg-[#10b981]/10',
     title: 'Name your',
-    highlight: 'Pixel',
+    highlight: 'CAPI',
     highlightClass: 'bg-gradient-to-r from-[#FF10F0] to-[#bc13fe] bg-clip-text text-transparent',
-    subtitle: 'A friendly name for this CAPI pixel.',
+    subtitle: 'A friendly name for this CAPI profile.',
   },
   {
     id: 'platform',
@@ -249,7 +249,7 @@ const STEPS = [
     title: 'Select',
     highlight: 'Company',
     highlightClass: 'bg-gradient-to-r from-[#135bec] to-[#42a5f5] bg-clip-text text-transparent',
-    subtitle: 'Which ad platform is this pixel for?',
+    subtitle: 'Which ad platform is this CAPI profile for?',
   },
   {
     id: 'pixelId',
@@ -600,7 +600,7 @@ export default function PixelWizardOnePerPage({ initialData, onSave, onBack, isE
               <span className="material-symbols-outlined animate-spin text-2xl">refresh</span>
             ) : (
               <>
-                <span>{isLast ? (isEdit ? 'Update Pixel' : 'Create Pixel') : 'Next Step'}</span>
+                <span>{isLast ? (isEdit ? 'Update CAPI' : 'Create CAPI') : 'Next Step'}</span>
                 <span className="material-symbols-outlined text-2xl">
                   {isLast ? 'check_circle' : 'arrow_forward'}
                 </span>

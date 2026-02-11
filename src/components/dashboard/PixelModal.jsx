@@ -272,10 +272,10 @@ const PixelModal = ({ isOpen, onClose, initialData = null }) => {
         data: { user },
       } = await supabase.auth.getUser();
       if (!user) {
-        throw new Error('You must be logged in to save pixels');
+        throw new Error('You must be logged in to save CAPI');
       }
 
-      // Check duplicate pixel name (same user, case-insensitive)
+      // Check duplicate CAPI profile name (same user, case-insensitive)
       const trimmedName = formData.name.trim();
       const { data: existingPixels } = await supabase
         .from('pixels')
@@ -289,7 +289,7 @@ const PixelModal = ({ isOpen, onClose, initialData = null }) => {
           ? existingPixels.some((p) => p.id !== initialData.id)
           : true);
       if (isDuplicateName) {
-        setErrors((prev) => ({ ...prev, name: 'A pixel with this name already exists.' }));
+        setErrors((prev) => ({ ...prev, name: 'A CAPI profile with this name already exists.' }));
         setIsSubmitting(false);
         return;
       }
@@ -351,10 +351,10 @@ const PixelModal = ({ isOpen, onClose, initialData = null }) => {
 
       onClose();
     } catch (error) {
-      console.error('Error saving pixel:', error);
+      console.error('Error saving CAPI:', error);
       setErrorModal({
         isOpen: true,
-        message: error.message || 'Error saving pixel. Please try again.',
+        message: error.message || 'Error saving CAPI. Please try again.',
       });
     } finally {
       setIsSubmitting(false);
@@ -390,10 +390,12 @@ const PixelModal = ({ isOpen, onClose, initialData = null }) => {
               <div className="flex items-center justify-between p-4 sm:p-6 border-b border-[#232f48] flex-shrink-0">
                 <div className="flex-1 min-w-0 pr-2">
                   <h2 className="text-xl sm:text-2xl font-bold text-white">
-                    {isEditMode ? 'Edit Pixel' : 'Create New Pixel'}
+                    {isEditMode ? 'Edit CAPI' : 'Create New CAPI'}
                   </h2>
                   <p className="text-slate-400 text-xs sm:text-sm mt-1">
-                    {isEditMode ? 'Update your tracking pixel' : 'Add a new tracking pixel'}
+                    {isEditMode
+                      ? 'Update your CAPI tracking profile'
+                      : 'Add a new CAPI tracking profile'}
                   </p>
                 </div>
                 <button
@@ -684,7 +686,7 @@ const PixelModal = ({ isOpen, onClose, initialData = null }) => {
                       <span className="material-symbols-outlined text-base">
                         {isEditMode ? 'save' : 'add'}
                       </span>
-                      {isEditMode ? 'Update Pixel' : 'Create Pixel'}
+                      {isEditMode ? 'Update CAPI' : 'Create CAPI'}
                     </>
                   )}
                 </button>

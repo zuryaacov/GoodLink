@@ -142,13 +142,13 @@ const PixelManager = () => {
       setDeleteModalState({ isOpen: false, pixelId: null, pixelName: '', isLoading: false });
       fetchPixels();
     } catch (error) {
-      console.error('Error deleting pixel:', error);
+      console.error('Error deleting CAPI profile:', error);
       setDeleteModalState((prev) => ({ ...prev, isLoading: false }));
       setModalState({
         isOpen: true,
         type: 'error',
         title: 'Error',
-        message: 'Error deleting pixel. Please try again.',
+        message: 'Error deleting CAPI profile. Please try again.',
         onConfirm: null,
         isLoading: false,
       });
@@ -178,12 +178,12 @@ const PixelManager = () => {
 
       fetchPixels(); // Refresh the list
     } catch (error) {
-      console.error('Error updating pixel status:', error);
+      console.error('Error updating CAPI status:', error);
       setModalState({
         isOpen: true,
         type: 'error',
         title: 'Error',
-        message: 'Error updating pixel status. Please try again.',
+        message: 'Error updating CAPI status. Please try again.',
         onConfirm: null,
         isLoading: false,
       });
@@ -329,7 +329,7 @@ const PixelManager = () => {
           <span className="material-symbols-outlined text-4xl text-slate-600 animate-spin">
             refresh
           </span>
-          <p className="text-slate-400 mt-4">Loading pixels...</p>
+          <p className="text-slate-400 mt-4">Loading CAPI...</p>
         </div>
       </div>
     );
@@ -373,9 +373,9 @@ const PixelManager = () => {
             <span className="font-semibold text-white italic capitalize">
               {normalizedPlan} plan
             </span>{' '}
-            does not include pixel tracking. Upgrade to&nbsp;
+            does not include CAPI tracking. Upgrade to&nbsp;
             <span className="text-[#FF10F0] font-bold uppercase tracking-wider">PRO</span> to
-            create, manage, and optimize pixels across all your campaigns.
+            create, manage, and optimize CAPI profiles across all your campaigns.
           </p>
 
           {/* Value props */}
@@ -383,7 +383,7 @@ const PixelManager = () => {
             <div className="flex items-center gap-3 p-3 bg-[#0b0f19]/80 rounded-xl border border-[#232f48] hover:border-[#FF10F0]/40 transition-colors">
               <Globe className="w-5 h-5 text-[#FF10F0]" />
               <div>
-                <p className="font-semibold text-sm text-white italic">Cross‑platform Pixels</p>
+                <p className="font-semibold text-sm text-white italic">Cross‑platform CAPI</p>
                 <p className="text-xs text-slate-400">
                   Track Meta, TikTok, Google, Taboola, Outbrain and more from one place.
                 </p>
@@ -396,7 +396,7 @@ const PixelManager = () => {
                   Advanced Attribution & Optimization
                 </p>
                 <p className="text-xs text-slate-400">
-                  Optimize ROAS with unified pixel events and cleaner reporting.
+                  Optimize ROAS with unified CAPI events and cleaner reporting.
                 </p>
               </div>
             </div>
@@ -444,7 +444,7 @@ const PixelManager = () => {
           }}
         >
           <span className="material-symbols-outlined text-xl md:text-base">add</span>
-          New Pixel
+          New CAPI
         </button>
       </div>
 
@@ -455,10 +455,8 @@ const PixelManager = () => {
             <span className="material-symbols-outlined text-6xl text-slate-600 mb-4">
               ads_click
             </span>
-            <p className="text-slate-400 text-lg mb-2">No pixels yet</p>
-            <p className="text-slate-500 text-sm">
-              Create your first tracking pixel to get started
-            </p>
+            <p className="text-slate-400 text-lg mb-2">No CAPI profiles yet</p>
+            <p className="text-slate-500 text-sm">Create your first CAPI profile to get started</p>
           </div>
         </div>
       ) : (
@@ -530,7 +528,7 @@ const PixelManager = () => {
                     className={`relative w-12 h-6 rounded-full transition-colors flex-shrink-0 ${
                       pixel.status === 'active' ? 'bg-primary' : 'bg-[#232f48]'
                     }`}
-                    aria-label="Toggle pixel status"
+                    aria-label="Toggle CAPI status"
                     title={
                       pixel.status === 'active'
                         ? 'Active - Click to pause'
@@ -555,7 +553,7 @@ const PixelManager = () => {
                       navigate(`/dashboard/pixels/edit/${pixel.id}`);
                     }}
                     className="text-slate-400 hover:text-primary transition-colors p-2"
-                    title="Edit pixel"
+                    title="Edit CAPI"
                   >
                     <span className="material-symbols-outlined text-base">edit</span>
                   </button>
@@ -569,7 +567,7 @@ const PixelManager = () => {
                       });
                     }}
                     className="text-slate-400 hover:text-red-400 transition-colors p-2"
-                    title="Delete pixel"
+                    title="Delete CAPI"
                   >
                     <span className="material-symbols-outlined text-base">delete</span>
                   </button>
@@ -586,7 +584,7 @@ const PixelManager = () => {
         onClose={() =>
           !deleteModalState.isLoading && setDeleteModalState({ ...deleteModalState, isOpen: false })
         }
-        title="Delete this pixel?"
+        title="Delete this CAPI profile?"
         message={
           <>
             Are you sure you want to delete <strong>{deleteModalState.pixelName}</strong>? This
@@ -594,7 +592,7 @@ const PixelManager = () => {
           </>
         }
         type="delete"
-        confirmText="Delete Pixel"
+        confirmText="Delete CAPI"
         cancelText="Cancel"
         onConfirm={handleDelete}
         isLoading={deleteModalState.isLoading}

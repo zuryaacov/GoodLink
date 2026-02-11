@@ -53,22 +53,20 @@ const Step3Tracking = ({ formData, updateFormData }) => {
     >
       <div>
         <h3 className="text-xl font-bold text-white mb-2">Step 3: Tracking & CAPI</h3>
-        <p className="text-slate-400 text-sm">
-          Configure tracking pixels and server-side reporting
-        </p>
+        <p className="text-slate-400 text-sm">Configure CAPI tracking and server-side reporting</p>
       </div>
 
-      {/* Pixel Selection */}
+      {/* CAPI Selection */}
       <div>
         <label className="block text-sm font-medium text-white mb-3">
-          Select Pixels <span className="text-slate-500">(Multi-select)</span>
+          Select CAPI Profiles <span className="text-slate-500">(Multi-select)</span>
         </label>
         {loadingPixels ? (
-          <div className="text-slate-400 text-sm">Loading pixels...</div>
+          <div className="text-slate-400 text-sm">Loading CAPI...</div>
         ) : availablePixels.length === 0 ? (
           <div className="p-4 bg-[#0b0f19] border border-[#232f48] rounded-xl text-center">
-            <p className="text-slate-400 text-sm mb-2">No pixels configured yet</p>
-            <p className="text-slate-500 text-xs">Go to Pixels Manager to add tracking pixels</p>
+            <p className="text-slate-400 text-sm mb-2">No CAPI profiles configured yet</p>
+            <p className="text-slate-500 text-xs">Go to CAPI Manager to add tracking profiles</p>
           </div>
         ) : (
           <div className="space-y-2">

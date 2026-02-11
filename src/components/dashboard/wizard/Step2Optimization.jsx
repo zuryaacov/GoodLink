@@ -247,7 +247,7 @@ const Step2Optimization = ({ formData, updateFormData }) => {
         <div>
           <label className="block text-sm font-medium text-white mb-4">CAPI Selection</label>
           {loadingPixels ? (
-            <div className="text-slate-400 text-sm">Loading pixels...</div>
+            <div className="text-slate-400 text-sm">Loading CAPI...</div>
           ) : (
             <div className="space-y-3">
               {availablePixels.map((pixel) => {

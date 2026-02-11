@@ -112,10 +112,10 @@ const Step5Review = ({ formData, generateRandomSlug }) => {
           <h4 className="text-sm font-bold text-white mb-4 uppercase tracking-wider">Tracking</h4>
           <div className="space-y-2">
             <div className="flex justify-between">
-              <span className="text-slate-400 text-sm">Pixels Selected</span>
+              <span className="text-slate-400 text-sm">CAPI Profiles Selected</span>
               <span className="text-white text-sm">
                 {formData.selectedPixels?.length > 0
-                  ? `${formData.selectedPixels.length} pixel(s)`
+                  ? `${formData.selectedPixels.length} CAPI profile(s)`
                   : 'None'}
               </span>
             </div>

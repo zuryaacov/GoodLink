@@ -984,10 +984,10 @@ export default function LinkWizardOnePerPage({
               {currentStep.id === 'capi' && (
                 <div className="flex flex-col min-h-0 flex-1">
                   {loadingPixels ? (
-                    <p className="text-slate-400">Loading pixels...</p>
+                    <p className="text-slate-400">Loading CAPI...</p>
                   ) : availablePixels.length === 0 ? (
                     <p className="text-slate-500 text-sm">
-                      No CAPI pixels yet. Add them in CAPI Manager.
+                      No CAPI profiles yet. Add one in CAPI Manager.
                     </p>
                   ) : (
                     <div
@@ -1104,7 +1104,7 @@ export default function LinkWizardOnePerPage({
                   </span>
                   <span className="font-bold text-purple-500 text-xs text-right max-w-[180px]">
                     {(formData.selectedPixels || []).length
-                      ? `${formData.selectedPixels.length} pixel(s)`
+                      ? `${formData.selectedPixels.length} CAPI profile(s)`
                       : 'None'}
                   </span>
                 </div>
