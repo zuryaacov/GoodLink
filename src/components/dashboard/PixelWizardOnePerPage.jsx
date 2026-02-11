@@ -340,7 +340,8 @@ export default function PixelWizardOnePerPage({ initialData, onSave, onBack, isE
       if (currentStep?.id === 'capiToken') {
         if (needsCapiInput && formData.capiToken?.trim()) {
           const tokenCheck = validateCapiToken(formData.capiToken, formData.platform);
-          if (!tokenCheck.isValid) nextErrors.capiToken = tokenCheck.error || 'Invalid token format.';
+          if (!tokenCheck.isValid)
+            nextErrors.capiToken = tokenCheck.error || 'Invalid token format.';
         }
       }
       if (currentStep?.id === 'eventType') {
@@ -513,23 +514,23 @@ export default function PixelWizardOnePerPage({ initialData, onSave, onBack, isE
                   <input
                     type="text"
                     value={formData.pixelId}
-                    onChange={(e) =>
-                      {
-                        setFormData((p) => ({
-                          ...p,
-                          pixelId:
-                            formData.platform === 'tiktok'
-                              ? e.target.value.toUpperCase()
-                              : e.target.value,
-                        }));
-                        setFieldErrors((prev) => ({ ...prev, pixelId: null }));
-                      }
-                    }
+                    onChange={(e) => {
+                      setFormData((p) => ({
+                        ...p,
+                        pixelId:
+                          formData.platform === 'tiktok'
+                            ? e.target.value.toUpperCase()
+                            : e.target.value,
+                      }));
+                      setFieldErrors((prev) => ({ ...prev, pixelId: null }));
+                    }}
                     placeholder={currentPlatform?.placeholder}
                     className="w-full bg-transparent py-5 px-6 text-xl outline-none border-none text-white placeholder-slate-500 font-mono"
                   />
                 </div>
-                {fieldErrors.pixelId && <p className="text-red-400 text-xs">{fieldErrors.pixelId}</p>}
+                {fieldErrors.pixelId && (
+                  <p className="text-red-400 text-xs">{fieldErrors.pixelId}</p>
+                )}
                 <p className="text-slate-500 text-xs">
                   {getPixelIdLabel(formData.platform)} • {currentPlatform?.placeholder}
                 </p>
@@ -572,25 +573,27 @@ export default function PixelWizardOnePerPage({ initialData, onSave, onBack, isE
             {currentStep?.id === 'eventType' && (
               <div className="space-y-4">
                 {formData.platform === 'taboola' || formData.platform === 'outbrain' ? (
-                  <div className="rounded-2xl bg-[#101622] border-2 border-[#232f48] focus-within:border-[#135bec] transition-all">
-                    <input
-                      type="text"
-                      value={formData.eventType}
-                      onChange={(e) => {
-                        setFormData((p) => ({ ...p, eventType: e.target.value }));
-                        setFieldErrors((prev) => ({ ...prev, eventType: null }));
-                      }}
-                      placeholder={
-                        formData.platform === 'taboola'
-                          ? 'e.g. lead, purchase, page_view'
-                          : 'e.g. arrival, lead, purchase'
-                      }
-                      className="w-full bg-transparent py-5 px-6 text-xl outline-none border-none text-white placeholder-slate-500"
-                    />
-                  </div>
-                  {fieldErrors.eventType && (
-                    <p className="text-red-400 text-xs">{fieldErrors.eventType}</p>
-                  )}
+                  <>
+                    <div className="rounded-2xl bg-[#101622] border-2 border-[#232f48] focus-within:border-[#135bec] transition-all">
+                      <input
+                        type="text"
+                        value={formData.eventType}
+                        onChange={(e) => {
+                          setFormData((p) => ({ ...p, eventType: e.target.value }));
+                          setFieldErrors((prev) => ({ ...prev, eventType: null }));
+                        }}
+                        placeholder={
+                          formData.platform === 'taboola'
+                            ? 'e.g. lead, purchase, page_view'
+                            : 'e.g. arrival, lead, purchase'
+                        }
+                        className="w-full bg-transparent py-5 px-6 text-xl outline-none border-none text-white placeholder-slate-500"
+                      />
+                    </div>
+                    {fieldErrors.eventType && (
+                      <p className="text-red-400 text-xs">{fieldErrors.eventType}</p>
+                    )}
+                  </>
                 ) : (
                   <>
                     <div className="rounded-2xl bg-[#101622] border-2 border-[#232f48] focus-within:border-[#135bec] transition-all overflow-hidden">
