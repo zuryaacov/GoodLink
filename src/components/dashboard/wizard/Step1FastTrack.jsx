@@ -56,7 +56,16 @@ const Step1FastTrack = ({
           if (!domainsError && customDomains && customDomains.length > 0) {
             // User has active custom domains - show all options including default
             const customDomainList = customDomains.map((d) => d.domain);
-            setDomains(['glynk.to', ...customDomainList]);
+            const seen = new Set();
+            const uniqueDomainList = ['glynk.to', ...customDomainList].filter((domain) => {
+              const normalized = String(domain || '')
+                .trim()
+                .toLowerCase();
+              if (!normalized || seen.has(normalized)) return false;
+              seen.add(normalized);
+              return true;
+            });
+            setDomains(uniqueDomainList);
           } else {
             // No active custom domains - just show default
             setDomains(['glynk.to']);

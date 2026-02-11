@@ -154,6 +154,18 @@ export default function LinkWizardOnePerPage({
   const [fallbackUrlError, setFallbackUrlError] = useState(null);
   const [validating, setValidating] = useState(false);
 
+  const uniqueDomains = (list) => {
+    const seen = new Set();
+    return (list || []).filter((d) => {
+      const normalized = String(d || '')
+        .trim()
+        .toLowerCase();
+      if (!normalized || seen.has(normalized)) return false;
+      seen.add(normalized);
+      return true;
+    });
+  };
+
   // Geo rule form
   const [showGeoForm, setShowGeoForm] = useState(false);
   const [newGeoRule, setNewGeoRule] = useState({ country: '', url: '' });
@@ -295,7 +307,7 @@ export default function LinkWizardOnePerPage({
             statusMap[d.domain] = d.status || 'active';
           });
           setDomainStatuses(statusMap);
-          setDomains(['glynk.to', ...list]);
+          setDomains(uniqueDomains(['glynk.to', ...list]));
         } else {
           setDomainStatuses({});
           setDomains(['glynk.to']);
