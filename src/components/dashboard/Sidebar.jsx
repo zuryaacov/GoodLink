@@ -164,20 +164,19 @@ const Sidebar = ({ className = '', onLinkClick }) => {
             key={link.name}
             to={link.href}
             end={true}
-            isActive={
-              link.href === '/dashboard'
-                ? (_, loc) =>
-                    loc.pathname === '/dashboard' || loc.pathname === '/dashboard/analytics'
-                : undefined
-            }
             onClick={onLinkClick}
-            className={({ isActive }) =>
-              `flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium transition-all duration-200 ${
-                isActive
+            className={({ isActive }) => {
+              const analyticsActive =
+                link.href === '/dashboard' &&
+                (location.pathname === '/dashboard' ||
+                  location.pathname === '/dashboard/analytics');
+              const active = link.href === '/dashboard' ? analyticsActive : isActive;
+              return `flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium transition-all duration-200 ${
+                active
                   ? 'bg-primary text-white shadow-lg shadow-primary/20'
                   : 'text-slate-400 hover:text-white hover:bg-white/5'
-              }`
-            }
+              }`;
+            }}
           >
             <span className="material-symbols-outlined text-[20px]">{link.icon}</span>
             {link.name}
