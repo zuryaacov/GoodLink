@@ -155,13 +155,41 @@ const UtmPresetManager = () => {
       onConfirm: async () => {
         try {
           setModalState((prev) => ({ ...prev, isLoading: true }));
-          const { error } = await supabase
+          const {
+            data: { user },
+          } = await supabase.auth.getUser();
+          if (!user) {
+            setModalState({
+              isOpen: true,
+              type: 'error',
+              title: 'Error',
+              message: 'You must be logged in to delete a preset.',
+              onConfirm: null,
+              isLoading: false,
+            });
+            return;
+          }
+          const { data, error } = await supabase
             .from('utm_presets')
             .update({ is_active: false })
-            .eq('id', preset.id);
+            .eq('id', preset.id)
+            .eq('user_id', user.id)
+            .select('id')
+            .maybeSingle();
 
           if (error) throw error;
-          await fetchPresets();
+          if (!data) {
+            setModalState({
+              isOpen: true,
+              type: 'error',
+              title: 'Error',
+              message: 'Preset not found or you do not have permission to delete it.',
+              onConfirm: null,
+              isLoading: false,
+            });
+            return;
+          }
+          await fetchPlanAndPresets();
           setModalState({
             isOpen: false,
             type: 'alert',
@@ -172,11 +200,15 @@ const UtmPresetManager = () => {
           });
         } catch (error) {
           console.error('Error deleting preset:', error);
+          const message =
+            error?.message && !error.message.includes('fetch')
+              ? error.message
+              : 'Failed to delete preset. Please try again.';
           setModalState({
             isOpen: true,
             type: 'error',
             title: 'Error',
-            message: 'Failed to delete preset. Please try again.',
+            message,
             onConfirm: null,
             isLoading: false,
           });
