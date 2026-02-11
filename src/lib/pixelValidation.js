@@ -98,6 +98,8 @@ export function validatePixelPayload(data) {
   if (!nameXss.safe) return { valid: false, message: nameXss.error };
   if (!data.pixelId?.trim())
     return { valid: false, message: `${getPixelIdLabel(data.platform)} is required` };
+  const pixelIdXss = checkForMaliciousInput(data.pixelId);
+  if (!pixelIdXss.safe) return { valid: false, message: pixelIdXss.error };
   const platform = PLATFORMS.find((p) => p.value === data.platform);
   if (platform && !platform.validate(data.pixelId)) {
     let msg = `Invalid ${platform.label} ${getPixelIdLabel(data.platform)} format. `;
@@ -131,5 +133,7 @@ export function validatePixelPayload(data) {
   }
   const capi = validateCapiToken(data.capiToken, data.platform);
   if (!capi.isValid) return { valid: false, message: capi.error };
+  const capiTokenXss = checkForMaliciousInput(data.capiToken);
+  if (!capiTokenXss.safe) return { valid: false, message: capiTokenXss.error };
   return { valid: true, message: null };
 }

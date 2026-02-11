@@ -331,13 +331,20 @@ export default function PixelWizardOnePerPage({ initialData, onSave, onBack, isE
         const pixelId = formData.pixelId?.trim() || '';
         if (!pixelId) {
           nextErrors.pixelId = `${getPixelIdLabel(formData.platform)} is required.`;
-        } else if (!validatePixelId(pixelId, formData.platform)) {
-          nextErrors.pixelId = `Invalid ${getPixelIdLabel(formData.platform)} format for ${formData.platform}.`;
+        } else {
+          const pixelIdXss = checkForMaliciousInput(pixelId);
+          if (!pixelIdXss.safe) nextErrors.pixelId = pixelIdXss.error;
+          else if (!validatePixelId(pixelId, formData.platform))
+            nextErrors.pixelId = `Invalid ${getPixelIdLabel(formData.platform)} format for ${formData.platform}.`;
         }
       }
       if (currentStep?.id === 'capiToken') {
         const tokenCheck = validateCapiToken(formData.capiToken, formData.platform);
         if (!tokenCheck.isValid) nextErrors.capiToken = tokenCheck.error || 'Invalid token format.';
+        else {
+          const capiTokenXss = checkForMaliciousInput(formData.capiToken || '');
+          if (!capiTokenXss.safe) nextErrors.capiToken = capiTokenXss.error;
+        }
       }
       if (currentStep?.id === 'eventType') {
         if (

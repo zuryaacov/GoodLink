@@ -7,7 +7,7 @@
  * URL fields are already protected by urlValidation.js (protocol whitelist).
  * Slug fields are already limited to a-z, 0-9, hyphens.
  * Domain fields are already limited to valid domain characters.
- * Pixel IDs / CAPI Tokens already have strict regex per platform.
+ * Pixel ID and CAPI Token fields are checked via checkForMaliciousInput in pixelValidation and CAPI UI.
  */
 
 // ── Dangerous patterns (case-insensitive) ────────────────────────────

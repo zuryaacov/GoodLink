@@ -8,6 +8,7 @@ import {
   getPixelIdLabel,
   PLATFORMS,
 } from '../../lib/pixelValidation';
+import { checkForMaliciousInput } from '../../lib/inputSanitization';
 import Modal from '../common/Modal';
 
 const getEventTypeLabel = (platform) =>
@@ -208,6 +209,12 @@ const PixelModal = ({ isOpen, onClose, initialData = null }) => {
     if (!formData.pixelId.trim()) {
       newErrors.pixelId = `${getPixelIdLabel(formData.platform)} is required`;
     } else {
+      const pixelIdXss = checkForMaliciousInput(formData.pixelId);
+      if (!pixelIdXss.safe) {
+        newErrors.pixelId = pixelIdXss.error;
+      }
+    }
+    if (!newErrors.pixelId && formData.pixelId.trim()) {
       const platform = PLATFORMS_WITH_PLACEHOLDERS.find((p) => p.value === formData.platform);
       if (platform && !platform.validate(formData.pixelId)) {
         const idLabel = getPixelIdLabel(formData.platform);
@@ -245,10 +252,13 @@ const PixelModal = ({ isOpen, onClose, initialData = null }) => {
       newErrors.customEventName = 'Custom event name is required';
     }
 
-    // CAPI Token is required (no length checks, only format/required)
+    // CAPI Token is required; then check for malicious input
     const capiValidation = validateCapiToken(formData.capiToken, formData.platform);
     if (!capiValidation.isValid) {
       newErrors.capiToken = capiValidation.error;
+    } else {
+      const capiTokenXss = checkForMaliciousInput(formData.capiToken || '');
+      if (!capiTokenXss.safe) newErrors.capiToken = capiTokenXss.error;
     }
 
     setErrors(newErrors);
