@@ -112,13 +112,13 @@ const getPlatformLogo = (platform) => {
 };
 
 const PLATFORMS = [
-  { value: 'meta', label: 'Facebook', placeholder: '15-16 digit Pixel ID (numbers only)' },
-  { value: 'instagram', label: 'Instagram', placeholder: '15-16 digit Pixel ID (numbers only)' },
-  { value: 'tiktok', label: 'TikTok', placeholder: '18-character Pixel ID (A-Z, 0-9)' },
+  { value: 'meta', label: 'Facebook', placeholder: 'Pixel ID (numbers only)' },
+  { value: 'instagram', label: 'Instagram', placeholder: 'Pixel ID (numbers only)' },
+  { value: 'tiktok', label: 'TikTok', placeholder: 'Pixel ID (A-Z, 0-9)' },
   { value: 'google', label: 'Google Ads', placeholder: 'Measurement_Id (e.g. G-77Y4B2X5Z1)' },
-  { value: 'snapchat', label: 'Snapchat', placeholder: 'UUID Pixel ID (36 characters)' },
-  { value: 'outbrain', label: 'Outbrain', placeholder: '32-character Marketer ID (0-9, a-f)' },
-  { value: 'taboola', label: 'Taboola', placeholder: 'Account ID (6-8 digits)' },
+  { value: 'snapchat', label: 'Snapchat', placeholder: 'UUID Pixel ID' },
+  { value: 'outbrain', label: 'Outbrain', placeholder: 'Marketer ID (0-9, a-f)' },
+  { value: 'taboola', label: 'Taboola', placeholder: 'Account ID (numbers only)' },
 ];
 
 // getPixelIdLabel imported from ../../lib/pixelValidation
@@ -147,17 +147,17 @@ const getCapiTokenPlaceholder = (platform) => {
   switch (platform) {
     case 'meta':
     case 'instagram':
-      return '180-250 character Access Token';
+      return 'Access Token';
     case 'tiktok':
-      return '64-character Access Token';
+      return 'Access Token';
     case 'google':
-      return '22-character Api_Secret';
+      return 'Api_Secret';
     case 'snapchat':
       return 'Access Token';
     case 'outbrain':
-      return '30-40 character Access Token';
+      return 'Access Token';
     case 'taboola':
-      return '30-45 character Client Secret';
+      return 'Client Secret';
     default:
       return 'CAPI Access Token';
   }

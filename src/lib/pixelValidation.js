@@ -16,17 +16,17 @@ export function validatePixelId(pixelId, platform) {
   switch (platform) {
     case 'meta':
     case 'instagram':
-      return /^\d{15,16}$/.test(trimmed);
+      return /^\d+$/.test(trimmed);
     case 'tiktok':
-      return /^[A-Z0-9]{18}$/.test(trimmed.toUpperCase());
+      return /^[A-Z0-9]+$/.test(trimmed.toUpperCase());
     case 'snapchat':
-      return /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(trimmed);
+      return /^[a-f0-9-]+$/i.test(trimmed);
     case 'google':
-      return /^G-[a-zA-Z0-9]{8,15}$/.test(trimmed);
+      return /^[a-zA-Z0-9-]+$/.test(trimmed);
     case 'outbrain':
-      return /^[a-f0-9]{32}$/.test(trimmed);
+      return /^[a-f0-9]+$/.test(trimmed);
     case 'taboola':
-      return /^\d{6,8}$/.test(trimmed);
+      return /^\d+$/.test(trimmed);
     default:
       return false;
   }
@@ -129,14 +129,14 @@ export function validatePixelPayload(data) {
   if (platform && !platform.validate(data.pixelId)) {
     let msg = `Invalid ${platform.label} ${getPixelIdLabel(data.platform)} format. `;
     if (data.platform === 'meta' || data.platform === 'instagram')
-      msg += 'Must be exactly 15 or 16 digits.';
+      msg += 'Use numbers only.';
     else if (data.platform === 'tiktok')
-      msg += 'Must be exactly 18 characters (uppercase A-Z and 0-9).';
+      msg += 'Use uppercase letters and numbers only.';
     else if (data.platform === 'google')
-      msg += 'Must start with G- followed by 8-15 letters and numbers.';
-    else if (data.platform === 'snapchat') msg += 'Must be a valid UUID (36 characters).';
-    else if (data.platform === 'outbrain') msg += 'Must be exactly 32 lowercase hex characters.';
-    else if (data.platform === 'taboola') msg += 'Must be between 6 and 8 digits.';
+      msg += 'Use letters, numbers, and hyphens only.';
+    else if (data.platform === 'snapchat') msg += 'Use hex characters and hyphens only.';
+    else if (data.platform === 'outbrain') msg += 'Use lowercase hex characters only (0-9, a-f).';
+    else if (data.platform === 'taboola') msg += 'Use numbers only.';
     else msg += 'Please check the format.';
     return { valid: false, message: msg };
   }

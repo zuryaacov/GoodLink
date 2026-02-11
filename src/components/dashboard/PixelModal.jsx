@@ -37,17 +37,17 @@ const getCapiTokenPlaceholder = (platform) => {
   switch (platform) {
     case 'meta':
     case 'instagram':
-      return 'Enter your 180-250 character Access Token';
+      return 'Enter your Access Token';
     case 'tiktok':
-      return 'Enter your 64-character Access Token';
+      return 'Enter your Access Token';
     case 'google':
-      return 'Enter your 22-character Api_Secret';
+      return 'Enter your Api_Secret';
     case 'snapchat':
       return 'Enter your Access Token';
     case 'outbrain':
-      return 'Enter your 30-40 character Access Token';
+      return 'Enter your Access Token';
     case 'taboola':
-      return 'Enter your 30-45 character Client Secret';
+      return 'Enter your Client Secret';
     default:
       return 'Enter your CAPI Access Token';
   }
@@ -57,15 +57,15 @@ const getCapiTokenPlaceholder = (platform) => {
 const PLATFORMS_WITH_PLACEHOLDERS = [
   {
     ...PLATFORMS.find((p) => p.value === 'meta'),
-    placeholder: 'Enter your 15-16 digit Pixel ID (numbers only)',
+    placeholder: 'Enter your Pixel ID (numbers only)',
   },
   {
     ...PLATFORMS.find((p) => p.value === 'instagram'),
-    placeholder: 'Enter your 15-16 digit Pixel ID (numbers only)',
+    placeholder: 'Enter your Pixel ID (numbers only)',
   },
   {
     ...PLATFORMS.find((p) => p.value === 'tiktok'),
-    placeholder: 'Enter your 18-character Pixel ID (A-Z, 0-9)',
+    placeholder: 'Enter your Pixel ID (A-Z, 0-9)',
   },
   {
     ...PLATFORMS.find((p) => p.value === 'google'),
@@ -73,15 +73,15 @@ const PLATFORMS_WITH_PLACEHOLDERS = [
   },
   {
     ...PLATFORMS.find((p) => p.value === 'snapchat'),
-    placeholder: 'Enter your UUID Pixel ID (36 characters)',
+    placeholder: 'Enter your UUID Pixel ID',
   },
   {
     ...PLATFORMS.find((p) => p.value === 'outbrain'),
-    placeholder: 'Enter your 32-character Marketer ID (0-9, a-f)',
+    placeholder: 'Enter your Marketer ID (0-9, a-f)',
   },
   {
     ...PLATFORMS.find((p) => p.value === 'taboola'),
-    placeholder: 'Enter your Account ID (6-8 digits)',
+    placeholder: 'Enter your Account ID (numbers only)',
   },
 ];
 
@@ -215,23 +215,22 @@ const PixelModal = ({ isOpen, onClose, initialData = null }) => {
         switch (formData.platform) {
           case 'meta':
           case 'instagram':
-            errorMsg += 'Must be exactly 15 or 16 digits.';
+            errorMsg += 'Use numbers only.';
             break;
           case 'tiktok':
-            errorMsg += 'Must be exactly 18 characters (uppercase letters A-Z and numbers 0-9).';
+            errorMsg += 'Use uppercase letters A-Z and numbers 0-9 only.';
             break;
           case 'google':
-            errorMsg +=
-              'Must start with G- followed by 8–15 letters and numbers (GA4 Measurement_Id).';
+            errorMsg += 'Must start with G- and contain only letters and numbers after it.';
             break;
           case 'snapchat':
-            errorMsg += 'Must be a valid UUID format (36 characters: 8-4-4-4-12).';
+            errorMsg += 'Use hex characters and hyphens only.';
             break;
           case 'outbrain':
-            errorMsg += 'Must be exactly 32 lowercase hex characters (0-9, a-f).';
+            errorMsg += 'Use lowercase hex characters only (0-9, a-f).';
             break;
           case 'taboola':
-            errorMsg += 'Must be between 6 and 8 digits.';
+            errorMsg += 'Use numbers only.';
             break;
           default:
             errorMsg += 'Please check the format.';
