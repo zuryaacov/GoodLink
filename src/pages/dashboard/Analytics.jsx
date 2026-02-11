@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import Modal from '../../components/common/Modal';
 
@@ -169,6 +170,14 @@ const GeoProgressCard = ({ geographic }) => {
 };
 
 const Analytics = () => {
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const linkDomain = searchParams.get('domain');
+  const linkSlug = searchParams.get('slug');
+  const isSingleLink = Boolean(
+    linkDomain != null && linkSlug != null && linkDomain !== '' && linkSlug !== ''
+  );
+
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({
     totalClicks: 0,
@@ -187,7 +196,7 @@ const Analytics = () => {
 
   useEffect(() => {
     fetchStats();
-  }, []);
+  }, [linkDomain, linkSlug]);
 
   const fetchStats = async () => {
     try {
@@ -199,11 +208,15 @@ const Analytics = () => {
         return;
       }
 
-      const { data: allClicks, error: clicksError } = await supabase
+      let query = supabase
         .from('clicks')
         .select('*')
         .eq('user_id', user.id)
         .order('clicked_at', { ascending: false });
+      if (isSingleLink) {
+        query = query.eq('domain', linkDomain).eq('slug', linkSlug);
+      }
+      const { data: allClicks, error: clicksError } = await query;
 
       if (clicksError) {
         console.error('Error fetching clicks:', clicksError);
@@ -345,13 +358,30 @@ const Analytics = () => {
     );
   }
 
+  const singleLinkUrl = isSingleLink ? `https://${linkDomain}/${linkSlug}` : null;
+
   return (
     <div className="flex flex-col gap-6 max-w-7xl mx-auto">
       <div className="flex flex-col gap-2">
         <h1 className="text-3xl font-bold text-white">Analytics</h1>
-        <p className="text-slate-400 text-sm">
-          Welcome back! Here&apos;s what&apos;s happening with your links.
-        </p>
+        {isSingleLink ? (
+          <p className="text-slate-400 text-sm">
+            Data for this link only:{' '}
+            <span className="font-mono text-white break-all">{singleLinkUrl}</span>
+            {' · '}
+            <button
+              type="button"
+              className="text-[#135bec] hover:underline bg-transparent border-none cursor-pointer p-0"
+              onClick={() => navigate('/dashboard/analytics')}
+            >
+              View all links
+            </button>
+          </p>
+        ) : (
+          <p className="text-slate-400 text-sm">
+            Welcome back! Here&apos;s what&apos;s happening with your links.
+          </p>
+        )}
       </div>
 
       {/* KPI Cards - 4 columns */}

@@ -315,6 +315,11 @@ const LinkManager = () => {
                     onDuplicate={(linkToDuplicate) =>
                       navigate(`/dashboard/links/new?duplicate=${linkToDuplicate.id}`)
                     }
+                    onAnalytics={(linkForAnalytics) =>
+                      navigate(
+                        `/dashboard/analytics?domain=${encodeURIComponent(linkForAnalytics.domain || '')}&slug=${encodeURIComponent(linkForAnalytics.slug || '')}`
+                      )
+                    }
                     onShowModal={(modalConfig) => setModalState(modalConfig)}
                   />
                 </div>
@@ -419,7 +424,7 @@ const LinkManager = () => {
 };
 
 // Actions Menu Component
-const LinkActionsMenu = ({ link, onRefresh, onEdit, onDuplicate, onShowModal }) => {
+const LinkActionsMenu = ({ link, onRefresh, onEdit, onDuplicate, onAnalytics, onShowModal }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -495,16 +500,7 @@ const LinkActionsMenu = ({ link, onRefresh, onEdit, onDuplicate, onShowModal }) 
             <button
               onClick={() => {
                 setIsOpen(false);
-                if (onShowModal) {
-                  onShowModal({
-                    isOpen: true,
-                    type: 'info',
-                    title: 'Coming Soon',
-                    message: 'Analytics page is coming soon. Stay tuned!',
-                    onConfirm: null,
-                    isLoading: false,
-                  });
-                }
+                if (onAnalytics) onAnalytics(link);
               }}
               className="w-full px-4 py-3 text-left text-white hover:bg-white/5 transition-colors flex items-center gap-3 text-sm"
             >
