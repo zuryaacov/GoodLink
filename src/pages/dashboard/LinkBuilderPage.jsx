@@ -299,6 +299,9 @@ const LinkBuilderPage = () => {
         }
         const payloadToSend = payloadFromCleanJson(payloadSafeForSupabase(updatePayload));
         console.log('[LinkBuilder] UPDATE links – payload keys:', Object.keys(payloadToSend));
+        console.log('[LinkBuilder] Link name being sent:', payloadToSend.name);
+        console.log('[LinkBuilder] Original formData.name:', formData.name);
+        console.log('[LinkBuilder] finalName:', finalName);
 
         // CRITICAL DEBUG: Scan for null characters in payload BEFORE sending
         debugFindNullInPayload(payloadToSend);

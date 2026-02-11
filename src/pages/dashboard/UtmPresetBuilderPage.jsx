@@ -3,6 +3,12 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { ArrowLeft } from 'lucide-react';
 import UtmPresetWizardOnePerPage from '../../components/dashboard/UtmPresetWizardOnePerPage';
+import {
+  cleanPayloadForDb,
+  payloadFromCleanJson,
+  payloadSafeForSupabase,
+  sanitizeInput,
+} from '../../lib/inputSanitization';
 
 const UtmPresetBuilderPage = () => {
   const { id } = useParams();
@@ -57,8 +63,11 @@ const UtmPresetBuilderPage = () => {
       data: { user },
     } = await supabase.auth.getUser();
     if (!user) throw new Error('User not authenticated');
-    const trimmedName = (presetData.name || '').trim();
+    const nameCheck = sanitizeInput(presetData.name || '');
+    if (!nameCheck.safe) throw new Error(nameCheck.error || 'Preset name contains invalid content');
+    const trimmedName = (nameCheck.sanitized || '').trim();
     if (!trimmedName) throw new Error('Preset name is required');
+    if (trimmedName.length > 100) throw new Error('Preset name cannot exceed 100 characters');
 
     const { data: existingPresets } = await supabase
       .from('utm_presets')
@@ -72,17 +81,27 @@ const UtmPresetBuilderPage = () => {
         'A UTM preset with this name already exists. Please choose a different name.'
       );
 
-    const payload = {
+    const sanitizeUtmField = (v) => {
+      if (!v) return null;
+      const check = sanitizeInput(v);
+      if (!check.safe) throw new Error(check.error || 'UTM field contains invalid content');
+      const cleaned = (check.sanitized || '').trim();
+      if (cleaned.length > 250) throw new Error('UTM value cannot exceed 250 characters');
+      return cleaned || null;
+    };
+
+    const payloadRaw = {
       name: trimmedName,
       platform: presetData.platform || 'meta',
       slug: null,
       link_id: null,
-      utm_source: presetData.utm_source || null,
-      utm_medium: presetData.utm_medium || null,
-      utm_campaign: presetData.utm_campaign || null,
-      utm_content: presetData.utm_content || null,
-      utm_term: presetData.utm_term || null,
+      utm_source: sanitizeUtmField(presetData.utm_source),
+      utm_medium: sanitizeUtmField(presetData.utm_medium),
+      utm_campaign: sanitizeUtmField(presetData.utm_campaign),
+      utm_content: sanitizeUtmField(presetData.utm_content),
+      utm_term: sanitizeUtmField(presetData.utm_term),
     };
+    const payload = payloadFromCleanJson(payloadSafeForSupabase(cleanPayloadForDb(payloadRaw)));
 
     if (id) {
       const { error } = await supabase.from('utm_presets').update(payload).eq('id', id);

@@ -1,6 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
-import { sanitizeInput } from '../../lib/inputSanitization';
+import {
+  cleanPayloadForDb,
+  findNullCharsInPayload,
+  payloadFromCleanJson,
+  payloadSafeForSupabase,
+  sanitizeInput,
+} from '../../lib/inputSanitization';
 import { X, CheckCircle2, Zap } from 'lucide-react';
 import outbrainLogo from '../../assets/id-bNajMAc_1769618145922.svg';
 import taboolaLogo from '../../assets/idRS-vCmxj_1769618141092.svg';
@@ -325,6 +331,7 @@ const UtmPresetBuilder = ({ isOpen, onClose, editingPreset, links }) => {
       // Validate UTM parameter lengths (max 250 chars each – browser/GA limits)
       // + XSS / injection check on each UTM parameter
       const utmMaxLen = 250;
+      const sanitizedParams = {};
       for (const field of ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term']) {
         if (params[field] && params[field].length > utmMaxLen) {
           setError(`${field.replace('utm_', 'UTM ')} cannot exceed ${utmMaxLen} characters`);
@@ -338,6 +345,9 @@ const UtmPresetBuilder = ({ isOpen, onClose, editingPreset, links }) => {
             setLoading(false);
             return;
           }
+          sanitizedParams[field] = (utmCheck.sanitized || '').trim();
+        } else {
+          sanitizedParams[field] = '';
         }
       }
 
@@ -351,7 +361,7 @@ const UtmPresetBuilder = ({ isOpen, onClose, editingPreset, links }) => {
       }
 
       // Check duplicate preset name (same user, case-insensitive)
-      const trimmedPresetName = presetName.trim();
+      const trimmedPresetName = (nameCheck.sanitized || '').trim();
       const { data: existingPresets } = await supabase
         .from('utm_presets')
         .select('id')
@@ -366,17 +376,24 @@ const UtmPresetBuilder = ({ isOpen, onClose, editingPreset, links }) => {
         return;
       }
 
-      const presetData = {
+      const presetDataRaw = {
         name: trimmedPresetName,
         platform: selectedPlatform,
         slug: null,
         link_id: null,
-        utm_source: params.utm_source || null,
-        utm_medium: params.utm_medium || null,
-        utm_campaign: params.utm_campaign || null,
-        utm_content: params.utm_content || null,
-        utm_term: params.utm_term || null,
+        utm_source: sanitizedParams.utm_source || null,
+        utm_medium: sanitizedParams.utm_medium || null,
+        utm_campaign: sanitizedParams.utm_campaign || null,
+        utm_content: sanitizedParams.utm_content || null,
+        utm_term: sanitizedParams.utm_term || null,
       };
+      const presetData = payloadFromCleanJson(
+        payloadSafeForSupabase(cleanPayloadForDb(presetDataRaw))
+      );
+      const nullPaths = findNullCharsInPayload(presetData);
+      if (nullPaths.length > 0) {
+        console.warn('[UTM Preset] Payload still has null chars:', nullPaths);
+      }
 
       if (editingPreset) {
         const { data, error } = await supabase
