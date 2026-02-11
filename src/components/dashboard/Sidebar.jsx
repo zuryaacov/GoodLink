@@ -163,7 +163,7 @@ const Sidebar = ({ className = '', onLinkClick }) => {
           <NavLink
             key={link.name}
             to={link.href}
-            end={link.href !== '/dashboard'}
+            end={true}
             isActive={
               link.href === '/dashboard'
                 ? (_, loc) =>
