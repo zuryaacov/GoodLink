@@ -123,7 +123,7 @@ export function validateSlugFormat(slug) {
         if (isLookalikeCharacter(char)) {
             return {
                 isValid: false,
-                error: `Invalid character "${char}" at position ${i + 1}. Only English letters, numbers, and hyphens are allowed.`,
+                error: 'Only English letters (a-z), numbers (0-9), and hyphens (-) are allowed.',
             };
         }
 
@@ -131,7 +131,7 @@ export function validateSlugFormat(slug) {
         if (!isEnglishLetter(char) && !isDigit(char) && !isHyphen(char)) {
             return {
                 isValid: false,
-                error: `Invalid character "${char}" at position ${i + 1}. Only English letters (a-z), numbers (0-9), and hyphens (-) are allowed.`,
+                error: 'Only English letters (a-z), numbers (0-9), and hyphens (-) are allowed.',
             };
         }
     }
@@ -450,14 +450,9 @@ export async function checkSlugContent(slug) {
         return result;
     }
 
-    // Skip moderation on localhost due to CORS restrictions
-    // Perspective API blocks localhost by default - need to configure API key restrictions
+    // Skip moderation on localhost due to CORS restrictions (do not show technical message to user)
     if (isLocalhost) {
-        const result = {
-            isSafe: true,
-            error: 'Content moderation skipped on localhost (CORS restrictions).',
-        };
-        // Cache for shorter time on localhost
+        const result = { isSafe: true };
         moderationCache.set(cacheKey, { result, timestamp: Date.now() });
         return result;
     }
@@ -491,52 +486,13 @@ export async function checkSlugContent(slug) {
         });
 
         if (!response.ok) {
-            const errorData = await response.text();
-            let errorMessage = 'Content moderation check unavailable.';
-
-            // Handle specific error codes
             if (response.status === 429) {
-                const result = {
-                    isSafe: true,
-                    error: 'Content moderation temporarily unavailable due to rate limiting.',
-                    rateLimited: true,
-                };
-                // Cache rate limit for 5 minutes to avoid repeated calls
+                const result = { isSafe: true, rateLimited: true };
                 moderationCache.set(cacheKey, { result, timestamp: Date.now() });
                 return result;
-            } else if (response.status === 400) {
-                // Bad Request
-                errorMessage = 'Invalid request to Perspective API. Please check the slug format.';
-            } else if (response.status === 403) {
-                // Forbidden - invalid API key, quota exceeded, or CORS issue
-                let parsedError;
-                try {
-                    parsedError = JSON.parse(errorData);
-                } catch {
-                    parsedError = { error: { message: errorData } };
-                }
-
-                const errorMsg = parsedError?.error?.message || errorData;
-
-                // Check if it's a CORS/localhost issue
-                if (errorMsg.includes('localhost') || errorMsg.includes('blocked') || errorMsg.includes('referer')) {
-                    errorMessage = 'CORS error: localhost is blocked. You need to configure API key restrictions in Google Cloud Console to allow localhost, or use a proxy.';
-                } else if (errorMsg.includes('quota') || errorMsg.includes('Quota')) {
-                    errorMessage = 'Quota exceeded. You have reached the daily limit (1,000 requests/day).';
-                } else if (errorMsg.includes('API key') || errorMsg.includes('invalid')) {
-                    errorMessage = 'Invalid API key. Please check your Perspective API key configuration.';
-                } else {
-                    errorMessage = `API error: ${errorMsg}`;
-                }
             }
-
-
-            // For all errors, fail open (don't block the user)
-            const result = {
-                isSafe: true,
-                error: errorMessage,
-                rateLimited: response.status === 429,
-            };
+            // For any other error, fail open (don't block the user; do not show technical message)
+            const result = { isSafe: true, rateLimited: false };
             moderationCache.set(cacheKey, { result, timestamp: Date.now() });
             return result;
         }
@@ -600,11 +556,8 @@ export async function checkSlugContent(slug) {
         moderationCache.set(cacheKey, { result, timestamp: Date.now() });
         return result;
     } catch (error) {
-        // Fail open - if check fails, allow the slug
-        return {
-            isSafe: true,
-            error: 'Content moderation check failed. Please try again.',
-        };
+        // Fail open - if check fails, allow the slug (do not show technical message to user)
+        return { isSafe: true };
     }
 }
 
@@ -667,29 +620,8 @@ async function checkSlugWithNaturalLanguage(slug) {
 
 
         if (!response.ok) {
-            const errorData = await response.text();
-            let parsedError;
-            try {
-                parsedError = JSON.parse(errorData);
-            } catch {
-                parsedError = { error: { message: errorData } };
-            }
-
-            const errorMsg = parsedError?.error?.message || errorData;
-
-            // If it's a 400 error, log more details for debugging
-            if (response.status === 400) {
-
-                // Check if error mentions the endpoint or feature
-                if (errorMsg && (errorMsg.includes('moderateText') || errorMsg.includes('not found') || errorMsg.includes('not available'))) {
-                }
-            }
-
-            // Fail open - don't block if Natural Language API fails
-            return {
-                isSafe: true,
-                error: `Natural Language API moderation check unavailable: ${errorMsg}`,
-            };
+            // Fail open - don't block if Natural Language API fails (do not show technical message to user)
+            return { isSafe: true };
         }
 
         // Parse the successful response
@@ -732,11 +664,8 @@ async function checkSlugWithNaturalLanguage(slug) {
             },
         };
     } catch (error) {
-        // Fail open - if check fails, allow the slug
-        return {
-            isSafe: true,
-            error: 'Natural Language API moderation check failed. Please try again.',
-        };
+        // Fail open - if check fails, allow the slug (do not show technical message to user)
+        return { isSafe: true };
     }
 }
 

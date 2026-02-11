@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import countriesData from '../../../data/countries.json';
-import { validateUrl } from '../../../lib/urlValidation';
+import { validateUrl, validateBotRedirectUrl } from '../../../lib/urlValidation';
 import Modal from '../../common/Modal';
 
 const botActionOptions = [
@@ -43,7 +43,7 @@ const Step3Security = ({ formData, updateFormData, onValidationRequest }) => {
     formDataRef.current = formData;
   }, [formData]);
 
-  // Validate fallback URL when it changes
+  // Validate fallback URL when it changes (blocked: glynk.to, goodlink.ai; cannot be same as link target)
   const validateFallbackUrl = (url) => {
     if (!url || !url.trim()) {
       setFallbackUrlError('Please enter a redirect URL for bots');
@@ -51,31 +51,18 @@ const Step3Security = ({ formData, updateFormData, onValidationRequest }) => {
       return false;
     }
 
-    const urlValidation = validateUrl(url);
-    if (!urlValidation.isValid) {
-      setFallbackUrlError(urlValidation.error || 'Invalid URL format');
+    const targetUrl = formDataRef.current?.targetUrl || '';
+    const botValidation = validateBotRedirectUrl(url, targetUrl);
+    if (!botValidation.isValid) {
+      setFallbackUrlError(botValidation.error || 'Invalid URL format');
       setFallbackUrlValid(false);
       return false;
     }
 
-    // Check if URL is pointing to glynk.to (not allowed)
-    try {
-      const urlObj = new URL(urlValidation.normalizedUrl);
-      const hostname = urlObj.hostname.toLowerCase().replace(/^www\./, '');
-      if (hostname === 'glynk.to') {
-        setFallbackUrlError('Redirect cannot be to glynk.to. Please use a different URL.');
-        setFallbackUrlValid(false);
-        return false;
-      }
-    } catch (error) {
-      // Continue if URL parsing fails
-    }
-
     setFallbackUrlError(null);
     setFallbackUrlValid(true);
-    // Update with normalized URL
-    if (urlValidation.normalizedUrl && urlValidation.normalizedUrl !== url) {
-      updateFormData('fallbackUrl', urlValidation.normalizedUrl);
+    if (botValidation.normalizedUrl && botValidation.normalizedUrl !== url) {
+      updateFormData('fallbackUrl', botValidation.normalizedUrl);
     }
     return true;
   };
@@ -98,31 +85,22 @@ const Step3Security = ({ formData, updateFormData, onValidationRequest }) => {
       return { isValid: false, normalizedUrl: null };
     }
 
-    const urlValidation = validateUrl(currentData.fallbackUrl);
-    if (!urlValidation.isValid) {
-      setFallbackUrlError(urlValidation.error || 'Invalid URL format');
+    const botValidation = validateBotRedirectUrl(
+      currentData.fallbackUrl,
+      currentData.targetUrl || ''
+    );
+    if (!botValidation.isValid) {
+      setFallbackUrlError(botValidation.error || 'Invalid URL format');
       setFallbackUrlValid(false);
       return { isValid: false, normalizedUrl: null };
     }
 
-    // Check if URL is pointing to glynk.to (not allowed)
-    try {
-      const urlObj = new URL(urlValidation.normalizedUrl);
-      const hostname = urlObj.hostname.toLowerCase().replace(/^www\./, '');
-      if (hostname === 'glynk.to') {
-        setFallbackUrlError('Redirect cannot be to glynk.to. Please use a different URL.');
-        setFallbackUrlValid(false);
-        return { isValid: false, normalizedUrl: null };
-      }
-    } catch (error) {
-      // Continue if URL parsing fails
-    }
-
-    // Validation passed - update UI state and return result
     setFallbackUrlError(null);
     setFallbackUrlValid(true);
-
-    return { isValid: true, normalizedUrl: urlValidation.normalizedUrl || currentData.fallbackUrl };
+    return {
+      isValid: true,
+      normalizedUrl: botValidation.normalizedUrl || currentData.fallbackUrl,
+    };
   }, []);
 
   // Expose validation function to parent component - update only when ref/callback changes

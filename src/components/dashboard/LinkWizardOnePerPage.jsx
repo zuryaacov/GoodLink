@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../../lib/supabase';
-import { validateUrl } from '../../lib/urlValidation';
+import { validateUrl, validateBotRedirectUrl } from '../../lib/urlValidation';
 import { checkUrlSafety } from '../../lib/urlSafetyCheck';
 import { validateSlug } from '../../lib/slugValidation';
 import { sanitizeInput } from '../../lib/inputSanitization';
@@ -513,7 +513,7 @@ export default function LinkWizardOnePerPage({
     }
   };
 
-  // Bot fallback URL validation
+  // Bot fallback URL validation (blocked: glynk.to, goodlink.ai; cannot be same as link target)
   const validateBotStep = () => {
     if (formData.botAction !== 'redirect') return true;
     const url = formData.fallbackUrl?.trim();
@@ -521,18 +521,11 @@ export default function LinkWizardOnePerPage({
       setFallbackUrlError('Please enter a redirect URL for bots.');
       return false;
     }
-    const v = validateUrl(url);
+    const v = validateBotRedirectUrl(url, formData.targetUrl || '');
     if (!v.isValid) {
       setFallbackUrlError(v.error || 'Invalid URL format');
       return false;
     }
-    try {
-      const host = new URL(v.normalizedUrl).hostname.toLowerCase().replace(/^www\./, '');
-      if (host === 'glynk.to') {
-        setFallbackUrlError('Redirect cannot be to glynk.to. Please use a different URL.');
-        return false;
-      }
-    } catch (_) {}
     setFallbackUrlError(null);
     if (v.normalizedUrl && v.normalizedUrl !== url) updateFormData('fallbackUrl', v.normalizedUrl);
     return true;
@@ -580,18 +573,11 @@ export default function LinkWizardOnePerPage({
           setFallbackUrlError('Please enter a redirect URL for bots.');
           return { isValid: false, normalizedUrl: null };
         }
-        const v = validateUrl(formData.fallbackUrl);
+        const v = validateBotRedirectUrl(formData.fallbackUrl, formData.targetUrl || '');
         if (!v.isValid) {
           setFallbackUrlError(v.error || 'Invalid URL');
           return { isValid: false, normalizedUrl: null };
         }
-        try {
-          const host = new URL(v.normalizedUrl).hostname.toLowerCase().replace(/^www\./, '');
-          if (host === 'glynk.to') {
-            setFallbackUrlError('Redirect cannot be to glynk.to.');
-            return { isValid: false, normalizedUrl: null };
-          }
-        } catch (_) {}
         setFallbackUrlError(null);
         return { isValid: true, normalizedUrl: v.normalizedUrl || formData.fallbackUrl };
       },

@@ -87,12 +87,47 @@ const twoPartTLDs = [
   'edu.cn',
 ];
 
-function validateRootRedirectUrl(url) {
+const BLOCKED_ROOT_REDIRECT_HOSTS = ['glynk.to', 'goodlink.ai'];
+
+function normalizeHostForComparison(value) {
+  if (!value || typeof value !== 'string') return '';
+  const trimmed = value.trim().toLowerCase();
+  const withoutProtocol = trimmed.replace(/^https?:\/\//, '');
+  const hostOnly = withoutProtocol.split('/')[0].split('?')[0].split('#')[0];
+  const withoutPort = hostOnly.replace(/:\d+$/, '');
+  const withoutTrailingDot = withoutPort.replace(/\.$/, '');
+  return withoutTrailingDot.replace(/^www\./, '');
+}
+
+function isBlockedRootRedirectHost(host) {
+  return BLOCKED_ROOT_REDIRECT_HOSTS.some(
+    (blockedHost) => host === blockedHost || host.endsWith(`.${blockedHost}`)
+  );
+}
+
+function validateRootRedirectUrl(url, customDomain = '') {
   if (!url || !url.trim()) return { isValid: true, sanitized: '' };
   const result = validateUrl(url);
   if (!result.isValid) return { isValid: false, error: result.error };
   try {
     const urlObj = new URL(result.normalizedUrl);
+    const redirectHostForComparison = normalizeHostForComparison(urlObj.hostname || '');
+    const customHostForComparison = normalizeHostForComparison(customDomain);
+
+    if (isBlockedRootRedirectHost(redirectHostForComparison)) {
+      return {
+        isValid: false,
+        error: 'Root redirect cannot point to glynk.to or goodlink.ai.',
+      };
+    }
+
+    if (customHostForComparison && redirectHostForComparison === customHostForComparison) {
+      return {
+        isValid: false,
+        error: 'Root redirect cannot be the same as your custom domain.',
+      };
+    }
+
     const hostParts = urlObj.hostname.split('.');
     let domainName;
     if (hostParts.length >= 3) {
@@ -103,8 +138,8 @@ function validateRootRedirectUrl(url) {
     } else if (hostParts.length === 2) {
       domainName = hostParts[0];
     }
-    if (domainName && domainName.length < 3 && domainName !== 'www') {
-      return { isValid: false, error: 'Domain name must be at least 3 characters' };
+    if (domainName && domainName.length < 2 && domainName !== 'www') {
+      return { isValid: false, error: 'Invalid domain' };
     }
   } catch (_) {}
   return { isValid: true, sanitized: result.normalizedUrl };
@@ -210,7 +245,8 @@ const AddDomainPage = () => {
       allowIP: false,
     });
     if (!validation.isValid) throw new Error(validation.error);
-    const rootValidation = validateRootRedirectUrl(redirect);
+    const finalDomain = validation.sanitized;
+    const rootValidation = validateRootRedirectUrl(redirect, finalDomain);
     if (!rootValidation.isValid) {
       setRootRedirectError(rootValidation.error);
       throw new Error(rootValidation.error);
@@ -224,7 +260,6 @@ const AddDomainPage = () => {
     if (!user) throw new Error('User not authenticated');
 
     // Use sanitized domain as-is (naked or with subdomain per user input – no forcing www.)
-    const finalDomain = validation.sanitized;
     setDomainName(finalDomain);
 
     let finalRootRedirect = null;

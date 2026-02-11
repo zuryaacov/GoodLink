@@ -5,6 +5,23 @@ import DNSRecordsDisplay from './DNSRecordsDisplay';
 import { validateDomain } from '../../lib/domainValidation';
 import { validateUrl } from '../../lib/urlValidation';
 
+const BLOCKED_ROOT_REDIRECT_HOSTS = ['glynk.to', 'goodlink.ai'];
+
+const normalizeHostForComparison = (value) => {
+  if (!value || typeof value !== 'string') return '';
+  const trimmed = value.trim().toLowerCase();
+  const withoutProtocol = trimmed.replace(/^https?:\/\//, '');
+  const hostOnly = withoutProtocol.split('/')[0].split('?')[0].split('#')[0];
+  const withoutPort = hostOnly.replace(/:\d+$/, '');
+  const withoutTrailingDot = withoutPort.replace(/\.$/, '');
+  return withoutTrailingDot.replace(/^www\./, '');
+};
+
+const isBlockedRootRedirectHost = (host) =>
+  BLOCKED_ROOT_REDIRECT_HOSTS.some(
+    (blockedHost) => host === blockedHost || host.endsWith(`.${blockedHost}`)
+  );
+
 const AddDomainModal = ({ isOpen, onClose, domain = null }) => {
   const [currentStep, setCurrentStep] = useState(1);
   const [domainName, setDomainName] = useState(domain?.domain || '');
@@ -27,7 +44,7 @@ const AddDomainModal = ({ isOpen, onClose, domain = null }) => {
   ];
 
   // Validate URL format for root redirect - uses same validation as target URL + min 3 char domain
-  const validateRootRedirectUrl = (url) => {
+  const validateRootRedirectUrl = (url, customDomain = '') => {
     if (!url || url.trim() === '') {
       return { isValid: true, sanitized: '' }; // Optional field
     }
@@ -39,9 +56,26 @@ const AddDomainModal = ({ isOpen, onClose, domain = null }) => {
       return { isValid: false, error: result.error };
     }
 
-    // Additional check: domain name must be at least 3 characters (like domain validation)
+    // Additional check: domain name must be at least 2 characters
     try {
       const urlObj = new URL(result.normalizedUrl);
+      const redirectHostForComparison = normalizeHostForComparison(urlObj.hostname || '');
+      const customHostForComparison = normalizeHostForComparison(customDomain);
+
+      if (isBlockedRootRedirectHost(redirectHostForComparison)) {
+        return {
+          isValid: false,
+          error: 'Root redirect cannot point to glynk.to or goodlink.ai.',
+        };
+      }
+
+      if (customHostForComparison && redirectHostForComparison === customHostForComparison) {
+        return {
+          isValid: false,
+          error: 'Root redirect cannot be the same as your custom domain.',
+        };
+      }
+
       const hostParts = urlObj.hostname.split('.');
 
       // Handle two-part TLDs like co.il, co.uk, com.br, etc.
@@ -140,8 +174,8 @@ const AddDomainModal = ({ isOpen, onClose, domain = null }) => {
         domainName = hostParts[0];
       }
 
-      if (domainName && domainName.length < 3 && domainName !== 'www') {
-        return { isValid: false, error: 'Domain name must be at least 3 characters' };
+      if (domainName && domainName.length < 2 && domainName !== 'www') {
+        return { isValid: false, error: 'Invalid domain' };
       }
     } catch (e) {
       // URL already validated above, this shouldn't fail
@@ -167,7 +201,7 @@ const AddDomainModal = ({ isOpen, onClose, domain = null }) => {
       }
 
       // Validate root redirect URL if provided
-      const rootRedirectValidation = validateRootRedirectUrl(rootRedirect);
+      const rootRedirectValidation = validateRootRedirectUrl(rootRedirect, validation.sanitized);
       if (!rootRedirectValidation.isValid) {
         setRootRedirectError(rootRedirectValidation.error);
         return;
@@ -204,7 +238,7 @@ const AddDomainModal = ({ isOpen, onClose, domain = null }) => {
           console.log('🔵 [AddDomain] Calling worker API:', apiUrl);
 
           // Get sanitized root redirect URL - store domain only (no https://) with www.
-          const rootRedirectValidation = validateRootRedirectUrl(rootRedirect);
+          const rootRedirectValidation = validateRootRedirectUrl(rootRedirect, finalDomain);
           let finalRootRedirect = null;
           if (rootRedirectValidation.sanitized) {
             // Remove protocol (https:// or http://)

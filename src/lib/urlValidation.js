@@ -100,7 +100,7 @@ export function validateUrl(urlString) {
   } catch (error) {
     return {
       isValid: false,
-      error: 'Invalid URL format',
+      error: 'Invalid domain',
     };
   }
 
@@ -111,7 +111,7 @@ export function validateUrl(urlString) {
   if (!hostname || hostname.length === 0) {
     return {
       isValid: false,
-      error: 'URL must contain a domain',
+      error: 'Invalid domain',
     };
   }
 
@@ -129,7 +129,7 @@ export function validateUrl(urlString) {
   if (!isValidDomainFormat) {
     return {
       isValid: false,
-      error: 'Invalid domain format',
+      error: 'Invalid domain',
     };
   }
 
@@ -137,7 +137,7 @@ export function validateUrl(urlString) {
   if (hostname.includes('--')) {
     return {
       isValid: false,
-      error: 'Domain cannot contain consecutive hyphens (--). Please remove the extra hyphen.',
+      error: 'Invalid domain',
     };
   }
 
@@ -147,7 +147,7 @@ export function validateUrl(urlString) {
     if (part.startsWith('-') || part.endsWith('-')) {
       return {
         isValid: false,
-        error: 'Domain parts cannot start or end with a hyphen',
+        error: 'Invalid domain',
       };
     }
   }
@@ -156,7 +156,7 @@ export function validateUrl(urlString) {
   if (domainParts.length < 2) {
     return {
       isValid: false,
-      error: 'Invalid domain format. Domain must include a top-level domain (TLD). Example: domain.com',
+      error: 'Invalid domain',
     };
   }
 
@@ -165,7 +165,7 @@ export function validateUrl(urlString) {
   if (!tld || tld.length < 2) {
     return {
       isValid: false,
-      error: 'Invalid domain format. Top-level domain (TLD) must be at least 2 characters. Example: domain.com',
+      error: 'Invalid domain',
     };
   }
 
@@ -173,7 +173,7 @@ export function validateUrl(urlString) {
   if (!/^[a-z]{2,}$/i.test(tld)) {
     return {
       isValid: false,
-      error: 'Invalid domain format. Top-level domain (TLD) must contain only letters.',
+      error: 'Invalid domain',
     };
   }
 
@@ -215,7 +215,7 @@ export function validateUrl(urlString) {
   if (domainParts.length === 2 && !validCommonTLDs.includes(tld.toLowerCase())) {
     return {
       isValid: false,
-      error: `Invalid domain format. "${tld}" is not a recognized top-level domain (TLD). Please verify the URL is correct.`,
+      error: 'Invalid domain',
     };
   }
 
@@ -274,7 +274,7 @@ export function validateUrl(urlString) {
       if (!legitimateDoubleTLDs.includes(doubleTLD)) {
         return {
           isValid: false,
-          error: `Invalid domain format. "${doubleTLD}" is not a recognized domain extension. Please verify the URL is correct.`,
+          error: 'Invalid domain',
         };
       }
     }
@@ -290,7 +290,7 @@ export function validateUrl(urlString) {
   })) {
     return {
       isValid: false,
-      error: 'Invalid domain format. Domain must be a fully qualified domain name (FQDN) with a valid TLD. Example: domain.com',
+      error: 'Invalid domain',
     };
   }
 
@@ -353,7 +353,7 @@ export function validateUrl(urlString) {
         if (!legitimateShortSubdomains.includes(subdomain.toLowerCase())) {
           return {
             isValid: false,
-            error: `Suspicious subdomain detected. "${subdomain}.${mainDomain}" may be a typo or phishing attempt. Please verify the URL is correct.`,
+            error: 'Invalid domain',
           };
         }
       }
@@ -365,7 +365,7 @@ export function validateUrl(urlString) {
       if (domainName.length <= 1) {
         return {
           isValid: false,
-          error: 'Domain name is too short. Please verify the URL is correct.',
+          error: 'Invalid domain',
         };
       }
     }
@@ -377,7 +377,7 @@ export function validateUrl(urlString) {
     if (part.length === 0) {
       return {
         isValid: false,
-        error: 'Domain parts cannot be empty',
+        error: 'Invalid domain',
       };
     }
   }
@@ -416,5 +416,64 @@ export function isUrlFormatValid(urlString) {
   }
 
   return true;
+}
+
+/** Hosts that cannot be used as bot redirect (or root redirect) destination */
+const BLOCKED_REDIRECT_HOSTS = ['glynk.to', 'goodlink.ai'];
+
+/**
+ * Normalize host from URL or host string for comparison (lowercase, no www, no port).
+ * @param {string} urlOrHost - Full URL or hostname
+ * @returns {string}
+ */
+function normalizeHostForRedirectComparison(urlOrHost) {
+  if (!urlOrHost || typeof urlOrHost !== 'string') return '';
+  const trimmed = urlOrHost.trim().toLowerCase();
+  const withoutProtocol = trimmed.replace(/^https?:\/\//, '');
+  const hostOnly = withoutProtocol.split('/')[0].split('?')[0].split('#')[0];
+  const withoutPort = hostOnly.replace(/:\d+$/, '');
+  return withoutPort.replace(/^www\./, '');
+}
+
+/**
+ * Check if host is a blocked redirect destination (glynk.to, goodlink.ai or their subdomains).
+ * @param {string} host - Normalized host (e.g. from normalizeHostForRedirectComparison)
+ * @returns {boolean}
+ */
+export function isBlockedRedirectHost(host) {
+  if (!host) return false;
+  return BLOCKED_REDIRECT_HOSTS.some(
+    (blocked) => host === blocked || host.endsWith(`.${blocked}`)
+  );
+}
+
+/**
+ * Validate bot redirect URL: must be valid URL, not blocked (glynk.to / goodlink.ai), and not same as link target.
+ * @param {string} redirectUrl - The bot redirect URL to validate
+ * @param {string} targetUrl - The link's target/destination URL (original link)
+ * @returns {{ isValid: boolean, error?: string, normalizedUrl?: string }}
+ */
+export function validateBotRedirectUrl(redirectUrl, targetUrl) {
+  const urlResult = validateUrl(redirectUrl);
+  if (!urlResult.isValid) return urlResult;
+
+  const redirectHost = normalizeHostForRedirectComparison(urlResult.normalizedUrl || redirectUrl);
+
+  if (isBlockedRedirectHost(redirectHost)) {
+    return {
+      isValid: false,
+      error: 'Redirect cannot point to glynk.to or goodlink.ai. Please use a different URL.',
+    };
+  }
+
+  const targetHost = normalizeHostForRedirectComparison(targetUrl || '');
+  if (targetHost && redirectHost === targetHost) {
+    return {
+      isValid: false,
+      error: 'Redirect cannot be the same as your link destination. Please use a different URL.',
+    };
+  }
+
+  return { isValid: true, normalizedUrl: urlResult.normalizedUrl };
 }
 

@@ -382,14 +382,7 @@ const NewLinkWizard = ({ isOpen, onClose, initialData = null }) => {
         isOpen: true,
         type: 'error',
         title: 'Error Creating Link',
-        message: (
-          <>
-            <p>{errorMessage}</p>
-            <p style={{ marginTop: '8px', fontSize: '0.9rem', color: '#6B7280' }}>
-              Please check the console for more details.
-            </p>
-          </>
-        ),
+        message: <p>{errorMessage}</p>,
         onConfirm: null,
         isLoading: false,
       });

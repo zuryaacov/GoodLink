@@ -50,44 +50,8 @@ export function validateCapiToken(token, platform) {
         return { isValid: false, error: 'Access Token is required' };
     }
   }
-  const trimmed = token.trim();
-
-  // Only validate allowed characters per platform – no length restrictions
-  switch (platform) {
-    case 'meta':
-    case 'instagram':
-      if (!/^[a-zA-Z0-9]+$/.test(trimmed))
-        return { isValid: false, error: 'Access Token must contain only letters and numbers' };
-      return { isValid: true, error: null };
-
-    case 'tiktok':
-      if (!/^[a-zA-Z0-9]+$/.test(trimmed))
-        return { isValid: false, error: 'TikTok Access Token must contain only letters and numbers' };
-      return { isValid: true, error: null };
-
-    case 'google':
-      if (!/^[a-zA-Z0-9_-]+$/.test(trimmed))
-        return { isValid: false, error: 'Google Api_Secret must contain only letters, numbers, underscores and hyphens' };
-      return { isValid: true, error: null };
-
-    case 'snapchat':
-      if (!/^[a-zA-Z0-9_\-]+$/.test(trimmed))
-        return { isValid: false, error: 'Snapchat Access Token must contain only letters, numbers, underscores and hyphens' };
-      return { isValid: true, error: null };
-
-    case 'outbrain':
-      if (!/^[a-zA-Z0-9]+$/.test(trimmed))
-        return { isValid: false, error: 'Outbrain Access Token must contain only letters and numbers' };
-      return { isValid: true, error: null };
-
-    case 'taboola':
-      if (!/^[a-zA-Z0-9]+$/.test(trimmed))
-        return { isValid: false, error: 'Taboola Client Secret must contain only letters and numbers' };
-      return { isValid: true, error: null };
-
-    default:
-      return { isValid: true, error: null };
-  }
+  // Token is required; we do not validate format or character set
+  return { isValid: true, error: null };
 }
 
 /**
