@@ -171,7 +171,7 @@ export default function AccountSettingsPage() {
   }
 
   const isGoogleUser = user?.app_metadata?.provider === 'google';
-  const currentPlan = profile?.plan || 'free'; // default to free
+  const currentPlan = profile?.plan_type || 'free'; // default to free
   const planDetails = PLAN_FEATURES[currentPlan] || PLAN_FEATURES.free;
 
   return (
