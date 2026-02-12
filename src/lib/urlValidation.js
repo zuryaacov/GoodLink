@@ -115,21 +115,32 @@ export function validateUrl(urlString) {
     };
   }
 
-  // Check 7: Valid domain - basic regex check
-  const domainRegex = /^(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)*[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?$/;
+  // Check 7: Block IP addresses and localhost - strictly enforce FQDN
   const ipv4Regex = /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
-  const ipv6Regex = /^\[(?:[0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}\]$|^\[(?:[0-9a-fA-F]{1,4}:)*:(?:[0-9a-fA-F]{1,4}:)*[0-9a-fA-F]{1,4}\]$/;
+  const ipv6Regex = /^\[?(?:[0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}\]?$|^\[?(?:[0-9a-fA-F]{1,4}:)*:(?:[0-9a-fA-F]{1,4}:)*[0-9a-fA-F]{1,4}\]?$/;
 
-  // Allow localhost, IPv4, IPv6, or valid domain format
-  const isValidDomainFormat = domainRegex.test(hostname) ||
-    ipv4Regex.test(hostname) ||
-    ipv6Regex.test(hostname) ||
-    hostname === 'localhost';
-
-  if (!isValidDomainFormat) {
+  if (ipv4Regex.test(hostname) || ipv6Regex.test(hostname)) {
     return {
       isValid: false,
-      error: 'Invalid domain',
+      error: 'IP addresses are not allowed. Please use a valid domain name.',
+    };
+  }
+
+  if (hostname === 'localhost') {
+    return {
+      isValid: false,
+      error: 'Localhost is not allowed. Please use a valid domain name.',
+    };
+  }
+
+  // Check 8: Valid domain using Regex
+  // This ensures it has valid characters and structure (e.g. example.com)
+  const domainRegex = /^(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}$/;
+
+  if (!domainRegex.test(hostname) && !isFQDN(hostname)) {
+    return {
+      isValid: false,
+      error: 'Invalid domain format. Must be a valid domain (e.g., example.com).',
     };
   }
 
