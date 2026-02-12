@@ -480,15 +480,16 @@ export default function AccountSettingsPage() {
                   </div>
                 </button>
               ) : (
-                <button className="w-full border border-[#232f48] bg-[#101622] text-slate-300 font-semibold py-3 rounded-xl hover:bg-[#1a2333] transition-colors">
+                <button
+                  type="button"
+                  onClick={() => {
+                    window.location.href = '/#pricing';
+                  }}
+                  className="w-full border border-[#232f48] bg-[#101622] text-slate-300 font-semibold py-3 rounded-xl hover:bg-[#1a2333] transition-colors"
+                >
                   Manage Subscription
                 </button>
               )}
-
-              <p className="text-xs text-center text-slate-500 mt-4">
-                Next billing date:{' '}
-                <span className="text-slate-400">{new Date().toLocaleDateString()}</span>
-              </p>
             </div>
           </div>
         </div>
