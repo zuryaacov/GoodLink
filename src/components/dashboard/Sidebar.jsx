@@ -8,6 +8,7 @@ const sidebarLinks = [
   { name: 'UTM Preset', href: '/dashboard/utm-presets', icon: 'campaign' },
   { name: 'CAPI Manager', href: '/dashboard/pixels', icon: 'ads_click' },
   { name: 'Custom Domains', href: '/dashboard/domains', icon: 'public' },
+  { name: 'Account Settings', href: '/dashboard/settings', icon: 'manage_accounts' },
 ];
 
 const Sidebar = ({ className = '', onLinkClick }) => {

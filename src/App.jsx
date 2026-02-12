@@ -99,6 +99,7 @@ function App() {
         <Route path="utm-presets" element={<UtmPresetManager />} />
         <Route path="pixels" element={<PixelManager />} />
         <Route path="domains" element={<CustomDomainsManager />} />
+        <Route path="settings" element={<AccountSettingsPage />} />
       </Route>
 
       {/* UTM Preset Builder Routes (without DashboardLayout/navbar) */}
