@@ -96,7 +96,7 @@ export default function AccountSettingsPage() {
         .single();
 
       setProfile(profileData || {});
-      setFullName(user.user_metadata?.full_name || '');
+      setFullName(profileData?.full_name?.trim() || user.user_metadata?.full_name || '');
       setEmail(user.email || '');
       setTimezone(profileData?.timezone || 'UTC');
 
@@ -171,10 +171,11 @@ export default function AccountSettingsPage() {
       const { error: authError } = await supabase.auth.updateUser(updates);
       if (authError) throw authError;
 
-      // 3. Update Profile Table (Timezone) – use UPDATE only; RLS allows UPDATE, not INSERT
+      // 3. Update Profile Table (full_name, timezone) – use UPDATE only; RLS allows UPDATE, not INSERT
       const { error: profileError } = await supabase
         .from('profiles')
         .update({
+          full_name: nameCheck.sanitized || fullName.trim(),
           timezone: timezone,
           updated_at: new Date().toISOString(),
         })
