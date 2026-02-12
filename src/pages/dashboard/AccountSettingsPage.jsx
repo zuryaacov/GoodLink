@@ -50,7 +50,7 @@ export default function AccountSettingsPage() {
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [timezone, setTimezone] = useState('UTC');
-  
+
   // Password Change State
   const [showPasswordChange, setShowPasswordChange] = useState(false);
   const [newPassword, setNewPassword] = useState('');
@@ -63,7 +63,9 @@ export default function AccountSettingsPage() {
 
   const fetchUserData = async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (!user) return;
       setUser(user);
 
@@ -73,7 +75,7 @@ export default function AccountSettingsPage() {
         .select('*')
         .eq('id', user.id)
         .single();
-      
+
       setProfile(profileData || {});
       setFullName(user.user_metadata?.full_name || '');
       setEmail(user.email || '');
@@ -96,7 +98,7 @@ export default function AccountSettingsPage() {
       if (!fullName.trim() || fullName.length < 2) {
         throw new Error('Full name must be at least 2 characters.');
       }
-      
+
       const nameCheck = sanitizeInput(fullName);
       if (!nameCheck.safe) throw new Error(nameCheck.error);
 
@@ -113,14 +115,14 @@ export default function AccountSettingsPage() {
       const { error: authError } = await supabase.auth.updateUser(updates);
       if (authError) throw authError;
 
-      // 3. Update Profile Table (Timezone)
+      // 3. Update Profile Table (Timezone) – use UPDATE only; RLS allows UPDATE, not INSERT
       const { error: profileError } = await supabase
         .from('profiles')
-        .upsert({
-          id: user.id,
+        .update({
           timezone: timezone,
           updated_at: new Date().toISOString(),
-        });
+        })
+        .eq('user_id', user.id);
 
       if (profileError) throw profileError;
 
@@ -134,7 +136,7 @@ export default function AccountSettingsPage() {
         }
         const { error: passError } = await supabase.auth.updateUser({ password: newPassword });
         if (passError) throw passError;
-        
+
         // Clear password fields on success
         setNewPassword('');
         setConfirmPassword('');
@@ -143,10 +145,9 @@ export default function AccountSettingsPage() {
 
       setSuccess('Profile updated successfully!');
       setTimeout(() => setSuccess(null), 3000);
-      
+
       // Refresh user data
       fetchUserData();
-
     } catch (err) {
       console.error(err);
       setError(err.message || 'Failed to update profile.');
@@ -165,7 +166,9 @@ export default function AccountSettingsPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-full text-white">
-        <span className="material-symbols-outlined animate-spin text-4xl text-[#135bec]">refresh</span>
+        <span className="material-symbols-outlined animate-spin text-4xl text-[#135bec]">
+          refresh
+        </span>
       </div>
     );
   }
@@ -176,243 +179,263 @@ export default function AccountSettingsPage() {
 
   return (
     <div className="p-6 max-w-4xl mx-auto pb-32">
-        <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="space-y-8"
-        >
-            {/* Header */}
-            <div>
-                <h1 className="text-3xl font-bold text-white mb-2">Account Settings</h1>
-                <p className="text-slate-400">Manage your profile, preferences, and subscription.</p>
-            </div>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="space-y-8"
+      >
+        {/* Header */}
+        <div>
+          <h1 className="text-3xl font-bold text-white mb-2">Account Settings</h1>
+          <p className="text-slate-400">Manage your profile, preferences, and subscription.</p>
+        </div>
 
-            {/* Main Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                
-                {/* Left Column: Profile & Settings */}
-                <div className="lg:col-span-2 space-y-6">
-                    
-                    {/* User Profile Card */}
-                    <div className="bg-[#101622] border border-[#232f48] rounded-2xl p-6">
-                        <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
-                            <span className="material-symbols-outlined text-[#135bec]">person</span>
-                            Personal Information
-                        </h2>
+        {/* Main Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Left Column: Profile & Settings */}
+          <div className="lg:col-span-2 space-y-6">
+            {/* User Profile Card */}
+            <div className="bg-[#101622] border border-[#232f48] rounded-2xl p-6">
+              <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
+                <span className="material-symbols-outlined text-[#135bec]">person</span>
+                Personal Information
+              </h2>
 
-                        <form onSubmit={handleUpdateProfile} className="space-y-6">
-                            
-                            {/* Full Name */}
-                            <div>
-                                <label className="block text-sm font-medium text-slate-400 mb-2">Full Name</label>
-                                <input
-                                    type="text"
-                                    value={fullName}
-                                    onChange={(e) => setFullName(e.target.value)}
-                                    className="w-full bg-[#0a0f18] border border-[#232f48] rounded-xl px-4 py-3 text-white focus:outline-none focus:border-[#135bec] transition-all"
-                                    placeholder="Your Name"
-                                />
-                            </div>
+              <form onSubmit={handleUpdateProfile} className="space-y-6">
+                {/* Full Name */}
+                <div>
+                  <label className="block text-sm font-medium text-slate-400 mb-2">Full Name</label>
+                  <input
+                    type="text"
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
+                    className="w-full bg-[#0a0f18] border border-[#232f48] rounded-xl px-4 py-3 text-white focus:outline-none focus:border-[#135bec] transition-all"
+                    placeholder="Your Name"
+                  />
+                </div>
 
-                            {/* Email Address */}
-                            <div>
-                                <label className="block text-sm font-medium text-slate-400 mb-2">Email Address</label>
-                                <input
-                                    type="email"
-                                    value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
-                                    disabled={isGoogleUser} // Locked for Google users
-                                    className={`w-full bg-[#0a0f18] border border-[#232f48] rounded-xl px-4 py-3 text-white focus:outline-none focus:border-[#135bec] transition-all ${isGoogleUser ? 'opacity-50 cursor-not-allowed' : ''}`}
-                                    placeholder="name@example.com"
-                                />
-                                {isGoogleUser && (
-                                    <p className="text-xs text-slate-500 mt-2 flex items-center gap-1">
-                                        <span className="material-symbols-outlined text-sm">info</span>
-                                        Managed by Google Sign-In
-                                    </p>
-                                )}
-                            </div>
+                {/* Email Address */}
+                <div>
+                  <label className="block text-sm font-medium text-slate-400 mb-2">
+                    Email Address
+                  </label>
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    disabled={isGoogleUser} // Locked for Google users
+                    className={`w-full bg-[#0a0f18] border border-[#232f48] rounded-xl px-4 py-3 text-white focus:outline-none focus:border-[#135bec] transition-all ${isGoogleUser ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    placeholder="name@example.com"
+                  />
+                  {isGoogleUser && (
+                    <p className="text-xs text-slate-500 mt-2 flex items-center gap-1">
+                      <span className="material-symbols-outlined text-sm">info</span>
+                      Managed by Google Sign-In
+                    </p>
+                  )}
+                </div>
 
-                            {/* Timezone Selector */}
-                            <div>
-                                <label className="block text-sm font-medium text-slate-400 mb-2">Timezone</label>
-                                <div className="relative">
-                                    <select
-                                        value={timezone}
-                                        onChange={(e) => setTimezone(e.target.value)}
-                                        className="w-full bg-[#0a0f18] border border-[#232f48] rounded-xl px-4 py-3 text-white appearance-none focus:outline-none focus:border-[#135bec] transition-all cursor-pointer"
-                                    >
-                                        {COMMON_TIMEZONES.map((tz) => (
-                                            <option key={tz.value} value={tz.value}>
-                                                {tz.label}
-                                            </option>
-                                        ))}
-                                    </select>
-                                    <span className="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
-                                        expand_more
-                                    </span>
-                                </div>
-                                <p className="text-xs text-slate-500 mt-2">
-                                    Used for analytics reports and scheduled events.
-                                </p>
-                            </div>
+                {/* Timezone Selector */}
+                <div>
+                  <label className="block text-sm font-medium text-slate-400 mb-2">Timezone</label>
+                  <div className="relative">
+                    <select
+                      value={timezone}
+                      onChange={(e) => setTimezone(e.target.value)}
+                      className="w-full bg-[#0a0f18] border border-[#232f48] rounded-xl px-4 py-3 text-white appearance-none focus:outline-none focus:border-[#135bec] transition-all cursor-pointer"
+                    >
+                      {COMMON_TIMEZONES.map((tz) => (
+                        <option key={tz.value} value={tz.value}>
+                          {tz.label}
+                        </option>
+                      ))}
+                    </select>
+                    <span className="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
+                      expand_more
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-500 mt-2">
+                    Used for analytics reports and scheduled events.
+                  </p>
+                </div>
 
-                            {/* Save Button */}
-                            <div className="pt-4 flex items-center justify-between">
-                                {success && (
-                                    <div className="text-green-400 text-sm flex items-center gap-2">
-                                        <span className="material-symbols-outlined">check_circle</span>
-                                        {success}
-                                    </div>
-                                )}
-                                {error && (
-                                    <div className="text-red-400 text-sm flex items-center gap-2">
-                                        <span className="material-symbols-outlined">error</span>
-                                        {error}
-                                    </div>
-                                )}
-                                <div className="flex-1"></div> {/* Spacer */}
-                                <button
-                                    type="submit"
-                                    disabled={saving}
-                                    className="bg-[#135bec] hover:bg-[#135bec]/90 text-white font-semibold py-3 px-8 rounded-xl transition-all shadow-[0_0_15px_rgba(19,91,236,0.3)] disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-                                >
-                                    {saving && <span className="material-symbols-outlined animate-spin text-sm">refresh</span>}
-                                    Save Changes
-                                </button>
-                            </div>
-                        </form>
+                {/* Save Button */}
+                <div className="pt-4 flex items-center justify-between">
+                  {success && (
+                    <div className="text-green-400 text-sm flex items-center gap-2">
+                      <span className="material-symbols-outlined">check_circle</span>
+                      {success}
                     </div>
-
-                    {/* Password Change Section (Only for Email Users) */}
-                    {!isGoogleUser && (
-                        <div className="bg-[#101622] border border-[#232f48] rounded-2xl p-6">
-                            <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
-                                <span className="material-symbols-outlined text-[#135bec]">lock</span>
-                                Security
-                            </h2>
-
-                            {!showPasswordChange ? (
-                                <button
-                                    onClick={() => setShowPasswordChange(true)}
-                                    className="flex items-center gap-2 text-slate-300 hover:text-white transition-colors border border-[#232f48] hover:border-slate-500 rounded-lg px-4 py-2"
-                                >
-                                    Change Password
-                                </button>
-                            ) : (
-                                <div className="space-y-4 bg-[#0a0f18] p-4 rounded-xl border border-[#232f48]">
-                                    <h3 className="text-white font-semibold mb-2">Change Password</h3>
-                                    
-                                    <div>
-                                        <label className="block text-xs font-medium text-slate-400 mb-1">New Password</label>
-                                        <input
-                                            type="password"
-                                            value={newPassword}
-                                            onChange={(e) => setNewPassword(e.target.value)}
-                                            className="w-full bg-[#101622] border border-[#232f48] rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-[#135bec]"
-                                            placeholder="Min. 8 characters"
-                                        />
-                                    </div>
-
-                                    <div>
-                                        <label className="block text-xs font-medium text-slate-400 mb-1">Confirm New Password</label>
-                                        <input
-                                            type="password"
-                                            value={confirmPassword}
-                                            onChange={(e) => setConfirmPassword(e.target.value)}
-                                            className={`w-full bg-[#101622] border border-[#232f48] rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-[#135bec] ${
-                                                confirmPassword && newPassword !== confirmPassword ? 'border-red-500' : ''
-                                            }`}
-                                            placeholder="Retype password"
-                                        />
-                                        {confirmPassword && newPassword !== confirmPassword && (
-                                            <p className="text-red-400 text-xs mt-1">Passwords do not match</p>
-                                        )}
-                                    </div>
-
-                                    <div className="flex justify-end gap-2 pt-2">
-                                        <button
-                                            type="button"
-                                            onClick={() => {
-                                                setShowPasswordChange(false);
-                                                setNewPassword('');
-                                                setConfirmPassword('');
-                                            }}
-                                            className="text-slate-400 hover:text-white text-xs px-3 py-2"
-                                        >
-                                            Cancel
-                                        </button>
-                                        <button // Note: Actual save happens in main form submit for simplicity, or could handle separately
-                                            type="button"
-                                            onClick={handleUpdateProfile} // Re-using main submit logic
-                                            disabled={!newPassword || newPassword !== confirmPassword || newPassword.length < 8}
-                                            className="bg-[#135bec] text-white text-xs font-bold px-4 py-2 rounded-lg disabled:opacity-50"
-                                        >
-                                            Update Password
-                                        </button>
-                                    </div>
-                                </div>
-                            )}
-                        </div>
+                  )}
+                  {error && (
+                    <div className="text-red-400 text-sm flex items-center gap-2">
+                      <span className="material-symbols-outlined">error</span>
+                      {error}
+                    </div>
+                  )}
+                  <div className="flex-1"></div> {/* Spacer */}
+                  <button
+                    type="submit"
+                    disabled={saving}
+                    className="bg-[#135bec] hover:bg-[#135bec]/90 text-white font-semibold py-3 px-8 rounded-xl transition-all shadow-[0_0_15px_rgba(19,91,236,0.3)] disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                  >
+                    {saving && (
+                      <span className="material-symbols-outlined animate-spin text-sm">
+                        refresh
+                      </span>
                     )}
+                    Save Changes
+                  </button>
                 </div>
-
-                {/* Right Column: Plan Status */}
-                <div className="lg:col-span-1 space-y-6">
-                    <div className="bg-gradient-to-b from-[#101622] to-[#0a0f18] border border-[#232f48] rounded-2xl p-6 relative overflow-hidden">
-                        {/* Status Badge */}
-                        <div className="absolute top-4 right-4">
-                            <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${
-                                currentPlan === 'pro' 
-                                    ? 'bg-[#FF10F0]/10 text-[#FF10F0] border border-[#FF10F0]/30'
-                                    : 'bg-slate-700/30 text-slate-300 border border-slate-600/30'
-                            }`}>
-                                {currentPlan} Plan
-                            </span>
-                        </div>
-
-                        <h2 className="text-xl font-bold text-white mb-1">Subscription</h2>
-                        <p className="text-slate-400 text-sm mb-6">Your current plan status.</p>
-
-                        <div className="space-y-4 mb-8">
-                            <div className="flex justify-between items-center text-sm border-b border-[#232f48] pb-3">
-                                <span className="text-slate-400">Links Created</span>
-                                <span className="text-white font-mono">{profile?.links_count || 0} / {planDetails.maxLinks}</span>
-                            </div>
-                            <div className="flex justify-between items-center text-sm border-b border-[#232f48] pb-3">
-                                <span className="text-slate-400">Monthly Clicks</span>
-                                <span className="text-white font-mono">{profile?.clicks_count || 0} / {planDetails.maxClicks}</span>
-                            </div>
-                            <div className="flex justify-between items-center text-sm border-b border-[#232f48] pb-3">
-                                <span className="text-slate-400">Custom Domains</span>
-                                <span className="text-white font-mono">{profile?.domains_count || 0} / {planDetails.domains}</span>
-                            </div>
-                        </div>
-
-                        {currentPlan !== 'pro' ? (
-                            <button
-                                onClick={handleOpenPaywall}
-                                className="w-full group relative overflow-hidden rounded-xl bg-gradient-to-r from-[#FF10F0] to-[#bc13fe] p-[1px]"
-                            >
-                                <div className="absolute inset-0 bg-gradient-to-r from-[#FF10F0] to-[#bc13fe] opacity-20 group-hover:opacity-40 transition-opacity" />
-                                <div className="relative bg-[#101622] rounded-[11px] px-6 py-3 flex items-center justify-center gap-2 group-hover:bg-opacity-90 transition-colors">
-                                    <span className="material-symbols-outlined text-[#FF10F0] group-hover:scale-110 transition-transform">rocket_launch</span>
-                                    <span className="font-bold text-white">Upgrade to Pro</span>
-                                </div>
-                            </button>
-                        ) : (
-                            <button className="w-full border border-[#232f48] bg-[#101622] text-slate-300 font-semibold py-3 rounded-xl hover:bg-[#1a2333] transition-colors">
-                                Manage Subscription
-                            </button>
-                        )}
-                        
-                        <p className="text-xs text-center text-slate-500 mt-4">
-                            Next billing date: <span className="text-slate-400">{new Date().toLocaleDateString()}</span>
-                        </p>
-                    </div>
-                </div>
+              </form>
             </div>
-        </motion.div>
+
+            {/* Password Change Section (Only for Email Users) */}
+            {!isGoogleUser && (
+              <div className="bg-[#101622] border border-[#232f48] rounded-2xl p-6">
+                <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
+                  <span className="material-symbols-outlined text-[#135bec]">lock</span>
+                  Security
+                </h2>
+
+                {!showPasswordChange ? (
+                  <button
+                    onClick={() => setShowPasswordChange(true)}
+                    className="flex items-center gap-2 text-slate-300 hover:text-white transition-colors border border-[#232f48] hover:border-slate-500 rounded-lg px-4 py-2"
+                  >
+                    Change Password
+                  </button>
+                ) : (
+                  <div className="space-y-4 bg-[#0a0f18] p-4 rounded-xl border border-[#232f48]">
+                    <h3 className="text-white font-semibold mb-2">Change Password</h3>
+
+                    <div>
+                      <label className="block text-xs font-medium text-slate-400 mb-1">
+                        New Password
+                      </label>
+                      <input
+                        type="password"
+                        value={newPassword}
+                        onChange={(e) => setNewPassword(e.target.value)}
+                        className="w-full bg-[#101622] border border-[#232f48] rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-[#135bec]"
+                        placeholder="Min. 8 characters"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-medium text-slate-400 mb-1">
+                        Confirm New Password
+                      </label>
+                      <input
+                        type="password"
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        className={`w-full bg-[#101622] border border-[#232f48] rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-[#135bec] ${
+                          confirmPassword && newPassword !== confirmPassword ? 'border-red-500' : ''
+                        }`}
+                        placeholder="Retype password"
+                      />
+                      {confirmPassword && newPassword !== confirmPassword && (
+                        <p className="text-red-400 text-xs mt-1">Passwords do not match</p>
+                      )}
+                    </div>
+
+                    <div className="flex justify-end gap-2 pt-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowPasswordChange(false);
+                          setNewPassword('');
+                          setConfirmPassword('');
+                        }}
+                        className="text-slate-400 hover:text-white text-xs px-3 py-2"
+                      >
+                        Cancel
+                      </button>
+                      <button // Note: Actual save happens in main form submit for simplicity, or could handle separately
+                        type="button"
+                        onClick={handleUpdateProfile} // Re-using main submit logic
+                        disabled={
+                          !newPassword || newPassword !== confirmPassword || newPassword.length < 8
+                        }
+                        className="bg-[#135bec] text-white text-xs font-bold px-4 py-2 rounded-lg disabled:opacity-50"
+                      >
+                        Update Password
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Right Column: Plan Status */}
+          <div className="lg:col-span-1 space-y-6">
+            <div className="bg-gradient-to-b from-[#101622] to-[#0a0f18] border border-[#232f48] rounded-2xl p-6 relative overflow-hidden">
+              {/* Status Badge */}
+              <div className="absolute top-4 right-4">
+                <span
+                  className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${
+                    currentPlan === 'pro'
+                      ? 'bg-[#FF10F0]/10 text-[#FF10F0] border border-[#FF10F0]/30'
+                      : 'bg-slate-700/30 text-slate-300 border border-slate-600/30'
+                  }`}
+                >
+                  {currentPlan} Plan
+                </span>
+              </div>
+
+              <h2 className="text-xl font-bold text-white mb-1">Subscription</h2>
+              <p className="text-slate-400 text-sm mb-6">Your current plan status.</p>
+
+              <div className="space-y-4 mb-8">
+                <div className="flex justify-between items-center text-sm border-b border-[#232f48] pb-3">
+                  <span className="text-slate-400">Links Created</span>
+                  <span className="text-white font-mono">
+                    {profile?.links_count || 0} / {planDetails.maxLinks}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center text-sm border-b border-[#232f48] pb-3">
+                  <span className="text-slate-400">Monthly Clicks</span>
+                  <span className="text-white font-mono">
+                    {profile?.clicks_count || 0} / {planDetails.maxClicks}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center text-sm border-b border-[#232f48] pb-3">
+                  <span className="text-slate-400">Custom Domains</span>
+                  <span className="text-white font-mono">
+                    {profile?.domains_count || 0} / {planDetails.domains}
+                  </span>
+                </div>
+              </div>
+
+              {currentPlan !== 'pro' ? (
+                <button
+                  onClick={handleOpenPaywall}
+                  className="w-full group relative overflow-hidden rounded-xl bg-gradient-to-r from-[#FF10F0] to-[#bc13fe] p-[1px]"
+                >
+                  <div className="absolute inset-0 bg-gradient-to-r from-[#FF10F0] to-[#bc13fe] opacity-20 group-hover:opacity-40 transition-opacity" />
+                  <div className="relative bg-[#101622] rounded-[11px] px-6 py-3 flex items-center justify-center gap-2 group-hover:bg-opacity-90 transition-colors">
+                    <span className="material-symbols-outlined text-[#FF10F0] group-hover:scale-110 transition-transform">
+                      rocket_launch
+                    </span>
+                    <span className="font-bold text-white">Upgrade to Pro</span>
+                  </div>
+                </button>
+              ) : (
+                <button className="w-full border border-[#232f48] bg-[#101622] text-slate-300 font-semibold py-3 rounded-xl hover:bg-[#1a2333] transition-colors">
+                  Manage Subscription
+                </button>
+              )}
+
+              <p className="text-xs text-center text-slate-500 mt-4">
+                Next billing date:{' '}
+                <span className="text-slate-400">{new Date().toLocaleDateString()}</span>
+              </p>
+            </div>
+          </div>
+        </div>
+      </motion.div>
     </div>
   );
 }
