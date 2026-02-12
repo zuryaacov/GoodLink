@@ -485,9 +485,12 @@ export default function AccountSettingsPage() {
                   onClick={() => {
                     window.location.href = '/#pricing';
                   }}
-                  className="w-full border border-[#232f48] bg-[#101622] text-slate-300 font-semibold py-3 rounded-xl hover:bg-[#1a2333] transition-colors"
+                  className="w-full group relative overflow-hidden rounded-xl bg-gradient-to-r from-[#FF10F0] to-[#bc13fe] p-[1px]"
                 >
-                  Manage Subscription
+                  <div className="absolute inset-0 bg-gradient-to-r from-[#FF10F0] to-[#bc13fe] opacity-20 group-hover:opacity-40 transition-opacity" />
+                  <div className="relative w-full bg-[#101622] rounded-[11px] px-6 py-3 flex items-center justify-center gap-2 group-hover:bg-opacity-90 transition-colors">
+                    <span className="font-semibold text-[#FF10F0]">Manage Subscription</span>
+                  </div>
                 </button>
               )}
             </div>
