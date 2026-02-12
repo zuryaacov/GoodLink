@@ -11,6 +11,20 @@ const PLAN_FEATURES = {
     pixels: 0,
     support: 'Community',
   },
+  start: {
+    maxLinks: 100,
+    maxClicks: '50K',
+    domains: 1,
+    pixels: 2,
+    support: 'Email',
+  },
+  advanced: {
+    maxLinks: 500,
+    maxClicks: '250K',
+    domains: 3,
+    pixels: 5,
+    support: 'Priority',
+  },
   pro: {
     maxLinks: 'Unlimited',
     maxClicks: '1M',
@@ -57,6 +71,11 @@ export default function AccountSettingsPage() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [passwordError, setPasswordError] = useState(null);
 
+  // Usage counts (from DB, not profiles table)
+  const [linksCount, setLinksCount] = useState(0);
+  const [monthlyClicksCount, setMonthlyClicksCount] = useState(0);
+  const [domainsCount, setDomainsCount] = useState(0);
+
   useEffect(() => {
     fetchUserData();
   }, []);
@@ -80,6 +99,43 @@ export default function AccountSettingsPage() {
       setFullName(user.user_metadata?.full_name || '');
       setEmail(user.email || '');
       setTimezone(profileData?.timezone || 'UTC');
+
+      // Fetch usage counts from actual tables
+      const [linksRes, clicksRes, domainsRes] = await Promise.all([
+        supabase
+          .from('links')
+          .select('id', { count: 'exact', head: true })
+          .eq('user_id', user.id)
+          .neq('status', 'deleted'),
+        (() => {
+          const now = new Date();
+          const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+          const endOfMonth = new Date(
+            now.getFullYear(),
+            now.getMonth() + 1,
+            0,
+            23,
+            59,
+            59,
+            999
+          ).toISOString();
+          return supabase
+            .from('clicks')
+            .select('id', { count: 'exact', head: true })
+            .eq('user_id', user.id)
+            .gte('clicked_at', startOfMonth)
+            .lte('clicked_at', endOfMonth);
+        })(),
+        supabase
+          .from('custom_domains')
+          .select('id', { count: 'exact', head: true })
+          .eq('user_id', user.id)
+          .neq('status', 'deleted'),
+      ]);
+
+      setLinksCount(linksRes?.count ?? 0);
+      setMonthlyClicksCount(clicksRes?.count ?? 0);
+      setDomainsCount(domainsRes?.count ?? 0);
     } catch (err) {
       console.error('Error fetching user data:', err);
     } finally {
@@ -392,19 +448,19 @@ export default function AccountSettingsPage() {
                 <div className="flex justify-between items-center text-sm border-b border-[#232f48] pb-3">
                   <span className="text-slate-400">Links Created</span>
                   <span className="text-white font-mono">
-                    {profile?.links_count || 0} / {planDetails.maxLinks}
+                    {linksCount} / {planDetails.maxLinks}
                   </span>
                 </div>
                 <div className="flex justify-between items-center text-sm border-b border-[#232f48] pb-3">
                   <span className="text-slate-400">Monthly Clicks</span>
                   <span className="text-white font-mono">
-                    {profile?.clicks_count || 0} / {planDetails.maxClicks}
+                    {monthlyClicksCount.toLocaleString()} / {planDetails.maxClicks}
                   </span>
                 </div>
                 <div className="flex justify-between items-center text-sm border-b border-[#232f48] pb-3">
                   <span className="text-slate-400">Custom Domains</span>
                   <span className="text-white font-mono">
-                    {profile?.domains_count || 0} / {planDetails.domains}
+                    {domainsCount} / {planDetails.domains}
                   </span>
                 </div>
               </div>
