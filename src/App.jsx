@@ -12,6 +12,7 @@ import PixelBuilderPage from './pages/dashboard/PixelBuilderPage';
 import CustomDomainsManager from './pages/dashboard/CustomDomainsManager';
 import AddDomainPage from './pages/dashboard/AddDomainPage';
 import LinkBuilderPage from './pages/dashboard/LinkBuilderPage';
+import AccountSettingsPage from './pages/dashboard/AccountSettingsPage';
 import { supabase } from './lib/supabase';
 
 const ProtectedRoute = ({ children }) => {
