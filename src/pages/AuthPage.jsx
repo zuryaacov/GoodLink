@@ -649,12 +649,13 @@ const AuthPage = () => {
                   <div className="flex flex-col gap-2">
                     <label className="text-sm font-bold text-slate-300 ml-1">Email Address</label>
                     <input
-                      type="email"
+                      type="text"
+                      inputMode="email"
+                      autoComplete="email"
                       placeholder="name@example.com"
                       className="h-12 w-full bg-[#192233] border border-white/10 rounded-xl px-4 text-white focus:outline-none focus:border-primary/50 transition-colors"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      required
                     />
                   </div>
                   <div className="flex flex-col gap-2">
@@ -680,7 +681,6 @@ const AuthPage = () => {
                         className="h-12 w-full bg-[#192233] border border-white/10 rounded-xl px-4 pr-12 text-white focus:outline-none focus:border-primary/50 transition-colors"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
-                        required
                       />
                       <button
                         type="button"
@@ -792,18 +792,18 @@ const AuthPage = () => {
                       className="h-12 w-full bg-[#192233] border border-white/10 rounded-xl px-4 text-white focus:outline-none focus:border-primary/50 transition-colors"
                       value={fullName}
                       onChange={(e) => setFullName(e.target.value)}
-                      required
                     />
                   </div>
                   <div className="flex flex-col gap-2">
                     <label className="text-sm font-bold text-slate-300 ml-1">Email Address</label>
                     <input
-                      type="email"
+                      type="text"
+                      inputMode="email"
+                      autoComplete="email"
                       placeholder="name@example.com"
                       className="h-12 w-full bg-[#192233] border border-white/10 rounded-xl px-4 text-white focus:outline-none focus:border-primary/50 transition-colors"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      required
                     />
                   </div>
                   <div className="flex flex-col gap-2">
@@ -815,7 +815,6 @@ const AuthPage = () => {
                         className="h-12 w-full bg-[#192233] border border-white/10 rounded-xl px-4 pr-12 text-white focus:outline-none focus:border-primary/50 transition-colors"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
-                        required
                       />
                       <button
                         type="button"
@@ -839,7 +838,6 @@ const AuthPage = () => {
                         className="h-12 w-full bg-[#192233] border border-white/10 rounded-xl px-4 pr-12 text-white focus:outline-none focus:border-primary/50 transition-colors"
                         value={confirmPassword}
                         onChange={(e) => setConfirmPassword(e.target.value)}
-                        required
                       />
                       <button
                         type="button"
@@ -973,12 +971,13 @@ const AuthPage = () => {
                   <div className="flex flex-col gap-2">
                     <label className="text-sm font-bold text-slate-300 ml-1">Email Address</label>
                     <input
-                      type="email"
+                      type="text"
+                      inputMode="email"
+                      autoComplete="email"
                       placeholder="name@example.com"
                       className="h-12 w-full bg-[#192233] border border-white/10 rounded-xl px-4 text-white focus:outline-none focus:border-primary/50 transition-colors"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      required
                     />
                   </div>
                   <button

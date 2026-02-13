@@ -277,7 +277,9 @@ export default function AccountSettingsPage() {
                     Email Address
                   </label>
                   <input
-                    type="email"
+                    type="text"
+                    inputMode="email"
+                    autoComplete="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     disabled={isGoogleUser} // Locked for Google users
