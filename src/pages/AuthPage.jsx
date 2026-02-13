@@ -219,6 +219,7 @@ const AuthPage = () => {
       try {
         const widgetId = window.turnstile.render(container, {
           sitekey: siteKey,
+          language: 'auto',
           callback: (token) => {
             setTurnstileToken(token);
           },
