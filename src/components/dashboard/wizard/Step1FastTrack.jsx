@@ -176,33 +176,8 @@ const Step1FastTrack = ({
       return result;
     }
 
-    // Use normalized URL from validation
+    // Use normalized URL from validation (validateUrl already blocks glynk.to / goodlink.ai)
     const normalizedUrl = validation.normalizedUrl;
-
-    // Check if URL is pointing to glynk.to (not allowed - cannot redirect to own domain)
-    try {
-      const urlObj = new URL(normalizedUrl);
-      const hostname = urlObj.hostname.toLowerCase().replace(/^www\./, '');
-
-      if (hostname === 'glynk.to') {
-        const result = {
-          isSafe: false,
-          urlExists: false,
-          error: 'Redirect cannot be to glynk.to. Please use a different URL.',
-        };
-        setSafetyCheck({
-          loading: false,
-          isSafe: false,
-          threatType: null,
-          error: 'Redirect cannot be to glynk.to. Please use a different URL.',
-          urlExists: false,
-        });
-        return result;
-      }
-    } catch (error) {
-      // If URL parsing fails, continue with normal validation
-      console.error('Error checking glynk.to domain:', error);
-    }
 
     // Perform safety check with normalized URL (only if validation passed)
     console.log('🔵 [performSafetyCheckAndGetResult] Starting safety check for:', normalizedUrl);

@@ -20,6 +20,9 @@
 
 import isFQDN from 'validator/lib/isFQDN';
 
+/** Hosts that cannot be used (glynk.to, goodlink.ai in any form including www) */
+const BLOCKED_REDIRECT_HOSTS = ['glynk.to', 'goodlink.ai'];
+
 /**
  * Validate URL structure and format
  * 
@@ -104,6 +107,14 @@ export function validateUrl(urlString) {
     };
   }
 
+  // 5a. Block URLs with @ (userinfo), e.g. https://example.com@google.com
+  if (urlObj.username || urlObj.password) {
+    return {
+      isValid: false,
+      error: 'URL cannot contain @ in the address. Please use a valid URL.',
+    };
+  }
+
   // 5. Extract hostname (domain)
   const hostname = urlObj.hostname;
 
@@ -130,6 +141,19 @@ export function validateUrl(urlString) {
     return {
       isValid: false,
       error: 'Localhost is not allowed. Please use a valid domain name.',
+    };
+  }
+
+  // Check 7b: Block glynk.to and goodlink.ai (any form: www, subdomain)
+  const normalizedHost = hostname.toLowerCase().replace(/^www\./, '');
+  if (
+    BLOCKED_REDIRECT_HOSTS.some(
+      (b) => normalizedHost === b || normalizedHost.endsWith('.' + b)
+    )
+  ) {
+    return {
+      isValid: false,
+      error: 'This URL cannot point to glynk.to or goodlink.ai. Please use a different URL.',
     };
   }
 
@@ -428,9 +452,6 @@ export function isUrlFormatValid(urlString) {
 
   return true;
 }
-
-/** Hosts that cannot be used as bot redirect (or root redirect) destination */
-const BLOCKED_REDIRECT_HOSTS = ['glynk.to', 'goodlink.ai'];
 
 /**
  * Normalize host from URL or host string for comparison (lowercase, no www, no port).

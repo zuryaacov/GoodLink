@@ -44,6 +44,17 @@ export function validateDomain(domain, options = {}) {
     return { isValid: false, error: 'Domain is empty after sanitization', sanitized: null };
   }
 
+  // 2b. Block goodlink.ai and glynk.to (any form: domain or subdomain)
+  const BLOCKED_DOMAINS = ['glynk.to', 'goodlink.ai'];
+  const normalizedForBlock = sanitized.replace(/^www\./i, '');
+  if (
+    BLOCKED_DOMAINS.some(
+      (b) => normalizedForBlock === b || normalizedForBlock.endsWith('.' + b)
+    )
+  ) {
+    return { isValid: false, error: 'This domain cannot be used.', sanitized: null };
+  }
+
   // 3. בדיקת localhost
   if (sanitized === 'localhost') {
     if (allowLocalhost) {

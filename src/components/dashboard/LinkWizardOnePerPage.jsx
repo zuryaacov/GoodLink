@@ -403,14 +403,6 @@ export default function LinkWizardOnePerPage({
       return false;
     }
     const normalizedUrl = validation.normalizedUrl;
-    try {
-      const urlObj = new URL(normalizedUrl);
-      const host = urlObj.hostname.toLowerCase().replace(/^www\./, '');
-      if (host === 'glynk.to') {
-        setUrlError('Redirect cannot be to glynk.to. Please use a different URL.');
-        return false;
-      }
-    } catch (_) {}
 
     setUrlSafety({ loading: true, isSafe: null });
     setUrlError(null);
@@ -617,21 +609,6 @@ export default function LinkWizardOnePerPage({
     if (!v.isValid) {
       setGeoRuleErrors((e) => ({ ...e, url: v.error || 'Invalid URL' }));
       return;
-    }
-    // Block glynk.to as geo redirect target
-    try {
-      const geoHost = new URL(v.normalizedUrl || newGeoRule.url).hostname
-        .toLowerCase()
-        .replace(/^www\./, '');
-      if (geoHost === 'glynk.to') {
-        setGeoRuleErrors((e) => ({
-          ...e,
-          url: 'Redirect cannot be to glynk.to. Please use a different URL.',
-        }));
-        return;
-      }
-    } catch {
-      /* URL constructor failed – already caught by validateUrl */
     }
     updateFormData('geoRules', [
       ...rules,
