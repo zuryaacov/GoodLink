@@ -27,6 +27,13 @@ const LinkBuilderPage = () => {
   const wizardRef = useRef(null);
   const [initialLoading, setInitialLoading] = useState(!!linkIdToLoad);
 
+  const getLinksReturnPath = (spaceIdOverride = null) => {
+    const effectiveSpaceId = spaceIdOverride || formData.spaceId || spaceIdFromQuery || null;
+    return effectiveSpaceId
+      ? `/dashboard/links?space_id=${encodeURIComponent(effectiveSpaceId)}`
+      : '/dashboard/links';
+  };
+
   const getInitialFormData = () => ({
     linkId: id || null,
     name: '',
@@ -105,7 +112,7 @@ const LinkBuilderPage = () => {
         data: { user },
       } = await supabase.auth.getUser();
       if (!user) {
-        navigate('/dashboard/links');
+        navigate(getLinksReturnPath());
         return;
       }
 
@@ -118,7 +125,7 @@ const LinkBuilderPage = () => {
 
       if (error) throw error;
       if (!data) {
-        navigate('/dashboard/links');
+        navigate(getLinksReturnPath());
         return;
       }
 
@@ -182,7 +189,7 @@ const LinkBuilderPage = () => {
       });
     } catch (error) {
       console.error('Error fetching link:', error);
-      navigate('/dashboard/links');
+      navigate(getLinksReturnPath());
     } finally {
       setInitialLoading(false);
     }
@@ -361,7 +368,7 @@ const LinkBuilderPage = () => {
               <strong>Short URL:</strong> {shortUrl}
             </p>
           ),
-          onConfirm: () => navigate('/dashboard/links'),
+          onConfirm: () => navigate(getLinksReturnPath(formData.spaceId)),
           isLoading: false,
         });
       } else {
@@ -477,7 +484,7 @@ const LinkBuilderPage = () => {
               <strong>Short URL:</strong> {shortUrl}
             </p>
           ),
-          onConfirm: () => navigate('/dashboard/links'),
+          onConfirm: () => navigate(getLinksReturnPath(formData.spaceId)),
           isLoading: false,
         });
       }
@@ -522,7 +529,7 @@ const LinkBuilderPage = () => {
       <div className="flex-shrink-0 z-10 bg-[#0b0f19] border-b border-slate-800 px-4 py-4">
         <div className="max-w-4xl mx-auto flex items-center gap-4">
           <button
-            onClick={() => navigate('/dashboard/links')}
+            onClick={() => navigate(getLinksReturnPath())}
             className="p-2 text-slate-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors"
           >
             <ArrowLeft size={24} />

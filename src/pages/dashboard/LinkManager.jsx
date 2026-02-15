@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import Modal from '../../components/common/Modal';
 import { updateLinkInRedis, deleteLinkFromRedis } from '../../lib/redisCache';
@@ -31,6 +31,7 @@ const SPACE_NAME_REGEX = /^[A-Za-z0-9 !@#$%^&*()\-\+=}{\[\]]+$/;
 
 const LinkManager = () => {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [userId, setUserId] = useState(null);
   const [links, setLinks] = useState([]);
   const [spaces, setSpaces] = useState([]);
@@ -67,6 +68,12 @@ const LinkManager = () => {
   useEffect(() => {
     fetchData();
   }, []);
+
+  // Sync current space from URL query (supports refresh/back/forward)
+  useEffect(() => {
+    const querySpaceId = searchParams.get('space_id') || null;
+    setCurrentSpaceId((prev) => (prev === querySpaceId ? prev : querySpaceId));
+  }, [searchParams]);
 
   const fetchData = async () => {
     try {
@@ -164,6 +171,25 @@ const LinkManager = () => {
   const currentSpace = currentSpaceId ? spaceById[currentSpaceId] || null : null;
   const currentLevel = currentSpace?.level ?? 0;
   const nextKind = KIND_BY_LEVEL[currentLevel] || null;
+
+  const goToSpace = (spaceId) => {
+    const normalized = spaceId || null;
+    setCurrentSpaceId(normalized);
+    const next = new URLSearchParams(searchParams);
+    if (normalized) {
+      next.set('space_id', normalized);
+    } else {
+      next.delete('space_id');
+    }
+    setSearchParams(next, { replace: true });
+  };
+
+  // If URL contains stale/deleted space_id, reset to root
+  useEffect(() => {
+    if (!loading && currentSpaceId && !spaceById[currentSpaceId]) {
+      goToSpace(null);
+    }
+  }, [loading, currentSpaceId, spaceById]);
 
   const childSpaces = useMemo(() => {
     if (!nextKind) return [];
@@ -332,7 +358,7 @@ const LinkManager = () => {
       if (error) throw error;
 
       if (currentSpaceId === space.id) {
-        setCurrentSpaceId(space.parent_id || null);
+        goToSpace(space.parent_id || null);
       }
       await fetchData();
     } catch (error) {
@@ -521,7 +547,7 @@ const LinkManager = () => {
     <div className="flex flex-col gap-6 md:gap-8 w-full max-w-7xl mx-auto">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="flex flex-col gap-2">
-          <h1 className="text-2xl md:text-3xl font-bold text-white">Link Manager</h1>
+          <h1 className="text-2xl md:text-3xl font-bold text-white">My Workspace</h1>
           <p className="text-sm md:text-base text-slate-400">
             Active Grid hierarchy: Workspaces → Campaigns → Groups
           </p>
@@ -564,7 +590,7 @@ const LinkManager = () => {
       <div className="flex flex-wrap items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-300">
         <button
           type="button"
-          onClick={() => setCurrentSpaceId(null)}
+          onClick={() => goToSpace(null)}
           className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-[#2a3552] bg-[#101622] hover:bg-[#151d2d] transition-colors"
         >
           <Home size={13} />
@@ -575,7 +601,7 @@ const LinkManager = () => {
             <ChevronRight size={12} className="text-slate-500" />
             <button
               type="button"
-              onClick={() => setCurrentSpaceId(b.id)}
+              onClick={() => goToSpace(b.id)}
               className="px-3 py-1.5 rounded-lg border border-[#2a3552] bg-[#101622] hover:bg-[#151d2d] transition-colors"
             >
               {b.name}
@@ -595,11 +621,11 @@ const LinkManager = () => {
                 key={space.id}
                 role="button"
                 tabIndex={0}
-                onClick={() => setCurrentSpaceId(space.id)}
+                onClick={() => goToSpace(space.id)}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' || e.key === ' ') {
                     e.preventDefault();
-                    setCurrentSpaceId(space.id);
+                    goToSpace(space.id);
                   }
                 }}
                 className="group relative text-left bg-[#101622] border border-[#232f48] rounded-[1.25rem] p-6 flex flex-col min-h-[240px] transition-all duration-300 hover:border-[#FF00E5] hover:shadow-[0_12px_30px_rgba(255,0,229,0.18)]"
@@ -647,7 +673,7 @@ const LinkManager = () => {
                         onClick={() => handleCancelSpace(space)}
                         className="w-full px-4 py-2.5 text-left text-red-400 hover:bg-red-400/10 transition-colors text-sm"
                       >
-                        Cancel
+                        Delete
                       </button>
                     </div>
                   )}
