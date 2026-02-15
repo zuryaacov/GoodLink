@@ -687,12 +687,14 @@ const LinkManager = () => {
 
       {/* Individual links divider */}
       {directLinks.length > 0 && (
-        <div className="flex justify-center">
-          <div className="px-6 py-1.5 rounded-full border border-[#FF00E5]/30 bg-[#161C2C] shadow-[0_0_20px_rgba(255,0,229,0.15)]">
-            <span className="text-[11px] font-black text-white uppercase tracking-[0.4em] whitespace-nowrap">
-              Individual Links
+        <div className="relative flex items-center gap-6 py-4">
+          <div className="h-[2px] flex-1 bg-gradient-to-r from-transparent via-[#FF00E5]/40 to-[#FF00E5]"></div>
+          <div className="px-8 py-2 rounded-full border border-[#FF00E5]/30 bg-[#161C2C] shadow-[0_0_30px_rgba(255,0,229,0.2)]">
+            <span className="text-[12px] font-black text-white uppercase tracking-[0.5em] whitespace-nowrap">
+              DIRECT LINKS
             </span>
           </div>
+          <div className="h-[2px] flex-1 bg-gradient-to-r from-[#FF00E5] via-[#FF00E5]/40 to-transparent"></div>
         </div>
       )}
 
