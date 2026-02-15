@@ -184,6 +184,15 @@ export async function checkSlugAvailability(slug, domain, userId, supabase, excl
         };
     }
 
+    // Uniqueness is per (domain + slug): domain is required
+    const normalizedDomain = domain != null ? String(domain).trim().toLowerCase() : '';
+    if (!normalizedDomain) {
+        return {
+            isAvailable: false,
+            error: 'Domain is required to check slug availability.',
+        };
+    }
+
     try {
         // Normalize slug first
         const formatCheck = validateSlugFormat(slug);
@@ -196,18 +205,15 @@ export async function checkSlugAvailability(slug, domain, userId, supabase, excl
 
         const normalizedSlug = formatCheck.normalizedSlug;
 
-        // Check availability based on domain type
-        // If domain is "glynk.to" (default domain), check system-wide
-        // If domain is custom, check only for that user
-        const normalizedDomain = domain?.toLowerCase() || '';
+        // Check availability per (domain + slug): same slug can exist on different domains
+        // If domain is "glynk.to" (default), check system-wide; if custom, check only this user
         const isDefaultDomain = normalizedDomain === 'glynk.to';
 
-        // Case-insensitive slug check
         let query = supabase
             .from('links')
             .select('id, slug, domain, user_id')
             .ilike('slug', normalizedSlug)
-            .eq('domain', domain);
+            .ilike('domain', normalizedDomain);
 
         // For default domain, check all users (system-wide)
         // For custom domain, check only this user's links
@@ -233,8 +239,8 @@ export async function checkSlugAvailability(slug, domain, userId, supabase, excl
             return {
                 isAvailable: false,
                 error: isDefaultDomain
-                    ? `This slug "${normalizedSlug}" is already taken. Please choose a different slug.`
-                    : `This slug "${normalizedSlug}" is already taken for your domain "${domain}". Please choose a different slug.`,
+                    ? `This slug "${normalizedSlug}" is already taken on ${normalizedDomain}. Please choose a different slug.`
+                    : `This slug "${normalizedSlug}" is already taken for your domain "${normalizedDomain}". Please choose a different slug.`,
             };
         }
 
@@ -729,10 +735,18 @@ export async function validateSlug(
     } else {
     }
 
-    // 3. Availability check (if enabled)
+    // 3. Availability check (if enabled) – per (domain + slug)
     let availabilityCheck = { isAvailable: true };
     if (checkAvailability) {
-        availabilityCheck = await checkSlugAvailability(normalizedSlug, domain, userId, supabase, excludeLinkId);
+        const domainForCheck = domain != null ? String(domain).trim() : '';
+        if (!domainForCheck) {
+            return {
+                isValid: false,
+                error: 'Please select a domain first, then enter the slug.',
+                normalizedSlug,
+            };
+        }
+        availabilityCheck = await checkSlugAvailability(normalizedSlug, domainForCheck, userId, supabase, excludeLinkId);
         if (!availabilityCheck.isAvailable) {
             return {
                 isValid: false,
