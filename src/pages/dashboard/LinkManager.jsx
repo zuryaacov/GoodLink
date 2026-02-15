@@ -477,7 +477,9 @@ const LinkManager = () => {
                     className="w-full px-4 py-3 text-left text-white hover:bg-white/5 transition-colors flex items-center justify-between"
                   >
                     <span>{option.label}</span>
-                    <span className="material-symbols-outlined text-base text-slate-400">chevron_right</span>
+                    <span className="material-symbols-outlined text-base text-slate-400">
+                      chevron_right
+                    </span>
                   </button>
                 ))}
               </div>
@@ -740,12 +742,14 @@ const LinkManager = () => {
             <input
               type="text"
               value={spaceModal.name}
-              onChange={(e) => setSpaceModal((prev) => ({ ...prev, name: e.target.value, error: null }))}
+              onChange={(e) =>
+                setSpaceModal((prev) => ({ ...prev, name: e.target.value, error: null }))
+              }
               className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm"
               placeholder={`Enter ${spaceModal.kind ? KIND_LABEL[spaceModal.kind] : 'item'} name`}
             />
             <p className="text-xs text-slate-500">
-              Allowed: English letters, numbers, and !@#$%^&amp;*)(-+=}{][
+              {'Allowed: English letters, numbers, and !@#$%^&*)(-+=}{]['}
             </p>
             {spaceModal.error ? <p className="text-sm text-red-500">{spaceModal.error}</p> : null}
           </div>
