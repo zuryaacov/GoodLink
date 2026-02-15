@@ -27,7 +27,7 @@ const KIND_LABEL = {
   group: 'Group',
 };
 
-const SPACE_NAME_REGEX = /^[A-Za-z0-9!@#$%^&*()\-\+=}{\[\]]+$/;
+const SPACE_NAME_REGEX = /^[A-Za-z0-9 !@#$%^&*()\-\+=}{\[\]]+$/;
 
 const LinkManager = () => {
   const navigate = useNavigate();
@@ -39,8 +39,11 @@ const LinkManager = () => {
   const [clickCountsMap, setClickCountsMap] = useState({}); // key: domain/slug -> count
   const [loading, setLoading] = useState(true);
   const [createMenuOpen, setCreateMenuOpen] = useState(false);
+  const [openSpaceMenuId, setOpenSpaceMenuId] = useState(null);
   const [spaceModal, setSpaceModal] = useState({
     isOpen: false,
+    mode: 'create', // 'create' | 'edit'
+    spaceId: null,
     kind: null,
     name: '',
     error: null,
@@ -211,8 +214,23 @@ const LinkManager = () => {
     setCreateMenuOpen(false);
     setSpaceModal({
       isOpen: true,
+      mode: 'create',
+      spaceId: null,
       kind,
       name: '',
+      error: null,
+      isLoading: false,
+    });
+  };
+
+  const openEditSpaceModal = (space) => {
+    setOpenSpaceMenuId(null);
+    setSpaceModal({
+      isOpen: true,
+      mode: 'edit',
+      spaceId: space.id,
+      kind: space.kind,
+      name: space.name || '',
       error: null,
       isLoading: false,
     });
@@ -229,12 +247,12 @@ const LinkManager = () => {
     if (trimmed.length < 2) return 'Name must be at least 2 characters.';
     if (trimmed.length > 80) return 'Name cannot exceed 80 characters.';
     if (!SPACE_NAME_REGEX.test(trimmed)) {
-      return 'Allowed: English letters, numbers, and !@#$%^&*)(-+=}{][';
+      return 'Allowed: English letters, numbers, spaces, and !@#$%^&*)(-+=}{][';
     }
     return null;
   };
 
-  const handleCreateSpace = async () => {
+  const handleSaveSpace = async () => {
     const validationError = validateSpaceName(spaceModal.name);
     if (validationError) {
       setSpaceModal((prev) => ({ ...prev, error: validationError }));
@@ -245,25 +263,40 @@ const LinkManager = () => {
       return;
     }
 
-    const nextLevel = currentSpaceId ? (currentSpace?.level || 0) + 1 : 1;
-    if (nextLevel > 3) {
-      setSpaceModal((prev) => ({ ...prev, error: 'Maximum depth reached (3 levels).' }));
-      return;
-    }
-
     try {
       setSpaceModal((prev) => ({ ...prev, isLoading: true, error: null }));
-      const payload = {
-        user_id: userId,
-        name: spaceModal.name.trim(),
-        kind: spaceModal.kind,
-        level: nextLevel,
-        parent_id: currentSpaceId || null,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      };
-      const { error } = await supabase.from('link_spaces').insert(payload);
-      if (error) throw error;
+      if (spaceModal.mode === 'edit' && spaceModal.spaceId) {
+        const { error } = await supabase
+          .from('link_spaces')
+          .update({
+            name: spaceModal.name.trim(),
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', spaceModal.spaceId)
+          .eq('user_id', userId);
+        if (error) throw error;
+      } else {
+        const nextLevel = currentSpaceId ? (currentSpace?.level || 0) + 1 : 1;
+        if (nextLevel > 3) {
+          setSpaceModal((prev) => ({
+            ...prev,
+            isLoading: false,
+            error: 'Maximum depth reached (3 levels).',
+          }));
+          return;
+        }
+        const payload = {
+          user_id: userId,
+          name: spaceModal.name.trim(),
+          kind: spaceModal.kind,
+          level: nextLevel,
+          parent_id: currentSpaceId || null,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        };
+        const { error } = await supabase.from('link_spaces').insert(payload);
+        if (error) throw error;
+      }
       setSpaceModal((prev) => ({ ...prev, isOpen: false, isLoading: false }));
       await fetchData();
     } catch (error) {
@@ -272,6 +305,45 @@ const LinkManager = () => {
         isLoading: false,
         error: error?.message || 'Failed to create item. Please try again.',
       }));
+    }
+  };
+
+  const handleCancelSpace = async (space) => {
+    setOpenSpaceMenuId(null);
+    const stats = getSpaceStats(space.id);
+    if (stats.linksCount > 0) {
+      setModalState({
+        isOpen: true,
+        type: 'alert',
+        title: 'Cannot cancel this item',
+        message:
+          'This item contains links. You cannot cancel it until you move or delete all links inside it.',
+        onConfirm: null,
+        isLoading: false,
+      });
+      return;
+    }
+    try {
+      const { error } = await supabase
+        .from('link_spaces')
+        .delete()
+        .eq('id', space.id)
+        .eq('user_id', userId);
+      if (error) throw error;
+
+      if (currentSpaceId === space.id) {
+        setCurrentSpaceId(space.parent_id || null);
+      }
+      await fetchData();
+    } catch (error) {
+      setModalState({
+        isOpen: true,
+        type: 'error',
+        title: 'Error',
+        message: error?.message || 'Failed to cancel item. Please try again.',
+        onConfirm: null,
+        isLoading: false,
+      });
     }
   };
 
@@ -519,11 +591,18 @@ const LinkManager = () => {
             const stats = getSpaceStats(space.id);
             const kindLabel = KIND_LABEL[space.kind] || 'Campaign';
             return (
-              <button
+              <div
                 key={space.id}
-                type="button"
+                role="button"
+                tabIndex={0}
                 onClick={() => setCurrentSpaceId(space.id)}
-                className="group text-left bg-[#101622] border border-[#232f48] rounded-[1.25rem] p-6 flex flex-col min-h-[240px] transition-all duration-300 hover:border-[#FF00E5] hover:shadow-[0_12px_30px_rgba(255,0,229,0.18)]"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    setCurrentSpaceId(space.id);
+                  }
+                }}
+                className="group relative text-left bg-[#101622] border border-[#232f48] rounded-[1.25rem] p-6 flex flex-col min-h-[240px] transition-all duration-300 hover:border-[#FF00E5] hover:shadow-[0_12px_30px_rgba(255,0,229,0.18)]"
               >
                 <div className="flex items-start justify-between mb-6">
                   <div>
@@ -535,9 +614,43 @@ const LinkManager = () => {
                       <span>{kindLabel} Space</span>
                     </div>
                   </div>
-                  <div className="bg-[#FF00E5]/10 p-3 rounded-2xl text-[#FF00E5] shadow-[0_0_15px_rgba(255,0,229,0.1)] group-hover:bg-[#FF00E5] group-hover:text-white transition-all">
+                  <div className="mr-12 bg-[#FF00E5]/10 p-3 rounded-2xl text-[#FF00E5] shadow-[0_0_15px_rgba(255,0,229,0.1)] group-hover:bg-[#FF00E5] group-hover:text-white transition-all">
                     <Folder size={24} fill="currentColor" fillOpacity={0.2} />
                   </div>
+                </div>
+                <div className="absolute top-4 right-4">
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setOpenSpaceMenuId((prev) => (prev === space.id ? null : space.id));
+                    }}
+                    className="p-2 rounded-lg bg-[#0b0f19] border border-[#232f48] text-slate-300 hover:text-white hover:border-[#FF00E5]/40 transition-colors"
+                    aria-label="Space actions"
+                  >
+                    <span className="material-symbols-outlined text-base">more_vert</span>
+                  </button>
+                  {openSpaceMenuId === space.id && (
+                    <div
+                      className="absolute right-0 mt-2 w-40 rounded-xl border border-[#2a3552] bg-[#101622] shadow-2xl overflow-hidden z-20"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <button
+                        type="button"
+                        onClick={() => openEditSpaceModal(space)}
+                        className="w-full px-4 py-2.5 text-left text-white hover:bg-white/5 transition-colors text-sm"
+                      >
+                        Update
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleCancelSpace(space)}
+                        className="w-full px-4 py-2.5 text-left text-red-400 hover:bg-red-400/10 transition-colors text-sm"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  )}
                 </div>
 
                 <div className="bg-[#0b0f19] border border-[#232f48] rounded-xl p-4 mb-6">
@@ -558,10 +671,18 @@ const LinkManager = () => {
                     ACTIVE
                   </div>
                 </div>
-              </button>
+              </div>
             );
           })}
         </div>
+      )}
+      {openSpaceMenuId && (
+        <button
+          type="button"
+          aria-label="Close space menu"
+          className="fixed inset-0 z-10"
+          onClick={() => setOpenSpaceMenuId(null)}
+        />
       )}
 
       {/* Individual links divider */}
@@ -728,16 +849,18 @@ const LinkManager = () => {
       <Modal
         isOpen={spaceModal.isOpen}
         onClose={closeCreateSpaceModal}
-        title={`Create ${spaceModal.kind ? KIND_LABEL[spaceModal.kind] : 'Item'}`}
+        title={`${spaceModal.mode === 'edit' ? 'Update' : 'Create'} ${spaceModal.kind ? KIND_LABEL[spaceModal.kind] : 'Item'}`}
         type="confirm"
-        confirmText="Create"
+        confirmText={spaceModal.mode === 'edit' ? 'Update' : 'Create'}
         cancelText="Cancel"
-        onConfirm={handleCreateSpace}
+        onConfirm={handleSaveSpace}
         isLoading={spaceModal.isLoading}
         message={
           <div className="space-y-3 text-left">
             <p className="text-sm text-slate-700">
-              Name your new {spaceModal.kind ? KIND_LABEL[spaceModal.kind].toLowerCase() : 'item'}.
+              {spaceModal.mode === 'edit'
+                ? 'Update the name.'
+                : `Name your new ${spaceModal.kind ? KIND_LABEL[spaceModal.kind].toLowerCase() : 'item'}.`}
             </p>
             <input
               type="text"
@@ -749,7 +872,7 @@ const LinkManager = () => {
               placeholder={`Enter ${spaceModal.kind ? KIND_LABEL[spaceModal.kind] : 'item'} name`}
             />
             <p className="text-xs text-slate-500">
-              {'Allowed: English letters, numbers, and !@#$%^&*)(-+=}{]['}
+              {'Allowed: English letters, numbers, spaces, and !@#$%^&*)(-+=}{]['}
             </p>
             {spaceModal.error ? <p className="text-sm text-red-500">{spaceModal.error}</p> : null}
           </div>
