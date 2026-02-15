@@ -27,6 +27,12 @@ const KIND_LABEL = {
   group: 'Group',
 };
 
+const KIND_LABEL_PLURAL = {
+  workspace: 'WORKSPACES',
+  campaign: 'CAMPAIGNS',
+  group: 'GROUPS',
+};
+
 const SPACE_NAME_REGEX = /^[A-Za-z0-9 !@#$%^&*()\-\+=}{\[\]]+$/;
 
 const LinkManager = () => {
@@ -612,94 +618,105 @@ const LinkManager = () => {
 
       {/* Active Grid cards for current level children */}
       {childSpaces.length > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full">
-          {childSpaces.map((space) => {
-            const stats = getSpaceStats(space.id);
-            const kindLabel = KIND_LABEL[space.kind] || 'Campaign';
-            return (
-              <div
-                key={space.id}
-                role="button"
-                tabIndex={0}
-                onClick={() => goToSpace(space.id)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    goToSpace(space.id);
-                  }
-                }}
-                className="group relative text-left bg-[#101622] border border-[#232f48] rounded-[1.25rem] p-6 flex flex-col min-h-[240px] transition-all duration-300 hover:border-[#FF00E5] hover:shadow-[0_12px_30px_rgba(255,0,229,0.18)]"
-              >
-                <div className="flex items-start justify-between mb-6">
-                  <div>
-                    <h3 className="text-2xl font-bold mb-1 group-hover:text-[#FF00E5] transition-colors">
-                      {space.name}
-                    </h3>
-                    <div className="flex items-center gap-2 text-[#00F0FF] text-xs font-bold uppercase tracking-widest opacity-80">
-                      <LayoutGrid size={14} />
-                      <span>{kindLabel} Space</span>
+        <div className="flex flex-col gap-6 w-full">
+          <div className="relative flex items-center gap-6 py-4">
+            <div className="h-[2px] flex-1 bg-gradient-to-r from-transparent via-[#FF00E5]/40 to-[#FF00E5]"></div>
+            <div className="px-8 py-2 rounded-full border border-[#FF00E5]/30 bg-[#161C2C] shadow-[0_0_30px_rgba(255,0,229,0.2)]">
+              <span className="text-[12px] font-black text-white uppercase tracking-[0.5em] whitespace-nowrap">
+                {KIND_LABEL_PLURAL[nextKind] || 'SPACES'}
+              </span>
+            </div>
+            <div className="h-[2px] flex-1 bg-gradient-to-r from-[#FF00E5] via-[#FF00E5]/40 to-transparent"></div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full">
+            {childSpaces.map((space) => {
+              const stats = getSpaceStats(space.id);
+              const kindLabel = KIND_LABEL[space.kind] || 'Campaign';
+              return (
+                <div
+                  key={space.id}
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => goToSpace(space.id)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      goToSpace(space.id);
+                    }
+                  }}
+                  className="group relative text-left bg-[#101622] border border-[#232f48] rounded-[1.25rem] p-6 flex flex-col min-h-[240px] transition-all duration-300 hover:border-[#FF00E5] hover:shadow-[0_12px_30px_rgba(255,0,229,0.18)]"
+                >
+                  <div className="flex items-start justify-between mb-6">
+                    <div>
+                      <h3 className="text-2xl font-bold mb-1 group-hover:text-[#FF00E5] transition-colors">
+                        {space.name}
+                      </h3>
+                      <div className="flex items-center gap-2 text-[#00F0FF] text-xs font-bold uppercase tracking-widest opacity-80">
+                        <LayoutGrid size={14} />
+                        <span>{kindLabel} Space</span>
+                      </div>
+                    </div>
+                    <div className="mr-12 bg-[#FF00E5]/10 p-3 rounded-2xl text-[#FF00E5] shadow-[0_0_15px_rgba(255,0,229,0.1)] group-hover:bg-[#FF00E5] group-hover:text-white transition-all">
+                      <Folder size={24} fill="currentColor" fillOpacity={0.2} />
                     </div>
                   </div>
-                  <div className="mr-12 bg-[#FF00E5]/10 p-3 rounded-2xl text-[#FF00E5] shadow-[0_0_15px_rgba(255,0,229,0.1)] group-hover:bg-[#FF00E5] group-hover:text-white transition-all">
-                    <Folder size={24} fill="currentColor" fillOpacity={0.2} />
-                  </div>
-                </div>
-                <div className="absolute top-4 right-4">
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setOpenSpaceMenuId((prev) => (prev === space.id ? null : space.id));
-                    }}
-                    className="p-2 rounded-lg bg-[#0b0f19] border border-[#232f48] text-slate-300 hover:text-white hover:border-[#FF00E5]/40 transition-colors"
-                    aria-label="Space actions"
-                  >
-                    <span className="material-symbols-outlined text-base">more_vert</span>
-                  </button>
-                  {openSpaceMenuId === space.id && (
-                    <div
-                      className="absolute right-0 mt-2 w-40 rounded-xl border border-[#2a3552] bg-[#101622] shadow-2xl overflow-hidden z-20"
-                      onClick={(e) => e.stopPropagation()}
+                  <div className="absolute top-4 right-4">
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setOpenSpaceMenuId((prev) => (prev === space.id ? null : space.id));
+                      }}
+                      className="p-2 rounded-lg bg-[#0b0f19] border border-[#232f48] text-slate-300 hover:text-white hover:border-[#FF00E5]/40 transition-colors"
+                      aria-label="Space actions"
                     >
-                      <button
-                        type="button"
-                        onClick={() => openEditSpaceModal(space)}
-                        className="w-full px-4 py-2.5 text-left text-white hover:bg-white/5 transition-colors text-sm"
+                      <span className="material-symbols-outlined text-base">more_vert</span>
+                    </button>
+                    {openSpaceMenuId === space.id && (
+                      <div
+                        className="absolute right-0 mt-2 w-40 rounded-xl border border-[#2a3552] bg-[#101622] shadow-2xl overflow-hidden z-20"
+                        onClick={(e) => e.stopPropagation()}
                       >
-                        Update
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleCancelSpace(space)}
-                        className="w-full px-4 py-2.5 text-left text-red-400 hover:bg-red-400/10 transition-colors text-sm"
-                      >
-                        Delete
-                      </button>
+                        <button
+                          type="button"
+                          onClick={() => openEditSpaceModal(space)}
+                          className="w-full px-4 py-2.5 text-left text-white hover:bg-white/5 transition-colors text-sm"
+                        >
+                          Update
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleCancelSpace(space)}
+                          className="w-full px-4 py-2.5 text-left text-red-400 hover:bg-red-400/10 transition-colors text-sm"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="bg-[#0b0f19] border border-[#232f48] rounded-xl p-4 mb-6">
+                    <div className="text-[10px] text-gray-500 font-bold uppercase mb-1 tracking-widest">
+                      Total {kindLabel} Clicks
                     </div>
-                  )}
-                </div>
+                    <div className="text-2xl font-extrabold text-white">
+                      {new Intl.NumberFormat('en-US').format(stats.clicks)}
+                    </div>
+                  </div>
 
-                <div className="bg-[#0b0f19] border border-[#232f48] rounded-xl p-4 mb-6">
-                  <div className="text-[10px] text-gray-500 font-bold uppercase mb-1 tracking-widest">
-                    Total {kindLabel} Clicks
-                  </div>
-                  <div className="text-2xl font-extrabold text-white">
-                    {new Intl.NumberFormat('en-US').format(stats.clicks)}
-                  </div>
-                </div>
-
-                <div className="mt-auto flex items-center justify-between pt-4 border-t border-[#232f48]">
-                  <div className="text-xs font-bold text-white">
-                    {new Intl.NumberFormat('en-US').format(stats.linksCount)} Links Inside
-                  </div>
-                  <div className="flex items-center gap-2 text-xs font-bold text-[#00F2B5]">
-                    <div className="w-2 h-2 rounded-full bg-[#00F2B5] animate-pulse shadow-[0_0_8px_#00F2B5]"></div>
-                    ACTIVE
+                  <div className="mt-auto flex items-center justify-between pt-4 border-t border-[#232f48]">
+                    <div className="text-xs font-bold text-white">
+                      {new Intl.NumberFormat('en-US').format(stats.linksCount)} Links Inside
+                    </div>
+                    <div className="flex items-center gap-2 text-xs font-bold text-[#00F2B5]">
+                      <div className="w-2 h-2 rounded-full bg-[#00F2B5] animate-pulse shadow-[0_0_8px_#00F2B5]"></div>
+                      ACTIVE
+                    </div>
                   </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
       )}
       {openSpaceMenuId && (
