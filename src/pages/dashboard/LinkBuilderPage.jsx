@@ -18,6 +18,7 @@ const LinkBuilderPage = () => {
   const navigate = useNavigate();
   const searchParams = new URLSearchParams(window.location.search);
   const duplicateId = searchParams.get('duplicate');
+  const spaceIdFromQuery = searchParams.get('space_id');
   const isEditMode = !!id && id !== 'new';
   const isDuplicateMode = !!duplicateId;
   // When duplicating we're on /links/new?duplicate=ID – load by duplicateId, not by route id "new"
@@ -48,6 +49,7 @@ const LinkBuilderPage = () => {
     botAction: 'no-tracking',
     fallbackUrl: '',
     geoRules: [],
+    spaceId: spaceIdFromQuery || null,
     shortUrl: '',
     fullUtmString: '',
   });
@@ -174,6 +176,7 @@ const LinkBuilderPage = () => {
           }
           return [];
         })(),
+        spaceId: data.space_id || spaceIdFromQuery || null,
         shortUrl: '', // Will be regenerated
         fullUtmString: '',
       });
@@ -282,6 +285,7 @@ const LinkBuilderPage = () => {
           bot_action: formData.botAction,
           fallback_url: finalFallbackUrl,
           geo_rules: Array.isArray(formData.geoRules) ? formData.geoRules : [],
+          space_id: formData.spaceId || null,
           updated_at: new Date().toISOString(),
         };
         const nullPathsRaw = findNullCharsInPayload(updatePayloadRaw);
@@ -386,6 +390,7 @@ const LinkBuilderPage = () => {
           bot_action: formData.botAction,
           fallback_url: finalFallbackUrl,
           geo_rules: Array.isArray(formData.geoRules) ? formData.geoRules : [],
+          space_id: formData.spaceId || null,
           created_at: new Date().toISOString(),
         };
         const nullPathsRawInsert = findNullCharsInPayload(insertPayloadRaw);

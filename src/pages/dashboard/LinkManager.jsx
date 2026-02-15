@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import Modal from '../../components/common/Modal';
 import { updateLinkInRedis, deleteLinkFromRedis } from '../../lib/redisCache';
+import { LayoutGrid, Folder, ChevronRight, Home } from 'lucide-react';
 
 const PLATFORMS = {
   meta: { name: 'Meta (FB/IG)', colorClass: 'text-blue-400 bg-blue-400/10' },
@@ -14,12 +15,37 @@ const PLATFORMS = {
 
 const linkClickKey = (link) => `${link.domain ?? ''}/${link.slug ?? ''}`;
 
+const KIND_BY_LEVEL = {
+  0: 'workspace',
+  1: 'campaign',
+  2: 'group',
+};
+
+const KIND_LABEL = {
+  workspace: 'Workspace',
+  campaign: 'Campaign',
+  group: 'Group',
+};
+
+const SPACE_NAME_REGEX = /^[A-Za-z0-9!@#$%^&*()\-\+=}{\[\]]+$/;
+
 const LinkManager = () => {
   const navigate = useNavigate();
+  const [userId, setUserId] = useState(null);
   const [links, setLinks] = useState([]);
+  const [spaces, setSpaces] = useState([]);
+  const [currentSpaceId, setCurrentSpaceId] = useState(null);
   const [presetsMap, setPresetsMap] = useState({}); // Map of preset ID to preset data
   const [clickCountsMap, setClickCountsMap] = useState({}); // key: domain/slug -> count
   const [loading, setLoading] = useState(true);
+  const [createMenuOpen, setCreateMenuOpen] = useState(false);
+  const [spaceModal, setSpaceModal] = useState({
+    isOpen: false,
+    kind: null,
+    name: '',
+    error: null,
+    isLoading: false,
+  });
   const [utmPresetsModal, setUtmPresetsModal] = useState({
     isOpen: false,
     link: null,
@@ -36,15 +62,16 @@ const LinkManager = () => {
   });
 
   useEffect(() => {
-    fetchLinks();
+    fetchData();
   }, []);
 
-  const fetchLinks = async () => {
+  const fetchData = async () => {
     try {
       const {
         data: { user },
       } = await supabase.auth.getUser();
       if (!user) return;
+      setUserId(user.id);
 
       // Fetch links
       const { data: linksData, error: linksError } = await supabase
@@ -96,6 +123,23 @@ const LinkManager = () => {
           counts[key] = (counts[key] || 0) + 1;
         });
       }
+
+      // Fetch hierarchy spaces (workspace/campaign/group)
+      // If table doesn't exist yet, we keep dashboard fully functional with links only.
+      let spacesData = [];
+      const { data: fetchedSpaces, error: spacesError } = await supabase
+        .from('link_spaces')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+
+      if (!spacesError && fetchedSpaces) {
+        spacesData = fetchedSpaces;
+      } else if (spacesError) {
+        console.warn('[LinkManager] link_spaces table not ready yet:', spacesError.message);
+      }
+
+      setSpaces(spacesData);
       setClickCountsMap(counts);
       setLinks(linksData || []);
     } catch (error) {
@@ -104,6 +148,148 @@ const LinkManager = () => {
       setLoading(false);
     }
   };
+
+  const spaceById = useMemo(
+    () =>
+      spaces.reduce((acc, s) => {
+        acc[s.id] = s;
+        return acc;
+      }, {}),
+    [spaces]
+  );
+
+  const currentSpace = currentSpaceId ? spaceById[currentSpaceId] || null : null;
+  const currentLevel = currentSpace?.level ?? 0;
+  const nextKind = KIND_BY_LEVEL[currentLevel] || null;
+
+  const childSpaces = useMemo(() => {
+    if (!nextKind) return [];
+    return spaces
+      .filter((s) => (s.parent_id || null) === (currentSpaceId || null) && s.kind === nextKind)
+      .sort((a, b) => a.name.localeCompare(b.name));
+  }, [spaces, currentSpaceId, nextKind]);
+
+  const directLinks = useMemo(
+    () => links.filter((l) => (l.space_id || null) === (currentSpaceId || null)),
+    [links, currentSpaceId]
+  );
+
+  const getDescendantIds = (spaceId) => {
+    const out = [];
+    const stack = [spaceId];
+    while (stack.length) {
+      const parent = stack.pop();
+      const kids = spaces.filter((s) => (s.parent_id || null) === parent);
+      kids.forEach((k) => {
+        out.push(k.id);
+        stack.push(k.id);
+      });
+    }
+    return out;
+  };
+
+  const getSpaceStats = (spaceId) => {
+    const ids = [spaceId, ...getDescendantIds(spaceId)];
+    const idsSet = new Set(ids);
+    const scoped = links.filter((l) => idsSet.has(l.space_id || null));
+    const clicks = scoped.reduce((sum, link) => sum + (clickCountsMap[linkClickKey(link)] ?? 0), 0);
+    return { linksCount: scoped.length, clicks };
+  };
+
+  const breadcrumbs = useMemo(() => {
+    if (!currentSpaceId || !currentSpace) return [];
+    const out = [];
+    let cursor = currentSpace;
+    while (cursor) {
+      out.push(cursor);
+      cursor = cursor.parent_id ? spaceById[cursor.parent_id] : null;
+    }
+    return out.reverse();
+  }, [currentSpaceId, currentSpace, spaceById]);
+
+  const openCreateSpaceModal = (kind) => {
+    setCreateMenuOpen(false);
+    setSpaceModal({
+      isOpen: true,
+      kind,
+      name: '',
+      error: null,
+      isLoading: false,
+    });
+  };
+
+  const closeCreateSpaceModal = () => {
+    if (spaceModal.isLoading) return;
+    setSpaceModal((prev) => ({ ...prev, isOpen: false }));
+  };
+
+  const validateSpaceName = (name) => {
+    const trimmed = String(name || '').trim();
+    if (!trimmed) return 'Name is required.';
+    if (trimmed.length < 2) return 'Name must be at least 2 characters.';
+    if (trimmed.length > 80) return 'Name cannot exceed 80 characters.';
+    if (!SPACE_NAME_REGEX.test(trimmed)) {
+      return 'Allowed: English letters, numbers, and !@#$%^&*)(-+=}{][';
+    }
+    return null;
+  };
+
+  const handleCreateSpace = async () => {
+    const validationError = validateSpaceName(spaceModal.name);
+    if (validationError) {
+      setSpaceModal((prev) => ({ ...prev, error: validationError }));
+      return;
+    }
+    if (!userId) {
+      setSpaceModal((prev) => ({ ...prev, error: 'You must be logged in.' }));
+      return;
+    }
+
+    const nextLevel = currentSpaceId ? (currentSpace?.level || 0) + 1 : 1;
+    if (nextLevel > 3) {
+      setSpaceModal((prev) => ({ ...prev, error: 'Maximum depth reached (3 levels).' }));
+      return;
+    }
+
+    try {
+      setSpaceModal((prev) => ({ ...prev, isLoading: true, error: null }));
+      const payload = {
+        user_id: userId,
+        name: spaceModal.name.trim(),
+        kind: spaceModal.kind,
+        level: nextLevel,
+        parent_id: currentSpaceId || null,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      };
+      const { error } = await supabase.from('link_spaces').insert(payload);
+      if (error) throw error;
+      setSpaceModal((prev) => ({ ...prev, isOpen: false, isLoading: false }));
+      await fetchData();
+    } catch (error) {
+      setSpaceModal((prev) => ({
+        ...prev,
+        isLoading: false,
+        error: error?.message || 'Failed to create item. Please try again.',
+      }));
+    }
+  };
+
+  const handleCreateOption = (option) => {
+    setCreateMenuOpen(false);
+    if (option === 'link') {
+      const query = currentSpaceId ? `?space_id=${encodeURIComponent(currentSpaceId)}` : '';
+      navigate(`/dashboard/links/new${query}`);
+      return;
+    }
+    openCreateSpaceModal(option);
+  };
+
+  const createOptions = useMemo(() => {
+    const options = [{ id: 'link', label: 'New Link' }];
+    if (nextKind) options.push({ id: nextKind, label: `New ${KIND_LABEL[nextKind]}` });
+    return options;
+  }, [nextKind]);
 
   const handleCopy = async (url, copyBtnId = null) => {
     try {
@@ -264,29 +450,143 @@ const LinkManager = () => {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="flex flex-col gap-2">
           <h1 className="text-2xl md:text-3xl font-bold text-white">Link Manager</h1>
-          <p className="text-sm md:text-base text-slate-400">Create and manage your GoodLinks</p>
+          <p className="text-sm md:text-base text-slate-400">
+            Active Grid hierarchy: Workspaces → Campaigns → Groups
+          </p>
         </div>
-        <button
-          onClick={() => navigate('/dashboard/links/new')}
-          className="flex items-center justify-center gap-2 w-full sm:w-auto px-6 py-3 md:py-2.5 text-white font-bold rounded-xl transition-colors shadow-lg text-base md:text-sm bg-[#FF10F0] hover:bg-[#e00ed0]"
-        >
-          <span className="material-symbols-outlined text-xl md:text-base">add</span>
-          New Link
-        </button>
+        <div className="relative w-full sm:w-auto">
+          <button
+            onClick={() => setCreateMenuOpen((v) => !v)}
+            className="flex items-center justify-center gap-2 w-full sm:w-auto px-6 py-3 md:py-2.5 text-white font-bold rounded-xl transition-colors shadow-lg text-base md:text-sm bg-[#FF10F0] hover:bg-[#e00ed0]"
+          >
+            <span className="material-symbols-outlined text-xl md:text-base">add</span>
+            Create
+          </button>
+          {createMenuOpen && (
+            <>
+              <button
+                className="fixed inset-0 z-10"
+                aria-label="Close create menu"
+                onClick={() => setCreateMenuOpen(false)}
+              />
+              <div className="absolute right-0 mt-2 w-56 z-20 rounded-xl border border-[#2a3552] bg-[#101622] shadow-2xl overflow-hidden">
+                {createOptions.map((option) => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleCreateOption(option.id)}
+                    className="w-full px-4 py-3 text-left text-white hover:bg-white/5 transition-colors flex items-center justify-between"
+                  >
+                    <span>{option.label}</span>
+                    <span className="material-symbols-outlined text-base text-slate-400">chevron_right</span>
+                  </button>
+                ))}
+              </div>
+            </>
+          )}
+        </div>
       </div>
 
+      {/* Breadcrumb */}
+      <div className="flex flex-wrap items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-300">
+        <button
+          type="button"
+          onClick={() => setCurrentSpaceId(null)}
+          className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-[#2a3552] bg-[#101622] hover:bg-[#151d2d] transition-colors"
+        >
+          <Home size={13} />
+          Root
+        </button>
+        {breadcrumbs.map((b) => (
+          <React.Fragment key={b.id}>
+            <ChevronRight size={12} className="text-slate-500" />
+            <button
+              type="button"
+              onClick={() => setCurrentSpaceId(b.id)}
+              className="px-3 py-1.5 rounded-lg border border-[#2a3552] bg-[#101622] hover:bg-[#151d2d] transition-colors"
+            >
+              {b.name}
+            </button>
+          </React.Fragment>
+        ))}
+      </div>
+
+      {/* Active Grid cards for current level children */}
+      {childSpaces.length > 0 && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full">
+          {childSpaces.map((space) => {
+            const stats = getSpaceStats(space.id);
+            const kindLabel = KIND_LABEL[space.kind] || 'Campaign';
+            return (
+              <button
+                key={space.id}
+                type="button"
+                onClick={() => setCurrentSpaceId(space.id)}
+                className="group text-left bg-[#101622] border border-[#232f48] rounded-[1.25rem] p-6 flex flex-col min-h-[240px] transition-all duration-300 hover:border-[#FF00E5] hover:shadow-[0_12px_30px_rgba(255,0,229,0.18)]"
+              >
+                <div className="flex items-start justify-between mb-6">
+                  <div>
+                    <h3 className="text-2xl font-bold mb-1 group-hover:text-[#FF00E5] transition-colors">
+                      {space.name}
+                    </h3>
+                    <div className="flex items-center gap-2 text-[#00F0FF] text-xs font-bold uppercase tracking-widest opacity-80">
+                      <LayoutGrid size={14} />
+                      <span>{kindLabel} Space</span>
+                    </div>
+                  </div>
+                  <div className="bg-[#FF00E5]/10 p-3 rounded-2xl text-[#FF00E5] shadow-[0_0_15px_rgba(255,0,229,0.1)] group-hover:bg-[#FF00E5] group-hover:text-white transition-all">
+                    <Folder size={24} fill="currentColor" fillOpacity={0.2} />
+                  </div>
+                </div>
+
+                <div className="bg-[#0b0f19] border border-[#232f48] rounded-xl p-4 mb-6">
+                  <div className="text-[10px] text-gray-500 font-bold uppercase mb-1 tracking-widest">
+                    Total {kindLabel} Clicks
+                  </div>
+                  <div className="text-2xl font-extrabold text-white">
+                    {new Intl.NumberFormat('en-US').format(stats.clicks)}
+                  </div>
+                </div>
+
+                <div className="mt-auto flex items-center justify-between pt-4 border-t border-[#232f48]">
+                  <div className="text-xs font-bold text-white">
+                    {new Intl.NumberFormat('en-US').format(stats.linksCount)} Links Inside
+                  </div>
+                  <div className="flex items-center gap-2 text-xs font-bold text-[#00F2B5]">
+                    <div className="w-2 h-2 rounded-full bg-[#00F2B5] animate-pulse shadow-[0_0_8px_#00F2B5]"></div>
+                    ACTIVE
+                  </div>
+                </div>
+              </button>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Individual links divider */}
+      {directLinks.length > 0 && (
+        <div className="flex justify-center">
+          <div className="px-6 py-1.5 rounded-full border border-[#FF00E5]/30 bg-[#161C2C] shadow-[0_0_20px_rgba(255,0,229,0.15)]">
+            <span className="text-[11px] font-black text-white uppercase tracking-[0.4em] whitespace-nowrap">
+              Individual Links
+            </span>
+          </div>
+        </div>
+      )}
+
       {/* Links List */}
-      {links.length === 0 ? (
+      {directLinks.length === 0 && childSpaces.length === 0 ? (
         <div className="bg-[#101622] border border-[#232f48] rounded-2xl p-4 md:p-6 w-full">
           <div className="text-center py-12">
             <span className="material-symbols-outlined text-6xl text-slate-600 mb-4">link_off</span>
-            <p className="text-slate-400 text-lg mb-2">No links yet</p>
-            <p className="text-slate-500 text-sm">Create your first smart link to get started</p>
+            <p className="text-slate-400 text-lg mb-2">No items yet</p>
+            <p className="text-slate-500 text-sm">
+              Create a new workspace/campaign/group, or add a link directly here.
+            </p>
           </div>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full">
-          {links.map((link) => {
+          {directLinks.map((link) => {
             const isActive = link.status === 'active';
             return (
               <div
@@ -310,10 +610,12 @@ const LinkManager = () => {
                   </div>
                   <LinkActionsMenu
                     link={link}
-                    onRefresh={fetchLinks}
+                    onRefresh={fetchData}
                     onEdit={(linkToEdit) => navigate(`/dashboard/links/edit/${linkToEdit.id}`)}
                     onDuplicate={(linkToDuplicate) =>
-                      navigate(`/dashboard/links/new?duplicate=${linkToDuplicate.id}`)
+                      navigate(
+                        `/dashboard/links/new?duplicate=${linkToDuplicate.id}${currentSpaceId ? `&space_id=${encodeURIComponent(currentSpaceId)}` : ''}`
+                      )
                     }
                     onAnalytics={(linkForAnalytics) =>
                       navigate(
@@ -418,6 +720,36 @@ const LinkManager = () => {
           </div>
         }
         type="info"
+      />
+
+      {/* Create Workspace / Campaign / Group modal */}
+      <Modal
+        isOpen={spaceModal.isOpen}
+        onClose={closeCreateSpaceModal}
+        title={`Create ${spaceModal.kind ? KIND_LABEL[spaceModal.kind] : 'Item'}`}
+        type="confirm"
+        confirmText="Create"
+        cancelText="Cancel"
+        onConfirm={handleCreateSpace}
+        isLoading={spaceModal.isLoading}
+        message={
+          <div className="space-y-3 text-left">
+            <p className="text-sm text-slate-700">
+              Name your new {spaceModal.kind ? KIND_LABEL[spaceModal.kind].toLowerCase() : 'item'}.
+            </p>
+            <input
+              type="text"
+              value={spaceModal.name}
+              onChange={(e) => setSpaceModal((prev) => ({ ...prev, name: e.target.value, error: null }))}
+              className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm"
+              placeholder={`Enter ${spaceModal.kind ? KIND_LABEL[spaceModal.kind] : 'item'} name`}
+            />
+            <p className="text-xs text-slate-500">
+              Allowed: English letters, numbers, and !@#$%^&amp;*)(-+=}{][
+            </p>
+            {spaceModal.error ? <p className="text-sm text-red-500">{spaceModal.error}</p> : null}
+          </div>
+        }
       />
     </div>
   );
