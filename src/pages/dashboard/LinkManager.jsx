@@ -564,11 +564,26 @@ const LinkManager = () => {
     );
   }
 
+  const pageTitle = currentLevel === 0 ? 'Workspaces' : currentLevel === 1 ? 'Campaigns' : 'Groups';
+  const showBackArrow = !!currentSpaceId;
+
   return (
     <div className="flex flex-col gap-6 md:gap-8 w-full max-w-7xl mx-auto">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div className="flex flex-col gap-2">
-          <h1 className="text-2xl md:text-3xl font-bold text-white">My Workspace</h1>
+        <div className="flex flex-col gap-2 flex-1 min-w-0">
+          <div className="flex items-center gap-3">
+            {showBackArrow && (
+              <button
+                type="button"
+                onClick={() => goToSpace(currentSpace?.parent_id || null)}
+                className="flex items-center justify-center p-2.5 rounded-2xl border border-[#232f48] text-gray-400 hover:bg-[#232f48] hover:text-white transition-all active:scale-90 flex-shrink-0"
+                aria-label="Back"
+              >
+                <span className="material-symbols-outlined text-2xl">chevron_left</span>
+              </button>
+            )}
+            <h1 className="text-2xl md:text-3xl font-bold text-white truncate">{pageTitle}</h1>
+          </div>
         </div>
         <div className="relative w-full sm:w-auto">
           <button
