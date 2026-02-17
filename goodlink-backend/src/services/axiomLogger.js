@@ -24,6 +24,12 @@ export async function sendAxiomEvent(env, event) {
     }
 
     const payload = normalizeEvent(event);
+    const ua = String(payload.user_agent || "").toLowerCase();
+    if (ua.includes("sentryuptimebot/1.0") || ua.includes("sentryuptimebot")) {
+      console.log("⏭️ [Axiom] Skipping Sentry Uptime bot log");
+      return false;
+    }
+
     const ingestUrl = `${AXIOM_INGEST_BASE}/${encodeURIComponent(dataset)}/ingest`;
     console.log("📤 [Axiom] Sending event:", {
       dataset,
