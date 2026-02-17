@@ -191,7 +191,7 @@ export default function LinkWizardOnePerPage({
         highlight: 'Link',
         highlightClass:
           'bg-gradient-to-r from-[#FF10F0] to-[#bc13fe] bg-clip-text text-transparent',
-        subtitle: 'Internal nickname for your campaign.',
+        subtitle: 'What should we call your link?',
       },
       {
         id: 'url',
@@ -232,7 +232,7 @@ export default function LinkWizardOnePerPage({
         title: 'Bot',
         highlight: 'Protection',
         highlightClass: 'text-yellow-500',
-        subtitle: 'How should we handle automated traffic?',
+        subtitle: 'How should we handle bots?',
         show: isAdvancedOrPro,
       },
       {
@@ -262,7 +262,7 @@ export default function LinkWizardOnePerPage({
         title: 'Final',
         highlight: 'Launch',
         highlightClass: 'text-[#10b981]',
-        subtitle: 'Review your smart link configuration.',
+        subtitle: 'Final review of your GoodLink.',
         isReview: true,
       },
     ];
@@ -678,7 +678,7 @@ export default function LinkWizardOnePerPage({
                     {currentStep.highlight}
                   </span>
                 </h1>
-                <p className="text-gray-400 font-medium text-sm">{currentStep.subtitle}</p>
+                <p className="text-gray-400 font-medium text-2xl">{currentStep.subtitle}</p>
               </div>
 
               {/* Step: Name */}

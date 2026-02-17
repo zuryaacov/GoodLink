@@ -268,7 +268,7 @@ const STEPS = [
     title: 'CAPI',
     highlight: 'Token',
     highlightClass: 'text-purple-500',
-    subtitle: 'Optional. For server-side events.',
+    subtitle: 'Your token so we can send CAPI events.',
   },
   {
     id: 'eventType',
@@ -469,7 +469,7 @@ export default function PixelWizardOnePerPage({ initialData, onSave, onBack, isE
                   {currentStep?.highlight}
                 </span>
               </h1>
-              <p className="text-gray-400 font-medium text-sm">{currentStep?.subtitle}</p>
+              <p className="text-gray-400 font-medium text-2xl">{currentStep?.subtitle}</p>
             </div>
 
             {currentStep?.id === 'name' && (

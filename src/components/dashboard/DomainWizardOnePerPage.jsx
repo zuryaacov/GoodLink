@@ -10,7 +10,7 @@ const STEPS = [
     title: 'Enter your',
     highlight: 'Domain',
     highlightClass: 'bg-gradient-to-r from-[#FF10F0] to-[#bc13fe] bg-clip-text text-transparent',
-    subtitle: 'Your custom domain (e.g. mybrand.com). We’ll use www by default.',
+    subtitle: 'Your custom domain (e.g. mybrand.com).',
   },
   {
     id: 'rootRedirect',
@@ -168,7 +168,7 @@ export default function DomainWizardOnePerPage({
                   {currentStep?.highlight}
                 </span>
               </h1>
-              <p className="text-gray-400 font-medium text-sm">{currentStep?.subtitle}</p>
+              <p className="text-gray-400 font-medium text-2xl">{currentStep?.subtitle}</p>
             </div>
 
             {currentStep?.id === 'domain' && (

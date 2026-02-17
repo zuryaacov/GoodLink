@@ -216,7 +216,7 @@ const STEPS = [
     title: 'Name your',
     highlight: 'Preset',
     highlightClass: 'bg-gradient-to-r from-[#FF10F0] to-[#bc13fe] bg-clip-text text-transparent',
-    subtitle: 'Internal name for this UTM preset.',
+    subtitle: 'What should we call your UTM preset?',
   },
   {
     id: 'platform',
@@ -469,7 +469,7 @@ export default function UtmPresetWizardOnePerPage({ initialData, onSave, onBack,
                   {currentStep?.highlight}
                 </span>
               </h1>
-              <p className="text-gray-400 font-medium text-sm">{currentStep?.subtitle}</p>
+              <p className="text-gray-400 font-medium text-2xl">{currentStep?.subtitle}</p>
             </div>
 
             {currentStep?.id === 'name' && (
