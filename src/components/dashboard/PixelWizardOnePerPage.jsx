@@ -250,7 +250,7 @@ const STEPS = [
     title: 'Select',
     highlight: 'Company',
     highlightClass: 'bg-gradient-to-r from-[#135bec] to-[#42a5f5] bg-clip-text text-transparent',
-    subtitle: 'Which ad platform is this CAPI profile for?',
+    subtitle: 'Which ad platform is this CAPI profile for ?',
   },
   {
     id: 'pixelId',

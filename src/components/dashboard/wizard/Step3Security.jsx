@@ -224,7 +224,7 @@ const Step3Security = ({ formData, updateFormData, onValidationRequest }) => {
       {/* Bot Action - Dropdown with Icons */}
       <div>
         <label className="block text-sm font-medium text-white mb-3">Bot Detection Action</label>
-        <p className="text-xs text-slate-500 mb-4">What should happen when a bot is detected?</p>
+        <p className="text-xs text-slate-500 mb-4">What should happen when a bot is detected ?</p>
         <div className="space-y-2">
           {botActionOptions.map((option) => {
             const isSelected = formData.botAction === option.value;
@@ -266,7 +266,7 @@ const Step3Security = ({ formData, updateFormData, onValidationRequest }) => {
             <label className="block text-sm font-medium text-white mb-2">
               Redirect URL for Bots
             </label>
-            <p className="text-xs text-slate-500 mb-3">Where should bots be redirected to?</p>
+            <p className="text-xs text-slate-500 mb-3">Where should bots be redirected to ?</p>
             <div className="relative">
               <input
                 type="url"

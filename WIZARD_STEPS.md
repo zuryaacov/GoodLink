@@ -44,7 +44,7 @@
 | Step | Title | Subtitle |
 |------|-------|----------|
 | 1 | Enter your Domain | Your custom domain (e.g. mybrand.com). |
-| 2 | Root Redirect | Optional. Where to send visitors who open the domain without a slug. |
+| 2 | Root Redirect | Optional. Where to send visitors who open the domain without a slug or with an undefined slug. |
 | 3 | DNS Setup | Add these records at your domain registrar. |
 | 4 | Verify Configuration | Confirm DNS is set up correctly. May take a few minutes after adding records. |
 

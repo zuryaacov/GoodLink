@@ -66,7 +66,7 @@ const Step4Security = ({ formData, updateFormData }) => {
       {/* Bot Action */}
       <div>
         <label className="block text-sm font-medium text-white mb-3">Bot Detection Action</label>
-        <p className="text-xs text-slate-500 mb-3">What should happen when a bot is detected?</p>
+        <p className="text-xs text-slate-500 mb-3">What should happen when a bot is detected ?</p>
         <div className="space-y-2">
           {[
             { value: 'block', label: 'Block', description: 'Block the request completely' },

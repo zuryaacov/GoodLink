@@ -191,7 +191,7 @@ export default function LinkWizardOnePerPage({
         highlight: 'Link',
         highlightClass:
           'bg-gradient-to-r from-[#FF10F0] to-[#bc13fe] bg-clip-text text-transparent',
-        subtitle: 'What should we call your link?',
+        subtitle: 'What should we call your link ?',
       },
       {
         id: 'url',
@@ -201,7 +201,7 @@ export default function LinkWizardOnePerPage({
         highlight: 'URL',
         highlightClass:
           'bg-gradient-to-r from-[#135bec] to-[#42a5f5] bg-clip-text text-transparent',
-        subtitle: 'Where should the user land?',
+        subtitle: 'Where should the user land ?',
       },
       {
         id: 'domain',
@@ -232,7 +232,7 @@ export default function LinkWizardOnePerPage({
         title: 'Bot',
         highlight: 'Protection',
         highlightClass: 'text-yellow-500',
-        subtitle: 'How should we handle bots?',
+        subtitle: 'How should we handle bots ?',
         show: isAdvancedOrPro,
       },
       {
@@ -1014,7 +1014,9 @@ export default function LinkWizardOnePerPage({
               <h1 className="text-3xl sm:text-4xl font-extrabold text-white">
                 Final <span className="text-[#10b981]">Launch</span>
               </h1>
-              <p className="text-gray-400">Review your smart link configuration below.</p>
+              <p className="text-gray-400 font-medium text-2xl">
+                Review your smart link configuration below.
+              </p>
 
               <div className="bg-[#101622] border border-[#232f48] rounded-2xl p-6 space-y-4 text-left">
                 <div className="flex justify-between items-center border-b border-[#232f48] pb-3">

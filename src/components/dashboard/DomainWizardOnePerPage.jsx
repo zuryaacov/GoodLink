@@ -19,7 +19,7 @@ const STEPS = [
     title: 'Root',
     highlight: 'Redirect',
     highlightClass: 'text-orange-500',
-    subtitle: 'Optional. Where to send visitors who open the domain without a slug.',
+    subtitle: 'Optional. Where to send visitors who open the domain without a slug or with an undefined slug.',
   },
   {
     id: 'dns',

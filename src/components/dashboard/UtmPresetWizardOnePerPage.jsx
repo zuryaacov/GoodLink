@@ -216,7 +216,7 @@ const STEPS = [
     title: 'Name your',
     highlight: 'Preset',
     highlightClass: 'bg-gradient-to-r from-[#FF10F0] to-[#bc13fe] bg-clip-text text-transparent',
-    subtitle: 'What should we call your UTM preset?',
+    subtitle: 'What should we call your UTM preset ?',
   },
   {
     id: 'platform',
@@ -225,7 +225,7 @@ const STEPS = [
     title: 'Select',
     highlight: 'Company',
     highlightClass: 'bg-gradient-to-r from-[#135bec] to-[#42a5f5] bg-clip-text text-transparent',
-    subtitle: 'Which ad platform is this preset for?',
+    subtitle: 'Which ad platform is this preset for ?',
   },
   {
     id: 'source',
@@ -356,6 +356,12 @@ export default function UtmPresetWizardOnePerPage({ initialData, onSave, onBack,
     if (!validateCurrentStep()) return;
 
     if (isLast) {
+      const hasAnyUtmValue = Object.values(params).some((value) => String(value || '').trim() !== '');
+      if (!hasAnyUtmValue) {
+        setError('Cannot create an empty preset. Please set at least one UTM value.');
+        return;
+      }
+
       setError(null);
       setLoading(true);
       try {
