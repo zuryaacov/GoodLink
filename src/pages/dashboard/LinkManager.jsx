@@ -1001,10 +1001,10 @@ const LinkActionsMenu = ({ link, onRefresh, onEdit, onDuplicate, onAnalytics, on
     <div className="relative">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="text-slate-400 hover:text-white transition-colors p-2"
+        className="p-2 rounded-lg bg-[#0b0f19] border border-[#232f48] text-slate-300 hover:text-white hover:border-[#FF00E5]/40 transition-colors"
         aria-label="Actions menu"
       >
-        <span className="material-symbols-outlined">more_vert</span>
+        <span className="material-symbols-outlined text-base">more_vert</span>
       </button>
 
       {isOpen && (
