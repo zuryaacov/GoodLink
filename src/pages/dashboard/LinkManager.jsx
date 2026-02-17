@@ -774,7 +774,7 @@ const LinkManager = () => {
             return (
               <div
                 key={link.id}
-                className={`bg-[#101622] border border-[#232f48] rounded-[1.25rem] p-6 flex flex-col h-full transition-all duration-300 ease-out overflow-hidden ${
+                className={`relative bg-[#101622] border border-[#232f48] rounded-[1.25rem] p-6 flex flex-col h-full transition-all duration-300 ease-out overflow-hidden ${
                   !isActive ? 'opacity-70' : ''
                 } ${isActive ? 'hover:border-[#135bec] hover:shadow-[0_12px_30px_rgba(19,91,236,0.15)]' : ''}`}
               >
@@ -791,28 +791,28 @@ const LinkManager = () => {
                       {truncateText(link.target_url, 60)}
                     </p>
                   </div>
-                  <div className="flex flex-col items-end gap-2">
-                    <div className="bg-[#00F0FF]/10 p-4 rounded-3xl text-[#00F0FF] shadow-[0_0_20px_rgba(0,240,255,0.15)] -rotate-3">
-                      <LinkIcon size={24} />
-                    </div>
-                    <LinkActionsMenu
-                      link={link}
-                      onRefresh={fetchData}
-                      onEdit={(linkToEdit) => navigate(`/dashboard/links/edit/${linkToEdit.id}`)}
-                      onDuplicate={(linkToDuplicate) =>
-                        navigate(
-                          `/dashboard/links/new?duplicate=${linkToDuplicate.id}${currentSpaceId ? `&space_id=${encodeURIComponent(currentSpaceId)}` : ''}`
-                        )
-                      }
-                      onAnalytics={(linkForAnalytics) =>
-                        navigate(
-                          `/dashboard/analytics?domain=${encodeURIComponent(linkForAnalytics.domain || '')}&slug=${encodeURIComponent(linkForAnalytics.slug || '')}`
-                        )
-                      }
-                      onShowModal={(modalConfig) => setModalState(modalConfig)}
-                    />
+                  <div className="mr-12 bg-[#00F0FF]/10 p-4 rounded-3xl text-[#00F0FF] shadow-[0_0_20px_rgba(0,240,255,0.15)] -rotate-3">
+                    <LinkIcon size={24} />
                   </div>
                 </div>
+                <LinkActionsMenu
+                  className="absolute top-4 right-4"
+                  hoverBorderClass="hover:border-[#135bec]/60"
+                  link={link}
+                  onRefresh={fetchData}
+                  onEdit={(linkToEdit) => navigate(`/dashboard/links/edit/${linkToEdit.id}`)}
+                  onDuplicate={(linkToDuplicate) =>
+                    navigate(
+                      `/dashboard/links/new?duplicate=${linkToDuplicate.id}${currentSpaceId ? `&space_id=${encodeURIComponent(currentSpaceId)}` : ''}`
+                    )
+                  }
+                  onAnalytics={(linkForAnalytics) =>
+                    navigate(
+                      `/dashboard/analytics?domain=${encodeURIComponent(linkForAnalytics.domain || '')}&slug=${encodeURIComponent(linkForAnalytics.slug || '')}`
+                    )
+                  }
+                  onShowModal={(modalConfig) => setModalState(modalConfig)}
+                />
 
                 {/* Short Link box */}
                 <div className="bg-[#0b0f19] border border-[#232f48] rounded-xl p-4 mb-6">
@@ -948,7 +948,16 @@ const LinkManager = () => {
 };
 
 // Actions Menu Component
-const LinkActionsMenu = ({ link, onRefresh, onEdit, onDuplicate, onAnalytics, onShowModal }) => {
+const LinkActionsMenu = ({
+  link,
+  onRefresh,
+  onEdit,
+  onDuplicate,
+  onAnalytics,
+  onShowModal,
+  className = '',
+  hoverBorderClass = 'hover:border-[#FF00E5]/40',
+}) => {
   const [isOpen, setIsOpen] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -998,10 +1007,10 @@ const LinkActionsMenu = ({ link, onRefresh, onEdit, onDuplicate, onAnalytics, on
   };
 
   return (
-    <div className="relative">
+    <div className={`relative z-10 ${className}`}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="p-2 rounded-lg bg-[#0b0f19] border border-[#232f48] text-slate-300 hover:text-white hover:border-[#FF00E5]/40 transition-colors"
+        className={`p-2 rounded-lg bg-[#0b0f19] border border-[#232f48] text-slate-300 hover:text-white ${hoverBorderClass} transition-colors`}
         aria-label="Actions menu"
       >
         <span className="material-symbols-outlined text-base">more_vert</span>
