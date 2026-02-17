@@ -82,6 +82,7 @@ export async function updateLinkInRedis(linkData, supabase, oldDomain = null, ol
       fraud_shield: linkData.fraud_shield || 'none',
       bot_action: linkData.bot_action || 'block',
       fallback_url: linkData.fallback_url || null,
+      space_id: linkData.space_id || null,
       geo_rules: linkData.geo_rules || [],
       plan_type: planType,
       created_at: linkData.created_at,

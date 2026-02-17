@@ -533,6 +533,16 @@ const LinkManager = () => {
         .eq('user_id', userId);
       if (error) throw error;
 
+      // Keep QStash/Upstash cache in sync with new location
+      try {
+        await updateLinkInRedis(
+          { ...moveModal.link, space_id: targetSpaceId, updated_at: new Date().toISOString() },
+          supabase
+        );
+      } catch (cacheError) {
+        console.warn('⚠️ [LinkManager] Failed to sync moved link in cache:', cacheError);
+      }
+
       closeMoveModal();
       await fetchData();
     } catch (error) {
