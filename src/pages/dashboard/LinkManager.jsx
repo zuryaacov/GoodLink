@@ -1009,7 +1009,7 @@ const LinkActionsMenu = ({
   };
 
   return (
-    <div className={`relative z-10 ${className}`}>
+    <div className={`z-10 ${className}`}>
       <button
         onClick={() => setIsOpen(!isOpen)}
         className={`p-2 rounded-lg bg-[#0b0f19] border border-[#232f48] text-slate-300 hover:text-white ${hoverBorderClass} transition-colors`}
