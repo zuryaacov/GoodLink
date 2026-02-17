@@ -159,7 +159,7 @@ const LinkManager = () => {
       // If table doesn't exist yet, we keep dashboard fully functional with links only.
       let spacesData = [];
       const normalizedPlan = (currentPlanType || '').toLowerCase();
-      const foldersDisabled = normalizedPlan === 'free' || normalizedPlan === 'starter';
+      const foldersDisabled = normalizedPlan === 'free' || normalizedPlan === 'start';
       if (!foldersDisabled) {
         const { data: fetchedSpaces, error: spacesError } = await supabase
           .from('link_spaces')
@@ -197,8 +197,7 @@ const LinkManager = () => {
   const currentLevel = currentSpace?.level ?? 0;
   const nextKind = KIND_BY_LEVEL[currentLevel] || null;
   const normalizedPlanType = (planType || '').toLowerCase();
-  const isFoldersFeatureDisabled =
-    normalizedPlanType === 'free' || normalizedPlanType === 'starter';
+  const isFoldersFeatureDisabled = normalizedPlanType === 'free' || normalizedPlanType === 'start';
   const isFoldersEnabled = !isFoldersFeatureDisabled;
 
   const goToSpace = (spaceId) => {
@@ -647,7 +646,13 @@ const LinkManager = () => {
               <h1 className="text-2xl md:text-3xl font-bold text-white truncate">{pageTitle}</h1>
             </div>
           </div>
-          <div className="relative w-full sm:w-auto">
+          <div
+            className={
+              isFoldersEnabled
+                ? 'relative w-full sm:w-auto'
+                : 'relative w-full sm:w-auto flex justify-end'
+            }
+          >
             <button
               onClick={() =>
                 createOptions.length === 1
