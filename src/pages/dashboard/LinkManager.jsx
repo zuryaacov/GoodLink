@@ -355,28 +355,43 @@ const LinkManager = () => {
       });
       return;
     }
-    try {
-      const { error } = await supabase
-        .from('link_spaces')
-        .delete()
-        .eq('id', space.id)
-        .eq('user_id', userId);
-      if (error) throw error;
+    setModalState({
+      isOpen: true,
+      type: 'delete',
+      title: `Delete ${KIND_LABEL[space.kind] || 'item'}?`,
+      message: (
+        <>
+          Are you sure you want to delete <strong>{space.name}</strong>?
+        </>
+      ),
+      onConfirm: async () => {
+        setModalState((prev) => ({ ...prev, isLoading: true }));
+        try {
+          const { error } = await supabase
+            .from('link_spaces')
+            .delete()
+            .eq('id', space.id)
+            .eq('user_id', userId);
+          if (error) throw error;
 
-      if (currentSpaceId === space.id) {
-        goToSpace(space.parent_id || null);
-      }
-      await fetchData();
-    } catch (error) {
-      setModalState({
-        isOpen: true,
-        type: 'error',
-        title: 'Error',
-        message: error?.message || 'Failed to cancel item. Please try again.',
-        onConfirm: null,
-        isLoading: false,
-      });
-    }
+          if (currentSpaceId === space.id) {
+            goToSpace(space.parent_id || null);
+          }
+          setModalState((prev) => ({ ...prev, isOpen: false, isLoading: false }));
+          await fetchData();
+        } catch (error) {
+          setModalState({
+            isOpen: true,
+            type: 'error',
+            title: 'Error',
+            message: error?.message || 'Failed to delete item. Please try again.',
+            onConfirm: null,
+            isLoading: false,
+          });
+        }
+      },
+      isLoading: false,
+    });
   };
 
   const handleCreateOption = (option) => {
