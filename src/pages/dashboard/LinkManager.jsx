@@ -39,6 +39,7 @@ const LinkManager = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const [userId, setUserId] = useState(null);
+  const [planType, setPlanType] = useState(null);
   const [links, setLinks] = useState([]);
   const [spaces, setSpaces] = useState([]);
   const [currentSpaceId, setCurrentSpaceId] = useState(null);
@@ -88,6 +89,20 @@ const LinkManager = () => {
       } = await supabase.auth.getUser();
       if (!user) return;
       setUserId(user.id);
+
+      // Fetch plan type to control folders feature availability
+      let currentPlanType = null;
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('plan_type')
+        .eq('user_id', user.id)
+        .single();
+      if (profile?.plan_type) {
+        currentPlanType = profile.plan_type;
+        setPlanType(profile.plan_type);
+      } else {
+        setPlanType(null);
+      }
 
       // Fetch links
       const { data: linksData, error: linksError } = await supabase
@@ -140,19 +155,23 @@ const LinkManager = () => {
         });
       }
 
-      // Fetch hierarchy spaces (workspace/campaign/group)
+      // Fetch hierarchy spaces (workspace/campaign/group) only for plans that support folders.
       // If table doesn't exist yet, we keep dashboard fully functional with links only.
       let spacesData = [];
-      const { data: fetchedSpaces, error: spacesError } = await supabase
-        .from('link_spaces')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false });
+      const normalizedPlan = (currentPlanType || '').toLowerCase();
+      const foldersDisabled = normalizedPlan === 'free' || normalizedPlan === 'starter';
+      if (!foldersDisabled) {
+        const { data: fetchedSpaces, error: spacesError } = await supabase
+          .from('link_spaces')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false });
 
-      if (!spacesError && fetchedSpaces) {
-        spacesData = fetchedSpaces;
-      } else if (spacesError) {
-        console.warn('[LinkManager] link_spaces table not ready yet:', spacesError.message);
+        if (!spacesError && fetchedSpaces) {
+          spacesData = fetchedSpaces;
+        } else if (spacesError) {
+          console.warn('[LinkManager] link_spaces table not ready yet:', spacesError.message);
+        }
       }
 
       setSpaces(spacesData);
@@ -177,6 +196,10 @@ const LinkManager = () => {
   const currentSpace = currentSpaceId ? spaceById[currentSpaceId] || null : null;
   const currentLevel = currentSpace?.level ?? 0;
   const nextKind = KIND_BY_LEVEL[currentLevel] || null;
+  const normalizedPlanType = (planType || '').toLowerCase();
+  const isFoldersFeatureDisabled =
+    normalizedPlanType === 'free' || normalizedPlanType === 'starter';
+  const isFoldersEnabled = !isFoldersFeatureDisabled;
 
   const goToSpace = (spaceId) => {
     const normalized = spaceId || null;
@@ -197,6 +220,13 @@ const LinkManager = () => {
     }
   }, [loading, currentSpaceId, spaceById]);
 
+  // Free/Starter always use a flat links page (no folders)
+  useEffect(() => {
+    if (isFoldersFeatureDisabled && currentSpaceId) {
+      goToSpace(null);
+    }
+  }, [isFoldersFeatureDisabled, currentSpaceId]);
+
   const childSpaces = useMemo(() => {
     if (!nextKind) return [];
     return spaces
@@ -205,8 +235,11 @@ const LinkManager = () => {
   }, [spaces, currentSpaceId, nextKind]);
 
   const directLinks = useMemo(
-    () => links.filter((l) => (l.space_id || null) === (currentSpaceId || null)),
-    [links, currentSpaceId]
+    () =>
+      isFoldersEnabled
+        ? links.filter((l) => (l.space_id || null) === (currentSpaceId || null))
+        : links,
+    [links, currentSpaceId, isFoldersEnabled]
   );
 
   const getDescendantIds = (spaceId) => {
@@ -407,18 +440,21 @@ const LinkManager = () => {
   const handleCreateOption = (option) => {
     setCreateMenuOpen(false);
     if (option === 'link') {
-      const query = currentSpaceId ? `?space_id=${encodeURIComponent(currentSpaceId)}` : '';
+      const query =
+        isFoldersEnabled && currentSpaceId ? `?space_id=${encodeURIComponent(currentSpaceId)}` : '';
       navigate(`/dashboard/links/new${query}`);
       return;
     }
+    if (!isFoldersEnabled) return;
     openCreateSpaceModal(option);
   };
 
   const createOptions = useMemo(() => {
     const options = [{ id: 'link', label: 'New Link' }];
-    if (nextKind) options.push({ id: nextKind, label: `New ${KIND_LABEL[nextKind]}` });
+    if (isFoldersEnabled && nextKind)
+      options.push({ id: nextKind, label: `New ${KIND_LABEL[nextKind]}` });
     return options;
-  }, [nextKind]);
+  }, [nextKind, isFoldersEnabled]);
 
   const handleCopy = async (url, copyBtnId = null) => {
     try {
@@ -574,13 +610,27 @@ const LinkManager = () => {
     );
   }
 
-  const pageTitle = currentLevel === 0 ? 'Workspaces' : currentLevel === 1 ? 'Campaigns' : 'Groups';
-  const showBackArrow = !!currentSpaceId;
+  const pageTitle = isFoldersEnabled
+    ? currentLevel === 0
+      ? 'Workspaces'
+      : currentLevel === 1
+        ? 'Campaigns'
+        : 'Groups'
+    : 'Link Manager';
+  const showBackArrow = isFoldersEnabled && !!currentSpaceId;
 
   return (
     <div className="flex flex-col gap-6 md:gap-8 w-full max-w-7xl mx-auto">
-      <div className="sticky top-0 z-30 relative lg:-mt-6 lg:pt-6 -mx-4 px-4 py-3 md:-mx-6 md:px-6 bg-[#0b0f19] border-b border-[#232f48] shadow-[0_10px_30px_rgba(0,0,0,0.35)] flex flex-col gap-4">
-        <div className="pointer-events-none absolute inset-x-0 -top-20 h-20 lg:-top-6 lg:h-6 bg-[#0b0f19]"></div>
+      <div
+        className={
+          isFoldersEnabled
+            ? 'sticky top-0 z-30 relative lg:-mt-6 lg:pt-6 -mx-4 px-4 py-3 md:-mx-6 md:px-6 bg-[#0b0f19] border-b border-[#232f48] shadow-[0_10px_30px_rgba(0,0,0,0.35)] flex flex-col gap-4'
+            : 'flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4'
+        }
+      >
+        {isFoldersEnabled && (
+          <div className="pointer-events-none absolute inset-x-0 -top-20 h-20 lg:-top-6 lg:h-6 bg-[#0b0f19]"></div>
+        )}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div className="flex flex-col gap-2 flex-1 min-w-0">
             <div className="flex items-center gap-3">
@@ -631,33 +681,34 @@ const LinkManager = () => {
             )}
           </div>
         </div>
-        {/* Breadcrumb */}
-        <div className="flex flex-wrap items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-300">
-          <button
-            type="button"
-            onClick={() => goToSpace(null)}
-            className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-[#2a3552] bg-[#101622] hover:bg-[#151d2d] transition-colors"
-          >
-            <Home size={13} />
-            Root
-          </button>
-          {breadcrumbs.map((b) => (
-            <React.Fragment key={b.id}>
-              <ChevronRight size={12} className="text-slate-500" />
-              <button
-                type="button"
-                onClick={() => goToSpace(b.id)}
-                className="px-3 py-1.5 rounded-lg border border-[#2a3552] bg-[#101622] hover:bg-[#151d2d] transition-colors"
-              >
-                {b.name}
-              </button>
-            </React.Fragment>
-          ))}
-        </div>
+        {isFoldersEnabled && (
+          <div className="flex flex-wrap items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-300">
+            <button
+              type="button"
+              onClick={() => goToSpace(null)}
+              className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-[#2a3552] bg-[#101622] hover:bg-[#151d2d] transition-colors"
+            >
+              <Home size={13} />
+              Root
+            </button>
+            {breadcrumbs.map((b) => (
+              <React.Fragment key={b.id}>
+                <ChevronRight size={12} className="text-slate-500" />
+                <button
+                  type="button"
+                  onClick={() => goToSpace(b.id)}
+                  className="px-3 py-1.5 rounded-lg border border-[#2a3552] bg-[#101622] hover:bg-[#151d2d] transition-colors"
+                >
+                  {b.name}
+                </button>
+              </React.Fragment>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Active Grid cards for current level children */}
-      {childSpaces.length > 0 && (
+      {isFoldersEnabled && childSpaces.length > 0 && (
         <div className="flex flex-col gap-6 w-full">
           <div className="relative flex items-center gap-6 py-4">
             <div className="h-[2px] flex-1 bg-gradient-to-r from-transparent via-[#FF00E5]/40 to-[#FF00E5]"></div>
@@ -759,7 +810,7 @@ const LinkManager = () => {
           </div>
         </div>
       )}
-      {openSpaceMenuId && (
+      {isFoldersEnabled && openSpaceMenuId && (
         <button
           type="button"
           aria-label="Close space menu"
@@ -788,7 +839,9 @@ const LinkManager = () => {
             <span className="material-symbols-outlined text-6xl text-slate-600 mb-4">link_off</span>
             <p className="text-slate-400 text-lg mb-2">No items yet</p>
             <p className="text-slate-500 text-sm">
-              Create a new workspace/campaign/group, or add a link directly here.
+              {isFoldersEnabled
+                ? 'Create a new workspace/campaign/group, or add a link directly here.'
+                : 'Create your first link to get started.'}
             </p>
           </div>
         </div>
