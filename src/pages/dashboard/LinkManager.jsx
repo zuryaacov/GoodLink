@@ -575,13 +575,15 @@ const LinkManager = () => {
         </div>
         <div className="relative w-full sm:w-auto">
           <button
-            onClick={() => setCreateMenuOpen((v) => !v)}
+            onClick={() =>
+              createOptions.length === 1 ? handleCreateOption('link') : setCreateMenuOpen((v) => !v)
+            }
             className="flex items-center justify-center gap-2 w-full sm:w-auto px-6 py-3 md:py-2.5 text-white font-bold rounded-xl transition-colors shadow-lg text-base md:text-sm bg-[#FF10F0] hover:bg-[#e00ed0]"
           >
             <span className="material-symbols-outlined text-xl md:text-base">add</span>
-            Create
+            {createOptions.length === 1 ? 'New Link' : 'Create'}
           </button>
-          {createMenuOpen && (
+          {createMenuOpen && createOptions.length > 1 && (
             <>
               <button
                 className="fixed inset-0 z-10"
@@ -796,7 +798,7 @@ const LinkManager = () => {
                   </div>
                 </div>
                 <LinkActionsMenu
-                  className="absolute top-8 right-4"
+                  className="absolute top-4 right-4"
                   hoverBorderClass="hover:border-[#135bec]/60"
                   link={link}
                   onRefresh={fetchData}
