@@ -61,6 +61,13 @@ const LinkManager = () => {
     isOpen: false,
     link: null,
   });
+  const [moveModal, setMoveModal] = useState({
+    isOpen: false,
+    link: null,
+    selectedSpaceId: null,
+    isSaving: false,
+    error: null,
+  });
 
   // Modal states
   const [modalState, setModalState] = useState({
@@ -274,6 +281,25 @@ const LinkManager = () => {
     return out.reverse();
   }, [currentSpaceId, currentSpace, spaceById]);
 
+  const moveSelectionPath = useMemo(() => {
+    if (!moveModal.selectedSpaceId) return [];
+    const out = [];
+    let cursor = spaceById[moveModal.selectedSpaceId] || null;
+    while (cursor) {
+      out.push(cursor);
+      cursor = cursor.parent_id ? spaceById[cursor.parent_id] : null;
+    }
+    return out.reverse();
+  }, [moveModal.selectedSpaceId, spaceById]);
+
+  const moveChildSpaces = useMemo(
+    () =>
+      spaces
+        .filter((s) => (s.parent_id || null) === (moveModal.selectedSpaceId || null))
+        .sort((a, b) => a.name.localeCompare(b.name)),
+    [spaces, moveModal.selectedSpaceId]
+  );
+
   const openCreateSpaceModal = (kind) => {
     setCreateMenuOpen(false);
     setSpaceModal({
@@ -454,6 +480,60 @@ const LinkManager = () => {
       options.push({ id: nextKind, label: `New ${KIND_LABEL[nextKind]}` });
     return options;
   }, [nextKind, isFoldersEnabled]);
+
+  const openMoveModal = (linkToMove) => {
+    if (!isFoldersEnabled || !linkToMove) return;
+    setMoveModal({
+      isOpen: true,
+      link: linkToMove,
+      selectedSpaceId: linkToMove.space_id || null,
+      isSaving: false,
+      error: null,
+    });
+  };
+
+  const closeMoveModal = () => {
+    if (moveModal.isSaving) return;
+    setMoveModal({
+      isOpen: false,
+      link: null,
+      selectedSpaceId: null,
+      isSaving: false,
+      error: null,
+    });
+  };
+
+  const handleMoveLink = async () => {
+    if (!moveModal.link || !userId) return;
+    const targetSpaceId = moveModal.selectedSpaceId || null;
+    const currentLinkSpaceId = moveModal.link.space_id || null;
+    if (targetSpaceId === currentLinkSpaceId) {
+      closeMoveModal();
+      return;
+    }
+
+    try {
+      setMoveModal((prev) => ({ ...prev, isSaving: true, error: null }));
+      const { error } = await supabase
+        .from('links')
+        .update({
+          space_id: targetSpaceId,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', moveModal.link.id)
+        .eq('user_id', userId);
+      if (error) throw error;
+
+      closeMoveModal();
+      await fetchData();
+    } catch (error) {
+      setMoveModal((prev) => ({
+        ...prev,
+        isSaving: false,
+        error: error?.message || 'Failed to move link. Please try again.',
+      }));
+    }
+  };
 
   const handleCopy = async (url, copyBtnId = null) => {
     try {
@@ -894,6 +974,7 @@ const LinkManager = () => {
                       `/dashboard/analytics?domain=${encodeURIComponent(linkForAnalytics.domain || '')}&slug=${encodeURIComponent(linkForAnalytics.slug || '')}`
                     )
                   }
+                  onMove={isFoldersEnabled ? openMoveModal : null}
                   onShowModal={(modalConfig) => setModalState(modalConfig)}
                 />
 
@@ -958,6 +1039,119 @@ const LinkManager = () => {
           })}
         </div>
       )}
+
+      {/* Move Link Modal */}
+      <Modal
+        isOpen={moveModal.isOpen}
+        onClose={closeMoveModal}
+        title="Move Link"
+        type="confirm"
+        confirmText={
+          moveModal.selectedSpaceId === (moveModal.link?.space_id || null)
+            ? 'Already Here'
+            : 'Move To Here'
+        }
+        cancelText="Cancel"
+        onConfirm={handleMoveLink}
+        isLoading={moveModal.isSaving}
+        message={
+          <div className="space-y-4 text-left">
+            <p className="text-sm text-slate-700">
+              Choose a destination for{' '}
+              <strong>{moveModal.link?.name || moveModal.link?.short_url || 'this link'}</strong>.
+            </p>
+
+            <div className="space-y-2">
+              <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+                Current Selection
+              </p>
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() =>
+                    setMoveModal((prev) => ({ ...prev, selectedSpaceId: null, error: null }))
+                  }
+                  className={`px-3 py-1.5 rounded-full border text-xs font-semibold transition-colors ${
+                    moveModal.selectedSpaceId === null
+                      ? 'bg-[#135bec]/15 border-[#135bec]/60 text-[#135bec]'
+                      : 'bg-white border-slate-300 text-slate-700 hover:bg-slate-50'
+                  }`}
+                >
+                  Root
+                </button>
+                {moveSelectionPath.map((space) => {
+                  const isActive = moveModal.selectedSpaceId === space.id;
+                  return (
+                    <React.Fragment key={space.id}>
+                      <ChevronRight size={12} className="text-slate-400" />
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setMoveModal((prev) => ({
+                            ...prev,
+                            selectedSpaceId: space.id,
+                            error: null,
+                          }))
+                        }
+                        className={`px-3 py-1.5 rounded-full border text-xs font-semibold transition-colors ${
+                          isActive
+                            ? 'bg-[#135bec]/15 border-[#135bec]/60 text-[#135bec]'
+                            : 'bg-white border-slate-300 text-slate-700 hover:bg-slate-50'
+                        }`}
+                      >
+                        {space.name}
+                      </button>
+                    </React.Fragment>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+                Available Folders Here
+              </p>
+              {moveChildSpaces.length > 0 ? (
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                  {moveChildSpaces.map((space) => {
+                    const isSelected = moveModal.selectedSpaceId === space.id;
+                    return (
+                      <button
+                        key={space.id}
+                        type="button"
+                        onClick={() =>
+                          setMoveModal((prev) => ({
+                            ...prev,
+                            selectedSpaceId: space.id,
+                            error: null,
+                          }))
+                        }
+                        className={`text-left px-3 py-2 rounded-xl border transition-colors ${
+                          isSelected
+                            ? 'border-[#135bec] bg-[#135bec]/10 text-[#135bec]'
+                            : 'border-slate-300 bg-white text-slate-700 hover:bg-slate-50'
+                        }`}
+                      >
+                        <div className="text-xs font-semibold truncate">{space.name}</div>
+                        <div className="text-[10px] uppercase tracking-wider opacity-70 mt-1">
+                          {KIND_LABEL[space.kind] || 'Space'}
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              ) : (
+                <p className="text-xs text-slate-500">
+                  No deeper folders under this level. You can still move the link to the selected
+                  location.
+                </p>
+              )}
+            </div>
+
+            {moveModal.error ? <p className="text-sm text-red-500">{moveModal.error}</p> : null}
+          </div>
+        }
+      />
 
       {/* Error/Alert Modal */}
       <Modal
@@ -1037,6 +1231,7 @@ const LinkActionsMenu = ({
   onEdit,
   onDuplicate,
   onAnalytics,
+  onMove,
   onShowModal,
   className = '',
   hoverBorderClass = 'hover:border-[#FF00E5]/40',
@@ -1133,6 +1328,18 @@ const LinkActionsMenu = ({
               <span className="material-symbols-outlined text-base">content_copy</span>
               Duplicate
             </button>
+            {onMove && (
+              <button
+                onClick={() => {
+                  setIsOpen(false);
+                  onMove(link);
+                }}
+                className="w-full px-4 py-3 text-left text-white hover:bg-white/5 transition-colors flex items-center gap-3 text-sm"
+              >
+                <span className="material-symbols-outlined text-base">drive_file_move</span>
+                Move
+              </button>
+            )}
             <button
               onClick={() => {
                 setIsOpen(false);
