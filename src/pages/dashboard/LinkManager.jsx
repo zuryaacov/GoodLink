@@ -579,78 +579,81 @@ const LinkManager = () => {
 
   return (
     <div className="flex flex-col gap-6 md:gap-8 w-full max-w-7xl mx-auto">
-      <div className="sticky top-0 z-30 relative lg:-mt-6 lg:pt-6 -mx-4 px-4 py-3 md:-mx-6 md:px-6 bg-[#0b0f19] border-b border-[#232f48] shadow-[0_10px_30px_rgba(0,0,0,0.35)] flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="sticky top-0 z-30 relative lg:-mt-6 lg:pt-6 -mx-4 px-4 py-3 md:-mx-6 md:px-6 bg-[#0b0f19] border-b border-[#232f48] shadow-[0_10px_30px_rgba(0,0,0,0.35)] flex flex-col gap-4">
         <div className="pointer-events-none absolute inset-x-0 -top-20 h-20 lg:-top-6 lg:h-6 bg-[#0b0f19]"></div>
-        <div className="flex flex-col gap-2 flex-1 min-w-0">
-          <div className="flex items-center gap-3">
-            {showBackArrow && (
-              <button
-                type="button"
-                onClick={() => goToSpace(currentSpace?.parent_id || null)}
-                className="flex items-center justify-center p-2.5 rounded-2xl border border-[#232f48] text-gray-400 hover:bg-[#232f48] hover:text-white transition-all active:scale-90 flex-shrink-0"
-                aria-label="Back"
-              >
-                <span className="material-symbols-outlined text-2xl">chevron_left</span>
-              </button>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div className="flex flex-col gap-2 flex-1 min-w-0">
+            <div className="flex items-center gap-3">
+              {showBackArrow && (
+                <button
+                  type="button"
+                  onClick={() => goToSpace(currentSpace?.parent_id || null)}
+                  className="flex items-center justify-center p-2.5 rounded-2xl border border-[#232f48] text-gray-400 hover:bg-[#232f48] hover:text-white transition-all active:scale-90 flex-shrink-0"
+                  aria-label="Back"
+                >
+                  <span className="material-symbols-outlined text-2xl">chevron_left</span>
+                </button>
+              )}
+              <h1 className="text-2xl md:text-3xl font-bold text-white truncate">{pageTitle}</h1>
+            </div>
+          </div>
+          <div className="relative w-full sm:w-auto">
+            <button
+              onClick={() =>
+                createOptions.length === 1
+                  ? handleCreateOption('link')
+                  : setCreateMenuOpen((v) => !v)
+              }
+              className="flex items-center justify-center gap-2 w-full sm:w-auto px-6 py-3 md:py-2.5 text-white font-bold rounded-xl transition-colors shadow-lg text-base md:text-sm bg-[#FF10F0] hover:bg-[#e00ed0]"
+            >
+              <span className="material-symbols-outlined text-xl md:text-base">add</span>
+              {createOptions.length === 1 ? 'New Link' : 'Create'}
+            </button>
+            {createMenuOpen && createOptions.length > 1 && (
+              <>
+                <button
+                  className="fixed inset-0 z-10"
+                  aria-label="Close create menu"
+                  onClick={() => setCreateMenuOpen(false)}
+                />
+                <div className="absolute right-0 mt-2 w-56 z-20 rounded-xl border border-[#2a3552] bg-[#101622] shadow-2xl overflow-hidden">
+                  {createOptions.map((option) => (
+                    <button
+                      key={option.id}
+                      onClick={() => handleCreateOption(option.id)}
+                      className="w-full px-4 py-3 text-left text-white hover:bg-white/5 transition-colors"
+                    >
+                      {option.label}
+                    </button>
+                  ))}
+                </div>
+              </>
             )}
-            <h1 className="text-2xl md:text-3xl font-bold text-white truncate">{pageTitle}</h1>
           </div>
         </div>
-        <div className="relative w-full sm:w-auto">
+        {/* Breadcrumb */}
+        <div className="flex flex-wrap items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-300">
           <button
-            onClick={() =>
-              createOptions.length === 1 ? handleCreateOption('link') : setCreateMenuOpen((v) => !v)
-            }
-            className="flex items-center justify-center gap-2 w-full sm:w-auto px-6 py-3 md:py-2.5 text-white font-bold rounded-xl transition-colors shadow-lg text-base md:text-sm bg-[#FF10F0] hover:bg-[#e00ed0]"
+            type="button"
+            onClick={() => goToSpace(null)}
+            className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-[#2a3552] bg-[#101622] hover:bg-[#151d2d] transition-colors"
           >
-            <span className="material-symbols-outlined text-xl md:text-base">add</span>
-            {createOptions.length === 1 ? 'New Link' : 'Create'}
+            <Home size={13} />
+            Root
           </button>
-          {createMenuOpen && createOptions.length > 1 && (
-            <>
+          {breadcrumbs.map((b) => (
+            <React.Fragment key={b.id}>
+              <ChevronRight size={12} className="text-slate-500" />
               <button
-                className="fixed inset-0 z-10"
-                aria-label="Close create menu"
-                onClick={() => setCreateMenuOpen(false)}
-              />
-              <div className="absolute right-0 mt-2 w-56 z-20 rounded-xl border border-[#2a3552] bg-[#101622] shadow-2xl overflow-hidden">
-                {createOptions.map((option) => (
-                  <button
-                    key={option.id}
-                    onClick={() => handleCreateOption(option.id)}
-                    className="w-full px-4 py-3 text-left text-white hover:bg-white/5 transition-colors"
-                  >
-                    {option.label}
-                  </button>
-                ))}
-              </div>
-            </>
-          )}
+                type="button"
+                onClick={() => goToSpace(b.id)}
+                className="px-3 py-1.5 rounded-lg border border-[#2a3552] bg-[#101622] hover:bg-[#151d2d] transition-colors"
+              >
+                {b.name}
+              </button>
+            </React.Fragment>
+          ))}
         </div>
-      </div>
-
-      {/* Breadcrumb */}
-      <div className="flex flex-wrap items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-300">
-        <button
-          type="button"
-          onClick={() => goToSpace(null)}
-          className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-[#2a3552] bg-[#101622] hover:bg-[#151d2d] transition-colors"
-        >
-          <Home size={13} />
-          Root
-        </button>
-        {breadcrumbs.map((b) => (
-          <React.Fragment key={b.id}>
-            <ChevronRight size={12} className="text-slate-500" />
-            <button
-              type="button"
-              onClick={() => goToSpace(b.id)}
-              className="px-3 py-1.5 rounded-lg border border-[#2a3552] bg-[#101622] hover:bg-[#151d2d] transition-colors"
-            >
-              {b.name}
-            </button>
-          </React.Fragment>
-        ))}
       </div>
 
       {/* Active Grid cards for current level children */}
