@@ -946,7 +946,7 @@ const LinkManager = () => {
             return (
               <div
                 key={link.id}
-                className={`relative bg-[#101622] border border-[#232f48] rounded-[1.25rem] p-6 flex flex-col h-full transition-all duration-300 ease-out overflow-hidden ${
+                className={`relative bg-[#101622] border border-[#232f48] rounded-[1.25rem] p-6 flex flex-col h-full transition-all duration-300 ease-out overflow-visible ${
                   !isActive ? 'opacity-70' : ''
                 } ${isActive ? 'hover:border-[#135bec] hover:shadow-[0_12px_30px_rgba(19,91,236,0.15)]' : ''}`}
               >
@@ -1216,9 +1216,6 @@ const LinkManager = () => {
               className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm"
               placeholder={`Enter ${spaceModal.kind ? KIND_LABEL[spaceModal.kind] : 'item'} name`}
             />
-            <p className="text-xs text-slate-500">
-              {'Allowed: English letters, numbers, spaces, and !@#$%^&*)(-+=}{]['}
-            </p>
             {spaceModal.error ? <p className="text-sm text-red-500">{spaceModal.error}</p> : null}
           </div>
         }
