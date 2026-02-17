@@ -1,5 +1,6 @@
 import { Redis } from "@upstash/redis/cloudflare";
 import * as Sentry from "@sentry/cloudflare";
+import { logAxiomInBackground } from "./services/axiomLogger";
 
 // --- Utility Functions ---
 
@@ -412,6 +413,7 @@ export default Sentry.withSentry(
             const url = new URL(request.url);
             const path = url.pathname.toLowerCase();
             const domain = url.hostname.replace(/^www\./, '');
+            const requestStartMs = Date.now();
 
             // CORS Headers for all requests
             const corsHeaders = {
@@ -1169,6 +1171,21 @@ export default Sentry.withSentry(
 
             const userAgent = request.headers.get("user-agent") || "";
             const rayId = request.headers.get("cf-ray") || crypto.randomUUID();
+            const ip = request.headers.get("cf-connecting-ip");
+            const country = request.cf?.country || null;
+            const queueAxiomLog = (action, shortCode = null, isBot = false) => {
+                logAxiomInBackground(ctx, env, {
+                    timestamp: new Date().toISOString(),
+                    action,
+                    short_code: shortCode,
+                    original_url: request.url,
+                    visitor_ip: ip || null,
+                    user_agent: userAgent || null,
+                    country,
+                    is_bot: Boolean(isBot),
+                    latency_ms: Date.now() - requestStartMs
+                });
+            };
 
             // 1. Noise Filter: Silent filtering without logging
             const noisePaths = ['/favicon.ico', '/robots.txt', '/index.php', '/.env', '/wp-login.php', '/admin', '/root'];
@@ -1179,14 +1196,17 @@ export default Sentry.withSentry(
                     if (customDomainCfg.exists) {
                         const rootRedirectUrl = ensureValidUrl(customDomainCfg.rootRedirect);
                         if (rootRedirectUrl) {
+                            queueAxiomLog("redirect", null, false);
                             return Response.redirect(rootRedirectUrl, 302);
                         }
+                        queueAxiomLog("not_found", null, false);
                         return new Response(getGlynk404Page(), {
                             status: 404,
                             headers: { "Content-Type": "text/html;charset=UTF-8" }
                         });
                     }
                 }
+                queueAxiomLog("not_found", null, false);
                 return new Response(getGlynk404Page(), {
                     status: 404,
                     headers: { "Content-Type": "text/html;charset=UTF-8" }
@@ -1199,7 +1219,6 @@ export default Sentry.withSentry(
 
             // Clean leading and trailing slashes to prevent routing errors
             const slug = path.split('?')[0].replace(/^\/+|\/+$/g, '');
-            const ip = request.headers.get("cf-connecting-ip");
 
             const redis = new Redis({ url: env.UPSTASH_REDIS_REST_URL, token: env.UPSTASH_REDIS_REST_TOKEN });
 
@@ -1211,12 +1230,15 @@ export default Sentry.withSentry(
             const terminateWithLog = (verdict, linkData = null) => {
                 const clickRecord = buildClickRecord(request, rayId, ip, slug, domain, userAgent, verdict, linkData);
                 ctx.waitUntil(logClickToSupabase(env, clickRecord, redis));
+                const isBotVerdict = verdict === "blacklisted" || verdict.startsWith("bot_");
+                queueAxiomLog(isBotVerdict ? "bot_blocked" : "not_found", slug || null, isBotVerdict);
 
                 // If linkData has fallback_url, redirect there instead of showing 404
                 if (linkData?.fallback_url) {
                     const fallbackUrl = ensureValidUrl(linkData.fallback_url);
                     if (fallbackUrl) {
                         console.log(`🔀 Redirecting to fallback URL: ${fallbackUrl} (reason: ${verdict})`);
+                        queueAxiomLog("redirect", slug || null, false);
                         return Response.redirect(fallbackUrl, 302);
                     }
                 }
@@ -1303,9 +1325,11 @@ export default Sentry.withSentry(
                     const fallbackUrl = ensureValidUrl(linkData.fallback_url);
                     if (fallbackUrl) {
                         console.log(`🔀 Bot blocked, redirecting to fallback URL: ${fallbackUrl}`);
+                        queueAxiomLog("bot_blocked", slug || null, true);
                         return Response.redirect(fallbackUrl, 302);
                     }
                 }
+                queueAxiomLog("bot_blocked", slug || null, true);
                 return htmlResponse(getGlynk404Page());
             }
 
@@ -1384,6 +1408,7 @@ export default Sentry.withSentry(
                     };
                     const capiPayloadJson = JSON.stringify(capiPayload, null, 2);
                     console.log("CAPI: JSON sent to QStash:", capiPayloadJson);
+                    queueAxiomLog("capi_sent", slug || null, isBot);
                     ctx.waitUntil(sendCapiToQStash(env, relayUrl, capiPayload));
                 }
 
@@ -1402,11 +1427,13 @@ export default Sentry.withSentry(
                 }
 
                 if (wantsCapi && capiPixelsToSend.length > 0) {
+                    queueAxiomLog("redirect", slug || null, isBot);
                     return Response.redirect(finalRedirectUrl, 302);
                 }
             }
 
             // 8. Default redirect
+            queueAxiomLog("redirect", slug || null, isBot);
             return Response.redirect(finalRedirectUrl, 302);
         }
     }
