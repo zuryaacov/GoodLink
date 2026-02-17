@@ -569,7 +569,7 @@ const LinkManager = () => {
 
   return (
     <div className="flex flex-col gap-6 md:gap-8 w-full max-w-7xl mx-auto">
-      <div className="sticky top-0 z-20 -mx-4 px-4 py-3 md:-mx-6 md:px-6 bg-[#0b0f19]/95 backdrop-blur-sm border-b border-[#232f48]/50 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="sticky top-0 z-20 -mt-20 pt-20 lg:-mt-6 lg:pt-6 -mx-4 px-4 py-3 md:-mx-6 md:px-6 bg-[#0b0f19]/95 backdrop-blur-sm border-b border-[#232f48]/50 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="flex flex-col gap-2 flex-1 min-w-0">
           <div className="flex items-center gap-3">
             {showBackArrow && (
@@ -607,12 +607,9 @@ const LinkManager = () => {
                   <button
                     key={option.id}
                     onClick={() => handleCreateOption(option.id)}
-                    className="w-full px-4 py-3 text-left text-white hover:bg-white/5 transition-colors flex items-center justify-between"
+                    className="w-full px-4 py-3 text-left text-white hover:bg-white/5 transition-colors"
                   >
-                    <span>{option.label}</span>
-                    <span className="material-symbols-outlined text-base text-slate-400">
-                      chevron_right
-                    </span>
+                    {option.label}
                   </button>
                 ))}
               </div>
