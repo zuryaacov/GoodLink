@@ -659,7 +659,7 @@ const LinkManager = () => {
                   ? handleCreateOption('link')
                   : setCreateMenuOpen((v) => !v)
               }
-              className="flex items-center justify-center gap-2 w-full sm:w-auto px-6 py-3 md:py-2.5 text-white font-bold rounded-xl transition-colors shadow-lg text-base md:text-sm bg-[#FF10F0] hover:bg-[#e00ed0]"
+              className={`flex items-center justify-center gap-2 ${isFoldersEnabled ? 'w-full sm:w-auto' : 'w-auto ml-auto'} px-6 py-3 md:py-2.5 text-white font-bold rounded-xl transition-colors shadow-lg text-base md:text-sm bg-[#FF10F0] hover:bg-[#e00ed0]`}
             >
               <span className="material-symbols-outlined text-xl md:text-base">add</span>
               {createOptions.length === 1 ? 'New Link' : 'Create'}
