@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import Modal from '../../components/common/Modal';
 import { updateLinkInRedis, deleteLinkFromRedis } from '../../lib/redisCache';
-import { LayoutGrid, Folder, ChevronRight, Home } from 'lucide-react';
+import { LayoutGrid, Folder, ChevronRight, Home, LinkIcon } from 'lucide-react';
 
 const PLATFORMS = {
   meta: { name: 'Meta (FB/IG)', colorClass: 'text-blue-400 bg-blue-400/10' },
@@ -28,9 +28,9 @@ const KIND_LABEL = {
 };
 
 const KIND_LABEL_PLURAL = {
-  workspace: 'WORKSPACES',
-  campaign: 'CAMPAIGNS',
-  group: 'GROUPS',
+  workspace: 'Workspaces',
+  campaign: 'Campaigns',
+  group: 'Groups',
 };
 
 const SPACE_NAME_REGEX = /^[A-Za-z0-9 !@#$%^&*()\-\+=}{\[\]]+$/;
@@ -637,7 +637,7 @@ const LinkManager = () => {
           <div className="relative flex items-center gap-6 py-4">
             <div className="h-[2px] flex-1 bg-gradient-to-r from-transparent via-[#FF00E5]/40 to-[#FF00E5]"></div>
             <div className="px-8 py-2 rounded-full border border-[#FF00E5]/30 bg-[#161C2C] shadow-[0_0_30px_rgba(255,0,229,0.2)]">
-              <span className="text-[12px] font-black text-white uppercase tracking-[0.5em] whitespace-nowrap">
+              <span className="text-[12px] font-black text-white tracking-[0.5em] whitespace-nowrap">
                 {KIND_LABEL_PLURAL[nextKind] || 'SPACES'}
               </span>
             </div>
@@ -671,7 +671,7 @@ const LinkManager = () => {
                         <span>{kindLabel} Space</span>
                       </div>
                     </div>
-                    <div className="mr-12 bg-[#FF00E5]/10 p-3 rounded-2xl text-[#FF00E5] shadow-[0_0_15px_rgba(255,0,229,0.1)] group-hover:bg-[#FF00E5] group-hover:text-white transition-all">
+                    <div className="mr-12 bg-[#FF00E5]/10 p-3 rounded-2xl text-[#FF00E5] shadow-[0_0_15px_rgba(255,0,229,0.1)] transition-all">
                       <Folder size={24} fill="currentColor" fillOpacity={0.2} />
                     </div>
                   </div>
@@ -748,8 +748,8 @@ const LinkManager = () => {
         <div className="relative flex items-center gap-6 py-4">
           <div className="h-[2px] flex-1 bg-gradient-to-r from-transparent via-[#FF00E5]/40 to-[#FF00E5]"></div>
           <div className="px-8 py-2 rounded-full border border-[#FF00E5]/30 bg-[#161C2C] shadow-[0_0_30px_rgba(255,0,229,0.2)]">
-            <span className="text-[12px] font-black text-white uppercase tracking-[0.5em] whitespace-nowrap">
-              DIRECT LINKS
+            <span className="text-[12px] font-black text-white tracking-[0.5em] whitespace-nowrap">
+              Links
             </span>
           </div>
           <div className="h-[2px] flex-1 bg-gradient-to-r from-[#FF00E5] via-[#FF00E5]/40 to-transparent"></div>
@@ -791,22 +791,27 @@ const LinkManager = () => {
                       {truncateText(link.target_url, 60)}
                     </p>
                   </div>
-                  <LinkActionsMenu
-                    link={link}
-                    onRefresh={fetchData}
-                    onEdit={(linkToEdit) => navigate(`/dashboard/links/edit/${linkToEdit.id}`)}
-                    onDuplicate={(linkToDuplicate) =>
-                      navigate(
-                        `/dashboard/links/new?duplicate=${linkToDuplicate.id}${currentSpaceId ? `&space_id=${encodeURIComponent(currentSpaceId)}` : ''}`
-                      )
-                    }
-                    onAnalytics={(linkForAnalytics) =>
-                      navigate(
-                        `/dashboard/analytics?domain=${encodeURIComponent(linkForAnalytics.domain || '')}&slug=${encodeURIComponent(linkForAnalytics.slug || '')}`
-                      )
-                    }
-                    onShowModal={(modalConfig) => setModalState(modalConfig)}
-                  />
+                  <div className="flex flex-col items-end gap-2">
+                    <div className="bg-[#00F0FF]/10 p-4 rounded-3xl text-[#00F0FF] shadow-[0_0_20px_rgba(0,240,255,0.15)] -rotate-3">
+                      <LinkIcon size={24} />
+                    </div>
+                    <LinkActionsMenu
+                      link={link}
+                      onRefresh={fetchData}
+                      onEdit={(linkToEdit) => navigate(`/dashboard/links/edit/${linkToEdit.id}`)}
+                      onDuplicate={(linkToDuplicate) =>
+                        navigate(
+                          `/dashboard/links/new?duplicate=${linkToDuplicate.id}${currentSpaceId ? `&space_id=${encodeURIComponent(currentSpaceId)}` : ''}`
+                        )
+                      }
+                      onAnalytics={(linkForAnalytics) =>
+                        navigate(
+                          `/dashboard/analytics?domain=${encodeURIComponent(linkForAnalytics.domain || '')}&slug=${encodeURIComponent(linkForAnalytics.slug || '')}`
+                        )
+                      }
+                      onShowModal={(modalConfig) => setModalState(modalConfig)}
+                    />
+                  </div>
                 </div>
 
                 {/* Short Link box */}
