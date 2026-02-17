@@ -31,34 +31,9 @@ function getGlynk404Page() {
     .wrap{ position:relative; z-index:2; max-width:760px; width:100%; }
     .head{ position:relative; display:inline-block; margin-bottom:48px; }
     .code{
-      margin:0; line-height:.9; font-size:clamp(120px,18vw,240px); font-weight:900; font-style:italic;
-      letter-spacing:-.04em; color:rgba(255,255,255,.09); user-select:none;
-    }
-    .orbit-box{
-      position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
-      animation:floatWobble 6s ease-in-out infinite;
-    }
-    .orbit-card{
-      position:relative; background:var(--panel); border:1px solid rgba(255,255,255,.06);
-      border-radius:56px; padding:42px; box-shadow:0 0 80px rgba(0,240,255,.2);
-    }
-    .orbit-card::before{
-      content:""; position:absolute; inset:0; border-radius:56px; background:var(--cyan); opacity:.2; filter:blur(24px); z-index:0;
-    }
-    .orbit-icon{
-      position:relative; z-index:2; width:80px; height:80px; color:var(--cyan);
-    }
-    .orbit-icon svg{ width:100%; height:100%; display:block; }
-    .particles{
-      position:absolute; inset:0; z-index:1; animation:spin 20s linear infinite;
-    }
-    .particle-a{
-      position:absolute; top:16px; left:16px; width:8px; height:8px;
-      background:var(--pink); border-radius:999px; filter:blur(2px);
-    }
-    .particle-b{
-      position:absolute; bottom:30px; right:16px; width:4px; height:4px;
-      background:#fff; border-radius:999px;
+      margin:0; line-height:.9; font-size:clamp(120px,18vw,240px); font-weight:900; letter-spacing:-.04em;
+      color:transparent; -webkit-text-stroke:1px #d8b4fe; user-select:none;
+      text-shadow:0 0 5px #8c25f4, 0 0 10px #8c25f4, 0 0 20px #8c25f4, 0 0 40px #8c25f4;
     }
     h2{
       margin:0; font-size:clamp(34px,5vw,54px); font-weight:900; text-transform:uppercase;
@@ -79,36 +54,13 @@ function getGlynk404Page() {
       margin-top:72px; opacity:.2; color:#9ca3af; font-size:8px; letter-spacing:.5em;
       text-transform:uppercase; font-weight:900; display:flex; justify-content:center; gap:22px; flex-wrap:wrap;
     }
-    @keyframes floatWobble {
-      0% { transform: translateY(0) rotate(0deg); }
-      25% { transform: translateY(-10px) rotate(5deg); }
-      50% { transform: translateY(-20px) rotate(0deg); }
-      75% { transform: translateY(-10px) rotate(-5deg); }
-      100% { transform: translateY(0) rotate(0deg); }
-    }
-    @keyframes spin { from{ transform:rotate(0deg);} to{ transform:rotate(360deg);} }
-    @media (max-width: 640px){ .vline{display:none;} .orbit-card{padding:30px;border-radius:42px;} .orbit-icon{width:68px;height:68px;} }
+    @media (max-width: 640px){ .vline{display:none;} }
     </style></head><body>
     <div class="glow-a"></div><div class="glow-b"></div><div class="grid"></div>
     <div class="vline left"></div><div class="vline right"></div>
     <div class="wrap">
       <div class="head">
         <h1 class="code">404</h1>
-        <div class="orbit-box">
-          <div class="orbit-card">
-            <div class="orbit-icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg">
-                <circle cx="12" cy="12" r="2.6"></circle>
-                <path d="M19.8 12c0 3.8-3.5 6.8-7.8 6.8S4.2 15.8 4.2 12 7.7 5.2 12 5.2 19.8 8.2 19.8 12Z"></path>
-                <path d="M12 2.2c3.8 0 6.8 3.5 6.8 7.8s-3 7.8-6.8 7.8S5.2 14.3 5.2 10 8.2 2.2 12 2.2Z" opacity=".9"></path>
-              </svg>
-            </div>
-            <div class="particles" aria-hidden="true">
-              <div class="particle-a"></div>
-              <div class="particle-b"></div>
-            </div>
-          </div>
-        </div>
       </div>
       <h2>Link <span class="pink">Not Found</span></h2>
       <div class="bar"></div>
