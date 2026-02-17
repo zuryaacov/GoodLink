@@ -796,7 +796,7 @@ const LinkManager = () => {
                   </div>
                 </div>
                 <LinkActionsMenu
-                  className="absolute top-4 right-4"
+                  className="absolute top-8 right-4"
                   hoverBorderClass="hover:border-[#135bec]/60"
                   link={link}
                   onRefresh={fetchData}
