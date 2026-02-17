@@ -670,7 +670,7 @@ const LinkManager = () => {
                       </h3>
                       <div className="flex items-center gap-2 text-[#00F0FF] text-xs font-bold uppercase tracking-widest opacity-80">
                         <LayoutGrid size={14} />
-                        <span>{kindLabel} Space</span>
+                        <span>{kindLabel}</span>
                       </div>
                     </div>
                     <div className="mr-12 bg-[#FF00E5]/10 p-3 rounded-2xl text-[#FF00E5] shadow-[0_0_15px_rgba(255,0,229,0.1)] transition-all">
