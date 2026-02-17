@@ -630,7 +630,13 @@ const LinkManager = () => {
         {isFoldersEnabled && (
           <div className="pointer-events-none absolute inset-x-0 -top-20 h-20 lg:-top-6 lg:h-6 bg-[#0b0f19]"></div>
         )}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div
+          className={
+            isFoldersEnabled
+              ? 'flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4'
+              : 'flex items-center justify-between gap-4 w-full'
+          }
+        >
           <div className="flex flex-col gap-2 flex-1 min-w-0">
             <div className="flex items-center gap-3">
               {showBackArrow && (
@@ -646,20 +652,14 @@ const LinkManager = () => {
               <h1 className="text-2xl md:text-3xl font-bold text-white truncate">{pageTitle}</h1>
             </div>
           </div>
-          <div
-            className={
-              isFoldersEnabled
-                ? 'relative w-full sm:w-auto'
-                : 'relative w-full sm:w-auto flex justify-end'
-            }
-          >
+          <div className={isFoldersEnabled ? 'relative w-full sm:w-auto' : 'relative ml-auto'}>
             <button
               onClick={() =>
                 createOptions.length === 1
                   ? handleCreateOption('link')
                   : setCreateMenuOpen((v) => !v)
               }
-              className={`flex items-center justify-center gap-2 ${isFoldersEnabled ? 'w-full sm:w-auto' : 'w-auto ml-auto'} px-6 py-3 md:py-2.5 text-white font-bold rounded-xl transition-colors shadow-lg text-base md:text-sm bg-[#FF10F0] hover:bg-[#e00ed0]`}
+              className={`flex items-center justify-center gap-2 ${isFoldersEnabled ? 'w-full sm:w-auto' : 'w-auto'} px-6 py-3 md:py-2.5 text-white font-bold rounded-xl transition-colors shadow-lg text-base md:text-sm bg-[#FF10F0] hover:bg-[#e00ed0]`}
             >
               <span className="material-symbols-outlined text-xl md:text-base">add</span>
               {createOptions.length === 1 ? 'New Link' : 'Create'}
