@@ -1015,7 +1015,7 @@ export default function LinkWizardOnePerPage({
                 Final <span className="text-[#10b981]">Launch</span>
               </h1>
               <p className="text-gray-400 font-medium text-2xl">
-                Review your smart link configuration below.
+                Review your GoodLink configuration below.
               </p>
 
               <div className="bg-[#101622] border border-[#232f48] rounded-2xl p-6 space-y-4 text-left">
