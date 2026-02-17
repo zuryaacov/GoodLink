@@ -3,15 +3,85 @@ import * as Sentry from "@sentry/cloudflare";
 
 // --- Utility Functions ---
 
-function get404Page() {
+function getGlynk404Page() {
     return `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>404 - Link Not Found</title><style>
-    :root { --bg: #0f172a; --primary: #38bdf8; --text: #f1f5f9; --card: #1e293b; }
-    body { margin: 0; padding: 2rem; display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 100vh; background: var(--bg); font-family: sans-serif; color: var(--text); text-align: center; }
-    .c { background: var(--card); padding: 3rem; border-radius: 24px; box-shadow: 0 20px 50px rgba(0,0,0,0.3); max-width: 400px; width: 100%; border: 1px solid rgba(255,255,255,0.05); }
-    h1 { font-size: 5rem; margin: 0; color: var(--primary); opacity: 0.5; }
-    p { color: #94a3b8; font-size: 1.1rem; margin: 1rem 0 2rem; }
-    </style></head><body><div class="c"><h1>404</h1><p>Sorry, the link you're looking for doesn't exist or has been moved.</p></div></body></html>`;
+    :root { --bg:#0B0F1A; --pink:#FF00E5; --cyan:#00F0FF; --txt:#ffffff; --muted:#6b7280; --panel:#161C2C; }
+    *{box-sizing:border-box}
+    body{
+      margin:0; min-height:100vh; padding:24px; overflow:hidden;
+      background:var(--bg); color:var(--txt); font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+      display:flex; align-items:center; justify-content:center; position:relative; text-align:center;
+    }
+    .glow-a,.glow-b{
+      position:absolute; width:40vw; height:40vw; border-radius:999px; filter:blur(120px); opacity:.05; pointer-events:none;
+    }
+    .glow-a{ top:-10%; left:-10%; background:var(--pink); }
+    .glow-b{ bottom:-10%; right:-10%; background:var(--cyan); }
+    .grid{
+      position:absolute; inset:0; opacity:.03; pointer-events:none;
+      background-image:linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px);
+      background-size:40px 40px;
+    }
+    .vline{
+      position:absolute; top:0; bottom:0; width:1px; opacity:.3;
+      background:linear-gradient(to bottom, transparent, #374151, transparent);
+    }
+    .vline.left{ left:48px; } .vline.right{ right:48px; }
+    .wrap{ position:relative; z-index:2; max-width:760px; width:100%; }
+    .head{ position:relative; display:inline-block; margin-bottom:48px; }
+    .code{
+      margin:0; line-height:.9; font-size:clamp(120px,18vw,240px); font-weight:900; font-style:italic;
+      letter-spacing:-.04em; color:rgba(255,255,255,.09); user-select:none;
+    }
+    .ghost-box{
+      position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+      animation:float 4s ease-in-out infinite;
+    }
+    .ghost-card{
+      position:relative; background:var(--panel); border:1px solid rgba(255,255,255,.06);
+      border-radius:56px; padding:42px; box-shadow:0 0 80px rgba(255,0,229,.2);
+    }
+    .ghost-card::before{
+      content:""; position:absolute; inset:0; border-radius:56px; background:var(--pink); opacity:.2; filter:blur(24px); z-index:-1;
+    }
+    .ghost{ font-size:84px; line-height:1; display:block; }
+    h2{
+      margin:0; font-size:clamp(34px,5vw,54px); font-weight:900; text-transform:uppercase;
+      letter-spacing:-.02em; font-style:italic;
+    }
+    .pink{ color:var(--pink); }
+    .bar{ height:4px; width:84px; background:var(--pink); margin:22px auto 0; border-radius:999px; }
+    .desc{
+      margin:18px auto 0; color:var(--muted); font-size:clamp(17px,2.2vw,22px);
+      font-weight:500; line-height:1.6; max-width:420px;
+    }
+    .status{
+      margin-top:54px; display:inline-flex; align-items:center; gap:12px; color:#6b7280;
+      font-size:10px; letter-spacing:.28em; text-transform:uppercase; font-weight:700;
+    }
+    .dot{ width:6px; height:6px; border-radius:999px; background:#ef4444; box-shadow:0 0 8px #ef4444; }
+    .foot{
+      margin-top:72px; opacity:.2; color:#9ca3af; font-size:8px; letter-spacing:.5em;
+      text-transform:uppercase; font-weight:900; display:flex; justify-content:center; gap:22px; flex-wrap:wrap;
+    }
+    @keyframes float { 0%{ transform:translateY(0);} 50%{ transform:translateY(-20px);} 100%{ transform:translateY(0);} }
+    @media (max-width: 640px){ .vline{display:none;} .ghost{font-size:68px;} .ghost-card{padding:30px;border-radius:42px;} }
+    </style></head><body>
+    <div class="glow-a"></div><div class="glow-b"></div><div class="grid"></div>
+    <div class="vline left"></div><div class="vline right"></div>
+    <div class="wrap">
+      <div class="head">
+        <h1 class="code">404</h1>
+        <div class="ghost-box"><div class="ghost-card"><span class="ghost">👻</span></div></div>
+      </div>
+      <h2>Link <span class="pink">Not Found</span></h2>
+      <div class="bar"></div>
+      <p class="desc">The resource you are looking for has expired or the URL is incorrect.</p>
+      <div class="status"><span class="dot"></span><span>Connection Terminated</span></div>
+      <div class="foot"><span>Infrastructure Protected</span><span>Node: Edge_Cluster_01</span></div>
+    </div>
+    </body></html>`;
 }
 
 function ensureValidUrl(url) {
@@ -38,6 +108,28 @@ function buildSafeUrl(base, searchParams) {
         // If URL in database is broken, return as-is
         console.error("❌ Redirect Construction Error:", e.message);
         return base;
+    }
+}
+
+async function getCustomDomainConfig(env, domain) {
+    try {
+        const sbRes = await fetch(
+            `${env.SUPABASE_URL}/rest/v1/custom_domains?domain=eq.${encodeURIComponent(domain)}&status=eq.active&select=root_redirect&id=not.is.null&limit=1`,
+            {
+                headers: {
+                    "apikey": env.SUPABASE_SERVICE_ROLE_KEY,
+                    "Authorization": `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}`
+                }
+            }
+        );
+        if (!sbRes.ok) return { exists: false, rootRedirect: null };
+        const data = await sbRes.json();
+        const row = data?.[0];
+        if (!row) return { exists: false, rootRedirect: null };
+        return { exists: true, rootRedirect: row.root_redirect || null };
+    } catch (e) {
+        console.warn("⚠️ [CustomDomain] Failed to load root redirect:", e?.message || e);
+        return { exists: false, rootRedirect: null };
     }
 }
 
@@ -332,6 +424,7 @@ export default Sentry.withSentry(
         async fetch(request, env, ctx) {
             const url = new URL(request.url);
             const path = url.pathname.toLowerCase();
+            const domain = url.hostname.replace(/^www\./, '');
 
             // CORS Headers for all requests
             const corsHeaders = {
@@ -1092,13 +1185,30 @@ export default Sentry.withSentry(
 
             // 1. Noise Filter: Silent filtering without logging
             const noisePaths = ['/favicon.ico', '/robots.txt', '/index.php', '/.env', '/wp-login.php', '/admin', '/root'];
-            if (path === '/' || noisePaths.some(p => path === p || path.startsWith(p + '/')) || /uptimerobot|pingdom/i.test(userAgent)) {
+            if (path === '/') {
+                // For active custom domains, root path should either redirect to root_redirect or show branded 404.
+                if (domain !== 'glynk.to') {
+                    const customDomainCfg = await getCustomDomainConfig(env, domain);
+                    if (customDomainCfg.exists) {
+                        const rootRedirectUrl = ensureValidUrl(customDomainCfg.rootRedirect);
+                        if (rootRedirectUrl) {
+                            return Response.redirect(rootRedirectUrl, 302);
+                        }
+                        return new Response(getGlynk404Page(), {
+                            status: 404,
+                            headers: { "Content-Type": "text/html;charset=UTF-8" }
+                        });
+                    }
+                }
+                return new Response(null, { status: 204 });
+            }
+
+            if (noisePaths.some(p => path === p || path.startsWith(p + '/')) || /uptimerobot|pingdom/i.test(userAgent)) {
                 return new Response(null, { status: 204 });
             }
 
             // Clean leading and trailing slashes to prevent routing errors
             const slug = path.split('?')[0].replace(/^\/+|\/+$/g, '');
-            const domain = url.hostname.replace(/^www\./, '');
             const ip = request.headers.get("cf-connecting-ip");
 
             const redis = new Redis({ url: env.UPSTASH_REDIS_REST_URL, token: env.UPSTASH_REDIS_REST_TOKEN });
@@ -1121,7 +1231,7 @@ export default Sentry.withSentry(
                     }
                 }
 
-                return htmlResponse(get404Page());
+                return htmlResponse(getGlynk404Page());
             };
 
             // 2. Slug Validation
@@ -1206,7 +1316,7 @@ export default Sentry.withSentry(
                         return Response.redirect(fallbackUrl, 302);
                     }
                 }
-                return htmlResponse(get404Page());
+                return htmlResponse(getGlynk404Page());
             }
 
             // 7. Parse linkData (Redis may return string)
