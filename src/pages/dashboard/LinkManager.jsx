@@ -569,7 +569,8 @@ const LinkManager = () => {
 
   return (
     <div className="flex flex-col gap-6 md:gap-8 w-full max-w-7xl mx-auto">
-      <div className="sticky top-0 z-40 -mt-20 pt-20 lg:-mt-6 lg:pt-6 -mx-4 px-4 py-3 md:-mx-6 md:px-6 bg-[#0b0f19] border-b border-[#232f48] shadow-[0_10px_30px_rgba(0,0,0,0.35)] flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="sticky top-0 z-40 -mx-4 px-4 py-3 md:-mx-6 md:px-6 bg-[#0b0f19] border-b border-[#232f48] shadow-[0_10px_30px_rgba(0,0,0,0.35)] flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="pointer-events-none absolute inset-x-0 -top-20 h-20 lg:-top-6 lg:h-6 bg-[#0b0f19]"></div>
         <div className="flex flex-col gap-2 flex-1 min-w-0">
           <div className="flex items-center gap-3">
             {showBackArrow && (
