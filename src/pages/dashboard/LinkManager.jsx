@@ -299,6 +299,15 @@ const LinkManager = () => {
         .sort((a, b) => a.name.localeCompare(b.name)),
     [spaces, moveModal.selectedSpaceId]
   );
+  const moveChildKind = useMemo(() => {
+    const selectedLevel = moveModal.selectedSpaceId
+      ? (spaceById[moveModal.selectedSpaceId]?.level ?? 0)
+      : 0;
+    return KIND_BY_LEVEL[selectedLevel] || null;
+  }, [moveModal.selectedSpaceId, spaceById]);
+  const moveChildLabelPlural = moveChildKind
+    ? KIND_LABEL_PLURAL[moveChildKind] || 'Spaces'
+    : 'Spaces';
 
   const openCreateSpaceModal = (kind) => {
     setCreateMenuOpen(false);
@@ -1044,7 +1053,7 @@ const LinkManager = () => {
       <Modal
         isOpen={moveModal.isOpen}
         onClose={closeMoveModal}
-        title="Move Link"
+        title={`Move Link${moveModal.link ? `: ${moveModal.link.name || moveModal.link.short_url || ''}` : ''}`}
         type="confirm"
         confirmText={
           moveModal.selectedSpaceId === (moveModal.link?.space_id || null)
@@ -1056,11 +1065,6 @@ const LinkManager = () => {
         isLoading={moveModal.isSaving}
         message={
           <div className="space-y-4 text-left">
-            <p className="text-sm text-slate-700">
-              Choose a destination for{' '}
-              <strong>{moveModal.link?.name || moveModal.link?.short_url || 'this link'}</strong>.
-            </p>
-
             <div className="space-y-2">
               <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
                 Current Selection
@@ -1109,7 +1113,7 @@ const LinkManager = () => {
 
             <div className="space-y-2">
               <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-                Available Folders Here
+                {`Available ${moveChildLabelPlural} Here`}
               </p>
               {moveChildSpaces.length > 0 ? (
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
@@ -1142,8 +1146,7 @@ const LinkManager = () => {
                 </div>
               ) : (
                 <p className="text-xs text-slate-500">
-                  No deeper folders under this level. You can still move the link to the selected
-                  location.
+                  {`No deeper ${moveChildLabelPlural.toLowerCase()} under this level. You can still move the link to the selected location.`}
                 </p>
               )}
             </div>
