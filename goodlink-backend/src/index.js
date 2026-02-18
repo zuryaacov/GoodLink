@@ -137,10 +137,10 @@ async function logClickToSupabase(env, clickRecord, redis) {
             return;
         }
 
-        // 2. Protection against duplicate clicks (same IP to same slug within 30 seconds)
-        const isNewClick = await redis.set(ipDedupKey, "1", { nx: true, ex: 30 });
+        // 2. Protection against duplicate clicks (same IP to same slug within 1 second)
+        const isNewClick = await redis.set(ipDedupKey, "1", { nx: true, ex: 1 });
         if (isNewClick === null) {
-            console.log(`⏭️ Rate limit: Same IP within 30s (${clickRecord.ip_address}) - skipping`);
+            console.log(`⏭️ Rate limit: Same IP within 1s (${clickRecord.ip_address}) - skipping`);
             return;
         }
 
