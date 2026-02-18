@@ -1373,7 +1373,7 @@ export default Sentry.withSentry(
             const isBlockedPath = blockedPathTokens.some((token) => path.includes(token));
             const hasBlockedSlugToken = blockedSlugTokens.some((token) => slugCandidate.includes(token));
             const hasInvalidSlugChars = slugCandidate.length > 0 && /[^a-z0-9-]/.test(slugCandidate);
-            const isGlynlRootWithoutSlug = domain === "glynl.to" && (path === "/" || slugCandidate === "");
+            const isGlynlRootWithoutSlug = domain === "glynk.to" && (path === "/" || slugCandidate === "");
             if (
                 isBlockedPath ||
                 hasBlockedSlugToken ||
