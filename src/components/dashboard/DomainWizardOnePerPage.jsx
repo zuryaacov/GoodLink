@@ -59,7 +59,7 @@ export default function DomainWizardOnePerPage({
   rootRedirectError,
   isEdit,
 }) {
-  const [stepIndex, setStepIndex] = useState(0);
+  const [stepIndex, setStepIndex] = useState(() => (isEdit ? 1 : 0));
   const [localError, setLocalError] = useState(null);
   const [fieldErrors, setFieldErrors] = useState({});
 
