@@ -404,7 +404,7 @@ function getBridgePageHtml(opts) {
 }
 
 export default Sentry.withSentry(
-    (env) => ({
+    () => ({
         dsn: "https://e771f37fced759ffa221f6b97bdce745@o4510770008293376.ingest.us.sentry.io/4510770172985344",
         sendDefaultPii: true,
     }),
@@ -523,7 +523,21 @@ export default Sentry.withSentry(
             if (path === "/api/capi-relay" && request.method === "POST") {
                 try {
                     const body = await request.json();
-                    const { event_id, event_time, event_source_url, destination_url, utm_source, utm_medium, utm_campaign, user_data, pixels } = body;
+                    const {
+                        event_id,
+                        event_time,
+                        event_source_url,
+                        destination_url,
+                        short_code,
+                        link_data,
+                        verdict,
+                        is_bot,
+                        utm_source,
+                        utm_medium,
+                        utm_campaign,
+                        user_data,
+                        pixels
+                    } = body;
 
                     if (!pixels || !Array.isArray(pixels) || pixels.length === 0) {
                         return new Response(JSON.stringify({ error: "Missing pixels array" }), {
@@ -594,7 +608,9 @@ export default Sentry.withSentry(
                             let merchantDomain = null;
                             try {
                                 if (destUrl) merchantDomain = new URL(destUrl).hostname;
-                            } catch (_) { }
+                            } catch {
+                                // ignore malformed destination URL
+                            }
                             const ga4Params = {
                                 ...(user_data?.gclid && { gclid: user_data.gclid }),
                                 ...(destUrl && { page_location: destUrl }),
@@ -718,6 +734,28 @@ export default Sentry.withSentry(
                             relay_duration_ms: relayDurationMs,
                             error_message: statusCode >= 200 && statusCode < 300 ? null : (responseBody?.slice(0, 500) || "non-2xx")
                         };
+
+                        logAxiomInBackground(ctx, env, {
+                            timestamp: new Date().toISOString(),
+                            action: "capi_sent",
+                            short_code: short_code || null,
+                            original_url: event_source_url || request.url,
+                            visitor_ip: user_data?.client_ip_address || null,
+                            user_agent: user_data?.client_user_agent || null,
+                            country: request.cf?.country || null,
+                            is_bot: Boolean(is_bot),
+                            latency_ms: relayDurationMs,
+                            backend_event: "capi_platform_response",
+                            verdict: verdict || null,
+                            link_json: link_data || null,
+                            capi_company: p.platform,
+                            capi_pixel_id: p.pixel_id,
+                            capi_target_url: logUrl,
+                            capi_success: statusCode >= 200 && statusCode < 300,
+                            capi_status_code: statusCode,
+                            capi_response_body: responseBody?.slice(0, 2000) || null,
+                            capi_request_body: logRequestBody
+                        });
 
                         // One Supabase write per CAPI send (one row in capi_logs per pixel)
                         const insertRes = await fetch(supabaseUrl, {
@@ -1173,7 +1211,7 @@ export default Sentry.withSentry(
             const rayId = request.headers.get("cf-ray") || crypto.randomUUID();
             const ip = request.headers.get("cf-connecting-ip");
             const country = request.cf?.country || null;
-            const queueAxiomLog = (action, shortCode = null, isBot = false) => {
+            const queueAxiomLog = (action, shortCode = null, isBot = false, extra = {}) => {
                 logAxiomInBackground(ctx, env, {
                     timestamp: new Date().toISOString(),
                     action,
@@ -1183,9 +1221,29 @@ export default Sentry.withSentry(
                     user_agent: userAgent || null,
                     country,
                     is_bot: Boolean(isBot),
-                    latency_ms: Date.now() - requestStartMs
+                    latency_ms: Date.now() - requestStartMs,
+                    ...extra
                 });
             };
+
+            queueAxiomLog("request_received", null, false, {
+                backend_event: "request_received",
+                request_method: request.method,
+                request_path: path,
+                request_domain: domain,
+                ray_id: rayId,
+                visitor_context: {
+                    city: request.cf?.city || null,
+                    region: request.cf?.region || null,
+                    timezone: request.cf?.timezone || null,
+                    asn: request.cf?.asn || null,
+                    colo: request.cf?.colo || null
+                },
+                bot_context: {
+                    score: request.cf?.botManagement?.score ?? null,
+                    verified_bot: request.cf?.verifiedBot ?? false
+                }
+            });
 
             // 1. Noise Filter: Silent filtering without logging
             const noisePaths = ['/favicon.ico', '/robots.txt', '/index.php', '/.env', '/wp-login.php', '/admin', '/root'];
@@ -1196,17 +1254,27 @@ export default Sentry.withSentry(
                     if (customDomainCfg.exists) {
                         const rootRedirectUrl = ensureValidUrl(customDomainCfg.rootRedirect);
                         if (rootRedirectUrl) {
-                            queueAxiomLog("redirect", null, false);
+                            queueAxiomLog("redirect", null, false, {
+                                redirect_target_url: rootRedirectUrl,
+                                redirect_reason: "custom_domain_root_redirect",
+                                backend_event: "custom_domain_root_redirect"
+                            });
                             return Response.redirect(rootRedirectUrl, 302);
                         }
-                        queueAxiomLog("not_found", null, false);
+                        queueAxiomLog("invalid_request", null, false, {
+                            invalid_reason: "custom_domain_missing_root_redirect",
+                            backend_event: "custom_domain_root_not_configured"
+                        });
                         return new Response(getGlynk404Page(), {
                             status: 404,
                             headers: { "Content-Type": "text/html;charset=UTF-8" }
                         });
                     }
                 }
-                queueAxiomLog("not_found", null, false);
+                queueAxiomLog("invalid_request", null, false, {
+                    invalid_reason: "root_without_slug",
+                    backend_event: "root_path_without_slug"
+                });
                 return new Response(getGlynk404Page(), {
                     status: 404,
                     headers: { "Content-Type": "text/html;charset=UTF-8" }
@@ -1231,14 +1299,24 @@ export default Sentry.withSentry(
                 const clickRecord = buildClickRecord(request, rayId, ip, slug, domain, userAgent, verdict, linkData);
                 ctx.waitUntil(logClickToSupabase(env, clickRecord, redis));
                 const isBotVerdict = verdict === "blacklisted" || verdict.startsWith("bot_");
-                queueAxiomLog(isBotVerdict ? "bot_blocked" : "not_found", slug || null, isBotVerdict);
+                queueAxiomLog(isBotVerdict ? "bot_blocked" : "invalid_request", slug || null, isBotVerdict, {
+                    verdict,
+                    backend_event: "terminate_with_log",
+                    link_json: linkData || null,
+                    click_record: clickRecord
+                });
 
                 // If linkData has fallback_url, redirect there instead of showing 404
                 if (linkData?.fallback_url) {
                     const fallbackUrl = ensureValidUrl(linkData.fallback_url);
                     if (fallbackUrl) {
                         console.log(`🔀 Redirecting to fallback URL: ${fallbackUrl} (reason: ${verdict})`);
-                        queueAxiomLog("redirect", slug || null, false);
+                        queueAxiomLog("redirect", slug || null, false, {
+                            redirect_target_url: fallbackUrl,
+                            redirect_reason: `fallback_for_${verdict}`,
+                            verdict,
+                            link_json: linkData || null
+                        });
                         return Response.redirect(fallbackUrl, 302);
                     }
                 }
@@ -1325,11 +1403,33 @@ export default Sentry.withSentry(
                     const fallbackUrl = ensureValidUrl(linkData.fallback_url);
                     if (fallbackUrl) {
                         console.log(`🔀 Bot blocked, redirecting to fallback URL: ${fallbackUrl}`);
-                        queueAxiomLog("bot_blocked", slug || null, true);
+                        queueAxiomLog("bot_blocked", slug || null, true, {
+                            verdict,
+                            bot_action: botAction,
+                            redirect_target_url: fallbackUrl,
+                            redirect_reason: "bot_fallback_redirect",
+                            link_json: linkData || null,
+                            bot_context: {
+                                score: botScore,
+                                verified_bot: isVerifiedBot,
+                                impersonator: isImpersonator
+                            }
+                        });
                         return Response.redirect(fallbackUrl, 302);
                     }
                 }
-                queueAxiomLog("bot_blocked", slug || null, true);
+                queueAxiomLog("bot_blocked", slug || null, true, {
+                    verdict,
+                    bot_action: botAction,
+                    redirect_target_url: null,
+                    redirect_reason: "bot_blocked_no_fallback",
+                    link_json: linkData || null,
+                    bot_context: {
+                        score: botScore,
+                        verified_bot: isVerifiedBot,
+                        impersonator: isImpersonator
+                    }
+                });
                 return htmlResponse(getGlynk404Page());
             }
 
@@ -1337,7 +1437,7 @@ export default Sentry.withSentry(
             if (typeof linkData === "string") {
                 try {
                     linkData = JSON.parse(linkData);
-                } catch (_) {
+                } catch {
                     linkData = {};
                 }
             }
@@ -1393,6 +1493,10 @@ export default Sentry.withSentry(
                         event_time: eventTime,
                         event_source_url: eventSourceUrl,
                         destination_url: finalRedirectUrl,
+                        short_code: slug || null,
+                        link_data: linkData || null,
+                        verdict,
+                        is_bot: isBot,
                         utm_source: url.searchParams.get("utm_source") || undefined,
                         utm_medium: url.searchParams.get("utm_medium") || undefined,
                         utm_campaign: url.searchParams.get("utm_campaign") || undefined,
@@ -1408,7 +1512,12 @@ export default Sentry.withSentry(
                     };
                     const capiPayloadJson = JSON.stringify(capiPayload, null, 2);
                     console.log("CAPI: JSON sent to QStash:", capiPayloadJson);
-                    queueAxiomLog("capi_sent", slug || null, isBot);
+                    queueAxiomLog("capi_sent", slug || null, isBot, {
+                        backend_event: "capi_queued_to_qstash",
+                        capi_companies: [...new Set(capiPixelsToSend.map((p) => p.platform))],
+                        capi_pixels_count: capiPixelsToSend.length,
+                        capi_payload: capiPayload
+                    });
                     ctx.waitUntil(sendCapiToQStash(env, relayUrl, capiPayload));
                 }
 
@@ -1427,13 +1536,23 @@ export default Sentry.withSentry(
                 }
 
                 if (wantsCapi && capiPixelsToSend.length > 0) {
-                    queueAxiomLog("redirect", slug || null, isBot);
+                    queueAxiomLog("redirect", slug || null, isBot, {
+                        redirect_target_url: finalRedirectUrl,
+                        redirect_reason: "post_capi_redirect",
+                        link_json: linkData || null,
+                        verdict
+                    });
                     return Response.redirect(finalRedirectUrl, 302);
                 }
             }
 
             // 8. Default redirect
-            queueAxiomLog("redirect", slug || null, isBot);
+            queueAxiomLog("redirect", slug || null, isBot, {
+                redirect_target_url: finalRedirectUrl,
+                redirect_reason: "default_redirect",
+                link_json: linkData || null,
+                verdict
+            });
             return Response.redirect(finalRedirectUrl, 302);
         }
     }
