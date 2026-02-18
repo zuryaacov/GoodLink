@@ -12,6 +12,7 @@ import {
 import { ArrowLeft } from 'lucide-react';
 import LinkWizardOnePerPage from '../../components/dashboard/LinkWizardOnePerPage';
 import Modal from '../../components/common/Modal';
+import { logBackofficeEvent } from '../../lib/backofficeLogger';
 
 const LinkBuilderPage = () => {
   const { id } = useParams();
@@ -355,8 +356,29 @@ const LinkBuilderPage = () => {
           } catch (redisError) {
             console.error('❌ [LinkBuilder] Error updating Redis cache:', redisError);
           }
+
+          void logBackofficeEvent({
+            action: 'link_updated',
+            backend_event: 'backoffice_link_updated',
+            result: 'success',
+            reason: 'user_updated_link',
+            user_id: user.id,
+            short_code: updatedLink.slug || null,
+            original_url: window.location.href,
+            link_json: updatedLink,
+          });
         } else {
           console.warn('⚠️ [LinkBuilder] No updated link data found');
+          void logBackofficeEvent({
+            action: 'link_updated',
+            backend_event: 'backoffice_link_updated_missing_record',
+            result: 'failed',
+            reason: 'updated_link_not_found_after_save',
+            user_id: user.id,
+            short_code: finalSlug,
+            original_url: window.location.href,
+            link_json: payloadToSend,
+          });
         }
 
         setModalState({
@@ -465,8 +487,29 @@ const LinkBuilderPage = () => {
           } catch (redisError) {
             console.error('❌ [LinkBuilder] Error updating Redis cache:', redisError);
           }
+
+          void logBackofficeEvent({
+            action: 'link_created',
+            backend_event: 'backoffice_link_created',
+            result: 'success',
+            reason: 'user_created_link',
+            user_id: user.id,
+            short_code: newLinks.slug || null,
+            original_url: window.location.href,
+            link_json: newLinks,
+          });
         } else {
           console.warn('⚠️ [LinkBuilder] No created link data found');
+          void logBackofficeEvent({
+            action: 'link_created',
+            backend_event: 'backoffice_link_created_missing_record',
+            result: 'failed',
+            reason: 'created_link_not_found_after_insert',
+            user_id: user.id,
+            short_code: finalSlug,
+            original_url: window.location.href,
+            link_json: payloadToSendInsert,
+          });
         }
 
         try {

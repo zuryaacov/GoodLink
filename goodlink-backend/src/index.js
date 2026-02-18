@@ -427,6 +427,49 @@ export default Sentry.withSentry(
                 return new Response(null, { status: 204, headers: corsHeaders });
             }
 
+            // === API Endpoint: Backoffice Event Logging to Axiom ===
+            if (path === "/api/log-backoffice-event" && request.method === "POST") {
+                try {
+                    const body = await request.json();
+                    const { action, user_id } = body || {};
+                    if (!action || !user_id) {
+                        return new Response(JSON.stringify({ error: "Missing required fields (action, user_id)" }), {
+                            status: 400,
+                            headers: { ...corsHeaders, "Content-Type": "application/json" }
+                        });
+                    }
+
+                    const reqIp = request.headers.get("cf-connecting-ip") || null;
+                    const reqUa = request.headers.get("user-agent") || null;
+                    const reqCountry = request.cf?.country || null;
+                    const reqStart = Date.now();
+
+                    logAxiomInBackground(ctx, env, {
+                        ...body,
+                        timestamp: body.timestamp || new Date().toISOString(),
+                        action,
+                        backend_event: body.backend_event || `backoffice_${action}`,
+                        user_id,
+                        original_url: body.original_url || request.url,
+                        visitor_ip: body.visitor_ip || reqIp,
+                        user_agent: body.user_agent || reqUa,
+                        country: body.country || reqCountry,
+                        is_bot: Boolean(body.is_bot),
+                        latency_ms: Number.isFinite(body.latency_ms) ? body.latency_ms : Date.now() - reqStart
+                    });
+
+                    return new Response(JSON.stringify({ ok: true }), {
+                        status: 200,
+                        headers: { ...corsHeaders, "Content-Type": "application/json" }
+                    });
+                } catch (error) {
+                    return new Response(JSON.stringify({ error: error.message || "Failed to log event" }), {
+                        status: 500,
+                        headers: { ...corsHeaders, "Content-Type": "application/json" }
+                    });
+                }
+            }
+
             // === API Endpoint: Update Redis Cache ===
             if (path === "/api/update-redis-cache" && request.method === "POST") {
                 try {
@@ -833,6 +876,7 @@ export default Sentry.withSentry(
 
             // === API Endpoint: Add Custom Domain ===
             if (path === "/api/add-custom-domain" && request.method === "POST") {
+                const customDomainReqStart = Date.now();
                 try {
                     const body = await request.json();
                     const { domain, user_id, root_redirect } = body;
@@ -877,6 +921,22 @@ export default Sentry.withSentry(
 
                     if (!cfResponse.ok || !cfResult.success) {
                         console.error("Cloudflare API error:", cfResult);
+                        logAxiomInBackground(ctx, env, {
+                            action: "custom_domain_create",
+                            backend_event: "custom_domain_create_failed_cloudflare",
+                            result: "failed",
+                            reason: cfResult.errors?.[0]?.message || "cloudflare_create_failed",
+                            user_id,
+                            company: "cloudflare",
+                            original_url: request.url,
+                            visitor_ip: request.headers.get("cf-connecting-ip") || null,
+                            user_agent: request.headers.get("user-agent") || null,
+                            country: request.cf?.country || null,
+                            is_bot: false,
+                            latency_ms: Date.now() - customDomainReqStart,
+                            custom_domain_payload: { domain, root_redirect },
+                            cloudflare_response: cfResult
+                        });
                         return new Response(JSON.stringify({
                             success: false,
                             error: cfResult.errors?.[0]?.message || "Failed to create custom hostname"
@@ -940,6 +1000,23 @@ export default Sentry.withSentry(
 
                     if (!supabaseResponse.ok) {
                         console.error("Supabase error:", supabaseData);
+                        logAxiomInBackground(ctx, env, {
+                            action: "custom_domain_create",
+                            backend_event: "custom_domain_create_failed_db",
+                            result: "failed",
+                            reason: "supabase_insert_failed",
+                            user_id,
+                            company: "supabase",
+                            original_url: request.url,
+                            visitor_ip: request.headers.get("cf-connecting-ip") || null,
+                            user_agent: request.headers.get("user-agent") || null,
+                            country: request.cf?.country || null,
+                            is_bot: false,
+                            latency_ms: Date.now() - customDomainReqStart,
+                            custom_domain_payload: { domain, root_redirect },
+                            cloudflare_result: hostnameData,
+                            supabase_response: supabaseData
+                        });
                         return new Response(JSON.stringify({
                             success: false,
                             error: "Failed to save domain to database"
@@ -948,6 +1025,27 @@ export default Sentry.withSentry(
                             headers: { ...corsHeaders, "Content-Type": "application/json" }
                         });
                     }
+
+                    logAxiomInBackground(ctx, env, {
+                        action: "custom_domain_create",
+                        backend_event: "custom_domain_created",
+                        result: "success",
+                        reason: "created",
+                        user_id,
+                        company: "cloudflare",
+                        original_url: request.url,
+                        visitor_ip: request.headers.get("cf-connecting-ip") || null,
+                        user_agent: request.headers.get("user-agent") || null,
+                        country: request.cf?.country || null,
+                        is_bot: false,
+                        latency_ms: Date.now() - customDomainReqStart,
+                        custom_domain_payload: { domain, root_redirect },
+                        custom_domain_result: {
+                            domain_id: supabaseData[0]?.id,
+                            cloudflare_hostname_id: hostnameData.id,
+                            dns_records: dnsRecords
+                        }
+                    });
 
                     return new Response(JSON.stringify({
                         success: true,
@@ -961,6 +1059,18 @@ export default Sentry.withSentry(
 
                 } catch (error) {
                     console.error("❌ [Custom Domain] Error:", error);
+                    logAxiomInBackground(ctx, env, {
+                        action: "custom_domain_create",
+                        backend_event: "custom_domain_create_exception",
+                        result: "failed",
+                        reason: error?.message || "exception",
+                        original_url: request.url,
+                        visitor_ip: request.headers.get("cf-connecting-ip") || null,
+                        user_agent: request.headers.get("user-agent") || null,
+                        country: request.cf?.country || null,
+                        is_bot: false,
+                        latency_ms: Date.now() - customDomainReqStart
+                    });
                     return new Response(JSON.stringify({ success: false, error: error.message }), {
                         status: 500,
                         headers: { ...corsHeaders, "Content-Type": "application/json" }

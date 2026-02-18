@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { refreshRedisForLinksUsingPixel } from '../../lib/redisCache';
 import { validatePixelPayload } from '../../lib/pixelValidation';
+import { logBackofficeEvent } from '../../lib/backofficeLogger';
 import { ArrowLeft } from 'lucide-react';
 import Modal from '../../components/common/Modal';
 import PixelWizardOnePerPage from '../../components/dashboard/PixelWizardOnePerPage';
@@ -104,6 +105,15 @@ const PixelBuilderPage = () => {
     if (isEditMode) {
       const { error } = await supabase.from('pixels').update(pixelData).eq('id', id);
       if (error) throw error;
+      void logBackofficeEvent({
+        action: 'capi_updated',
+        backend_event: 'backoffice_capi_updated',
+        result: 'success',
+        reason: 'user_updated_capi',
+        user_id: user.id,
+        original_url: window.location.href,
+        capi_json: { id, ...pixelData },
+      });
     } else {
       const { data: inserted, error } = await supabase
         .from('pixels')
@@ -118,6 +128,15 @@ const PixelBuilderPage = () => {
         throw error;
       }
       if (inserted?.id) savedPixelId = inserted.id;
+      void logBackofficeEvent({
+        action: 'capi_created',
+        backend_event: 'backoffice_capi_created',
+        result: 'success',
+        reason: 'user_created_capi',
+        user_id: user.id,
+        original_url: window.location.href,
+        capi_json: { id: savedPixelId, ...pixelData },
+      });
     }
 
     try {

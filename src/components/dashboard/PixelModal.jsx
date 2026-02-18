@@ -9,6 +9,7 @@ import {
   PLATFORMS,
 } from '../../lib/pixelValidation';
 import { checkForMaliciousInput } from '../../lib/inputSanitization';
+import { logBackofficeEvent } from '../../lib/backofficeLogger';
 import Modal from '../common/Modal';
 
 const getEventTypeLabel = (platform) =>
@@ -333,6 +334,15 @@ const PixelModal = ({ isOpen, onClose, initialData = null }) => {
         const { error } = await supabase.from('pixels').update(pixelData).eq('id', initialData.id);
 
         if (error) throw error;
+        void logBackofficeEvent({
+          action: 'capi_updated',
+          backend_event: 'backoffice_capi_updated',
+          result: 'success',
+          reason: 'user_updated_capi',
+          user_id: user.id,
+          original_url: window.location.href,
+          capi_json: { id: initialData.id, ...pixelData },
+        });
       } else {
         const { data: inserted, error } = await supabase
           .from('pixels')
@@ -348,6 +358,15 @@ const PixelModal = ({ isOpen, onClose, initialData = null }) => {
           throw error;
         }
         if (inserted?.id) savedPixelId = inserted.id;
+        void logBackofficeEvent({
+          action: 'capi_created',
+          backend_event: 'backoffice_capi_created',
+          result: 'success',
+          reason: 'user_created_capi',
+          user_id: user.id,
+          original_url: window.location.href,
+          capi_json: { id: savedPixelId, ...pixelData },
+        });
       }
 
       try {
