@@ -1336,6 +1336,52 @@ export default Sentry.withSentry(
                 });
             };
 
+            // 1. Noise/Sensitive paths filter: silent skip without any logs or DB writes
+            const blockedPathTokens = [
+                "/favicon.ico",
+                "/robots.txt",
+                "/sitemap.xml",
+                "/ads.txt",
+                "/.env",
+                "/.aws",
+                "/.git",
+                "/.vscode",
+                "/.ds_store",
+                "/wp-admin",
+                "/wp-login.php",
+                "/xmlrpc.php",
+                "/phpmyadmin",
+                "/admin",
+                "/backend",
+                "/apple-touch-icon"
+            ];
+            const slugCandidate = path.split("?")[0].replace(/^\/+|\/+$/g, "");
+            const blockedSlugTokens = [
+                ".php",
+                ".xml",
+                "wp-includes",
+                "favicon",
+                ".js",
+                "feed",
+                "api",
+                "wp-json",
+                "magento_version",
+                ".css",
+                ".env",
+                ".aws"
+            ];
+            const isBlockedPath = blockedPathTokens.some((token) => path.includes(token));
+            const hasBlockedSlugToken = blockedSlugTokens.some((token) => slugCandidate.includes(token));
+            const hasInvalidSlugChars = slugCandidate.length > 0 && /[^a-z0-9-]/.test(slugCandidate);
+            if (
+                isBlockedPath ||
+                hasBlockedSlugToken ||
+                hasInvalidSlugChars ||
+                /uptimerobot|pingdom/i.test(userAgent)
+            ) {
+                return new Response(null, { status: 204 });
+            }
+
             queueAxiomLog("request_received", null, false, {
                 backend_event: "request_received",
                 request_method: request.method,
@@ -1355,8 +1401,6 @@ export default Sentry.withSentry(
                 }
             });
 
-            // 1. Noise Filter: Silent filtering without logging
-            const noisePaths = ['/favicon.ico', '/robots.txt', '/index.php', '/.env', '/wp-login.php', '/admin', '/root'];
             if (path === '/') {
                 // For active custom domains, root path should either redirect to root_redirect or show branded 404.
                 if (domain !== 'glynk.to') {
@@ -1389,10 +1433,6 @@ export default Sentry.withSentry(
                     status: 404,
                     headers: { "Content-Type": "text/html;charset=UTF-8" }
                 });
-            }
-
-            if (noisePaths.some(p => path === p || path.startsWith(p + '/')) || /uptimerobot|pingdom/i.test(userAgent)) {
-                return new Response(null, { status: 204 });
             }
 
             // Clean leading and trailing slashes to prevent routing errors
