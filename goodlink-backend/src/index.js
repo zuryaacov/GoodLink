@@ -1374,11 +1374,16 @@ export default Sentry.withSentry(
             const hasBlockedSlugToken = blockedSlugTokens.some((token) => slugCandidate.includes(token));
             const hasInvalidSlugChars = slugCandidate.length > 0 && /[^a-z0-9-]/.test(slugCandidate);
             const isGlynlRootWithoutSlug = domain === "glynk.to" && (path === "/" || slugCandidate === "");
+            if (isGlynlRootWithoutSlug) {
+                return new Response(getGlynk404Page(), {
+                    status: 404,
+                    headers: { "Content-Type": "text/html;charset=UTF-8" }
+                });
+            }
             if (
                 isBlockedPath ||
                 hasBlockedSlugToken ||
                 hasInvalidSlugChars ||
-                isGlynlRootWithoutSlug ||
                 /uptimerobot|pingdom/i.test(userAgent)
             ) {
                 return new Response(null, { status: 204 });
