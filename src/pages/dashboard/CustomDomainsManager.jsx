@@ -459,6 +459,13 @@ const CustomDomainsManager = () => {
                     </button>
                   )}
                   <button
+                    onClick={() => navigate(`/dashboard/domains/edit/${domain.id}`)}
+                    className="text-slate-500 hover:text-[#00F0FF] transition-colors p-2 bg-[#00F0FF]/10 rounded-lg border border-[#00F0FF]/20"
+                    title="Update root redirect"
+                  >
+                    <span className="material-symbols-outlined text-xl md:text-2xl">edit</span>
+                  </button>
+                  <button
                     onClick={() => handleDeleteClick(domain.id, domain.domain)}
                     className="text-slate-500 hover:text-red-400 transition-colors p-2 bg-red-500/10 rounded-lg border border-red-500/20"
                     title="Delete domain"

@@ -236,6 +236,44 @@ const AddDomainPage = () => {
     }
   };
 
+  const normalizeRootRedirectForStorage = (sanitizedUrl) => {
+    if (!sanitizedUrl) return null;
+    return sanitizedUrl.replace(/^https?:\/\//, '').replace(/\/$/, '');
+  };
+
+  const handleUpdateRootRedirectOnly = async (name, redirect) => {
+    const validation = validateDomain(name, {
+      allowSubdomains: true,
+      allowPunycode: true,
+      requireTLD: true,
+      allowLocalhost: false,
+      allowIP: false,
+    });
+    if (!validation.isValid) throw new Error(validation.error);
+
+    const finalDomain = validation.sanitized;
+    setDomainName(finalDomain);
+
+    const rootValidation = validateRootRedirectUrl(redirect, finalDomain);
+    if (!rootValidation.isValid) {
+      setRootRedirectError(rootValidation.error);
+      throw new Error(rootValidation.error);
+    }
+    setRootRedirectError(null);
+
+    const finalRootRedirect = normalizeRootRedirectForStorage(rootValidation.sanitized);
+    const { error } = await supabase
+      .from('custom_domains')
+      .update({
+        root_redirect: finalRootRedirect,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', savedDomainId);
+    if (error) throw error;
+
+    setRootRedirect(finalRootRedirect || '');
+  };
+
   const handleRegister = async (name, redirect) => {
     const validation = validateDomain(name, {
       allowSubdomains: true,
@@ -401,11 +439,14 @@ const AddDomainPage = () => {
           }}
           dnsRecords={dnsRecords}
           onRegister={async (name, redirect) => {
-            if (savedDomainId) return;
             setSaveError(null);
             setIsSubmitting(true);
             try {
-              await handleRegister(name, redirect);
+              if (savedDomainId) {
+                await handleUpdateRootRedirectOnly(name, redirect);
+              } else {
+                await handleRegister(name, redirect);
+              }
             } catch (e) {
               setSaveError(e.message);
               throw e;
