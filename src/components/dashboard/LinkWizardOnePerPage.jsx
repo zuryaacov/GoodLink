@@ -366,7 +366,7 @@ export default function LinkWizardOnePerPage({
         data: { user },
       } = await supabase.auth.getUser();
       if (!user) {
-        setNameError('You must be logged in.');
+        setNameError('Please log in to continue.');
         return false;
       }
       let query = supabase
@@ -383,7 +383,7 @@ export default function LinkWizardOnePerPage({
       }
       return true;
     } catch (e) {
-      setNameError('Error checking name.');
+      setNameError('Could not validate the link name. Please try again.');
       return false;
     } finally {
       setValidating(false);
@@ -399,7 +399,7 @@ export default function LinkWizardOnePerPage({
     }
     const validation = validateUrl(raw);
     if (!validation.isValid) {
-      setUrlError(validation.error || 'Invalid URL format');
+      setUrlError(validation.error || 'Please enter a valid URL.');
       return false;
     }
     const normalizedUrl = validation.normalizedUrl;
@@ -457,7 +457,7 @@ export default function LinkWizardOnePerPage({
       }
       return true;
     } catch (e) {
-      setUrlError('Error checking URL.');
+      setUrlError('Could not validate the destination URL. Please try again.');
       setUrlSafety({ loading: false, isSafe: null });
       return false;
     }
@@ -478,7 +478,7 @@ export default function LinkWizardOnePerPage({
         data: { user },
       } = await supabase.auth.getUser();
       if (!user) {
-        setSlugError('You must be logged in.');
+        setSlugError('Please log in to continue.');
         return false;
       }
       const result = await validateSlug(
@@ -491,7 +491,7 @@ export default function LinkWizardOnePerPage({
         initialData?.id || null
       );
       if (!result.isValid) {
-        setSlugError(result.error || 'Invalid slug');
+        setSlugError(result.error || 'Please enter a valid slug.');
         return false;
       }
       if (result.normalizedSlug && result.normalizedSlug !== formData.slug) {
@@ -499,7 +499,7 @@ export default function LinkWizardOnePerPage({
       }
       return true;
     } catch (e) {
-      setSlugError('Error validating slug.');
+      setSlugError('Could not validate the slug. Please try again.');
       return false;
     } finally {
       setValidating(false);
@@ -516,7 +516,7 @@ export default function LinkWizardOnePerPage({
     }
     const v = validateBotRedirectUrl(url, formData.targetUrl || '');
     if (!v.isValid) {
-      setFallbackUrlError(v.error || 'Invalid URL format');
+      setFallbackUrlError(v.error || 'Please enter a valid URL.');
       return false;
     }
     setFallbackUrlError(null);
@@ -568,7 +568,7 @@ export default function LinkWizardOnePerPage({
         }
         const v = validateBotRedirectUrl(formData.fallbackUrl, formData.targetUrl || '');
         if (!v.isValid) {
-          setFallbackUrlError(v.error || 'Invalid URL');
+          setFallbackUrlError(v.error || 'Please enter a valid URL.');
           return { isValid: false, normalizedUrl: null };
         }
         setFallbackUrlError(null);
@@ -607,7 +607,7 @@ export default function LinkWizardOnePerPage({
     }
     const v = validateUrl(newGeoRule.url);
     if (!v.isValid) {
-      setGeoRuleErrors((e) => ({ ...e, url: v.error || 'Invalid URL' }));
+      setGeoRuleErrors((e) => ({ ...e, url: v.error || 'Please enter a valid URL.' }));
       return;
     }
     updateFormData('geoRules', [

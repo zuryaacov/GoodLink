@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import DNSRecordsDisplay from './DNSRecordsDisplay';
+import { validateDomain } from '../../lib/domainValidation';
 
 const STEPS = [
   {
@@ -70,10 +71,24 @@ export default function DomainWizardOnePerPage({
 
   const goNext = async () => {
     if (currentStep.id === 'domain') {
-      if (!domainName?.trim()) {
-        setFieldErrors((prev) => ({ ...prev, domain: 'Domain is required.' }));
+      const validation = validateDomain(domainName || '', {
+        allowSubdomains: true,
+        allowPunycode: true,
+        requireTLD: true,
+        allowLocalhost: false,
+        allowIP: false,
+      });
+
+      if (!validation.isValid) {
+        setFieldErrors((prev) => ({ ...prev, domain: validation.error || 'Please enter a valid domain.' }));
         return;
       }
+
+      // Normalize domain display early so user sees the exact validated value.
+      if (validation.sanitized && validation.sanitized !== domainName) {
+        onDomainNameChange?.(validation.sanitized);
+      }
+
       setFieldErrors((prev) => ({ ...prev, domain: null }));
       setStepIndex(1);
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -83,7 +98,7 @@ export default function DomainWizardOnePerPage({
       if (rootRedirectError) {
         setFieldErrors((prev) => ({
           ...prev,
-          rootRedirect: rootRedirectError || 'Please enter a valid redirect URL first.',
+          rootRedirect: rootRedirectError || 'Please enter a valid redirect URL.',
         }));
         return;
       }
@@ -94,7 +109,7 @@ export default function DomainWizardOnePerPage({
         setStepIndex(2);
         window.scrollTo({ top: 0, behavior: 'smooth' });
       } catch (e) {
-        setLocalError(e.message || 'Failed to register domain.');
+        setLocalError(e.message || 'Could not register the domain. Please try again.');
       }
       return;
     }

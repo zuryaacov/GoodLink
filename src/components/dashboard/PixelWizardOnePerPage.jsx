@@ -320,7 +320,7 @@ export default function PixelWizardOnePerPage({ initialData, onSave, onBack, isE
       const nextErrors = {};
       if (currentStep?.id === 'name') {
         const name = formData.name?.trim() || '';
-        if (!name) nextErrors.name = 'Friendly name is required.';
+        if (!name) nextErrors.name = 'Please enter a friendly name.';
         else if (name.length > 100) nextErrors.name = 'Friendly name cannot exceed 100 characters.';
         else {
           const check = checkForMaliciousInput(name);
@@ -330,17 +330,18 @@ export default function PixelWizardOnePerPage({ initialData, onSave, onBack, isE
       if (currentStep?.id === 'pixelId') {
         const pixelId = formData.pixelId?.trim() || '';
         if (!pixelId) {
-          nextErrors.pixelId = `${getPixelIdLabel(formData.platform)} is required.`;
+          nextErrors.pixelId = `Please enter ${getPixelIdLabel(formData.platform)}.`;
         } else {
           const pixelIdXss = checkForMaliciousInput(pixelId);
           if (!pixelIdXss.safe) nextErrors.pixelId = pixelIdXss.error;
           else if (!validatePixelId(pixelId, formData.platform))
-            nextErrors.pixelId = `Invalid ${getPixelIdLabel(formData.platform)} format for ${formData.platform}.`;
+            nextErrors.pixelId = `Please enter a valid ${getPixelIdLabel(formData.platform)} for ${formData.platform}.`;
         }
       }
       if (currentStep?.id === 'capiToken') {
         const tokenCheck = validateCapiToken(formData.capiToken, formData.platform);
-        if (!tokenCheck.isValid) nextErrors.capiToken = tokenCheck.error || 'Invalid token format.';
+        if (!tokenCheck.isValid)
+          nextErrors.capiToken = tokenCheck.error || 'Please enter a valid token.';
         else {
           const capiTokenXss = checkForMaliciousInput(formData.capiToken || '');
           if (!capiTokenXss.safe) nextErrors.capiToken = capiTokenXss.error;
@@ -352,10 +353,12 @@ export default function PixelWizardOnePerPage({ initialData, onSave, onBack, isE
           !formData.eventType?.trim()
         ) {
           nextErrors.eventType =
-            formData.platform === 'taboola' ? 'Name is required.' : 'Conversion Name is required.';
+            formData.platform === 'taboola'
+              ? 'Please enter an event name.'
+              : 'Please enter a conversion name.';
         } else if (formData.eventType === 'custom') {
           if (!formData.customEventName?.trim()) {
-            nextErrors.customEventName = 'Custom event name is required.';
+            nextErrors.customEventName = 'Please enter a custom event name.';
           } else {
             const check = checkForMaliciousInput(formData.customEventName);
             if (!check.safe) nextErrors.customEventName = check.error;
@@ -394,7 +397,7 @@ export default function PixelWizardOnePerPage({ initialData, onSave, onBack, isE
                 : null,
         });
       } catch (e) {
-        setError(e.message || 'Failed to save.');
+        setError(e.message || 'Could not save the CAPI profile. Please try again.');
         setLoading(false);
       }
       return;

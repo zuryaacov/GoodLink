@@ -329,12 +329,12 @@ export default function UtmPresetWizardOnePerPage({ initialData, onSave, onBack,
       if (currentStep?.id === 'name') {
         const name = (presetName || '').trim();
         if (!name) {
-          nextErrors.name = 'Preset name is required.';
+          nextErrors.name = 'Please enter a preset name.';
         } else if (name.length > 100) {
           nextErrors.name = 'Preset name cannot exceed 100 characters.';
         } else {
           const check = sanitizeInput(name);
-          if (!check.safe) nextErrors.name = check.error || 'Invalid preset name.';
+          if (!check.safe) nextErrors.name = check.error || 'Please enter a valid preset name.';
         }
       }
       if (currentStep?.id && UTM_STEPS.some((s) => s.id === currentStep.id)) {
@@ -375,7 +375,7 @@ export default function UtmPresetWizardOnePerPage({ initialData, onSave, onBack,
           utm_term: params.utm_term || null,
         });
       } catch (e) {
-        setError(e.message || 'Failed to save.');
+        setError(e.message || 'Could not save the UTM preset. Please try again.');
         setLoading(false);
       }
       return;
