@@ -1131,7 +1131,10 @@ export default Sentry.withSentry(
                     if (hostnameData.ownership_verification) {
                         dnsRecords.push({
                             type: hostnameData.ownership_verification.type,
-                            host: hostnameData.ownership_verification.name,
+                            host: extractDnsHost(
+                                hostnameData.ownership_verification.name,
+                                hostnameData.hostname
+                            ),
                             value: hostnameData.ownership_verification.value
                         });
                     }
@@ -1139,32 +1142,37 @@ export default Sentry.withSentry(
                         hostnameData.ssl.validation_records.forEach(record => {
                             dnsRecords.push({
                                 type: "TXT",
-                                host: record.txt_name,
+                                host: extractDnsHost(record.txt_name, hostnameData.hostname),
                                 value: record.txt_value
                             });
                         });
                     }
                     dnsRecords.push({
                         type: "CNAME",
-                        host: hostnameData.hostname,
+                        host: getSubdomainLabel(hostnameData.hostname),
                         value: "www.glynk.to"
                     });
 
                     // Update Supabase
-                    if (domain_id) {
+                    if (domain_id || cloudflare_hostname_id) {
                         const updateData = {
                             dns_records: dnsRecords,
+                            status: hostnameData.status || (isActive ? "active" : "pending"),
                             // If it just became active, update status and verified_at
                             ...(isActive ? { status: "active", verified_at: new Date().toISOString() } : {})
                         };
 
-                        const supabaseUrl = `${env.SUPABASE_URL}/rest/v1/custom_domains?id=eq.${domain_id}`;
+                        const filter = domain_id
+                            ? `id=eq.${encodeURIComponent(domain_id)}`
+                            : `cloudflare_hostname_id=eq.${encodeURIComponent(cloudflare_hostname_id)}`;
+                        const supabaseUrl = `${env.SUPABASE_URL}/rest/v1/custom_domains?${filter}`;
                         await fetch(supabaseUrl, {
                             method: "PATCH",
                             headers: {
                                 "apikey": env.SUPABASE_SERVICE_ROLE_KEY,
                                 "Authorization": `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}`,
-                                "Content-Type": "application/json"
+                                "Content-Type": "application/json",
+                                "Prefer": "return=representation"
                             },
                             body: JSON.stringify(updateData)
                         });
@@ -1174,7 +1182,8 @@ export default Sentry.withSentry(
                         success: true,
                         is_active: isActive,
                         ssl_status: sslStatus,
-                        status: hostnameData.status
+                        status: hostnameData.status,
+                        dns_records: dnsRecords
                     }), {
                         status: 200,
                         headers: { ...corsHeaders, "Content-Type": "application/json" }

@@ -381,6 +381,9 @@ const AddDomainPage = () => {
         throw new Error(
           result.error || 'Domain verification failed. Please check your DNS records.'
         );
+      if (Array.isArray(result.dns_records)) {
+        setDnsRecords(result.dns_records);
+      }
       if (result.is_active) {
         navigate('/dashboard/domains');
       } else {
