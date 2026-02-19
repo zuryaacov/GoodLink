@@ -482,6 +482,13 @@ export default Sentry.withSentry(
                             headers: { ...corsHeaders, "Content-Type": "application/json" }
                         });
                     }
+                    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                    if (!emailRegex.test(String(reporter_email).trim())) {
+                        return new Response(JSON.stringify({ error: "Invalid email address." }), {
+                            status: 400,
+                            headers: { ...corsHeaders, "Content-Type": "application/json" }
+                        });
+                    }
                     const allowedCategories = ["phishing", "spam", "adult", "copyright", "other"];
                     const cat = String(category || "other").toLowerCase();
                     if (!allowedCategories.includes(cat)) {
@@ -491,22 +498,27 @@ export default Sentry.withSentry(
                         });
                     }
 
+                    let turnstileVerified = false;
                     if (env.TURNSTILE_SECRET_KEY && turnstile_token) {
-                        const verifyRes = await fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", {
-                            method: "POST",
-                            headers: { "Content-Type": "application/x-www-form-urlencoded" },
-                            body: new URLSearchParams({
-                                secret: env.TURNSTILE_SECRET_KEY,
-                                response: turnstile_token
-                            })
-                        });
-                        const verifyData = await verifyRes.json().catch(() => ({}));
-                        if (!verifyData.success) {
-                            return new Response(JSON.stringify({ error: "Security verification failed. Please try again." }), {
-                                status: 400,
-                                headers: { ...corsHeaders, "Content-Type": "application/json" }
+                        try {
+                            const verifyRes = await fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", {
+                                method: "POST",
+                                headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                                body: new URLSearchParams({
+                                    secret: env.TURNSTILE_SECRET_KEY,
+                                    response: turnstile_token
+                                })
                             });
+                            const verifyData = await verifyRes.json().catch(() => ({}));
+                            turnstileVerified = Boolean(verifyData.success);
+                            if (!turnstileVerified) {
+                                console.warn("Turnstile verification failed:", verifyData["error-codes"] || verifyData);
+                            }
+                        } catch (tsErr) {
+                            console.warn("Turnstile verification error:", tsErr);
                         }
+                    } else if (turnstile_token) {
+                        turnstileVerified = true;
                     }
 
                     let safeBrowsingResponse = null;
@@ -554,7 +566,7 @@ export default Sentry.withSentry(
                             description: description ? String(description).trim() : null,
                             reporter_email: String(reporter_email).trim(),
                             safe_browsing_response: safeBrowsingResponse,
-                            turnstile_verified: Boolean(env.TURNSTILE_SECRET_KEY && turnstile_token)
+                            turnstile_verified: turnstileVerified
                         })
                     });
 

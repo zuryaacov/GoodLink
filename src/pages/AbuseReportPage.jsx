@@ -280,7 +280,7 @@ const AbuseReportPage = () => {
                 Your email <span className="text-red-400">*</span>
               </label>
               <input
-                type="email"
+                type="text"
                 value={reporterEmail}
                 onChange={(e) => {
                   setReporterEmail(e.target.value);
