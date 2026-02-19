@@ -925,7 +925,7 @@ export default Sentry.withSentry(
                 records.push({
                     type: "CNAME",
                     host: getSubdomainLabel(hostnameData.hostname),
-                    value: "www.glynk.to"
+                    value: "glynk.to"
                 });
                 return records;
             };
