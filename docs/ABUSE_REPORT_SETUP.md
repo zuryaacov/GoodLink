@@ -8,16 +8,16 @@ Run the migration in Supabase (SQL Editor or CLI):
 
 This creates `public.abuse_reports` with:
 
-| Column                   | Type      | Description |
-|--------------------------|-----------|-------------|
-| id                       | uuid      | PK, default `gen_random_uuid()` |
-| reported_url             | text      | The reported link (required) |
-| category                 | text      | One of: `phishing`, `spam`, `adult`, `copyright`, `other` |
-| description              | text      | Optional free text |
-| reporter_email           | text      | Reporter email (required) |
-| safe_browsing_response   | jsonb     | Google Safe Browsing API result |
-| turnstile_verified       | boolean   | Whether Turnstile was verified |
-| created_at               | timestamptz | Default `now()` |
+| Column                 | Type        | Description                                               |
+| ---------------------- | ----------- | --------------------------------------------------------- |
+| id                     | uuid        | PK, default `gen_random_uuid()`                           |
+| reported_url           | text        | The reported link (required)                              |
+| category               | text        | One of: `phishing`, `spam`, `adult`, `copyright`, `other` |
+| description            | text        | Optional free text                                        |
+| reporter_email         | text        | Reporter email (required)                                 |
+| safe_browsing_response | jsonb       | Google Safe Browsing API result                           |
+| turnstile_verified     | boolean     | Whether Turnstile was verified                            |
+| created_at             | timestamptz | Default `now()`                                           |
 
 RLS is enabled; only the backend (service role) can insert. No direct client access.
 
