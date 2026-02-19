@@ -59,12 +59,17 @@ export default function DomainWizardOnePerPage({
   rootRedirectError,
   isEdit,
 }) {
-  const [stepIndex, setStepIndex] = useState(() => (isEdit ? 1 : 0));
+  const steps = isEdit ? [STEPS[1]] : STEPS;
+  const [stepIndex, setStepIndex] = useState(0);
   const [localError, setLocalError] = useState(null);
   const [fieldErrors, setFieldErrors] = useState({});
 
-  const totalSteps = STEPS.length;
-  const currentStep = STEPS[stepIndex];
+  useEffect(() => {
+    setStepIndex(0);
+  }, [isEdit]);
+
+  const totalSteps = steps.length;
+  const currentStep = steps[stepIndex];
   const isFirst = stepIndex === 0;
   const isLast = stepIndex === totalSteps - 1;
   const progressPct = totalSteps ? ((stepIndex + 1) / totalSteps) * 100 : 0;
@@ -106,8 +111,12 @@ export default function DomainWizardOnePerPage({
       setLocalError(null);
       try {
         await onRegister(domainName, rootRedirect);
-        setStepIndex(2);
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        if (isEdit) {
+          onBack?.();
+        } else {
+          setStepIndex(2);
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
       } catch (e) {
         setLocalError(e.message || 'Could not register the domain. Please try again.');
       }
@@ -124,6 +133,10 @@ export default function DomainWizardOnePerPage({
   };
 
   const goBack = () => {
+    if (isEdit) {
+      onBack?.();
+      return;
+    }
     if (!isFirst) {
       setStepIndex((i) => i - 1);
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -312,12 +325,21 @@ export default function DomainWizardOnePerPage({
             {isSubmitting ? (
               <>
                 <span className="material-symbols-outlined animate-spin text-2xl">refresh</span>
-                {currentStep?.id === 'rootRedirect' ? 'Preparing records...' : 'Loading...'}
+                {currentStep?.id === 'rootRedirect'
+                  ? isEdit
+                    ? 'Updating...'
+                    : 'Preparing records...'
+                  : 'Loading...'}
               </>
             ) : currentStep?.id === 'verify' ? (
               <>
                 <span>Done</span>
                 <span className="material-symbols-outlined text-2xl">arrow_forward</span>
+              </>
+            ) : isEdit && currentStep?.id === 'rootRedirect' ? (
+              <>
+                <span>Update Root Redirect</span>
+                <span className="material-symbols-outlined text-2xl">check</span>
               </>
             ) : (
               <>
