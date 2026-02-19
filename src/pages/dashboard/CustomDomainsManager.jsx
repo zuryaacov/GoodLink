@@ -9,6 +9,10 @@ const CustomDomainsManager = () => {
   const [domains, setDomains] = useState([]);
   const [loading, setLoading] = useState(true);
   const [planType, setPlanType] = useState(null); // null = still loading, don't show paywall yet
+  const [dnsRecordsByDomainId, setDnsRecordsByDomainId] = useState({});
+  const [dnsLoadingByDomainId, setDnsLoadingByDomainId] = useState({});
+
+  const workerUrl = import.meta.env.VITE_WORKER_URL || 'https://glynk.to';
 
   // Modal states for errors/alerts
   const [modalState, setModalState] = useState({
@@ -31,6 +35,40 @@ const CustomDomainsManager = () => {
   useEffect(() => {
     fetchDomains();
   }, []);
+
+  const fetchDomainRecords = async (domain) => {
+    if (!domain?.cloudflare_hostname_id) return;
+
+    setDnsLoadingByDomainId((prev) => ({ ...prev, [domain.id]: true }));
+    try {
+      const response = await fetch(`${workerUrl}/api/get-domain-records`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          cloudflare_hostname_id: domain.cloudflare_hostname_id,
+          domain_id: domain.id,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch DNS records for ${domain.domain}`);
+      }
+
+      const result = await response.json();
+      if (Array.isArray(result?.dns_records)) {
+        setDnsRecordsByDomainId((prev) => ({
+          ...prev,
+          [domain.id]: result.dns_records,
+        }));
+      }
+    } catch (error) {
+      console.error('Error fetching domain DNS records:', error);
+    } finally {
+      setDnsLoadingByDomainId((prev) => ({ ...prev, [domain.id]: false }));
+    }
+  };
 
   const fetchDomains = async () => {
     try {
@@ -105,7 +143,14 @@ const CustomDomainsManager = () => {
 
       console.log('CustomDomains - Fetch result:', { data, error });
       if (error) throw error;
-      setDomains(data || []);
+      const fetchedDomains = data || [];
+      setDomains(fetchedDomains);
+
+      // Always refresh DNS records from worker so cards show full/updated records.
+      const domainsWithCloudflareHost = fetchedDomains.filter((domain) => domain.cloudflare_hostname_id);
+      if (domainsWithCloudflareHost.length > 0) {
+        await Promise.all(domainsWithCloudflareHost.map((domain) => fetchDomainRecords(domain)));
+      }
     } catch (error) {
       console.error('Error fetching domains:', error);
       // If table doesn't exist, just show empty state
@@ -476,92 +521,123 @@ const CustomDomainsManager = () => {
               </div>
 
               {/* DNS Records Detail Display */}
-              {getDnsRecordsArray(domain.dns_records) && (
-                <div className="space-y-4">
-                  <div className="flex items-center gap-2 text-slate-500">
+              <div className="space-y-4">
+                <div className="flex items-center justify-between gap-2 text-slate-500">
+                  <div className="flex items-center gap-2">
                     <span className="material-symbols-outlined text-sm">dns</span>
                     <p className="text-xs uppercase tracking-widest font-black">
                       DNS Configuration Required
                     </p>
                   </div>
-
-                  <div className="grid grid-cols-1 gap-4">
-                    {getDnsRecordsArray(domain.dns_records).map((record, idx) => (
-                      <div
-                        key={idx}
-                        className="bg-[#0b0f19] border border-[#232f48] rounded-xl p-4 md:p-6 space-y-4 hover:border-primary/20 transition-all shadow-inner"
-                      >
-                        {/* Record Type Header */}
-                        <div className="flex items-center gap-3">
-                          <div className="px-3 py-1 bg-primary/20 text-primary border border-primary/30 rounded-lg font-bold text-xs uppercase tracking-wider">
-                            Record {idx + 1}
-                          </div>
-                          <div className="h-px flex-1 bg-[#232f48]"></div>
-                          <span className="text-xl text-primary font-black font-mono uppercase">
-                            {record.type}
-                          </span>
-                        </div>
-
-                        <div className="grid grid-cols-1 gap-4">
-                          {/* Host / Name Section */}
-                          <div className="space-y-2">
-                            <div className="flex items-center gap-2">
-                              <span className="material-symbols-outlined text-slate-500 text-sm">
-                                label
-                              </span>
-                              <span className="text-[10px] uppercase font-black text-slate-600 tracking-[0.2em]">
-                                Host / Name
-                              </span>
-                            </div>
-                            <div className="flex items-center gap-3 bg-[#101622] p-3 rounded-xl border border-[#232f48] group hover:border-primary/20 transition-all">
-                              <code className="text-sm md:text-base text-white font-mono flex-1 truncate selection:bg-primary/40">
-                                {record.host || record.name}
-                              </code>
-                              <button
-                                onClick={() =>
-                                  navigator.clipboard.writeText(record.host || record.name)
-                                }
-                                className="w-10 h-10 flex items-center justify-center bg-[#232f48] hover:bg-primary text-white rounded-lg transition-all shadow-xl active:scale-90"
-                                title="Copy Host"
-                              >
-                                <span className="material-symbols-outlined text-xl">
-                                  content_copy
-                                </span>
-                              </button>
-                            </div>
-                          </div>
-
-                          {/* Target Value Section */}
-                          <div className="space-y-2">
-                            <div className="flex items-center gap-2">
-                              <span className="material-symbols-outlined text-slate-500 text-sm">
-                                shortcut
-                              </span>
-                              <span className="text-[10px] uppercase font-black text-slate-600 tracking-[0.2em]">
-                                Target Value
-                              </span>
-                            </div>
-                            <div className="flex items-center gap-3 bg-[#101622] p-3 md:p-4 rounded-xl border border-[#232f48] group hover:border-primary/20 transition-all shadow-[inset_0_2px_10px_rgba(0,0,0,0.5)]">
-                              <code className="text-sm md:text-lg text-green-400 font-mono flex-1 break-all leading-tight selection:bg-primary/30">
-                                {record.value}
-                              </code>
-                              <button
-                                onClick={() => navigator.clipboard.writeText(record.value)}
-                                className="w-10 h-10 flex items-center justify-center bg-[#232f48] hover:bg-primary text-white rounded-lg transition-all shadow-xl active:scale-90 flex-shrink-0"
-                                title="Copy Value"
-                              >
-                                <span className="material-symbols-outlined text-xl">
-                                  content_copy
-                                </span>
-                              </button>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+                  <button
+                    type="button"
+                    onClick={() => fetchDomainRecords(domain)}
+                    disabled={!!dnsLoadingByDomainId[domain.id]}
+                    className="flex items-center gap-1 text-xs px-2.5 py-1.5 rounded-lg border border-[#232f48] bg-[#101622] hover:bg-[#1a2438] disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
+                  >
+                    <span
+                      className={`material-symbols-outlined text-sm ${dnsLoadingByDomainId[domain.id] ? 'animate-spin' : ''}`}
+                    >
+                      refresh
+                    </span>
+                    Refresh
+                  </button>
                 </div>
-              )}
+
+                {(() => {
+                  const displayedRecords = getDnsRecordsArray(
+                    dnsRecordsByDomainId[domain.id] ?? domain.dns_records
+                  );
+
+                  if (!displayedRecords || displayedRecords.length === 0) {
+                    return (
+                      <div className="bg-[#0b0f19] border border-[#232f48] rounded-xl p-4 text-sm text-slate-400">
+                        {dnsLoadingByDomainId[domain.id]
+                          ? 'Loading DNS records...'
+                          : 'No DNS records available yet.'}
+                      </div>
+                    );
+                  }
+
+                  return (
+                    <div className="grid grid-cols-1 gap-4">
+                      {displayedRecords.map((record, idx) => (
+                        <div
+                          key={idx}
+                          className="bg-[#0b0f19] border border-[#232f48] rounded-xl p-4 md:p-6 space-y-4 hover:border-primary/20 transition-all shadow-inner"
+                        >
+                          {/* Record Type Header */}
+                          <div className="flex items-center gap-3">
+                            <div className="px-3 py-1 bg-primary/20 text-primary border border-primary/30 rounded-lg font-bold text-xs uppercase tracking-wider">
+                              Record {idx + 1}
+                            </div>
+                            <div className="h-px flex-1 bg-[#232f48]"></div>
+                            <span className="text-xl text-primary font-black font-mono uppercase">
+                              {record.type}
+                            </span>
+                          </div>
+
+                          <div className="grid grid-cols-1 gap-4">
+                            {/* Host / Name Section */}
+                            <div className="space-y-2">
+                              <div className="flex items-center gap-2">
+                                <span className="material-symbols-outlined text-slate-500 text-sm">
+                                  label
+                                </span>
+                                <span className="text-[10px] uppercase font-black text-slate-600 tracking-[0.2em]">
+                                  Host / Name
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-3 bg-[#101622] p-3 rounded-xl border border-[#232f48] group hover:border-primary/20 transition-all">
+                                <code className="text-sm md:text-base text-white font-mono flex-1 truncate selection:bg-primary/40">
+                                  {record.host || record.name}
+                                </code>
+                                <button
+                                  onClick={() =>
+                                    navigator.clipboard.writeText(record.host || record.name)
+                                  }
+                                  className="w-10 h-10 flex items-center justify-center bg-[#232f48] hover:bg-primary text-white rounded-lg transition-all shadow-xl active:scale-90"
+                                  title="Copy Host"
+                                >
+                                  <span className="material-symbols-outlined text-xl">
+                                    content_copy
+                                  </span>
+                                </button>
+                              </div>
+                            </div>
+
+                            {/* Target Value Section */}
+                            <div className="space-y-2">
+                              <div className="flex items-center gap-2">
+                                <span className="material-symbols-outlined text-slate-500 text-sm">
+                                  shortcut
+                                </span>
+                                <span className="text-[10px] uppercase font-black text-slate-600 tracking-[0.2em]">
+                                  Target Value
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-3 bg-[#101622] p-3 md:p-4 rounded-xl border border-[#232f48] group hover:border-primary/20 transition-all shadow-[inset_0_2px_10px_rgba(0,0,0,0.5)]">
+                                <code className="text-sm md:text-lg text-green-400 font-mono flex-1 break-all leading-tight selection:bg-primary/30">
+                                  {record.value}
+                                </code>
+                                <button
+                                  onClick={() => navigator.clipboard.writeText(record.value)}
+                                  className="w-10 h-10 flex items-center justify-center bg-[#232f48] hover:bg-primary text-white rounded-lg transition-all shadow-xl active:scale-90 flex-shrink-0"
+                                  title="Copy Value"
+                                >
+                                  <span className="material-symbols-outlined text-xl">
+                                    content_copy
+                                  </span>
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  );
+                })()}
+              </div>
 
               {/* Verified Date */}
               {domain.verified_at && (
