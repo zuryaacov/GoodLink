@@ -470,6 +470,116 @@ export default Sentry.withSentry(
                 }
             }
 
+            // === API Endpoint: Abuse Report (public form) ===
+            if (path === "/api/abuse-report" && request.method === "POST") {
+                try {
+                    const body = await request.json().catch(() => ({}));
+                    const { reported_url, category, description, reporter_email, turnstile_token } = body || {};
+
+                    if (!reported_url || !reporter_email) {
+                        return new Response(JSON.stringify({ error: "Missing required fields (reported_url, reporter_email)" }), {
+                            status: 400,
+                            headers: { ...corsHeaders, "Content-Type": "application/json" }
+                        });
+                    }
+                    const allowedCategories = ["phishing", "spam", "adult", "copyright", "other"];
+                    const cat = String(category || "other").toLowerCase();
+                    if (!allowedCategories.includes(cat)) {
+                        return new Response(JSON.stringify({ error: "Invalid category" }), {
+                            status: 400,
+                            headers: { ...corsHeaders, "Content-Type": "application/json" }
+                        });
+                    }
+
+                    if (env.TURNSTILE_SECRET_KEY && turnstile_token) {
+                        const verifyRes = await fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                            body: new URLSearchParams({
+                                secret: env.TURNSTILE_SECRET_KEY,
+                                response: turnstile_token
+                            })
+                        });
+                        const verifyData = await verifyRes.json().catch(() => ({}));
+                        if (!verifyData.success) {
+                            return new Response(JSON.stringify({ error: "Security verification failed. Please try again." }), {
+                                status: 400,
+                                headers: { ...corsHeaders, "Content-Type": "application/json" }
+                            });
+                        }
+                    }
+
+                    let safeBrowsingResponse = null;
+                    if (env.GOOGLE_SAFE_BROWSING_API_KEY) {
+                        try {
+                            const apiUrl = "https://safebrowsing.googleapis.com/v4/threatMatches:find";
+                            const reqBody = {
+                                client: { clientId: "goodlink-abuse-report", clientVersion: "1.0" },
+                                threatInfo: {
+                                    threatTypes: ["MALWARE", "SOCIAL_ENGINEERING", "UNWANTED_SOFTWARE", "POTENTIALLY_HARMFUL_APPLICATION"],
+                                    platformTypes: ["ANY_PLATFORM"],
+                                    threatEntryTypes: ["URL"],
+                                    threatEntries: [{ url: reported_url }]
+                                }
+                            };
+                            const sbRes = await fetch(`${apiUrl}?key=${env.GOOGLE_SAFE_BROWSING_API_KEY}`, {
+                                method: "POST",
+                                headers: { "Content-Type": "application/json" },
+                                body: JSON.stringify(reqBody)
+                            });
+                            const sbData = await sbRes.json().catch(() => ({}));
+                            if (sbRes.ok && sbData.matches && sbData.matches.length > 0) {
+                                safeBrowsingResponse = { isSafe: false, threatType: sbData.matches[0].threatType || null, raw: sbData };
+                            } else {
+                                safeBrowsingResponse = { isSafe: true, threatType: null };
+                            }
+                        } catch (sbErr) {
+                            console.warn("Safe Browsing check failed:", sbErr);
+                            safeBrowsingResponse = { error: String(sbErr.message || "check_failed") };
+                        }
+                    }
+
+                    const insertUrl = `${env.SUPABASE_URL}/rest/v1/abuse_reports`;
+                    const insertRes = await fetch(insertUrl, {
+                        method: "POST",
+                        headers: {
+                            "apikey": env.SUPABASE_SERVICE_ROLE_KEY,
+                            "Authorization": `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}`,
+                            "Content-Type": "application/json",
+                            "Prefer": "return=representation"
+                        },
+                        body: JSON.stringify({
+                            reported_url: String(reported_url).trim(),
+                            category: cat,
+                            description: description ? String(description).trim() : null,
+                            reporter_email: String(reporter_email).trim(),
+                            safe_browsing_response: safeBrowsingResponse,
+                            turnstile_verified: Boolean(env.TURNSTILE_SECRET_KEY && turnstile_token)
+                        })
+                    });
+
+                    if (!insertRes.ok) {
+                        const errData = await insertRes.json().catch(() => ({}));
+                        console.error("Abuse report insert failed:", insertRes.status, errData);
+                        return new Response(JSON.stringify({ error: "Failed to save report. Please try again." }), {
+                            status: 500,
+                            headers: { ...corsHeaders, "Content-Type": "application/json" }
+                        });
+                    }
+
+                    return new Response(JSON.stringify({ success: true }), {
+                        status: 200,
+                        headers: { ...corsHeaders, "Content-Type": "application/json" }
+                    });
+                } catch (error) {
+                    console.error("❌ [Abuse Report] Error:", error);
+                    return new Response(JSON.stringify({ error: error.message || "Failed to submit report" }), {
+                        status: 500,
+                        headers: { ...corsHeaders, "Content-Type": "application/json" }
+                    });
+                }
+            }
+
             // === API Endpoint: Update Redis Cache ===
             if (path === "/api/update-redis-cache" && request.method === "POST") {
                 try {

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import Homepage from './pages/Homepage';
 import AuthPage from './pages/AuthPage';
+import AbuseReportPage from './pages/AbuseReportPage';
 import DashboardLayout from './layouts/DashboardLayout';
 import Analytics from './pages/dashboard/Analytics';
 import LinkManager from './pages/dashboard/LinkManager';
@@ -83,6 +84,7 @@ function App() {
     <Routes>
       <Route path="/" element={<Homepage />} />
       <Route path="/login" element={<AuthPage />} />
+      <Route path="/abuse" element={<AbuseReportPage />} />
 
       {/* Dashboard Routes */}
       <Route

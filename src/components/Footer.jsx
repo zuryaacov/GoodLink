@@ -99,6 +99,12 @@ const Footer = () => {
           </div>
           <div className="flex flex-col gap-4">
             <h4 className="font-bold text-slate-900 dark:text-white">Company</h4>
+            <Link
+              to="/abuse"
+              className="text-sm text-slate-500 dark:text-slate-400 hover:text-primary transition-colors"
+            >
+              Abuse / DMCA
+            </Link>
             <a
               className="text-sm text-slate-500 dark:text-slate-400 hover:text-primary transition-colors"
               href="#"
