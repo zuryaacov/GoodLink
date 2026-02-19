@@ -1012,26 +1012,17 @@ const LinkManager = () => {
                         {link.short_url}
                       </span>
                     </div>
-                    <div className="flex items-center gap-1 flex-shrink-0">
-                      <button
-                        onClick={() => setQrModal({ isOpen: true, link })}
-                        className="p-2 bg-[#232f48] hover:bg-gray-600 text-gray-300 rounded-lg transition-all active:scale-90"
-                        title="Open QR Code"
-                      >
-                        <span className="material-symbols-outlined text-base">qr_code_2</span>
-                      </button>
-                      <button
-                        onClick={() => handleCopy(link.short_url)}
-                        className="copy-btn p-2 bg-[#232f48] hover:bg-gray-600 text-gray-300 rounded-lg transition-all flex-shrink-0 active:scale-90"
-                        title="Copy to clipboard"
-                      >
-                        <span className="material-symbols-outlined text-base">content_copy</span>
-                      </button>
-                    </div>
+                    <button
+                      onClick={() => handleCopy(link.short_url)}
+                      className="copy-btn p-2 bg-[#232f48] hover:bg-gray-600 text-gray-300 rounded-lg transition-all flex-shrink-0 active:scale-90"
+                      title="Copy to clipboard"
+                    >
+                      <span className="material-symbols-outlined text-base">content_copy</span>
+                    </button>
                   </div>
                 </div>
 
-                {/* Footer: toggle + status, clicks */}
+                {/* Footer: Active (left), QR (center), Clicks (right) */}
                 <div className="mt-auto flex justify-between items-center pt-4 border-t border-[#232f48]">
                   <div className="flex items-center gap-3">
                     <label className="relative inline-block w-11 h-6 cursor-pointer select-none">
@@ -1051,6 +1042,13 @@ const LinkManager = () => {
                       {isActive ? 'Active' : 'Paused'}
                     </span>
                   </div>
+                  <button
+                    onClick={() => setQrModal({ isOpen: true, link })}
+                    className="p-2 bg-[#232f48] hover:bg-[#324467] text-gray-300 rounded-lg transition-all active:scale-90"
+                    title="Open QR Code"
+                  >
+                    <span className="material-symbols-outlined text-base">qr_code_2</span>
+                  </button>
                   <div
                     className={`flex items-center gap-2 ${isActive ? 'text-gray-500' : 'text-gray-600'}`}
                   >
