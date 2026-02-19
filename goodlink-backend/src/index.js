@@ -980,7 +980,7 @@ export default Sentry.withSentry(
 
             const fetchCustomDomainById = async (domainId) => {
                 if (!domainId) return null;
-                const url = `${env.SUPABASE_URL}/rest/v1/custom_domains?id=eq.${encodeURIComponent(domainId)}&select=id,domain,cloudflare_hostname_id&limit=1`;
+                const url = `${env.SUPABASE_URL}/rest/v1/custom_domains?id=eq.${encodeURIComponent(domainId)}&select=id,domain,cloudflare_hostname_id,dns_records&limit=1`;
                 const response = await fetch(url, {
                     headers: {
                         "apikey": env.SUPABASE_SERVICE_ROLE_KEY,
@@ -991,6 +991,27 @@ export default Sentry.withSentry(
                 if (!response.ok) return null;
                 const rows = await response.json().catch(() => []);
                 return Array.isArray(rows) && rows.length > 0 ? rows[0] : null;
+            };
+
+            const fetchCustomDomainByHostnameId = async (hostnameId) => {
+                if (!hostnameId) return null;
+                const url = `${env.SUPABASE_URL}/rest/v1/custom_domains?cloudflare_hostname_id=eq.${encodeURIComponent(hostnameId)}&select=id,domain,cloudflare_hostname_id,dns_records&limit=1`;
+                const response = await fetch(url, {
+                    headers: {
+                        "apikey": env.SUPABASE_SERVICE_ROLE_KEY,
+                        "Authorization": `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}`,
+                        "Content-Type": "application/json"
+                    }
+                });
+                if (!response.ok) return null;
+                const rows = await response.json().catch(() => []);
+                return Array.isArray(rows) && rows.length > 0 ? rows[0] : null;
+            };
+
+            const mergeDnsRecordsPreservingExisting = (existingRecords, newRecords) => {
+                const existing = Array.isArray(existingRecords) ? existingRecords : [];
+                const incoming = Array.isArray(newRecords) ? newRecords : [];
+                return dedupeDnsRecords([...existing, ...incoming]);
             };
 
             // === API Endpoint: Add Custom Domain ===
@@ -1215,12 +1236,16 @@ export default Sentry.withSentry(
 
                     let resolvedDomain = null;
                     let fallbackHostnameId = cloudflare_hostname_id || null;
+                    let domainRow = null;
                     if (domain_id) {
-                        const domainRow = await fetchCustomDomainById(domain_id);
+                        domainRow = await fetchCustomDomainById(domain_id);
                         if (domainRow?.domain) resolvedDomain = domainRow.domain;
                         if (!fallbackHostnameId && domainRow?.cloudflare_hostname_id) {
                             fallbackHostnameId = domainRow.cloudflare_hostname_id;
                         }
+                    }
+                    if (!domainRow && fallbackHostnameId) {
+                        domainRow = await fetchCustomDomainByHostnameId(fallbackHostnameId);
                     }
                     if (!resolvedDomain && fallbackHostnameId) {
                         const fallbackHostnameData = await fetchCustomHostnameById(fallbackHostnameId);
@@ -1260,6 +1285,10 @@ export default Sentry.withSentry(
                     const dnsRecords = dedupeDnsRecords(
                         hostnameDatas.flatMap((item) => buildDnsRecordsFromHostnameData(item))
                     );
+                    const mergedDnsRecords = mergeDnsRecordsPreservingExisting(
+                        domainRow?.dns_records,
+                        dnsRecords
+                    );
                     const allActive =
                         hostnameDatas.length === hostnameVariants.length &&
                         hostnameDatas.every((item) => String(item?.status || "").toLowerCase() === "active");
@@ -1275,7 +1304,7 @@ export default Sentry.withSentry(
                     if (domain_id || cloudflare_hostname_id) {
                         const dbStatus = mapCustomDomainStatusForDb(mergedStatus, allActive);
                         const updateData = {
-                            dns_records: dnsRecords,
+                            dns_records: mergedDnsRecords,
                             status: dbStatus,
                             // If it just became active, update status and verified_at
                             ...(allActive ? { status: "active", verified_at: new Date().toISOString() } : {})
@@ -1316,7 +1345,7 @@ export default Sentry.withSentry(
                         is_active: allActive,
                         ssl_status: sslStatus,
                         status: mergedStatus,
-                        dns_records: dnsRecords
+                        dns_records: mergedDnsRecords
                     }), {
                         status: 200,
                         headers: { ...corsHeaders, "Content-Type": "application/json" }
@@ -1353,12 +1382,16 @@ export default Sentry.withSentry(
 
                     let resolvedDomain = null;
                     let fallbackHostnameId = cloudflare_hostname_id || null;
+                    let domainRow = null;
                     if (domain_id) {
-                        const domainRow = await fetchCustomDomainById(domain_id);
+                        domainRow = await fetchCustomDomainById(domain_id);
                         if (domainRow?.domain) resolvedDomain = domainRow.domain;
                         if (!fallbackHostnameId && domainRow?.cloudflare_hostname_id) {
                             fallbackHostnameId = domainRow.cloudflare_hostname_id;
                         }
+                    }
+                    if (!domainRow && fallbackHostnameId) {
+                        domainRow = await fetchCustomDomainByHostnameId(fallbackHostnameId);
                     }
                     if (!resolvedDomain && fallbackHostnameId) {
                         const fallbackHostnameData = await fetchCustomHostnameById(fallbackHostnameId);
@@ -1398,6 +1431,10 @@ export default Sentry.withSentry(
                     const dnsRecords = dedupeDnsRecords(
                         hostnameDatas.flatMap((item) => buildDnsRecordsFromHostnameData(item))
                     );
+                    const mergedDnsRecords = mergeDnsRecordsPreservingExisting(
+                        domainRow?.dns_records,
+                        dnsRecords
+                    );
 
                     // Update dns_records in Supabase (persist complete records set)
                     try {
@@ -1416,7 +1453,7 @@ export default Sentry.withSentry(
                                 "Prefer": "return=representation"
                             },
                             body: JSON.stringify({
-                                dns_records: dnsRecords
+                                dns_records: mergedDnsRecords
                             })
                         });
 
@@ -1439,7 +1476,7 @@ export default Sentry.withSentry(
 
                     return new Response(JSON.stringify({
                         success: true,
-                        dns_records: dnsRecords
+                        dns_records: mergedDnsRecords
                     }), {
                         status: 200,
                         headers: { ...corsHeaders, "Content-Type": "application/json" }
