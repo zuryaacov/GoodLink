@@ -331,24 +331,22 @@ const AddDomainPage = () => {
     if (result.domain_id) setSavedDomainId(result.domain_id);
     if (hostnameId) setCloudflareHostnameId(hostnameId);
 
-    const hasSslRecord = (records) =>
-      records?.some(
-        (r) =>
-          r.host?.toLowerCase().includes('_acme-challenge') ||
-          r.name?.toLowerCase().includes('_acme-challenge')
-      );
-    if (!hasSslRecord(currentRecords) && hostnameId) {
+    const hasAllDomainRecords = (records) => Array.isArray(records) && records.length >= 6;
+    if (!hasAllDomainRecords(currentRecords) && hostnameId) {
       for (let i = 0; i < 15; i++) {
         await new Promise((r) => setTimeout(r, 4000));
         try {
           const pollRes = await fetch(`${workerUrl}/api/get-domain-records`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ cloudflare_hostname_id: hostnameId }),
+            body: JSON.stringify({
+              cloudflare_hostname_id: hostnameId,
+              domain_id: result.domain_id || null,
+            }),
           });
           if (pollRes.ok) {
             const pollData = await pollRes.json();
-            if (pollData.dns_records && hasSslRecord(pollData.dns_records)) {
+            if (pollData.dns_records && hasAllDomainRecords(pollData.dns_records)) {
               currentRecords = pollData.dns_records;
               break;
             }

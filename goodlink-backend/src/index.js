@@ -882,6 +882,117 @@ export default Sentry.withSentry(
                 return "pending";
             };
 
+            const normalizeCustomHostnameInput = (value) => {
+                if (!value) return "";
+                return String(value)
+                    .trim()
+                    .toLowerCase()
+                    .replace(/^https?:\/\//, "")
+                    .split("/")[0]
+                    .split("?")[0]
+                    .split("#")[0]
+                    .replace(/:\d+$/, "")
+                    .replace(/\.$/, "");
+            };
+
+            const getHostnameVariants = (inputHostname) => {
+                const normalized = normalizeCustomHostnameInput(inputHostname);
+                if (!normalized) return [];
+                const apex = normalized.startsWith("www.") ? normalized.slice(4) : normalized;
+                const withWww = apex.startsWith("www.") ? apex : `www.${apex}`;
+                return Array.from(new Set([apex, withWww]));
+            };
+
+            const buildDnsRecordsFromHostnameData = (hostnameData) => {
+                if (!hostnameData?.hostname) return [];
+                const records = [];
+                if (hostnameData.ownership_verification) {
+                    records.push({
+                        type: hostnameData.ownership_verification.type || "TXT",
+                        host: extractDnsHost(hostnameData.ownership_verification.name, hostnameData.hostname),
+                        value: hostnameData.ownership_verification.value
+                    });
+                }
+                if (hostnameData.ssl?.validation_records && Array.isArray(hostnameData.ssl.validation_records)) {
+                    hostnameData.ssl.validation_records.forEach((record) => {
+                        records.push({
+                            type: "TXT",
+                            host: extractDnsHost(record.txt_name, hostnameData.hostname),
+                            value: record.txt_value
+                        });
+                    });
+                }
+                records.push({
+                    type: "CNAME",
+                    host: getSubdomainLabel(hostnameData.hostname),
+                    value: "www.glynk.to"
+                });
+                return records;
+            };
+
+            const dedupeDnsRecords = (records) => {
+                const seen = new Set();
+                return (records || []).filter((record) => {
+                    const key = `${record?.type || ""}|${record?.host || ""}|${record?.value || ""}`;
+                    if (seen.has(key)) return false;
+                    seen.add(key);
+                    return true;
+                });
+            };
+
+            const fetchCustomHostnameById = async (hostnameId) => {
+                if (!hostnameId) return null;
+                const cfResponse = await fetch(
+                    `https://api.cloudflare.com/client/v4/zones/${env.CLOUDFLARE_ZONE_ID}/custom_hostnames/${hostnameId}`,
+                    {
+                        method: "GET",
+                        headers: {
+                            "Authorization": `Bearer ${env.CLOUDFLARE_API_TOKEN}`,
+                            "Content-Type": "application/json"
+                        }
+                    }
+                );
+                const cfResult = await cfResponse.json().catch(() => ({}));
+                if (!cfResponse.ok || !cfResult?.success) return null;
+                return cfResult.result || null;
+            };
+
+            const fetchCustomHostnameByHostname = async (hostname) => {
+                const target = normalizeCustomHostnameInput(hostname);
+                if (!target) return null;
+                const listUrl = `https://api.cloudflare.com/client/v4/zones/${env.CLOUDFLARE_ZONE_ID}/custom_hostnames?hostname=${encodeURIComponent(target)}`;
+                const cfResponse = await fetch(listUrl, {
+                    method: "GET",
+                    headers: {
+                        "Authorization": `Bearer ${env.CLOUDFLARE_API_TOKEN}`,
+                        "Content-Type": "application/json"
+                    }
+                });
+                const cfResult = await cfResponse.json().catch(() => ({}));
+                if (!cfResponse.ok || !cfResult?.success) return null;
+                const list = Array.isArray(cfResult.result) ? cfResult.result : [];
+                return (
+                    list.find((item) => normalizeCustomHostnameInput(item?.hostname) === target) ||
+                    list[0] ||
+                    null
+                );
+            };
+
+            const fetchCustomDomainById = async (domainId) => {
+                if (!domainId) return null;
+                const url = `${env.SUPABASE_URL}/rest/v1/custom_domains?id=eq.${encodeURIComponent(domainId)}&select=id,domain,cloudflare_hostname_id&limit=1`;
+                const response = await fetch(url, {
+                    headers: {
+                        "apikey": env.SUPABASE_SERVICE_ROLE_KEY,
+                        "Authorization": `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}`,
+                        "Content-Type": "application/json"
+                    }
+                });
+                if (!response.ok) return null;
+                const rows = await response.json().catch(() => []);
+                return Array.isArray(rows) && rows.length > 0 ? rows[0] : null;
+            };
+
             // === API Endpoint: Add Custom Domain ===
             if (path === "/api/add-custom-domain" && request.method === "POST") {
                 const customDomainReqStart = Date.now();
@@ -903,86 +1014,82 @@ export default Sentry.withSentry(
                         });
                     }
 
-                    // Create Custom Hostname in Cloudflare
-                    const cfResponse = await fetch(
-                        `https://api.cloudflare.com/client/v4/zones/${env.CLOUDFLARE_ZONE_ID}/custom_hostnames`,
-                        {
-                            method: "POST",
-                            headers: {
-                                "Authorization": `Bearer ${env.CLOUDFLARE_API_TOKEN}`,
-                                "Content-Type": "application/json"
-                            },
-                            body: JSON.stringify({
-                                hostname: domain,
-                                ssl: {
-                                    method: "txt",
-                                    type: "dv",
-                                    settings: {
-                                        min_tls_version: "1.2"
-                                    }
-                                }
-                            })
-                        }
-                    );
-
-                    const cfResult = await cfResponse.json();
-
-                    if (!cfResponse.ok || !cfResult.success) {
-                        console.error("Cloudflare API error:", cfResult);
-                        logAxiomInBackground(ctx, env, {
-                            action: "custom_domain_create",
-                            backend_event: "custom_domain_create_failed_cloudflare",
-                            result: "failed",
-                            reason: cfResult.errors?.[0]?.message || "cloudflare_create_failed",
-                            user_id,
-                            company: "cloudflare",
-                            original_url: request.url,
-                            visitor_ip: request.headers.get("cf-connecting-ip") || null,
-                            user_agent: request.headers.get("user-agent") || null,
-                            country: request.cf?.country || null,
-                            is_bot: false,
-                            latency_ms: Date.now() - customDomainReqStart,
-                            custom_domain_payload: { domain, root_redirect },
-                            cloudflare_response: cfResult
-                        });
+                    const normalizedInputDomain = normalizeCustomHostnameInput(domain);
+                    const hostnameVariants = getHostnameVariants(normalizedInputDomain);
+                    if (hostnameVariants.length < 2) {
                         return new Response(JSON.stringify({
                             success: false,
-                            error: cfResult.errors?.[0]?.message || "Failed to create custom hostname"
+                            error: "Invalid custom domain"
                         }), {
                             status: 400,
                             headers: { ...corsHeaders, "Content-Type": "application/json" }
                         });
                     }
 
-                    const hostnameData = cfResult.result;
-                    const dnsRecords = [];
+                    const createOneHostname = async (hostname) => {
+                        const cfResponse = await fetch(
+                            `https://api.cloudflare.com/client/v4/zones/${env.CLOUDFLARE_ZONE_ID}/custom_hostnames`,
+                            {
+                                method: "POST",
+                                headers: {
+                                    "Authorization": `Bearer ${env.CLOUDFLARE_API_TOKEN}`,
+                                    "Content-Type": "application/json"
+                                },
+                                body: JSON.stringify({
+                                    hostname,
+                                    ssl: {
+                                        method: "txt",
+                                        type: "dv",
+                                        settings: {
+                                            min_tls_version: "1.2"
+                                        }
+                                    }
+                                })
+                            }
+                        );
+                        const cfResult = await cfResponse.json().catch(() => ({}));
+                        if (!cfResponse.ok || !cfResult.success) {
+                            const cfErrorMessage = cfResult?.errors?.[0]?.message || "Failed to create custom hostname";
+                            if (/already exists/i.test(cfErrorMessage)) {
+                                const existing = await fetchCustomHostnameByHostname(hostname);
+                                if (existing) return existing;
+                            }
+                            throw new Error(`${hostname}: ${cfErrorMessage}`);
+                        }
+                        return cfResult.result;
+                    };
 
-                    // Extract ownership verification TXT record
-                    if (hostnameData.ownership_verification) {
-                        dnsRecords.push({
-                            type: hostnameData.ownership_verification.type,
-                            host: extractDnsHost(hostnameData.ownership_verification.name, domain),
-                            value: hostnameData.ownership_verification.value
-                        });
+                    const createdHostnames = [];
+                    for (const hostname of hostnameVariants) {
+                        const created = await createOneHostname(hostname);
+                        createdHostnames.push(created);
                     }
 
-                    // Extract SSL Certificate validation TXT records (CRITICAL for SSL)
-                    if (hostnameData.ssl?.validation_records && Array.isArray(hostnameData.ssl.validation_records)) {
-                        hostnameData.ssl.validation_records.forEach(record => {
-                            dnsRecords.push({
-                                type: "TXT",
-                                host: extractDnsHost(record.txt_name, domain),
-                                value: record.txt_value
-                            });
-                        });
-                    }
+                    const primaryHostnameData =
+                        createdHostnames.find(
+                            (item) => normalizeCustomHostnameInput(item?.hostname) === normalizedInputDomain
+                        ) || createdHostnames[0];
 
-                    // Add CNAME record
-                    dnsRecords.push({
-                        type: "CNAME",
-                        host: getSubdomainLabel(domain),
-                        value: "www.glynk.to"
-                    });
+                    let mergedDnsRecords = dedupeDnsRecords(
+                        createdHostnames.flatMap((item) => buildDnsRecordsFromHostnameData(item))
+                    );
+
+                    // Wait up to 60 seconds until all 6 DNS records are available.
+                    if (mergedDnsRecords.length < 6) {
+                        const waitStartedAt = Date.now();
+                        while (Date.now() - waitStartedAt < 60000) {
+                            await new Promise((resolve) => setTimeout(resolve, 3000));
+                            const refreshed = [];
+                            for (const item of createdHostnames) {
+                                const latest = await fetchCustomHostnameById(item?.id);
+                                refreshed.push(latest || item);
+                            }
+                            mergedDnsRecords = dedupeDnsRecords(
+                                refreshed.flatMap((item) => buildDnsRecordsFromHostnameData(item))
+                            );
+                            if (mergedDnsRecords.length >= 6) break;
+                        }
+                    }
 
                     // Save to Supabase
                     const supabaseUrl = `${env.SUPABASE_URL}/rest/v1/custom_domains`;
@@ -996,9 +1103,9 @@ export default Sentry.withSentry(
                         },
                         body: JSON.stringify({
                             user_id: user_id,
-                            domain: domain,
-                            cloudflare_hostname_id: hostnameData.id,
-                            dns_records: dnsRecords,
+                            domain: normalizedInputDomain,
+                            cloudflare_hostname_id: primaryHostnameData?.id || null,
+                            dns_records: mergedDnsRecords,
                             root_redirect: root_redirect || null,
                             status: "pending"
                         })
@@ -1021,8 +1128,8 @@ export default Sentry.withSentry(
                             country: request.cf?.country || null,
                             is_bot: false,
                             latency_ms: Date.now() - customDomainReqStart,
-                            custom_domain_payload: { domain, root_redirect },
-                            cloudflare_result: hostnameData,
+                            custom_domain_payload: { domain: normalizedInputDomain, root_redirect },
+                            cloudflare_result: createdHostnames,
                             supabase_response: supabaseData
                         });
                         return new Response(JSON.stringify({
@@ -1047,19 +1154,19 @@ export default Sentry.withSentry(
                         country: request.cf?.country || null,
                         is_bot: false,
                         latency_ms: Date.now() - customDomainReqStart,
-                        custom_domain_payload: { domain, root_redirect },
+                        custom_domain_payload: { domain: normalizedInputDomain, root_redirect },
                         custom_domain_result: {
                             domain_id: supabaseData[0]?.id,
-                            cloudflare_hostname_id: hostnameData.id,
-                            dns_records: dnsRecords
+                            cloudflare_hostname_id: primaryHostnameData?.id || null,
+                            dns_records: mergedDnsRecords
                         }
                     });
 
                     return new Response(JSON.stringify({
                         success: true,
                         domain_id: supabaseData[0]?.id,
-                        cloudflare_hostname_id: hostnameData.id,
-                        dns_records: dnsRecords
+                        cloudflare_hostname_id: primaryHostnameData?.id || null,
+                        dns_records: mergedDnsRecords
                     }), {
                         status: 200,
                         headers: { ...corsHeaders, "Content-Type": "application/json" }
@@ -1092,8 +1199,8 @@ export default Sentry.withSentry(
                     const body = await request.json();
                     const { domain_id, cloudflare_hostname_id } = body;
 
-                    if (!cloudflare_hostname_id) {
-                        return new Response(JSON.stringify({ error: "Missing cloudflare_hostname_id" }), {
+                    if (!domain_id && !cloudflare_hostname_id) {
+                        return new Response(JSON.stringify({ error: "Missing domain_id or cloudflare_hostname_id" }), {
                             status: 400,
                             headers: { ...corsHeaders, "Content-Type": "application/json" }
                         });
@@ -1106,21 +1213,41 @@ export default Sentry.withSentry(
                         });
                     }
 
-                    // Check status in Cloudflare
-                    const cfResponse = await fetch(
-                        `https://api.cloudflare.com/client/v4/zones/${env.CLOUDFLARE_ZONE_ID}/custom_hostnames/${cloudflare_hostname_id}`,
-                        {
-                            method: "GET",
-                            headers: {
-                                "Authorization": `Bearer ${env.CLOUDFLARE_API_TOKEN}`,
-                                "Content-Type": "application/json"
-                            }
+                    let resolvedDomain = null;
+                    let fallbackHostnameId = cloudflare_hostname_id || null;
+                    if (domain_id) {
+                        const domainRow = await fetchCustomDomainById(domain_id);
+                        if (domainRow?.domain) resolvedDomain = domainRow.domain;
+                        if (!fallbackHostnameId && domainRow?.cloudflare_hostname_id) {
+                            fallbackHostnameId = domainRow.cloudflare_hostname_id;
                         }
-                    );
+                    }
+                    if (!resolvedDomain && fallbackHostnameId) {
+                        const fallbackHostnameData = await fetchCustomHostnameById(fallbackHostnameId);
+                        resolvedDomain = fallbackHostnameData?.hostname || null;
+                    }
 
-                    const cfResult = await cfResponse.json();
+                    const hostnameVariants = getHostnameVariants(resolvedDomain);
+                    if (hostnameVariants.length === 0) {
+                        return new Response(JSON.stringify({
+                            success: false,
+                            error: "Failed to resolve domain hostnames for verification"
+                        }), {
+                            status: 400,
+                            headers: { ...corsHeaders, "Content-Type": "application/json" }
+                        });
+                    }
 
-                    if (!cfResponse.ok || !cfResult.success) {
+                    const hostnameDatas = [];
+                    for (const hostname of hostnameVariants) {
+                        const data = await fetchCustomHostnameByHostname(hostname);
+                        if (data) hostnameDatas.push(data);
+                    }
+                    if (hostnameDatas.length === 0 && fallbackHostnameId) {
+                        const fallbackData = await fetchCustomHostnameById(fallbackHostnameId);
+                        if (fallbackData) hostnameDatas.push(fallbackData);
+                    }
+                    if (hostnameDatas.length === 0) {
                         return new Response(JSON.stringify({
                             success: false,
                             error: "Failed to verify domain"
@@ -1130,45 +1257,28 @@ export default Sentry.withSentry(
                         });
                     }
 
-                    const hostnameData = cfResult.result;
-                    const isActive = hostnameData.status === "active";
-                    const sslStatus = hostnameData.ssl?.status || "pending";
-
-                    // Prepare updated DNS records for storage
-                    const dnsRecords = [];
-                    if (hostnameData.ownership_verification) {
-                        dnsRecords.push({
-                            type: hostnameData.ownership_verification.type,
-                            host: extractDnsHost(
-                                hostnameData.ownership_verification.name,
-                                hostnameData.hostname
-                            ),
-                            value: hostnameData.ownership_verification.value
-                        });
-                    }
-                    if (hostnameData.ssl?.validation_records && Array.isArray(hostnameData.ssl.validation_records)) {
-                        hostnameData.ssl.validation_records.forEach(record => {
-                            dnsRecords.push({
-                                type: "TXT",
-                                host: extractDnsHost(record.txt_name, hostnameData.hostname),
-                                value: record.txt_value
-                            });
-                        });
-                    }
-                    dnsRecords.push({
-                        type: "CNAME",
-                        host: getSubdomainLabel(hostnameData.hostname),
-                        value: "www.glynk.to"
-                    });
+                    const dnsRecords = dedupeDnsRecords(
+                        hostnameDatas.flatMap((item) => buildDnsRecordsFromHostnameData(item))
+                    );
+                    const allActive =
+                        hostnameDatas.length === hostnameVariants.length &&
+                        hostnameDatas.every((item) => String(item?.status || "").toLowerCase() === "active");
+                    const anyError = hostnameDatas.some((item) =>
+                        String(item?.status || "").toLowerCase().includes("error")
+                    );
+                    const mergedStatus = allActive ? "active" : anyError ? "error" : "pending";
+                    const sslStatus = hostnameDatas
+                        .map((item) => `${item.hostname}: ${item.ssl?.status || "pending"}`)
+                        .join(" | ");
 
                     // Update Supabase
                     if (domain_id || cloudflare_hostname_id) {
-                        const dbStatus = mapCustomDomainStatusForDb(hostnameData.status, isActive);
+                        const dbStatus = mapCustomDomainStatusForDb(mergedStatus, allActive);
                         const updateData = {
                             dns_records: dnsRecords,
                             status: dbStatus,
                             // If it just became active, update status and verified_at
-                            ...(isActive ? { status: "active", verified_at: new Date().toISOString() } : {})
+                            ...(allActive ? { status: "active", verified_at: new Date().toISOString() } : {})
                         };
 
                         const filter = domain_id
@@ -1203,9 +1313,9 @@ export default Sentry.withSentry(
 
                     return new Response(JSON.stringify({
                         success: true,
-                        is_active: isActive,
+                        is_active: allActive,
                         ssl_status: sslStatus,
-                        status: hostnameData.status,
+                        status: mergedStatus,
                         dns_records: dnsRecords
                     }), {
                         status: 200,
@@ -1227,8 +1337,8 @@ export default Sentry.withSentry(
                     const body = await request.json();
                     const { cloudflare_hostname_id, domain_id } = body;
 
-                    if (!cloudflare_hostname_id) {
-                        return new Response(JSON.stringify({ error: "Missing cloudflare_hostname_id" }), {
+                    if (!domain_id && !cloudflare_hostname_id) {
+                        return new Response(JSON.stringify({ error: "Missing domain_id or cloudflare_hostname_id" }), {
                             status: 400,
                             headers: { ...corsHeaders, "Content-Type": "application/json" }
                         });
@@ -1241,21 +1351,41 @@ export default Sentry.withSentry(
                         });
                     }
 
-                    // Get hostname data from Cloudflare
-                    const cfResponse = await fetch(
-                        `https://api.cloudflare.com/client/v4/zones/${env.CLOUDFLARE_ZONE_ID}/custom_hostnames/${cloudflare_hostname_id}`,
-                        {
-                            method: "GET",
-                            headers: {
-                                "Authorization": `Bearer ${env.CLOUDFLARE_API_TOKEN}`,
-                                "Content-Type": "application/json"
-                            }
+                    let resolvedDomain = null;
+                    let fallbackHostnameId = cloudflare_hostname_id || null;
+                    if (domain_id) {
+                        const domainRow = await fetchCustomDomainById(domain_id);
+                        if (domainRow?.domain) resolvedDomain = domainRow.domain;
+                        if (!fallbackHostnameId && domainRow?.cloudflare_hostname_id) {
+                            fallbackHostnameId = domainRow.cloudflare_hostname_id;
                         }
-                    );
+                    }
+                    if (!resolvedDomain && fallbackHostnameId) {
+                        const fallbackHostnameData = await fetchCustomHostnameById(fallbackHostnameId);
+                        resolvedDomain = fallbackHostnameData?.hostname || null;
+                    }
 
-                    const cfResult = await cfResponse.json();
+                    const hostnameVariants = getHostnameVariants(resolvedDomain);
+                    if (hostnameVariants.length === 0) {
+                        return new Response(JSON.stringify({
+                            success: false,
+                            error: "Failed to resolve domain hostnames"
+                        }), {
+                            status: 400,
+                            headers: { ...corsHeaders, "Content-Type": "application/json" }
+                        });
+                    }
 
-                    if (!cfResponse.ok || !cfResult.success) {
+                    const hostnameDatas = [];
+                    for (const hostname of hostnameVariants) {
+                        const data = await fetchCustomHostnameByHostname(hostname);
+                        if (data) hostnameDatas.push(data);
+                    }
+                    if (hostnameDatas.length === 0 && fallbackHostnameId) {
+                        const fallbackData = await fetchCustomHostnameById(fallbackHostnameId);
+                        if (fallbackData) hostnameDatas.push(fallbackData);
+                    }
+                    if (hostnameDatas.length === 0) {
                         return new Response(JSON.stringify({
                             success: false,
                             error: "Failed to get domain records"
@@ -1265,36 +1395,11 @@ export default Sentry.withSentry(
                         });
                     }
 
-                    const hostnameData = cfResult.result;
-                    const dnsRecords = [];
+                    const dnsRecords = dedupeDnsRecords(
+                        hostnameDatas.flatMap((item) => buildDnsRecordsFromHostnameData(item))
+                    );
 
-                    // Extract DNS records
-                    if (hostnameData.ownership_verification) {
-                        dnsRecords.push({
-                            type: hostnameData.ownership_verification.type,
-                            host: extractDnsHost(hostnameData.ownership_verification.name, hostnameData.hostname),
-                            value: hostnameData.ownership_verification.value
-                        });
-                    }
-
-                    // Extract SSL Certificate validation TXT records (CRITICAL for SSL)
-                    if (hostnameData.ssl?.validation_records && Array.isArray(hostnameData.ssl.validation_records)) {
-                        hostnameData.ssl.validation_records.forEach(record => {
-                            dnsRecords.push({
-                                type: "TXT",
-                                host: extractDnsHost(record.txt_name, hostnameData.hostname),
-                                value: record.txt_value
-                            });
-                        });
-                    }
-
-                    dnsRecords.push({
-                        type: "CNAME",
-                        host: getSubdomainLabel(hostnameData.hostname),
-                        value: "www.glynk.to"
-                    });
-
-                    // Update dns_records in Supabase (so the list shows the 3 records)
+                    // Update dns_records in Supabase (persist complete records set)
                     try {
                         const filter = domain_id
                             ? `id=eq.${encodeURIComponent(domain_id)}`
