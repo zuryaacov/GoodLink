@@ -68,6 +68,7 @@ const LinkManager = () => {
     isSaving: false,
     error: null,
   });
+  const [qrModal, setQrModal] = useState({ isOpen: false, link: null });
 
   // Modal states
   const [modalState, setModalState] = useState({
@@ -1011,13 +1012,22 @@ const LinkManager = () => {
                         {link.short_url}
                       </span>
                     </div>
-                    <button
-                      onClick={() => handleCopy(link.short_url)}
-                      className="copy-btn p-2 bg-[#232f48] hover:bg-gray-600 text-gray-300 rounded-lg transition-all flex-shrink-0 active:scale-90"
-                      title="Copy to clipboard"
-                    >
-                      <span className="material-symbols-outlined text-base">content_copy</span>
-                    </button>
+                    <div className="flex items-center gap-1 flex-shrink-0">
+                      <button
+                        onClick={() => setQrModal({ isOpen: true, link })}
+                        className="p-2 bg-[#232f48] hover:bg-gray-600 text-gray-300 rounded-lg transition-all active:scale-90"
+                        title="Open QR Code"
+                      >
+                        <span className="material-symbols-outlined text-base">qr_code_2</span>
+                      </button>
+                      <button
+                        onClick={() => handleCopy(link.short_url)}
+                        className="copy-btn p-2 bg-[#232f48] hover:bg-gray-600 text-gray-300 rounded-lg transition-all flex-shrink-0 active:scale-90"
+                        title="Copy to clipboard"
+                      >
+                        <span className="material-symbols-outlined text-base">content_copy</span>
+                      </button>
+                    </div>
                   </div>
                 </div>
 
@@ -1058,6 +1068,28 @@ const LinkManager = () => {
           })}
         </div>
       )}
+
+      {/* QR Code Modal */}
+      <Modal
+        isOpen={qrModal.isOpen}
+        onClose={() => setQrModal({ isOpen: false, link: null })}
+        title="QR Code"
+        type="alert"
+        message={
+          qrModal.link ? (
+            <div className="flex flex-col items-center gap-4 p-2">
+              <img
+                src={`https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(qrModal.link.short_url || '')}`}
+                alt="QR Code"
+                className="w-full max-w-[240px] sm:max-w-[320px] md:max-w-[400px] h-auto rounded-xl border border-[#232f48] bg-white p-2"
+              />
+              <p className="text-slate-400 text-sm font-mono break-all text-center max-w-full">
+                {qrModal.link.short_url}
+              </p>
+            </div>
+          ) : null
+        }
+      />
 
       {/* Move Link Modal */}
       <Modal

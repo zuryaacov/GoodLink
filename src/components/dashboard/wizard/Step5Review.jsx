@@ -18,6 +18,8 @@ const Step5Review = ({ formData, generateRandomSlug }) => {
 
   const fullUtmString = buildUtmString();
 
+  const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(shortUrl)}`;
+
   return (
     <motion.div
       initial={{ opacity: 0, x: 20 }}
@@ -159,6 +161,19 @@ const Step5Review = ({ formData, generateRandomSlug }) => {
                 {formData.geoRules?.length > 0 ? `${formData.geoRules.length} rule(s)` : 'None'}
               </span>
             </div>
+          </div>
+        </div>
+
+        {/* QR Code (via qrserver.com) */}
+        <div className="border-t border-[#232f48] pt-6">
+          <h4 className="text-sm font-bold text-white mb-4 uppercase tracking-wider">QR Code</h4>
+          <div className="flex flex-col items-center gap-3">
+            <img
+              src={qrCodeUrl}
+              alt="QR Code"
+              className="w-[200px] h-[200px] rounded-xl border border-[#232f48] bg-white p-2"
+            />
+            <p className="text-xs text-slate-500">Scans to: {shortUrl}</p>
           </div>
         </div>
 
