@@ -1,7 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { validateUrl } from '../lib/urlValidation';
-import { checkForMaliciousInput } from '../lib/inputSanitization';
 import { isValidEmail } from '../lib/emailValidation';
 
 const LEGAL_TEXT = `Abuse Reporting & Official DMCA Requirements
@@ -10,7 +9,7 @@ Goodlink.ai takes security and intellectual property rights very seriously. If y
 
 A. General Abuse Reporting
 
-For reporting Phishing, Malware, Spam, or Deceptive Content, please use our automated Report Abuse form located on our 404 pages or the main site.
+For reporting Phishing, Malware, Spam, or Deceptive Content, please use our automated Report Abuse form located below.
 Your report should include:
 
 The offending Goodlink.ai URL.
@@ -36,7 +35,7 @@ A Statement of Accuracy: That the information in the notification is accurate, a
 
 Physical or Electronic Signature of a person authorized to act on behalf of the owner.
 
-All compliance notices can be sent to: compliance@goodlink.ai`;
+All compliance notices can be sent to: hello@goodlink.ai`;
 
 const CATEGORIES = [
   { value: 'phishing', label: 'Phishing' },
@@ -118,11 +117,6 @@ const AbuseReportPage = () => {
       setFieldErrors((prev) => ({ ...prev, reportedUrl: urlValidation.error || 'Invalid URL.' }));
       return;
     }
-    const maliciousUrl = checkForMaliciousInput(urlTrimmed);
-    if (!maliciousUrl.safe) {
-      setFieldErrors((prev) => ({ ...prev, reportedUrl: 'The link contains invalid or dangerous content.' }));
-      return;
-    }
 
     if (!emailTrimmed) {
       setFieldErrors((prev) => ({ ...prev, reporterEmail: 'Please enter your email address.' }));
@@ -130,11 +124,6 @@ const AbuseReportPage = () => {
     }
     if (!isValidEmail(emailTrimmed)) {
       setFieldErrors((prev) => ({ ...prev, reporterEmail: 'Please enter a valid email address.' }));
-      return;
-    }
-    const maliciousEmail = checkForMaliciousInput(emailTrimmed);
-    if (!maliciousEmail.safe) {
-      setFieldErrors((prev) => ({ ...prev, reporterEmail: 'Invalid characters in email.' }));
       return;
     }
 
@@ -181,6 +170,7 @@ const AbuseReportPage = () => {
       setReporterEmail('');
       setCategory('other');
       setTurnstileToken(null);
+      setError('');
       if (turnstileWidgetId && window.turnstile) {
         try {
           window.turnstile.reset(turnstileWidgetId);
@@ -226,10 +216,10 @@ const AbuseReportPage = () => {
         </section>
 
         {success ? (
-          <div className="rounded-xl bg-[#10b981]/20 border border-[#10b981]/40 p-6 text-center">
-            <p className="text-[#10b981] font-semibold">Thank you. Your report has been submitted.</p>
-            <p className="text-slate-400 text-sm mt-2">
-              Our team will review it within 24 hours. We may contact you at the email you provided.
+          <div className="rounded-xl bg-[#10b981]/20 border border-[#10b981]/40 p-8 md:p-10 text-center max-w-xl mx-auto">
+            <p className="text-[#10b981] font-bold text-lg md:text-xl">Thank you for your report.</p>
+            <p className="text-slate-300 mt-4 leading-relaxed">
+              We have received your submission and are handling it. Our team will review the report within 24 hours and may contact you at the email you provided if we need further information.
             </p>
           </div>
         ) : (
