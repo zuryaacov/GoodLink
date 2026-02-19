@@ -1077,13 +1077,13 @@ const LinkManager = () => {
         hideIcon
         message={
           qrModal.link ? (
-            <div className="flex flex-col items-center gap-4 p-2">
+            <div className="flex flex-col items-center gap-2 sm:gap-4 p-0 sm:p-2 w-full min-w-0">
               <img
                 src={`https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(qrModal.link.short_url || '')}`}
                 alt="QR Code"
-                className="w-full max-w-[240px] sm:max-w-[320px] md:max-w-[400px] h-auto rounded-xl border border-[#232f48] bg-white p-2"
+                className="w-full max-w-[200px] sm:max-w-[280px] md:max-w-[360px] h-auto rounded-xl border border-[#232f48] bg-white p-1.5 sm:p-2"
               />
-              <p className="text-slate-400 text-sm font-mono break-all text-center max-w-full">
+              <p className="text-slate-400 text-xs sm:text-sm font-mono break-all text-center max-w-full min-w-0 px-1">
                 {qrModal.link.short_url}
               </p>
             </div>

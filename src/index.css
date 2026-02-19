@@ -78,14 +78,23 @@ html {
 .modal-box {
   background: white;
   border: 1px solid #e5e7eb;
-  padding: 32px;
+  padding: 16px;
   border-radius: 16px;
-  max-width: 600px;
   width: 90%;
+  max-width: min(600px, calc(100vw - 24px));
+  margin: 12px;
   text-align: center;
   box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
-  max-height: 90vh;
+  max-height: calc(100vh - 24px);
   overflow-y: auto;
+}
+
+@media (min-width: 640px) {
+  .modal-box {
+    padding: 32px;
+    margin: 24px;
+    max-height: calc(100vh - 48px);
+  }
 }
 
 .modal-box h2 {
