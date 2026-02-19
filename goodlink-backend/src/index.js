@@ -874,6 +874,14 @@ export default Sentry.withSentry(
                 return parts.length > 2 ? parts[0] : "@";
             };
 
+            const mapCustomDomainStatusForDb = (cfStatus, isActive = false) => {
+                if (isActive) return "active";
+                const normalized = String(cfStatus || "").toLowerCase();
+                if (normalized.includes("error") || normalized.includes("fail")) return "error";
+                if (normalized === "deleted") return "deleted";
+                return "pending";
+            };
+
             // === API Endpoint: Add Custom Domain ===
             if (path === "/api/add-custom-domain" && request.method === "POST") {
                 const customDomainReqStart = Date.now();
@@ -1155,9 +1163,10 @@ export default Sentry.withSentry(
 
                     // Update Supabase
                     if (domain_id || cloudflare_hostname_id) {
+                        const dbStatus = mapCustomDomainStatusForDb(hostnameData.status, isActive);
                         const updateData = {
                             dns_records: dnsRecords,
-                            status: hostnameData.status || (isActive ? "active" : "pending"),
+                            status: dbStatus,
                             // If it just became active, update status and verified_at
                             ...(isActive ? { status: "active", verified_at: new Date().toISOString() } : {})
                         };
@@ -1166,7 +1175,7 @@ export default Sentry.withSentry(
                             ? `id=eq.${encodeURIComponent(domain_id)}`
                             : `cloudflare_hostname_id=eq.${encodeURIComponent(cloudflare_hostname_id)}`;
                         const supabaseUrl = `${env.SUPABASE_URL}/rest/v1/custom_domains?${filter}`;
-                        await fetch(supabaseUrl, {
+                        const supabaseUpdateResponse = await fetch(supabaseUrl, {
                             method: "PATCH",
                             headers: {
                                 "apikey": env.SUPABASE_SERVICE_ROLE_KEY,
@@ -1176,6 +1185,20 @@ export default Sentry.withSentry(
                             },
                             body: JSON.stringify(updateData)
                         });
+
+                        if (!supabaseUpdateResponse.ok) {
+                            const updateError = await supabaseUpdateResponse.json().catch(() => null);
+                            console.error("⚠️ Failed to persist dns_records on verify:", {
+                                status: supabaseUpdateResponse.status,
+                                data: updateError,
+                                domain_id,
+                                cloudflare_hostname_id
+                            });
+                        } else {
+                            const updateResult = await supabaseUpdateResponse.json().catch(() => null);
+                            const updatedRows = Array.isArray(updateResult) ? updateResult.length : 0;
+                            console.log(`✅ verify-custom-domain persisted dns_records (rows: ${updatedRows})`);
+                        }
                     }
 
                     return new Response(JSON.stringify({
