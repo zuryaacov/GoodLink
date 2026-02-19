@@ -193,19 +193,31 @@ const AbuseReportPage = () => {
 
   return (
     <div className="min-h-screen bg-[#0b0f19] text-white">
-      <header className="border-b border-[#232f48] py-4 px-4">
-        <div className="max-w-3xl mx-auto flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2 text-white hover:opacity-90">
-            <span className="text-2xl font-bold">
+      <header className="border-b border-[#232f48] py-4 px-6">
+        <div className="max-w-3xl mx-auto">
+          <Link to="/" className="flex items-center gap-3 text-white transition-opacity hover:opacity-80 w-fit">
+            <div className="size-9 text-primary">
+              <svg fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path
+                  d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"
+                  stroke="#135bec"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="3"
+                />
+                <path
+                  d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"
+                  stroke="#10b981"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="3"
+                />
+              </svg>
+            </div>
+            <span className="text-2xl font-bold leading-tight tracking-tight">
               <span className="text-[#10b981]">Good</span>
               <span className="text-[#135bec]"> Link</span>
             </span>
-          </Link>
-          <Link
-            to="/"
-            className="text-sm text-slate-400 hover:text-white transition-colors"
-          >
-            Back to home
           </Link>
         </div>
       </header>
