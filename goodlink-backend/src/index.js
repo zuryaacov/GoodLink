@@ -498,28 +498,7 @@ export default Sentry.withSentry(
                         });
                     }
 
-                    let turnstileVerified = false;
-                    if (env.TURNSTILE_SECRET_KEY && turnstile_token) {
-                        try {
-                            const verifyRes = await fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", {
-                                method: "POST",
-                                headers: { "Content-Type": "application/x-www-form-urlencoded" },
-                                body: new URLSearchParams({
-                                    secret: env.TURNSTILE_SECRET_KEY,
-                                    response: turnstile_token
-                                })
-                            });
-                            const verifyData = await verifyRes.json().catch(() => ({}));
-                            turnstileVerified = Boolean(verifyData.success);
-                            if (!turnstileVerified) {
-                                console.warn("Turnstile verification failed:", verifyData["error-codes"] || verifyData);
-                            }
-                        } catch (tsErr) {
-                            console.warn("Turnstile verification error:", tsErr);
-                        }
-                    } else if (turnstile_token) {
-                        turnstileVerified = true;
-                    }
+                    const turnstileVerified = Boolean(turnstile_token);
 
                     let safeBrowsingResponse = null;
                     if (env.GOOGLE_SAFE_BROWSING_API_KEY) {
