@@ -1,20 +1,24 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { isValidEmail } from '../lib/emailValidation';
+import { validateUrl } from '../lib/urlValidation';
 
-// Only format checks: non-empty and valid URL structure (no HTML/character blacklist).
+// Wraps the site's standard validateUrl but allows glynk.to and goodlink.ai
+// since abuse reporters are expected to submit our own short-links.
 function validateReportUrl(value) {
-  const trimmed = (value || '').trim();
-  if (!trimmed) return { isValid: false, error: 'URL cannot be empty', normalizedUrl: null };
-  let toParse = trimmed;
-  if (!/^https?:\/\//i.test(trimmed)) toParse = `https://${trimmed}`;
-  try {
-    const u = new URL(toParse);
-    if (!['http:', 'https:'].includes(u.protocol)) return { isValid: false, error: 'Only http and https URLs are allowed', normalizedUrl: null };
-    return { isValid: true, error: null, normalizedUrl: u.toString() };
-  } catch (_) {
-    return { isValid: false, error: 'Invalid URL', normalizedUrl: null };
+  const result = validateUrl(value);
+  if (!result.isValid && result.error && result.error.includes('glynk.to')) {
+    // Re-run a basic URL parse to still get a normalizedUrl
+    try {
+      const trimmed = (value || '').trim();
+      const toParse = /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`;
+      const u = new URL(toParse);
+      return { isValid: true, error: null, normalizedUrl: u.toString() };
+    } catch {
+      return { isValid: false, error: 'Invalid URL', normalizedUrl: null };
+    }
   }
+  return result;
 }
 
 const LEGAL_TEXT = `Abuse Reporting & Official DMCA Requirements
@@ -207,103 +211,116 @@ const AbuseReportPage = () => {
       </header>
 
       <main className="max-w-3xl mx-auto px-4 py-8 md:py-12">
-        <h1 className="text-2xl md:text-3xl font-bold mb-6">Abuse / DMCA Report</h1>
-
-        <section className="mb-8 rounded-xl bg-[#101622] border border-[#232f48] p-5 md:p-6 whitespace-pre-line text-sm md:text-base text-slate-300 leading-relaxed">
-          {LEGAL_TEXT}
-        </section>
-
         {success ? (
-          <div className="rounded-xl bg-[#10b981]/20 border border-[#10b981]/40 p-8 md:p-10 text-center max-w-xl mx-auto">
-            <p className="text-[#10b981] font-bold text-lg md:text-xl">Thank you for your report.</p>
-            <p className="text-slate-300 mt-4 leading-relaxed">
-              We have received your submission and are handling it. Our team will review the report within 24 hours and may contact you at the email you provided if we need further information.
-            </p>
+          <div className="flex flex-col items-center justify-center min-h-[60vh] text-center px-4">
+            <div className="rounded-2xl bg-[#10b981]/20 border border-[#10b981]/40 p-10 md:p-14 max-w-xl w-full">
+              <div className="flex justify-center mb-4">
+                <span className="material-symbols-outlined text-[#10b981] text-5xl">check_circle</span>
+              </div>
+              <p className="text-[#10b981] font-bold text-xl md:text-2xl">Thank you for your report.</p>
+              <p className="text-slate-300 mt-4 leading-relaxed">
+                We have received your submission and are handling it. Our team will review the report within 24 hours and may contact you at the email you provided if we need further information.
+              </p>
+              <Link
+                to="/"
+                className="inline-block mt-8 px-6 py-3 rounded-xl bg-[#135bec] hover:bg-[#1049c8] text-white font-semibold transition-colors"
+              >
+                Back to home
+              </Link>
+            </div>
           </div>
         ) : (
-          <form onSubmit={handleSubmit} className="space-y-5">
-            {error && (
-              <div className="rounded-xl bg-red-500/20 border border-red-500/40 p-4 text-red-400 text-sm">
-                {error}
+          <>
+            <h1 className="text-2xl md:text-3xl font-bold mb-6">Abuse / DMCA Report</h1>
+
+            <section className="mb-8 rounded-xl bg-[#101622] border border-[#232f48] p-5 md:p-6 whitespace-pre-line text-sm md:text-base text-slate-300 leading-relaxed">
+              {LEGAL_TEXT}
+            </section>
+
+            <form onSubmit={handleSubmit} className="space-y-5">
+              {error && (
+                <div className="rounded-xl bg-red-500/20 border border-red-500/40 p-4 text-red-400 text-sm">
+                  {error}
+                </div>
+              )}
+
+              <div>
+                <label className="block text-sm font-medium text-slate-300 mb-2">
+                  Offending link <span className="text-red-400">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={reportedUrl}
+                  onChange={(e) => {
+                    setReportedUrl(e.target.value);
+                    setFieldErrors((prev) => ({ ...prev, reportedUrl: null }));
+                  }}
+                  placeholder="https://glynk.to/xxxx or full Goodlink URL"
+                  className="w-full px-4 py-3 rounded-xl bg-[#0b0f19] border border-[#232f48] text-white placeholder-slate-500 focus:outline-none focus:border-[#135bec]"
+                />
+                {fieldErrors.reportedUrl && (
+                  <p className="mt-1 text-sm text-red-400">{fieldErrors.reportedUrl}</p>
+                )}
               </div>
-            )}
 
-            <div>
-              <label className="block text-sm font-medium text-slate-300 mb-2">
-                Offending link <span className="text-red-400">*</span>
-              </label>
-              <input
-                type="text"
-                value={reportedUrl}
-                onChange={(e) => {
-                  setReportedUrl(e.target.value);
-                  setFieldErrors((prev) => ({ ...prev, reportedUrl: null }));
-                }}
-                placeholder="https://glynk.to/xxxx or full Goodlink URL"
-                className="w-full px-4 py-3 rounded-xl bg-[#0b0f19] border border-[#232f48] text-white placeholder-slate-500 focus:outline-none focus:border-[#135bec]"
-              />
-              {fieldErrors.reportedUrl && (
-                <p className="mt-1 text-sm text-red-400">{fieldErrors.reportedUrl}</p>
-              )}
-            </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-300 mb-2">
+                  Category <span className="text-red-400">*</span>
+                </label>
+                <select
+                  value={category}
+                  onChange={(e) => setCategory(e.target.value)}
+                  className="w-full px-4 py-3 rounded-xl bg-[#0b0f19] border border-[#232f48] text-white focus:outline-none focus:border-[#135bec]"
+                >
+                  {CATEGORIES.map((opt) => (
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
 
-            <div>
-              <label className="block text-sm font-medium text-slate-300 mb-2">
-                Category <span className="text-red-400">*</span>
-              </label>
-              <select
-                value={category}
-                onChange={(e) => setCategory(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl bg-[#0b0f19] border border-[#232f48] text-white focus:outline-none focus:border-[#135bec]"
+              <div>
+                <label className="block text-sm font-medium text-slate-300 mb-2">Description (optional)</label>
+                <textarea
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  rows={4}
+                  placeholder="Additional details, evidence, or screenshots description"
+                  className="w-full px-4 py-3 rounded-xl bg-[#0b0f19] border border-[#232f48] text-white placeholder-slate-500 focus:outline-none focus:border-[#135bec] resize-y"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-300 mb-2">
+                  Your email <span className="text-red-400">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={reporterEmail}
+                  onChange={(e) => {
+                    setReporterEmail(e.target.value);
+                    setFieldErrors((prev) => ({ ...prev, reporterEmail: null }));
+                  }}
+                  placeholder="you@example.com"
+                  className="w-full px-4 py-3 rounded-xl bg-[#0b0f19] border border-[#232f48] text-white placeholder-slate-500 focus:outline-none focus:border-[#135bec]"
+                />
+                {fieldErrors.reporterEmail && (
+                  <p className="mt-1 text-sm text-red-400">{fieldErrors.reporterEmail}</p>
+                )}
+              </div>
+
+              <div ref={turnstileContainerRef} className="flex justify-start" />
+
+              <button
+                type="submit"
+                disabled={loading || !turnstileToken}
+                className="w-full md:w-auto px-6 py-3 rounded-xl bg-[#FF10F0] hover:bg-[#e00ed0] disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold transition-colors"
               >
-                {CATEGORIES.map((opt) => (
-                  <option key={opt.value} value={opt.value}>
-                    {opt.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-slate-300 mb-2">Description (optional)</label>
-              <textarea
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                rows={4}
-                placeholder="Additional details, evidence, or screenshots description"
-                className="w-full px-4 py-3 rounded-xl bg-[#0b0f19] border border-[#232f48] text-white placeholder-slate-500 focus:outline-none focus:border-[#135bec] resize-y"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-slate-300 mb-2">
-                Your email <span className="text-red-400">*</span>
-              </label>
-              <input
-                type="text"
-                value={reporterEmail}
-                onChange={(e) => {
-                  setReporterEmail(e.target.value);
-                  setFieldErrors((prev) => ({ ...prev, reporterEmail: null }));
-                }}
-                placeholder="you@example.com"
-                className="w-full px-4 py-3 rounded-xl bg-[#0b0f19] border border-[#232f48] text-white placeholder-slate-500 focus:outline-none focus:border-[#135bec]"
-              />
-              {fieldErrors.reporterEmail && (
-                <p className="mt-1 text-sm text-red-400">{fieldErrors.reporterEmail}</p>
-              )}
-            </div>
-
-            <div ref={turnstileContainerRef} className="flex justify-start" />
-
-            <button
-              type="submit"
-              disabled={loading || !turnstileToken}
-              className="w-full md:w-auto px-6 py-3 rounded-xl bg-[#FF10F0] hover:bg-[#e00ed0] disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold transition-colors"
-            >
-              {loading ? 'Submitting…' : 'Submit report'}
-            </button>
-          </form>
+                {loading ? 'Submitting…' : 'Submit report'}
+              </button>
+            </form>
+          </>
         )}
       </main>
     </div>
