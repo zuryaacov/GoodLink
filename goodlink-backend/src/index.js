@@ -1097,9 +1097,8 @@ export default Sentry.withSentry(
 
                     // Wait up to 60 seconds until all 6 DNS records are available.
                     if (mergedDnsRecords.length < 6) {
-                        const waitStartedAt = Date.now();
-                        while (Date.now() - waitStartedAt < 60000) {
-                            await new Promise((resolve) => setTimeout(resolve, 3000));
+                        const waitDeadline = Date.now() + 60000;
+                        while (Date.now() < waitDeadline) {
                             const refreshed = [];
                             for (const item of createdHostnames) {
                                 const latest = await fetchCustomHostnameById(item?.id);
@@ -1109,6 +1108,7 @@ export default Sentry.withSentry(
                                 refreshed.flatMap((item) => buildDnsRecordsFromHostnameData(item))
                             );
                             if (mergedDnsRecords.length >= 6) break;
+                            await new Promise((resolve) => setTimeout(resolve, 3000));
                         }
                     }
 

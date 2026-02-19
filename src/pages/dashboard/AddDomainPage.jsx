@@ -333,8 +333,8 @@ const AddDomainPage = () => {
 
     const hasAllDomainRecords = (records) => Array.isArray(records) && records.length >= 6;
     if (!hasAllDomainRecords(currentRecords) && hostnameId) {
-      for (let i = 0; i < 15; i++) {
-        await new Promise((r) => setTimeout(r, 4000));
+      const waitDeadline = Date.now() + 60000;
+      while (Date.now() < waitDeadline) {
         try {
           const pollRes = await fetch(`${workerUrl}/api/get-domain-records`, {
             method: 'POST',
@@ -352,6 +352,7 @@ const AddDomainPage = () => {
             }
           }
         } catch (_) {}
+        await new Promise((r) => setTimeout(r, 3000));
       }
     }
     setDnsRecords(currentRecords);
