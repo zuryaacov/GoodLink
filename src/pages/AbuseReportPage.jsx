@@ -60,8 +60,6 @@ const CATEGORIES = [
 ];
 
 const workerUrl = import.meta.env.VITE_WORKER_URL || 'https://glynk.to';
-const turnstileWorkerUrl =
-  import.meta.env.VITE_TURNSTILE_WORKER_URL || 'https://turnstile-verification.fancy-sky-7888.workers.dev';
 
 const AbuseReportPage = () => {
   const [reportedUrl, setReportedUrl] = useState('');
@@ -148,20 +146,6 @@ const AbuseReportPage = () => {
 
     setLoading(true);
     try {
-      const verifyRes = await fetch(`${turnstileWorkerUrl}/api/verify-turnstile`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token: turnstileToken }),
-      });
-      if (!verifyRes.ok) {
-        const errData = await verifyRes.json().catch(() => ({}));
-        throw new Error(errData.error || 'Security verification failed. Please try again.');
-      }
-      const verifyResult = await verifyRes.json();
-      if (!verifyResult.success) {
-        throw new Error('Security verification failed. Please try again.');
-      }
-
       const res = await fetch(`${workerUrl}/api/abuse-report`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
