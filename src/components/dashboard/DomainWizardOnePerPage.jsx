@@ -249,7 +249,7 @@ export default function DomainWizardOnePerPage({
             {currentStep?.id === 'dns' && (
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  {!(Array.isArray(dnsRecords) && dnsRecords.length >= 3) && (
+                  {!(Array.isArray(dnsRecords) && dnsRecords.length >= 6) && (
                     <button
                       type="button"
                       onClick={onRefreshDns}
