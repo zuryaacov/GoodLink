@@ -16,7 +16,7 @@ const url = 'https://www.goodlink.ai';
 
 const svg = await QRCode.toString(url, {
   type: 'svg',
-  margin: 2,
+  margin: 0,
   width: 80,
   color: {
     dark: '#9ca3af',

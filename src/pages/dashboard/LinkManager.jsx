@@ -1048,7 +1048,7 @@ const LinkManager = () => {
                     className="p-2 bg-[#232f48] hover:bg-[#324467] text-gray-300 rounded-lg transition-all active:scale-90 flex items-center justify-center"
                     title="Open QR Code"
                   >
-                    <img src={qrCodeIcon} alt="QR Code" className="w-5 h-5 opacity-90" />
+                    <img src={qrCodeIcon} alt="QR Code" className="w-9 h-9 opacity-90" />
                   </button>
                   <div
                     className={`flex items-center gap-2 ${isActive ? 'text-gray-500' : 'text-gray-600'}`}
