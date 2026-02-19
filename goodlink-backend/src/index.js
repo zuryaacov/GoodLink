@@ -523,6 +523,7 @@ export default Sentry.withSentry(
 
                     let safeBrowsingResponse = null;
                     if (env.GOOGLE_SAFE_BROWSING_API_KEY) {
+                        console.log("[SafeBrowsing] Sending check for URL:", reported_url);
                         try {
                             const apiUrl = "https://safebrowsing.googleapis.com/v4/threatMatches:find";
                             const reqBody = {
@@ -542,13 +543,17 @@ export default Sentry.withSentry(
                             const sbData = await sbRes.json().catch(() => ({}));
                             if (sbRes.ok && sbData.matches && sbData.matches.length > 0) {
                                 safeBrowsingResponse = { isSafe: false, threatType: sbData.matches[0].threatType || null, raw: sbData };
+                                console.log("[SafeBrowsing] Result: UNSAFE | threatType:", sbData.matches[0].threatType, "| matches:", sbData.matches.length, "| raw:", JSON.stringify(sbData));
                             } else {
                                 safeBrowsingResponse = { isSafe: true, threatType: null };
+                                console.log("[SafeBrowsing] Result: SAFE | HTTP status:", sbRes.status, "| response:", JSON.stringify(sbData));
                             }
                         } catch (sbErr) {
-                            console.warn("Safe Browsing check failed:", sbErr);
+                            console.warn("[SafeBrowsing] Check failed with error:", sbErr.message || sbErr);
                             safeBrowsingResponse = { error: String(sbErr.message || "check_failed") };
                         }
+                    } else {
+                        console.log("[SafeBrowsing] Skipped — GOOGLE_SAFE_BROWSING_API_KEY not configured.");
                     }
 
                     const insertUrl = `${env.SUPABASE_URL}/rest/v1/abuse_reports`;
