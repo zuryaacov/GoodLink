@@ -26,8 +26,7 @@ export function validateDomain(domain, options = {}) {
   // הסרת פרוטוקול אם יש
   sanitized = sanitized.replace(/^https?:\/\//i, '');
 
-  // הסרת www. אופציונלי
-  sanitized = sanitized.replace(/^www\./i, '');
+  // שומרים www. אם המשתמש הקליד אותו (tipul.com ו-www.tipul.com שונים)
 
   // הסרת path/query/fragment
   sanitized = sanitized.split('/')[0].split('?')[0].split('#')[0];

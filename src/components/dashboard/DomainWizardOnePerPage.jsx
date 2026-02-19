@@ -216,7 +216,7 @@ export default function DomainWizardOnePerPage({
                 </div>
                 {fieldErrors.domain && <p className="text-red-400 text-xs">{fieldErrors.domain}</p>}
                 <p className="text-slate-500 text-xs">
-                  We’ll use www (e.g. www.mybrand.com) for the hostname.
+                  Use the exact hostname you want (e.g. tipul.com or www.tipul.com).
                 </p>
               </div>
             )}
