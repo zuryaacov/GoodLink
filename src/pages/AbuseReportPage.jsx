@@ -1,7 +1,21 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { validateUrl } from '../lib/urlValidation';
 import { isValidEmail } from '../lib/emailValidation';
+
+// Only format checks: non-empty and valid URL structure (no HTML/character blacklist).
+function validateReportUrl(value) {
+  const trimmed = (value || '').trim();
+  if (!trimmed) return { isValid: false, error: 'URL cannot be empty', normalizedUrl: null };
+  let toParse = trimmed;
+  if (!/^https?:\/\//i.test(trimmed)) toParse = `https://${trimmed}`;
+  try {
+    const u = new URL(toParse);
+    if (!['http:', 'https:'].includes(u.protocol)) return { isValid: false, error: 'Only http and https URLs are allowed', normalizedUrl: null };
+    return { isValid: true, error: null, normalizedUrl: u.toString() };
+  } catch (_) {
+    return { isValid: false, error: 'Invalid URL', normalizedUrl: null };
+  }
+}
 
 const LEGAL_TEXT = `Abuse Reporting & Official DMCA Requirements
 
@@ -112,7 +126,7 @@ const AbuseReportPage = () => {
       setFieldErrors((prev) => ({ ...prev, reportedUrl: 'Please enter the offending link.' }));
       return;
     }
-    const urlValidation = validateUrl(urlTrimmed);
+    const urlValidation = validateReportUrl(urlTrimmed);
     if (!urlValidation.isValid) {
       setFieldErrors((prev) => ({ ...prev, reportedUrl: urlValidation.error || 'Invalid URL.' }));
       return;
