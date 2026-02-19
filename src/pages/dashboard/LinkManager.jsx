@@ -4,6 +4,7 @@ import { supabase } from '../../lib/supabase';
 import Modal from '../../components/common/Modal';
 import { updateLinkInRedis, deleteLinkFromRedis } from '../../lib/redisCache';
 import { LayoutGrid, Folder, ChevronRight, Home, LinkIcon } from 'lucide-react';
+import qrCodeIcon from '../../assets/qr-code-icon.svg';
 
 const PLATFORMS = {
   meta: { name: 'Meta (FB/IG)', colorClass: 'text-blue-400 bg-blue-400/10' },
@@ -1044,10 +1045,10 @@ const LinkManager = () => {
                   </div>
                   <button
                     onClick={() => setQrModal({ isOpen: true, link })}
-                    className="p-2 bg-[#232f48] hover:bg-[#324467] text-gray-300 rounded-lg transition-all active:scale-90"
+                    className="p-2 bg-[#232f48] hover:bg-[#324467] text-gray-300 rounded-lg transition-all active:scale-90 flex items-center justify-center"
                     title="Open QR Code"
                   >
-                    <span className="material-symbols-outlined text-base">qr_code_2</span>
+                    <img src={qrCodeIcon} alt="QR Code" className="w-5 h-5 opacity-90" />
                   </button>
                   <div
                     className={`flex items-center gap-2 ${isActive ? 'text-gray-500' : 'text-gray-600'}`}
