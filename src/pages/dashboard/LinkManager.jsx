@@ -1,9 +1,10 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import Modal from '../../components/common/Modal';
 import { updateLinkInRedis, deleteLinkFromRedis } from '../../lib/redisCache';
 import { LayoutGrid, Folder, ChevronRight, Home, LinkIcon } from 'lucide-react';
+import QRCode from 'qrcode-svg';
 import qrCodeIcon from '../../assets/qr-code-icon.svg';
 
 const PLATFORMS = {
@@ -70,6 +71,56 @@ const LinkManager = () => {
     error: null,
   });
   const [qrModal, setQrModal] = useState({ isOpen: false, link: null });
+  const [qrCopyStatus, setQrCopyStatus] = useState('');
+
+  const getQrSvgString = useCallback((url) => {
+    const qr = new QRCode(url, { container: 'svg-viewbox', join: true });
+    return qr.svg();
+  }, []);
+
+  const handleDownloadQrPng = useCallback(async (shortUrl) => {
+    try {
+      const apiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(shortUrl)}`;
+      const res = await fetch(apiUrl);
+      const blob = await res.blob();
+      const u = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = u;
+      a.download = 'qrcode.png';
+      a.click();
+      URL.revokeObjectURL(u);
+    } catch (e) {
+      console.error('QR PNG download failed', e);
+    }
+  }, []);
+
+  const handleDownloadQrSvg = useCallback((shortUrl) => {
+    try {
+      const svgString = getQrSvgString(shortUrl);
+      const blob = new Blob([svgString], { type: 'image/svg+xml' });
+      const u = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = u;
+      a.download = 'qrcode.svg';
+      a.click();
+      URL.revokeObjectURL(u);
+    } catch (e) {
+      console.error('QR SVG download failed', e);
+    }
+  }, [getQrSvgString]);
+
+  const handleCopyQrSvg = useCallback(async (shortUrl) => {
+    try {
+      const svgString = getQrSvgString(shortUrl);
+      await navigator.clipboard.writeText(svgString);
+      setQrCopyStatus('Copied!');
+      setTimeout(() => setQrCopyStatus(''), 2000);
+    } catch (e) {
+      console.error('Copy SVG failed', e);
+      setQrCopyStatus('Failed');
+      setTimeout(() => setQrCopyStatus(''), 2000);
+    }
+  }, [getQrSvgString]);
 
   // Modal states
   const [modalState, setModalState] = useState({
@@ -1071,7 +1122,10 @@ const LinkManager = () => {
       {/* QR Code Modal */}
       <Modal
         isOpen={qrModal.isOpen}
-        onClose={() => setQrModal({ isOpen: false, link: null })}
+        onClose={() => {
+          setQrModal({ isOpen: false, link: null });
+          setQrCopyStatus('');
+        }}
         title="QR Code"
         type="alert"
         hideIcon
@@ -1086,6 +1140,32 @@ const LinkManager = () => {
               <p className="text-slate-400 text-xs sm:text-sm font-mono break-all text-center max-w-full min-w-0 px-1">
                 {qrModal.link.short_url}
               </p>
+              <div className="flex flex-wrap items-center justify-center gap-2 w-full">
+                <button
+                  type="button"
+                  onClick={() => handleDownloadQrPng(qrModal.link.short_url)}
+                  className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-[#232f48] hover:bg-[#324467] text-white text-sm font-medium transition-colors"
+                >
+                  <span className="material-symbols-outlined text-base">download</span>
+                  Download PNG
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleDownloadQrSvg(qrModal.link.short_url)}
+                  className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-[#232f48] hover:bg-[#324467] text-white text-sm font-medium transition-colors"
+                >
+                  <span className="material-symbols-outlined text-base">download</span>
+                  Download SVG
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleCopyQrSvg(qrModal.link.short_url)}
+                  className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-[#232f48] hover:bg-[#324467] text-white text-sm font-medium transition-colors"
+                >
+                  <span className="material-symbols-outlined text-base">content_copy</span>
+                  {qrCopyStatus || 'Copy SVG code'}
+                </button>
+              </div>
             </div>
           ) : null
         }
