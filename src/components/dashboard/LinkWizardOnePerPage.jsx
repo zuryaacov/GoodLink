@@ -714,7 +714,7 @@ export default function LinkWizardOnePerPage({
                       type="url"
                       value={formData.targetUrl || ''}
                       onChange={(e) => {
-                        updateFormData('targetUrl', e.target.value);
+                        updateFormData('targetUrl', e.target.value.toLowerCase());
                         setUrlError(null);
                       }}
                       placeholder="https://..."
@@ -833,7 +833,7 @@ export default function LinkWizardOnePerPage({
                           type="url"
                           value={formData.fallbackUrl || ''}
                           onChange={(e) => {
-                            updateFormData('fallbackUrl', e.target.value);
+                            updateFormData('fallbackUrl', e.target.value.toLowerCase());
                             setFallbackUrlError(null);
                           }}
                           placeholder="https://google.com"
@@ -915,7 +915,7 @@ export default function LinkWizardOnePerPage({
                         <input
                           type="url"
                           value={newGeoRule.url}
-                          onChange={(e) => setNewGeoRule((r) => ({ ...r, url: e.target.value }))}
+                          onChange={(e) => setNewGeoRule((r) => ({ ...r, url: e.target.value.toLowerCase() }))}
                           placeholder="https://..."
                           className="w-full bg-[#0b0f19] border border-[#232f48] rounded-xl p-4 text-white outline-none focus:border-[#135bec]"
                         />
@@ -1074,6 +1074,23 @@ export default function LinkWizardOnePerPage({
                       : 'None'}
                   </span>
                 </div>
+
+                {/* QR Code (qrserver.com) */}
+                {formData.slug && (
+                  <div className="border-t border-[#232f48] pt-4 mt-4">
+                    <span className="text-gray-500 text-[10px] font-bold uppercase tracking-widest block mb-3">
+                      QR Code
+                    </span>
+                    <div className="flex flex-col items-center gap-2">
+                      <img
+                        src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(`https://${selectedDomain}/${formData.slug}`)}`}
+                        alt="QR Code"
+                        className="w-[180px] h-[180px] rounded-xl border border-[#232f48] bg-white p-2"
+                      />
+                      <p className="text-xs text-slate-500">Scans to short link</p>
+                    </div>
+                  </div>
+                )}
               </div>
             </motion.div>
           )}

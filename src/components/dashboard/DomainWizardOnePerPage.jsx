@@ -228,7 +228,7 @@ export default function DomainWizardOnePerPage({
                     type="text"
                     value={rootRedirect}
                     onChange={(e) => {
-                      onRootRedirectChange?.(e.target.value);
+                      onRootRedirectChange?.(e.target.value.toLowerCase());
                       setFieldErrors((prev) => ({ ...prev, rootRedirect: null }));
                     }}
                     placeholder="https://example.com"

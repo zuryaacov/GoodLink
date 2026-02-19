@@ -14,6 +14,7 @@ import { motion, AnimatePresence } from 'framer-motion';
  * @param {function} onConfirm - Function to call when confirm button is clicked
  * @param {boolean} isLoading - Whether the action is in progress (shows loading state)
  * @param {ReactNode} icon - Custom icon to display (optional)
+ * @param {boolean} hideIcon - If true, do not show the icon at the top (optional)
  * @param {string} confirmButtonClass - Custom class for confirm button (default: "btn-danger")
  */
 const Modal = ({
@@ -27,6 +28,7 @@ const Modal = ({
   onConfirm,
   isLoading = false,
   icon,
+  hideIcon = false,
   confirmButtonClass = 'btn-danger',
 }) => {
   // Default icons based on type
@@ -121,7 +123,7 @@ const Modal = ({
             className="modal-box"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="icon-circle">{getDefaultIcon()}</div>
+            {!hideIcon && <div className="icon-circle">{getDefaultIcon()}</div>}
 
             <h2>{title}</h2>
             <div>{typeof message === 'string' ? <p>{message}</p> : message}</div>

@@ -264,7 +264,7 @@ const AbuseReportPage = () => {
                   type="text"
                   value={reportedUrl}
                   onChange={(e) => {
-                    setReportedUrl(e.target.value);
+                    setReportedUrl(e.target.value.toLowerCase());
                     setFieldErrors((prev) => ({ ...prev, reportedUrl: null }));
                   }}
                   placeholder="https://glynk.to/xxxx or full Goodlink URL"

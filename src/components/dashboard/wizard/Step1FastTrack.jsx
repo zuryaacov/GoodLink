@@ -332,7 +332,7 @@ const Step1FastTrack = ({
   };
 
   const handleUrlChange = (e) => {
-    const url = e.target.value;
+    const url = e.target.value.toLowerCase();
     updateFormData('targetUrl', url);
 
     // Clear URL error when user types

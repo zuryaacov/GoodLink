@@ -511,7 +511,7 @@ const AddDomainModal = ({ isOpen, onClose, domain = null }) => {
                       type="text"
                       value={rootRedirect}
                       onChange={(e) => {
-                        setRootRedirect(e.target.value);
+                        setRootRedirect(e.target.value.toLowerCase());
                         setRootRedirectError(null);
                       }}
                       placeholder="RootRedirect.com"

@@ -272,7 +272,7 @@ const Step3Security = ({ formData, updateFormData, onValidationRequest }) => {
                 type="url"
                 value={formData.fallbackUrl || ''}
                 onChange={(e) => {
-                  updateFormData('fallbackUrl', e.target.value);
+                  updateFormData('fallbackUrl', e.target.value.toLowerCase());
                   if (fallbackUrlError) {
                     setFallbackUrlError(null);
                   }
@@ -535,7 +535,7 @@ const Step3Security = ({ formData, updateFormData, onValidationRequest }) => {
                   type="url"
                   value={newGeoRule.url}
                   onChange={(e) => {
-                    setNewGeoRule({ ...newGeoRule, url: e.target.value });
+                    setNewGeoRule({ ...newGeoRule, url: e.target.value.toLowerCase() });
                     if (geoRuleErrors.url) setGeoRuleErrors({ ...geoRuleErrors, url: null });
                   }}
                   placeholder="https://example.com"

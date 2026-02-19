@@ -64,7 +64,7 @@ const Step1CoreDetails = ({ formData, updateFormData, generateRandomSlug }) => {
         <label className="block text-sm font-medium text-white mb-2">Target / Affiliate URL</label>
         <textarea
           value={formData.targetUrl}
-          onChange={(e) => updateFormData('targetUrl', e.target.value)}
+          onChange={(e) => updateFormData('targetUrl', e.target.value.toLowerCase())}
           placeholder="Paste your long affiliate URL here..."
           rows={3}
           className="w-full px-4 py-3 bg-[#0b0f19] border border-[#232f48] rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-primary transition-colors resize-none"

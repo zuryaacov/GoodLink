@@ -1075,6 +1075,7 @@ const LinkManager = () => {
         onClose={() => setQrModal({ isOpen: false, link: null })}
         title="QR Code"
         type="alert"
+        hideIcon
         message={
           qrModal.link ? (
             <div className="flex flex-col items-center gap-4 p-2">
