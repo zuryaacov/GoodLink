@@ -249,7 +249,7 @@ const AbuseReportPage = () => {
                 Offending link <span className="text-red-400">*</span>
               </label>
               <input
-                type="url"
+                type="text"
                 value={reportedUrl}
                 onChange={(e) => {
                   setReportedUrl(e.target.value);
