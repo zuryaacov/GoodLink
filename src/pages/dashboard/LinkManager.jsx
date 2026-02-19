@@ -1096,10 +1096,22 @@ const LinkManager = () => {
                   </div>
                   <button
                     onClick={() => setQrModal({ isOpen: true, link })}
-                    className="p-2 bg-[#232f48] hover:bg-[#324467] text-gray-300 rounded-lg transition-all active:scale-90 flex items-center justify-center"
+                    className="relative p-2 bg-[#232f48] hover:bg-[#324467] text-gray-300 rounded-lg transition-all active:scale-90 flex items-center justify-center"
                     title="Open QR Code"
                   >
                     <img src={qrCodeIcon} alt="QR Code" className="w-9 h-9 opacity-90" />
+                    <span className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                      <span
+                        className="flex items-center justify-center w-[18px] h-[18px] rounded-full bg-[#1a2332] text-white shadow-[0_2px_6px_rgba(0,0,0,0.3)]"
+                        aria-hidden
+                      >
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-white">
+                          <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                          <polyline points="15 3 21 3 21 9" />
+                          <line x1="10" y1="14" x2="21" y2="3" />
+                        </svg>
+                      </span>
+                    </span>
                   </button>
                   <div
                     className={`flex items-center gap-2 ${isActive ? 'text-gray-500' : 'text-gray-600'}`}
