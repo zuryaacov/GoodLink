@@ -50,6 +50,12 @@ So that **only** Brevo sends the confirmation email (and it looks like your Brev
    - **Value:** the same secret you copied from Supabase (the full string, e.g. `v1,whsec_xxxxx`).
 7. Save in Supabase. Ensure the **Email** provider is still enabled under **Authentication → Providers → Email**.
 
+**If Supabase reports "Unexpected status code returned from hook: 403"**  
+The Worker itself does not return 403; that usually comes from **Cloudflare** (WAF, Bot Management, or Firewall) blocking Supabase’s server request. Fix it by:
+
+- In **Cloudflare Dashboard** → your domain → **Security** → **WAF** (or **Firewall rules**): add a rule that **skips** or **allows** requests when the URI path is exactly `/api/supabase-send-email-hook` (or "contains" that path), so Supabase’s outbound requests to the hook are not blocked.
+- Alternatively, under **Security** → **Settings**, temporarily relax **Bot Fight Mode** or **Security Level** for testing; if the hook then works, add a skip rule for the hook path as above.
+
 What the Worker does:
 
 - For **signup**: returns 200 without sending. The confirmation email is sent only by the frontend → Worker → Brevo flow (your template).

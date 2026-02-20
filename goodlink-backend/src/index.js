@@ -416,11 +416,11 @@ export default Sentry.withSentry(
             const domain = url.hostname.replace(/^www\./, '');
             const requestStartMs = Date.now();
 
-            // CORS Headers for all requests
+            // CORS Headers for all requests (Supabase Send Email Hook sends webhook-* headers)
             const corsHeaders = {
                 "Access-Control-Allow-Origin": "*",
                 "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-                "Access-Control-Allow-Headers": "Content-Type"
+                "Access-Control-Allow-Headers": "Content-Type, webhook-id, webhook-timestamp, webhook-signature"
             };
 
             // Handle CORS preflight
