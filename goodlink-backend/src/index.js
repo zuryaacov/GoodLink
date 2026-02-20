@@ -1,5 +1,6 @@
 import { Redis } from "@upstash/redis/cloudflare";
 import * as Sentry from "@sentry/cloudflare";
+import { Webhook } from "standardwebhooks";
 import { logAxiomInBackground } from "./services/axiomLogger";
 
 // --- Utility Functions ---
@@ -566,6 +567,71 @@ export default Sentry.withSentry(
                         status: 500,
                         headers: { ...corsHeaders, "Content-Type": "application/json" }
                     });
+                }
+            }
+
+            // === API Endpoint: Supabase Send Email Hook (no-op for signup so only Brevo sends) ===
+            if (path === "/api/supabase-send-email-hook" && request.method === "POST") {
+                try {
+                    const hookSecret = env.SUPABASE_SEND_EMAIL_HOOK_SECRET;
+                    if (!hookSecret || typeof hookSecret !== "string") {
+                        console.log("[supabase-send-email-hook] SUPABASE_SEND_EMAIL_HOOK_SECRET not set");
+                        return new Response(JSON.stringify({ error: "Send Email Hook secret not configured. Set SUPABASE_SEND_EMAIL_HOOK_SECRET in the Worker (same value as in Supabase Auth Hooks)." }), {
+                            status: 401,
+                            headers: { ...corsHeaders, "Content-Type": "application/json" }
+                        });
+                    }
+                    const rawBody = await request.text();
+                    const headersObj = Object.fromEntries(request.headers.entries());
+                    const base64Secret = hookSecret.replace(/^v1,whsec_/, "");
+                    const wh = new Webhook(base64Secret);
+                    let body;
+                    try {
+                        body = wh.verify(rawBody, headersObj);
+                    } catch (verifyErr) {
+                        console.warn("[supabase-send-email-hook] signature verification failed", verifyErr?.message);
+                        return new Response(JSON.stringify({ error: "Invalid webhook signature. Check that SUPABASE_SEND_EMAIL_HOOK_SECRET matches the secret in Supabase Auth Hooks." }), {
+                            status: 401,
+                            headers: { ...corsHeaders, "Content-Type": "application/json" }
+                        });
+                    }
+                    const { user, email_data } = body || {};
+                    const actionType = email_data?.email_action_type || "";
+                    console.log("[supabase-send-email-hook] received", { actionType, userEmail: user?.email });
+                    const emptyOk = () => new Response(JSON.stringify({}), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+                    if (actionType === "signup") {
+                        return emptyOk();
+                    }
+                    if (actionType === "recovery") {
+                        const tokenHash = email_data?.token_hash;
+                        const redirectTo = email_data?.redirect_to || "";
+                        if (!tokenHash || !env.SUPABASE_URL || !env.BREVO_API_KEY) {
+                            console.warn("[supabase-send-email-hook] recovery: missing token_hash or config");
+                            return emptyOk();
+                        }
+                        const verifyUrl = `${env.SUPABASE_URL.replace(/\/$/, "")}/auth/v1/verify?token=${encodeURIComponent(tokenHash)}&type=recovery&redirect_to=${encodeURIComponent(redirectTo)}`;
+                        const toEmail = user?.email;
+                        if (!toEmail) return emptyOk();
+                        const brevoPayload = {
+                            sender: { name: env.BREVO_SENDER_NAME || "Goodlink", email: env.BREVO_SENDER_EMAIL || "noreply@goodlink.ai" },
+                            to: [{ email: toEmail }],
+                            subject: env.BREVO_RECOVERY_SUBJECT || "Reset your password - Goodlink",
+                            htmlContent: `Reset your password: <a href="${verifyUrl}">Reset password</a>. If you didn't request this, ignore this email.`
+                        };
+                        const brevoRes = await fetch("https://api.brevo.com/v3/smtp/email", {
+                            method: "POST",
+                            headers: { "Accept": "application/json", "Content-Type": "application/json", "api-key": env.BREVO_API_KEY },
+                            body: JSON.stringify(brevoPayload)
+                        });
+                        if (!brevoRes.ok) {
+                            console.error("[supabase-send-email-hook] Brevo recovery send failed", brevoRes.status, await brevoRes.json().catch(() => ({})));
+                        }
+                        return emptyOk();
+                    }
+                    return emptyOk();
+                } catch (err) {
+                    console.error("[supabase-send-email-hook] error", err);
+                    return new Response(JSON.stringify({ error: "Internal error" }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
                 }
             }
 
