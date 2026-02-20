@@ -1,5 +1,7 @@
 # Signup Confirmation Email via Brevo
 
+**Architecture:** Frontend on **Vercel**, Worker/backend on **Cloudflare**. Supabase calls the Worker URL (`glynk.to/api/...`) from their servers; the Worker must be reachable without Cloudflare challenges (see "403 from hook" below).
+
 Instead of Supabase's default confirmation email, the app sends the signup confirmation through **Brevo** (with your templates). The flow:
 
 1. User signs up on the site (email + password).
@@ -50,11 +52,23 @@ So that **only** Brevo sends the confirmation email (and it looks like your Brev
    - **Value:** the same secret you copied from Supabase (the full string, e.g. `v1,whsec_xxxxx`).
 7. Save in Supabase. Ensure the **Email** provider is still enabled under **Authentication → Providers → Email**.
 
-**If Supabase reports "Unexpected status code returned from hook: 403"**  
-The Worker itself does not return 403; that usually comes from **Cloudflare** (WAF, Bot Management, or Firewall) blocking Supabase’s server request. Fix it by:
+**If Supabase shows "Unexpected status code returned from hook: 403"**  
+The Worker does not return 403; **Cloudflare** is blocking Supabase’s server request (WAF / Bot Fight / Security Level). Use one of these:
 
-- In **Cloudflare Dashboard** → your domain → **Security** → **WAF** (or **Firewall rules**): add a rule that **skips** or **allows** requests when the URI path is exactly `/api/supabase-send-email-hook` (or "contains" that path), so Supabase’s outbound requests to the hook are not blocked.
-- Alternatively, under **Security** → **Settings**, temporarily relax **Bot Fight Mode** or **Security Level** for testing; if the hook then works, add a skip rule for the hook path as above.
+**Option A – Skip security for the hook path (recommended)**  
+1. **Cloudflare Dashboard** → select the domain that serves the Worker (e.g. **glynk.to**) → **Security** → **WAF** (or **Security rules**).  
+2. **Custom rules** → **Create rule** (or **Add rule**).  
+3. **Name:** e.g. `Allow Supabase Send Email Hook`.  
+4. **Expression (when):**  
+   `(http.request.uri.path eq "/api/supabase-send-email-hook")`  
+5. **Action:** **Skip** → enable at least:  
+   - **Super Bot Fight Mode**  
+   - **All managed rules** (or only the ones that block), and/or **Security Level** / **Browser Integrity Check** if you use them.  
+6. **Deploy** / Save.  
+Then in Supabase, hook URL stays: `https://glynk.to/api/supabase-send-email-hook`.
+
+**Option B – Use the Worker’s workers.dev URL**  
+If the Worker is also available at `https://<worker-name>.<subdomain>.workers.dev`, use that as the hook URL in Supabase (e.g. `https://goodlink-backend.<your-subdomain>.workers.dev/api/supabase-send-email-hook`). workers.dev often has no WAF on the zone, so Supabase may get 200 without changing rules. Find the exact URL in **Workers & Pages** → your worker → **Overview** or **Triggers**.
 
 What the Worker does:
 
