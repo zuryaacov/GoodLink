@@ -420,8 +420,23 @@ const AuthPage = () => {
           throw error;
         }
 
-        // Check if email confirmation is required
+        // Check if email confirmation is required — send via Brevo (Worker) instead of Supabase default
         if (data?.user && !data?.session) {
+          const redirectTo = `${window.location.origin}/login${planParam ? `?plan=${planParam}` : ''}`;
+          const workerUrl = import.meta.env.VITE_WORKER_URL || 'https://glynk.to';
+          try {
+            const res = await fetch(`${workerUrl}/api/send-confirmation-email`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ email: email.trim(), redirect_to: redirectTo }),
+            });
+            if (!res.ok) {
+              const errData = await res.json().catch(() => ({}));
+              console.warn('Brevo confirmation email failed:', errData?.error || res.status);
+            }
+          } catch (e) {
+            console.warn('Could not send confirmation email via Brevo:', e);
+          }
           setMessage(
             "Check your email for the confirmation link! If you don't receive it, check your spam folder."
           );
