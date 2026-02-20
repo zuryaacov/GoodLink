@@ -410,6 +410,13 @@ const AuthPage = () => {
           },
         });
 
+        console.log('[Auth] signUp result:', {
+          hasUser: !!data?.user,
+          hasSession: !!data?.session,
+          userEmail: data?.user?.email,
+          error: error?.message || null,
+        });
+
         if (error) {
           // Check if it's an email sending error
           if (error.message && error.message.includes('confirmation email')) {
@@ -422,27 +429,35 @@ const AuthPage = () => {
 
         // Check if email confirmation is required — send via Brevo (Worker) instead of Supabase default
         if (data?.user && !data?.session) {
+          console.log('[Auth] Email confirmation required (no session). Calling Worker to send Brevo email.');
           const redirectTo = `${window.location.origin}/login${planParam ? `?plan=${planParam}` : ''}`;
           const workerUrl = import.meta.env.VITE_WORKER_URL || 'https://glynk.to';
+          console.log('[Auth] Worker URL:', workerUrl, 'body:', { email: email.trim(), redirect_to: redirectTo });
           try {
             const res = await fetch(`${workerUrl}/api/send-confirmation-email`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ email: email.trim(), redirect_to: redirectTo }),
             });
+            const resData = await res.json().catch(() => ({}));
+            console.log('[Auth] send-confirmation-email response:', { status: res.status, ok: res.ok, body: resData });
             if (!res.ok) {
-              const errData = await res.json().catch(() => ({}));
-              console.warn('Brevo confirmation email failed:', errData?.error || res.status);
+              console.warn('[Auth] Brevo confirmation email failed:', resData?.error || res.status, resData);
+            } else {
+              console.log('[Auth] Brevo confirmation email sent successfully.');
             }
           } catch (e) {
-            console.warn('Could not send confirmation email via Brevo:', e);
+            console.warn('[Auth] Could not call Worker (send confirmation email):', e);
           }
           setMessage(
             "Check your email for the confirmation link! If you don't receive it, check your spam folder."
           );
         } else if (data?.session) {
-          // User is already confirmed (if email confirmation is disabled)
+          // User is already confirmed (if email confirmation is disabled in Supabase)
+          console.log('[Auth] Session exists after signUp → navigating to dashboard. (Enable "Confirm email" in Supabase Auth to require email confirmation.)');
           navigate('/dashboard');
+        } else {
+          console.log('[Auth] signUp succeeded but no user and no session in response:', data);
         }
         // Note: For signup, checkout will open after email confirmation when user signs in
       } else if (view === 'forgot-password') {

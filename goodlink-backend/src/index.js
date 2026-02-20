@@ -476,13 +476,16 @@ export default Sentry.withSentry(
                     const body = await request.json().catch(() => ({}));
                     const { email, redirect_to } = body || {};
                     const emailTrimmed = String(email || "").trim();
+                    console.log("[send-confirmation-email] request received", { email: emailTrimmed, hasRedirectTo: !!redirect_to });
                     if (!emailTrimmed || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailTrimmed)) {
+                        console.log("[send-confirmation-email] validation failed: invalid or missing email");
                         return new Response(JSON.stringify({ error: "Valid email is required" }), {
                             status: 400,
                             headers: { ...corsHeaders, "Content-Type": "application/json" }
                         });
                     }
                     if (!env.SUPABASE_URL || !env.SUPABASE_SERVICE_ROLE_KEY) {
+                        console.log("[send-confirmation-email] missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY");
                         return new Response(JSON.stringify({ error: "Server configuration error" }), {
                             status: 500,
                             headers: { ...corsHeaders, "Content-Type": "application/json" }
@@ -491,6 +494,7 @@ export default Sentry.withSentry(
                     const genUrl = `${env.SUPABASE_URL.replace(/\/$/, "")}/auth/v1/admin/generate_link`;
                     const genBody = { type: "signup", email: emailTrimmed };
                     if (redirect_to) genBody.options = { redirect_to: String(redirect_to) };
+                    console.log("[send-confirmation-email] calling Supabase generate_link", { url: genUrl.replace(/[a-zA-Z0-9_-]{20,}/g, "***"), type: "signup" });
                     const genRes = await fetch(genUrl, {
                         method: "POST",
                         headers: {
@@ -501,20 +505,23 @@ export default Sentry.withSentry(
                         body: JSON.stringify(genBody)
                     });
                     const genData = await genRes.json().catch(() => ({}));
+                    console.log("[send-confirmation-email] generate_link response", { status: genRes.status, hasActionLink: !!(genData?.properties?.action_link ?? genData?.action_link ?? genData?.data?.properties?.action_link ?? genData?.data?.action_link), responseKeys: Object.keys(genData || {}) });
                     const actionLink = genData?.properties?.action_link ?? genData?.action_link ?? genData?.data?.properties?.action_link ?? genData?.data?.action_link;
                     if (!actionLink || typeof actionLink !== "string") {
-                        console.warn("generate_link response:", genData);
+                        console.warn("[send-confirmation-email] no action_link in response:", genData);
                         return new Response(JSON.stringify({ error: "Could not generate confirmation link" }), {
                             status: 400,
                             headers: { ...corsHeaders, "Content-Type": "application/json" }
                         });
                     }
                     if (!env.BREVO_API_KEY) {
+                        console.log("[send-confirmation-email] BREVO_API_KEY not set");
                         return new Response(JSON.stringify({ error: "Email service not configured" }), {
                             status: 503,
                             headers: { ...corsHeaders, "Content-Type": "application/json" }
                         });
                     }
+                    console.log("[send-confirmation-email] sending via Brevo to", emailTrimmed);
                     const brevoPayload = {
                         sender: {
                             name: env.BREVO_SENDER_NAME || "Goodlink",
@@ -542,18 +549,19 @@ export default Sentry.withSentry(
                     });
                     const brevoData = await brevoRes.json().catch(() => ({}));
                     if (!brevoRes.ok) {
-                        console.error("Brevo send failed:", brevoRes.status, brevoData);
+                        console.error("[send-confirmation-email] Brevo send failed:", brevoRes.status, brevoData);
                         return new Response(JSON.stringify({ error: "Failed to send confirmation email" }), {
                             status: 502,
                             headers: { ...corsHeaders, "Content-Type": "application/json" }
                         });
                     }
+                    console.log("[send-confirmation-email] Brevo sent OK to", emailTrimmed);
                     return new Response(JSON.stringify({ success: true }), {
                         status: 200,
                         headers: { ...corsHeaders, "Content-Type": "application/json" }
                     });
                 } catch (err) {
-                    console.error("send-confirmation-email error:", err);
+                    console.error("[send-confirmation-email] error:", err);
                     return new Response(JSON.stringify({ error: "Failed to send confirmation email" }), {
                         status: 500,
                         headers: { ...corsHeaders, "Content-Type": "application/json" }
