@@ -1,6 +1,5 @@
 import { Redis } from "@upstash/redis/cloudflare";
 import * as Sentry from "@sentry/cloudflare";
-import { Webhook } from "standardwebhooks";
 import { logAxiomInBackground } from "./services/axiomLogger";
 
 // --- Utility Functions ---
@@ -412,25 +411,20 @@ export default Sentry.withSentry(
     {
         async fetch(request, env, ctx) {
             const url = new URL(request.url);
-            const pathRaw = url.pathname.toLowerCase();
-            const path = (pathRaw.replace(/\/+$/, "") || "/");
+            const path = url.pathname.toLowerCase();
             const domain = url.hostname.replace(/^www\./, '');
             const requestStartMs = Date.now();
 
-            // CORS Headers for all requests (Supabase Send Email Hook sends webhook-* headers)
+            // CORS Headers for all requests
             const corsHeaders = {
                 "Access-Control-Allow-Origin": "*",
                 "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-                "Access-Control-Allow-Headers": "Content-Type, webhook-id, webhook-timestamp, webhook-signature"
+                "Access-Control-Allow-Headers": "Content-Type"
             };
 
             // Handle CORS preflight
             if (request.method === "OPTIONS") {
                 return new Response(null, { status: 204, headers: corsHeaders });
-            }
-
-            if ((path === "/api/send-confirmation-email" || path === "/api/supabase-send-email-hook") && request.method === "POST") {
-                console.log("[Signup] >>> Request reached Worker", { path, method: request.method, ts: new Date().toISOString() });
             }
 
             // === API Endpoint: Backoffice Event Logging to Axiom ===
@@ -479,24 +473,16 @@ export default Sentry.withSentry(
             // === API Endpoint: Send signup confirmation email via Brevo (replaces Supabase default) ===
             if (path === "/api/send-confirmation-email" && request.method === "POST") {
                 try {
-                    console.log("[Signup/send-confirmation-email] 1. Request received", { method: request.method, path });
-                    const body = await request.json().catch((e) => {
-                        console.log("[Signup/send-confirmation-email] 1b. Body parse failed", e?.message);
-                        return {};
-                    });
-                    console.log("[Signup/send-confirmation-email] 2. Body keys", Object.keys(body || {}), "| email:", body?.email ? "(set)" : "(missing)", "| redirect_to:", body?.redirect_to ? "(set)" : "(missing)");
+                    const body = await request.json().catch(() => ({}));
                     const { email, redirect_to } = body || {};
                     const emailTrimmed = String(email || "").trim();
-                    console.log("[Signup/send-confirmation-email] 3. Parsed", { email: emailTrimmed, redirect_to: redirect_to ? String(redirect_to).slice(0, 60) + "..." : undefined });
                     if (!emailTrimmed || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailTrimmed)) {
-                        console.log("[Signup/send-confirmation-email] 4. Validation failed: invalid or missing email");
                         return new Response(JSON.stringify({ error: "Valid email is required" }), {
                             status: 400,
                             headers: { ...corsHeaders, "Content-Type": "application/json" }
                         });
                     }
                     if (!env.SUPABASE_URL || !env.SUPABASE_SERVICE_ROLE_KEY) {
-                        console.log("[Signup/send-confirmation-email] 5. Config missing", { hasSupabaseUrl: !!env.SUPABASE_URL, hasServiceRoleKey: !!env.SUPABASE_SERVICE_ROLE_KEY });
                         return new Response(JSON.stringify({ error: "Server configuration error" }), {
                             status: 500,
                             headers: { ...corsHeaders, "Content-Type": "application/json" }
@@ -505,7 +491,6 @@ export default Sentry.withSentry(
                     const genUrl = `${env.SUPABASE_URL.replace(/\/$/, "")}/auth/v1/admin/generate_link`;
                     const genBody = { type: "signup", email: emailTrimmed };
                     if (redirect_to) genBody.options = { redirect_to: String(redirect_to) };
-                    console.log("[Signup/send-confirmation-email] 6. Calling Supabase generate_link", { urlHost: new URL(genUrl).hostname, type: "signup", hasRedirectTo: !!redirect_to });
                     const genRes = await fetch(genUrl, {
                         method: "POST",
                         headers: {
@@ -515,27 +500,21 @@ export default Sentry.withSentry(
                         },
                         body: JSON.stringify(genBody)
                     });
-                    const genResText = await genRes.text();
-                    const genData = (() => { try { return JSON.parse(genResText); } catch { return {}; } })();
-                    console.log("[Signup/send-confirmation-email] 7. Supabase generate_link – BEFORE parse:", { status: genRes.status, statusText: genRes.statusText, bodyLength: genResText?.length });
-                    console.log("[Signup/send-confirmation-email] 7b. Supabase generate_link – response body:", genResText?.slice(0, 800) + (genResText?.length > 800 ? "..." : ""));
+                    const genData = await genRes.json().catch(() => ({}));
                     const actionLink = genData?.properties?.action_link ?? genData?.action_link ?? genData?.data?.properties?.action_link ?? genData?.data?.action_link;
-                    console.log("[Signup/send-confirmation-email] 7c. After parse:", { hasActionLink: !!actionLink, responseTopKeys: Object.keys(genData || {}), errorMsg: genData?.msg || genData?.error_description || null });
                     if (!actionLink || typeof actionLink !== "string") {
-                        console.warn("[Signup/send-confirmation-email] 8. No action_link in response, full response:", JSON.stringify(genData).slice(0, 500));
+                        console.warn("generate_link response:", genData);
                         return new Response(JSON.stringify({ error: "Could not generate confirmation link" }), {
                             status: 400,
                             headers: { ...corsHeaders, "Content-Type": "application/json" }
                         });
                     }
                     if (!env.BREVO_API_KEY) {
-                        console.log("[Signup/send-confirmation-email] 9. BREVO_API_KEY not set");
                         return new Response(JSON.stringify({ error: "Email service not configured" }), {
                             status: 503,
                             headers: { ...corsHeaders, "Content-Type": "application/json" }
                         });
                     }
-                    console.log("[Signup/send-confirmation-email] 10. Sending via Brevo", { to: emailTrimmed, hasTemplateId: !!env.BREVO_CONFIRMATION_TEMPLATE_ID, actionLinkPreview: actionLink ? actionLink.slice(0, 50) + "..." : null });
                     const brevoPayload = {
                         sender: {
                             name: env.BREVO_SENDER_NAME || "Goodlink",
@@ -561,104 +540,24 @@ export default Sentry.withSentry(
                         },
                         body: JSON.stringify(brevoPayload)
                     });
-                    const brevoResText = await brevoRes.text();
-                    const brevoData = (() => { try { return JSON.parse(brevoResText); } catch { return {}; } })();
-                    console.log("[Signup/send-confirmation-email] 11. Brevo – response:", { status: brevoRes.status, statusText: brevoRes.statusText, body: brevoResText?.slice(0, 500) + (brevoResText?.length > 500 ? "..." : "") });
+                    const brevoData = await brevoRes.json().catch(() => ({}));
                     if (!brevoRes.ok) {
-                        console.error("[Signup/send-confirmation-email] 11b. Brevo failed", { status: brevoRes.status, body: brevoData });
+                        console.error("Brevo send failed:", brevoRes.status, brevoData);
                         return new Response(JSON.stringify({ error: "Failed to send confirmation email" }), {
                             status: 502,
                             headers: { ...corsHeaders, "Content-Type": "application/json" }
                         });
                     }
-                    console.log("[Signup/send-confirmation-email] 12. Brevo OK", { to: emailTrimmed, messageId: brevoData?.messageId || null });
                     return new Response(JSON.stringify({ success: true }), {
                         status: 200,
                         headers: { ...corsHeaders, "Content-Type": "application/json" }
                     });
                 } catch (err) {
-                    console.error("[Signup/send-confirmation-email] ERROR", err?.message, err?.stack?.slice(0, 200));
+                    console.error("send-confirmation-email error:", err);
                     return new Response(JSON.stringify({ error: "Failed to send confirmation email" }), {
                         status: 500,
                         headers: { ...corsHeaders, "Content-Type": "application/json" }
                     });
-                }
-            }
-
-            // === API Endpoint: Supabase Send Email Hook (no-op for signup so only Brevo sends) ===
-            if (path === "/api/supabase-send-email-hook" && request.method === "POST") {
-                try {
-                    console.log("[Signup/hook] 1. Request received", { method: request.method, path });
-                    const hookSecret = env.SUPABASE_SEND_EMAIL_HOOK_SECRET;
-                    if (!hookSecret || typeof hookSecret !== "string") {
-                        console.log("[Signup/hook] 2. SUPABASE_SEND_EMAIL_HOOK_SECRET not set");
-                        return new Response(JSON.stringify({ error: "Send Email Hook secret not configured. Set SUPABASE_SEND_EMAIL_HOOK_SECRET in the Worker (same value as in Supabase Auth Hooks)." }), {
-                            status: 401,
-                            headers: { ...corsHeaders, "Content-Type": "application/json" }
-                        });
-                    }
-                    const rawBody = await request.text();
-                    const headersObj = Object.fromEntries(request.headers.entries());
-                    const headerNames = Object.keys(headersObj);
-                    const hasWebhookId = headerNames.some((h) => h.toLowerCase() === "webhook-id");
-                    const hasWebhookTs = headerNames.some((h) => h.toLowerCase() === "webhook-timestamp");
-                    const hasWebhookSig = headerNames.some((h) => h.toLowerCase() === "webhook-signature");
-                    console.log("[Signup/hook] 3. Body length", rawBody?.length, "| headers present:", { webhookId: hasWebhookId, webhookTimestamp: hasWebhookTs, webhookSignature: hasWebhookSig });
-                    const base64Secret = hookSecret.replace(/^v1,whsec_/, "");
-                    const wh = new Webhook(base64Secret);
-                    let body;
-                    try {
-                        body = wh.verify(rawBody, headersObj);
-                        console.log("[Signup/hook] 4. Signature verified OK");
-                    } catch (verifyErr) {
-                        console.warn("[Signup/hook] 4. Signature verification failed", verifyErr?.message);
-                        return new Response(JSON.stringify({ error: "Invalid webhook signature. Check that SUPABASE_SEND_EMAIL_HOOK_SECRET matches the secret in Supabase Auth Hooks." }), {
-                            status: 401,
-                            headers: { ...corsHeaders, "Content-Type": "application/json" }
-                        });
-                    }
-                    const { user, email_data } = body || {};
-                    const actionType = email_data?.email_action_type || "";
-                    console.log("[Signup/hook] 5. Payload", { actionType, userEmail: user?.email, emailDataKeys: Object.keys(email_data || {}), userId: user?.id ? "(set)" : "(missing)" });
-                    const emptyOk = () => new Response(JSON.stringify({}), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
-                    if (actionType === "signup") {
-                        console.log("[Signup/hook] 6. Action=signup → returning 200 (no send, frontend sends via Brevo)");
-                        return emptyOk();
-                    }
-                    if (actionType === "recovery") {
-                        console.log("[Signup/hook] 6. Action=recovery → sending reset email via Brevo");
-                        const tokenHash = email_data?.token_hash;
-                        const redirectTo = email_data?.redirect_to || "";
-                        if (!tokenHash || !env.SUPABASE_URL || !env.BREVO_API_KEY) {
-                            console.warn("[supabase-send-email-hook] recovery: missing token_hash or config");
-                            return emptyOk();
-                        }
-                        const verifyUrl = `${env.SUPABASE_URL.replace(/\/$/, "")}/auth/v1/verify?token=${encodeURIComponent(tokenHash)}&type=recovery&redirect_to=${encodeURIComponent(redirectTo)}`;
-                        const toEmail = user?.email;
-                        if (!toEmail) return emptyOk();
-                        const brevoPayload = {
-                            sender: { name: env.BREVO_SENDER_NAME || "Goodlink", email: env.BREVO_SENDER_EMAIL || "noreply@goodlink.ai" },
-                            to: [{ email: toEmail }],
-                            subject: env.BREVO_RECOVERY_SUBJECT || "Reset your password - Goodlink",
-                            htmlContent: `Reset your password: <a href="${verifyUrl}">Reset password</a>. If you didn't request this, ignore this email.`
-                        };
-                        const brevoRes = await fetch("https://api.brevo.com/v3/smtp/email", {
-                            method: "POST",
-                            headers: { "Accept": "application/json", "Content-Type": "application/json", "api-key": env.BREVO_API_KEY },
-                            body: JSON.stringify(brevoPayload)
-                        });
-                        if (!brevoRes.ok) {
-                            console.error("[Signup/hook] 7. Brevo recovery failed", brevoRes.status, await brevoRes.json().catch(() => ({})));
-                        } else {
-                            console.log("[Signup/hook] 7. Brevo recovery sent OK to", toEmail);
-                        }
-                        return emptyOk();
-                    }
-                    console.log("[Signup/hook] 6. Action=" + actionType + " → returning 200 (no send)");
-                    return emptyOk();
-                } catch (err) {
-                    console.error("[Signup/hook] ERROR", err?.message, err?.stack?.slice(0, 200));
-                    return new Response(JSON.stringify({ error: "Internal error" }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
                 }
             }
 
