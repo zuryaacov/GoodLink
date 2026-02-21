@@ -399,6 +399,7 @@ const AuthPage = () => {
         }
 
         // Only proceed with signup if Turnstile verification passed
+        console.log('[Auth] 1. Before signUp', { email: email.trim(), redirectTo: `${window.location.origin}/login${planParam ? `?plan=${planParam}` : ''}` });
         const { error, data } = await supabase.auth.signUp({
           email,
           password,
@@ -410,12 +411,17 @@ const AuthPage = () => {
           },
         });
 
-        console.log('[Auth] signUp result:', {
+        console.log('[Auth] 2. After signUp – response:', {
           hasUser: !!data?.user,
           hasSession: !!data?.session,
           userEmail: data?.user?.email,
-          error: error?.message || null,
+          error: error ? String(error.message) : null,
+          errorStatus: error?.status ?? null,
+          errorName: error?.name ?? null,
         });
+        if (error) {
+          console.error('[Auth] 2b. signUp error (full):', error.message, error.status, error);
+        }
 
         if (error) {
           // Check if it's an email sending error
@@ -429,25 +435,26 @@ const AuthPage = () => {
 
         // Check if email confirmation is required — send via Brevo (Worker) instead of Supabase default
         if (data?.user && !data?.session) {
-          console.log('[Auth] Email confirmation required (no session). Calling Worker to send Brevo email.');
+          console.log('[Auth] 3. Email confirmation required (no session). Calling Worker to send Brevo email.');
           const redirectTo = `${window.location.origin}/login${planParam ? `?plan=${planParam}` : ''}`;
           const workerUrl = import.meta.env.VITE_WORKER_URL || 'https://glynk.to';
-          console.log('[Auth] Worker URL:', workerUrl, 'body:', { email: email.trim(), redirect_to: redirectTo });
+          console.log('[Auth] 4. Before fetch Worker', { workerUrl: `${workerUrl}/api/send-confirmation-email`, body: { email: email.trim(), redirect_to: redirectTo } });
           try {
             const res = await fetch(`${workerUrl}/api/send-confirmation-email`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ email: email.trim(), redirect_to: redirectTo }),
             });
-            const resData = await res.json().catch(() => ({}));
-            console.log('[Auth] send-confirmation-email response:', { status: res.status, ok: res.ok, body: resData });
+            const resText = await res.text();
+            const resData = resText ? (() => { try { return JSON.parse(resText); } catch { return { _raw: resText }; }})() : {};
+            console.log('[Auth] 5. After fetch Worker – response:', { status: res.status, ok: res.ok, statusText: res.statusText, body: resData });
             if (!res.ok) {
-              console.warn('[Auth] Brevo confirmation email failed:', resData?.error || res.status, resData);
+              console.warn('[Auth] 5b. Worker returned error:', res.status, resData);
             } else {
-              console.log('[Auth] Brevo confirmation email sent successfully.');
+              console.log('[Auth] 5c. Brevo confirmation email sent successfully.');
             }
           } catch (e) {
-            console.warn('[Auth] Could not call Worker (send confirmation email):', e);
+            console.warn('[Auth] 5d. Fetch Worker failed (network/CORS):', e?.message, e);
           }
           setMessage(
             "Check your email for the confirmation link! If you don't receive it, check your spam folder."
@@ -471,6 +478,7 @@ const AuthPage = () => {
         setMessage('Password reset link sent to your email.');
       }
     } catch (err) {
+      console.error('[Auth] Catch – error shown to user:', err?.message, err);
       setError(err.message);
 
       // Reset Turnstile widget if signup/login failed, so user can try again

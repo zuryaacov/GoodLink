@@ -78,6 +78,14 @@ What the Worker does:
 
 After this, users will receive only the Brevo-styled confirmation (and recovery) emails.
 
+**"Email rate limit exceeded"**  
+This message comes from **Supabase**, not from the Worker. Supabase Auth limits how many emails (signup/recovery) can be sent per hour (default is low, e.g. 2/hour on the built-in provider). When you hit the limit:
+
+- **Supabase Dashboard** → **Authentication** → **Rate limits**: increase **Email sent** (e.g. to 10 or 30 per hour) for development, or leave higher for production.
+- Or wait about an hour and try again, or use a different email address for testing.
+
+Until the limit resets or is raised, Supabase may not complete signup (or may not call the Send Email Hook), so you won’t see Worker logs for that request.
+
 ## Frontend
 
 The frontend uses **`VITE_WORKER_URL`** (e.g. `https://glynk.to`) to call the Worker. If not set, it defaults to `https://glynk.to`. Set in `.env`:

@@ -428,6 +428,10 @@ export default Sentry.withSentry(
                 return new Response(null, { status: 204, headers: corsHeaders });
             }
 
+            if ((path === "/api/send-confirmation-email" || path === "/api/supabase-send-email-hook") && request.method === "POST") {
+                console.log("[Signup] >>> Request reached Worker", { path, method: request.method, ts: new Date().toISOString() });
+            }
+
             // === API Endpoint: Backoffice Event Logging to Axiom ===
             if (path === "/api/log-backoffice-event" && request.method === "POST") {
                 try {
@@ -510,12 +514,12 @@ export default Sentry.withSentry(
                         },
                         body: JSON.stringify(genBody)
                     });
-                    const genData = await genRes.json().catch((e) => {
-                        console.log("[Signup/send-confirmation-email] 7a. Supabase response parse failed", e?.message);
-                        return {};
-                    });
+                    const genResText = await genRes.text();
+                    const genData = (() => { try { return JSON.parse(genResText); } catch { return {}; } })();
+                    console.log("[Signup/send-confirmation-email] 7. Supabase generate_link – BEFORE parse:", { status: genRes.status, statusText: genRes.statusText, bodyLength: genResText?.length });
+                    console.log("[Signup/send-confirmation-email] 7b. Supabase generate_link – response body:", genResText?.slice(0, 800) + (genResText?.length > 800 ? "..." : ""));
                     const actionLink = genData?.properties?.action_link ?? genData?.action_link ?? genData?.data?.properties?.action_link ?? genData?.data?.action_link;
-                    console.log("[Signup/send-confirmation-email] 7. Supabase generate_link response", { status: genRes.status, hasActionLink: !!actionLink, responseTopKeys: Object.keys(genData || {}), errorMsg: genData?.msg || genData?.error_description || null });
+                    console.log("[Signup/send-confirmation-email] 7c. After parse:", { hasActionLink: !!actionLink, responseTopKeys: Object.keys(genData || {}), errorMsg: genData?.msg || genData?.error_description || null });
                     if (!actionLink || typeof actionLink !== "string") {
                         console.warn("[Signup/send-confirmation-email] 8. No action_link in response, full response:", JSON.stringify(genData).slice(0, 500));
                         return new Response(JSON.stringify({ error: "Could not generate confirmation link" }), {
@@ -556,9 +560,11 @@ export default Sentry.withSentry(
                         },
                         body: JSON.stringify(brevoPayload)
                     });
-                    const brevoData = await brevoRes.json().catch(() => ({}));
+                    const brevoResText = await brevoRes.text();
+                    const brevoData = (() => { try { return JSON.parse(brevoResText); } catch { return {}; } })();
+                    console.log("[Signup/send-confirmation-email] 11. Brevo – response:", { status: brevoRes.status, statusText: brevoRes.statusText, body: brevoResText?.slice(0, 500) + (brevoResText?.length > 500 ? "..." : "") });
                     if (!brevoRes.ok) {
-                        console.error("[Signup/send-confirmation-email] 11. Brevo failed", { status: brevoRes.status, body: brevoData });
+                        console.error("[Signup/send-confirmation-email] 11b. Brevo failed", { status: brevoRes.status, body: brevoData });
                         return new Response(JSON.stringify({ error: "Failed to send confirmation email" }), {
                             status: 502,
                             headers: { ...corsHeaders, "Content-Type": "application/json" }
