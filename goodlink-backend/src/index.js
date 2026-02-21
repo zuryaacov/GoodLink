@@ -412,7 +412,8 @@ export default Sentry.withSentry(
     {
         async fetch(request, env, ctx) {
             const url = new URL(request.url);
-            const path = url.pathname.toLowerCase();
+            const pathRaw = url.pathname.toLowerCase();
+            const path = (pathRaw.replace(/\/+$/, "") || "/");
             const domain = url.hostname.replace(/^www\./, '');
             const requestStartMs = Date.now();
 
