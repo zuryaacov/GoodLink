@@ -305,6 +305,7 @@ const AuthPage = () => {
           navigate('/dashboard');
         }
       } else if (view === 'signup') {
+        console.warn('[Auth] 0. Signup flow started – you should see this when you click Sign up');
         // Full name validation
         const trimmedName = fullName.trim();
         if (!trimmedName || trimmedName.length < 2) {
@@ -399,7 +400,7 @@ const AuthPage = () => {
         }
 
         // Only proceed with signup if Turnstile verification passed
-        console.log('[Auth] 1. Before signUp', { email: email.trim(), redirectTo: `${window.location.origin}/login${planParam ? `?plan=${planParam}` : ''}` });
+        console.warn('[Auth] 1. Before signUp', { email: email.trim(), redirectTo: `${window.location.origin}/login${planParam ? `?plan=${planParam}` : ''}` });
         const { error, data } = await supabase.auth.signUp({
           email,
           password,
@@ -411,7 +412,7 @@ const AuthPage = () => {
           },
         });
 
-        console.log('[Auth] 2. After signUp – response:', {
+        console.warn('[Auth] 2. After signUp – response:', {
           hasUser: !!data?.user,
           hasSession: !!data?.session,
           userEmail: data?.user?.email,
@@ -420,7 +421,7 @@ const AuthPage = () => {
           errorName: error?.name ?? null,
         });
         if (error) {
-          console.error('[Auth] 2b. signUp error (full):', error.message, error.status, error);
+          console.warn('[Auth] 2b. signUp error (full):', error.message, error.status, error);
         }
 
         if (error) {
@@ -478,7 +479,7 @@ const AuthPage = () => {
         setMessage('Password reset link sent to your email.');
       }
     } catch (err) {
-      console.error('[Auth] Catch – error shown to user:', err?.message, err);
+      console.warn('[Auth] Catch – error shown to user:', err?.message, err);
       setError(err.message);
 
       // Reset Turnstile widget if signup/login failed, so user can try again
