@@ -127,7 +127,7 @@ const CTASection = () => {
           transition={{ duration: 0.6 }}
           className="flex flex-col items-center text-center gap-4 max-w-3xl mx-auto"
         >
-          <div className="inline-flex items-center rounded-full bg-primary/10 px-3 py-1 text-sm font-medium text-primary border border-primary/20">
+          <div className="inline-flex items-center rounded-full bg-[#c0ffa5]/30 px-3 py-1 text-sm font-medium text-[#0b996f] border border-[#c0ffa5]/50">
             Pricing
           </div>
           <h2 className="text-slate-900 dark:text-[#1b1b1b] tracking-tight text-3xl md:text-5xl font-black leading-tight">
@@ -153,19 +153,19 @@ const CTASection = () => {
               variants={itemVariants}
               className={`relative flex flex-col rounded-xl border-2 transition-all duration-300 ${
                 plan.highlighted
-                  ? 'border-primary bg-primary/5 dark:bg-primary/10 shadow-2xl scale-105 md:scale-110'
-                  : 'border-slate-200 dark:border-slate-200 bg-white dark:bg-white hover:border-primary/50 hover:shadow-xl'
+                  ? 'border-[#c0ffa5] bg-[#c0ffa5]/10 shadow-2xl scale-105 md:scale-110'
+                  : 'border-slate-200 dark:border-slate-200 bg-white dark:bg-white hover:border-[#c0ffa5]/50 hover:shadow-xl'
               }`}
             >
               {plan.highlighted && (
-                <span className="absolute -top-4 left-1/2 -translate-x-1/2 bg-primary text-[#1b1b1b] text-xs font-black px-4 py-1.5 rounded-full uppercase tracking-wider z-10">
+                <span className="absolute -top-4 left-1/2 -translate-x-1/2 bg-[#c0ffa5] text-[#1b1b1b] text-xs font-black px-4 py-1.5 rounded-full uppercase tracking-wider z-10">
                   Most Popular
                 </span>
               )}
 
               <div
                 className={`p-8 flex flex-col gap-6 ${
-                  plan.highlighted ? 'bg-primary/5 dark:bg-primary/10' : ''
+                  plan.highlighted ? 'bg-[#c0ffa5]/10' : ''
                 }`}
               >
                 {/* Plan Header */}
@@ -191,9 +191,7 @@ const CTASection = () => {
                   {plan.features.map((feature, featureIndex) => (
                     <li key={featureIndex} className="flex items-start gap-3">
                       <Check
-                        className={`w-5 h-5 mt-0.5 flex-shrink-0 ${
-                          plan.highlighted ? 'text-primary' : 'text-primary'
-                        }`}
+                        className="w-5 h-5 mt-0.5 flex-shrink-0 text-[#c0ffa5]"
                       />
                       <span className="text-slate-700 dark:text-slate-300 text-sm leading-relaxed">
                         {feature}
@@ -228,7 +226,7 @@ const CTASection = () => {
                   type="button"
                   className={`mt-auto w-full py-4 px-6 rounded-lg font-bold text-base transition-all text-center inline-block active:scale-95 ${
                     plan.highlighted
-                      ? 'bg-primary hover:bg-primary/90 text-[#1b1b1b] shadow-lg shadow-primary/30'
+                      ? 'bg-[#c0ffa5] hover:bg-[#b0ef95] text-[#1b1b1b] shadow-lg shadow-[#c0ffa5]/30'
                       : 'bg-slate-100 dark:bg-slate-200 hover:bg-slate-200 dark:hover:bg-slate-300 text-slate-900 dark:text-[#1b1b1b]'
                   }`}
                 >
