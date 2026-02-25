@@ -285,7 +285,7 @@ const CustomDomainsManager = () => {
   const getStatusColor = (status) => {
     switch (status) {
       case 'active':
-        return 'bg-green-500/20 text-green-400 border-green-500/30';
+        return 'bg-slate-100 text-black border-slate-200';
       case 'pending':
         return 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30';
       case 'error':
@@ -505,7 +505,7 @@ const CustomDomainsManager = () => {
                   )}
                   <button
                     onClick={() => navigate(`/dashboard/domains/edit/${domain.id}`)}
-                    className="text-slate-500 hover:text-[#00F0FF] transition-colors p-2 bg-[#00F0FF]/10 rounded-lg border border-[#00F0FF]/20"
+                    className="text-[#1b1b1b] hover:bg-slate-100 transition-colors p-2 bg-white rounded-lg border border-slate-200"
                     title="Update root redirect"
                   >
                     <span className="material-symbols-outlined text-xl md:text-2xl">edit</span>
@@ -596,7 +596,7 @@ const CustomDomainsManager = () => {
                                   onClick={() =>
                                     navigator.clipboard.writeText(record.host || record.name)
                                   }
-                                  className="w-10 h-10 flex items-center justify-center bg-slate-200 hover:bg-primary text-[#1b1b1b] rounded-lg transition-all shadow-xl active:scale-90"
+                                  className="w-10 h-10 flex items-center justify-center bg-white hover:bg-slate-100 text-[#1b1b1b] rounded-lg border border-slate-200 transition-all active:scale-90"
                                   title="Copy Host"
                                 >
                                   <span className="material-symbols-outlined text-xl">
@@ -616,13 +616,13 @@ const CustomDomainsManager = () => {
                                   Target Value
                                 </span>
                               </div>
-                              <div className="flex items-center gap-3 bg-white p-3 md:p-4 rounded-xl border border-slate-200 group hover:border-primary/20 transition-all shadow-[inset_0_2px_10px_rgba(0,0,0,0.5)]">
+                              <div className="flex items-center gap-3 bg-white p-3 rounded-xl border border-slate-200 group hover:border-primary/20 transition-all">
                                 <code className="text-sm md:text-lg text-green-400 font-mono flex-1 break-all leading-tight selection:bg-primary/30">
                                   {record.value}
                                 </code>
                                 <button
                                   onClick={() => navigator.clipboard.writeText(record.value)}
-                                  className="w-10 h-10 flex items-center justify-center bg-slate-200 hover:bg-primary text-[#1b1b1b] rounded-lg transition-all shadow-xl active:scale-90 flex-shrink-0"
+                                  className="w-10 h-10 flex items-center justify-center bg-white hover:bg-slate-100 text-[#1b1b1b] rounded-lg border border-slate-200 transition-all active:scale-90 flex-shrink-0"
                                   title="Copy Value"
                                 >
                                   <span className="material-symbols-outlined text-xl">
