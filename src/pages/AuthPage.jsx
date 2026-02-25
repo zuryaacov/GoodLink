@@ -591,7 +591,7 @@ const AuthPage = () => {
           ></path>
         </svg>
       </div>
-      <h2 className="text-3xl font-bold leading-tight tracking-tight text-white">
+      <h2 className="text-3xl font-bold leading-tight tracking-tight text-[#1b1b1b]">
         <b>
           <span className="text-[#10b981]">Good</span>
         </b>
@@ -603,17 +603,17 @@ const AuthPage = () => {
   );
 
   return (
-    <div className="min-h-screen w-full bg-[#101622] flex flex-col items-center justify-center px-6 py-12 relative overflow-hidden">
+    <div className="min-h-screen w-full bg-[#ffffff] flex flex-col items-center justify-center px-6 py-12 relative overflow-hidden">
       {/* Background Orbs */}
-      <div className="absolute top-[-10%] left-[-10%] size-96 bg-primary/20 blur-[120px] rounded-full"></div>
-      <div className="absolute bottom-[-10%] right-[-10%] size-96 bg-[#10b981]/10 blur-[120px] rounded-full"></div>
+      <div className="absolute top-[-10%] left-[-10%] size-96 bg-primary/10 blur-[120px] rounded-full"></div>
+      <div className="absolute bottom-[-10%] right-[-10%] size-96 bg-secondary-green/30 blur-[120px] rounded-full"></div>
 
       <div className="relative z-10 w-full max-w-md flex flex-col items-center">
         <Logo />
 
-        <div className="w-full bg-white/5 backdrop-blur-xl border border-white/10 p-8 rounded-3xl shadow-2xl relative">
+        <div className="w-full bg-white backdrop-blur-xl border border-[#0b996f]/20 p-8 rounded-3xl shadow-2xl relative shadow-lg">
           {planParam && (
-            <div className="mb-4 p-3 bg-primary/10 border border-primary/20 rounded-lg text-center">
+            <div className="mb-4 p-3 bg-primary/10 border border-primary/30 rounded-lg text-center">
               <p className="text-sm text-primary font-bold">
                 Complete your {planParam.toUpperCase()} plan purchase
               </p>
@@ -630,7 +630,7 @@ const AuthPage = () => {
                 className="flex flex-col gap-6"
               >
                 <div className="text-center mb-2">
-                  <h1 className="text-2xl font-bold text-white mb-2">Welcome Back</h1>
+                  <h1 className="text-2xl font-bold text-[#1b1b1b] mb-2">Welcome Back</h1>
                   <p className="text-slate-400">Log in to your GoodLink.ai account</p>
                 </div>
 
@@ -654,7 +654,7 @@ const AuthPage = () => {
                       inputMode="email"
                       autoComplete="email"
                       placeholder="name@example.com"
-                      className="h-12 w-full bg-[#192233] border border-white/10 rounded-xl px-4 text-white focus:outline-none focus:border-primary/50 transition-colors"
+                      className="h-12 w-full bg-white border border-slate-200 rounded-xl px-4 text-[#1b1b1b] focus:outline-none focus:border-primary transition-colors"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                     />
@@ -679,7 +679,7 @@ const AuthPage = () => {
                       <input
                         type={showPassword ? 'text' : 'password'}
                         placeholder="••••••••"
-                        className="h-12 w-full bg-[#192233] border border-white/10 rounded-xl px-4 pr-12 text-white focus:outline-none focus:border-primary/50 transition-colors"
+                        className="h-12 w-full bg-white border border-slate-200 rounded-xl px-4 pr-12 text-[#1b1b1b] focus:outline-none focus:border-primary transition-colors"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                       />
@@ -707,9 +707,9 @@ const AuthPage = () => {
 
                 <div className="relative flex items-center justify-center my-2">
                   <div className="absolute inset-0 flex items-center">
-                    <div className="w-full border-t border-white/10"></div>
+                    <div className="w-full border-t border-slate-200"></div>
                   </div>
-                  <span className="relative z-10 bg-[#161d2b] px-4 text-xs text-slate-500 font-bold uppercase tracking-widest">
+                  <span className="relative z-10 bg-white px-4 text-xs text-slate-500 font-bold uppercase tracking-widest">
                     Or continue with
                   </span>
                 </div>
@@ -717,7 +717,7 @@ const AuthPage = () => {
                 <button
                   onClick={handleGoogleLogin}
                   disabled={loading}
-                  className="h-12 w-full bg-white/5 hover:bg-white/10 border border-white/10 text-white font-bold rounded-xl flex items-center justify-center gap-3 transition-all disabled:opacity-50"
+                  className="h-12 w-full bg-secondary-green/50 hover:bg-secondary-green/70 border border-primary/20 text-[#1b1b1b] font-bold rounded-xl flex items-center justify-center gap-3 transition-all disabled:opacity-50"
                 >
                   <svg className="size-5" viewBox="0 0 24 24">
                     <path
@@ -767,7 +767,7 @@ const AuthPage = () => {
                 className="flex flex-col gap-6"
               >
                 <div className="text-center mb-2">
-                  <h1 className="text-2xl font-bold text-white mb-2">Join GoodLink.ai</h1>
+                  <h1 className="text-2xl font-bold text-[#1b1b1b] mb-2">Join GoodLink.ai</h1>
                   <p className="text-slate-400">Start securing your data today</p>
                 </div>
 
@@ -790,7 +790,7 @@ const AuthPage = () => {
                       type="text"
                       placeholder="Your full name"
                       autoComplete="name"
-                      className="h-12 w-full bg-[#192233] border border-white/10 rounded-xl px-4 text-white focus:outline-none focus:border-primary/50 transition-colors"
+                      className="h-12 w-full bg-white border border-slate-200 rounded-xl px-4 text-[#1b1b1b] focus:outline-none focus:border-primary transition-colors"
                       value={fullName}
                       onChange={(e) => setFullName(e.target.value)}
                     />
@@ -802,7 +802,7 @@ const AuthPage = () => {
                       inputMode="email"
                       autoComplete="email"
                       placeholder="name@example.com"
-                      className="h-12 w-full bg-[#192233] border border-white/10 rounded-xl px-4 text-white focus:outline-none focus:border-primary/50 transition-colors"
+                      className="h-12 w-full bg-white border border-slate-200 rounded-xl px-4 text-[#1b1b1b] focus:outline-none focus:border-primary transition-colors"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                     />
@@ -813,7 +813,7 @@ const AuthPage = () => {
                       <input
                         type={showPassword ? 'text' : 'password'}
                         placeholder="••••••••"
-                        className="h-12 w-full bg-[#192233] border border-white/10 rounded-xl px-4 pr-12 text-white focus:outline-none focus:border-primary/50 transition-colors"
+                        className="h-12 w-full bg-white border border-slate-200 rounded-xl px-4 pr-12 text-[#1b1b1b] focus:outline-none focus:border-primary transition-colors"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                       />
@@ -836,7 +836,7 @@ const AuthPage = () => {
                       <input
                         type={showConfirmPassword ? 'text' : 'password'}
                         placeholder="••••••••"
-                        className="h-12 w-full bg-[#192233] border border-white/10 rounded-xl px-4 pr-12 text-white focus:outline-none focus:border-primary/50 transition-colors"
+                        className="h-12 w-full bg-white border border-slate-200 rounded-xl px-4 pr-12 text-[#1b1b1b] focus:outline-none focus:border-primary transition-colors"
                         value={confirmPassword}
                         onChange={(e) => setConfirmPassword(e.target.value)}
                       />
@@ -892,9 +892,9 @@ const AuthPage = () => {
 
                 <div className="relative flex items-center justify-center my-2">
                   <div className="absolute inset-0 flex items-center">
-                    <div className="w-full border-t border-white/10"></div>
+                    <div className="w-full border-t border-slate-200"></div>
                   </div>
-                  <span className="relative z-10 bg-[#161d2b] px-4 text-xs text-slate-500 font-bold uppercase tracking-widest">
+                  <span className="relative z-10 bg-white px-4 text-xs text-slate-500 font-bold uppercase tracking-widest">
                     Or join with
                   </span>
                 </div>
@@ -902,7 +902,7 @@ const AuthPage = () => {
                 <button
                   onClick={handleGoogleLogin}
                   disabled={loading}
-                  className="h-12 w-full bg-white/5 hover:bg-white/10 border border-white/10 text-white font-bold rounded-xl flex items-center justify-center gap-3 transition-all disabled:opacity-50"
+                  className="h-12 w-full bg-secondary-green/50 hover:bg-secondary-green/70 border border-primary/20 text-[#1b1b1b] font-bold rounded-xl flex items-center justify-center gap-3 transition-all disabled:opacity-50"
                 >
                   <svg className="size-5" viewBox="0 0 24 24">
                     <path
@@ -952,7 +952,7 @@ const AuthPage = () => {
                 className="flex flex-col gap-6"
               >
                 <div className="text-center mb-2">
-                  <h1 className="text-2xl font-bold text-white mb-2">Reset Password</h1>
+                  <h1 className="text-2xl font-bold text-[#1b1b1b] mb-2">Reset Password</h1>
                   <p className="text-slate-400">We'll send you recovery instructions</p>
                 </div>
 
@@ -976,7 +976,7 @@ const AuthPage = () => {
                       inputMode="email"
                       autoComplete="email"
                       placeholder="name@example.com"
-                      className="h-12 w-full bg-[#192233] border border-white/10 rounded-xl px-4 text-white focus:outline-none focus:border-primary/50 transition-colors"
+                      className="h-12 w-full bg-white border border-slate-200 rounded-xl px-4 text-[#1b1b1b] focus:outline-none focus:border-primary transition-colors"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                     />
@@ -1000,7 +1000,7 @@ const AuthPage = () => {
                     setMessage(null);
                     setHoneypot('');
                   }}
-                  className="flex items-center justify-center gap-2 text-sm text-slate-400 hover:text-white transition-colors group"
+                  className="flex items-center justify-center gap-2 text-sm text-slate-500 hover:text-primary transition-colors group"
                 >
                   <span className="material-symbols-outlined text-sm transition-transform group-hover:-translate-x-1">
                     arrow_back

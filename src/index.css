@@ -8,26 +8,27 @@ html {
 
 @layer base {
   :root {
-    --background: 222 36% 10%; /* #101622 */
-    --foreground: 210 40% 98%;
-    --card: 222 36% 10%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222 36% 10%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 220 85% 50%; /* #135bec */
-    --primary-foreground: 210 40% 98%;
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
+    --background: 0 0% 100%; /* #ffffff */
+    --foreground: 0 0% 11%; /* #1b1b1b */
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 11%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 11%;
+    --primary: 162 87% 32%; /* #0b996f */
+    --primary-foreground: 0 0% 100%;
+    --secondary: 98 100% 82%; /* #c0ffa5 */
+    --secondary-foreground: 0 0% 11%;
+    --muted: 98 100% 95%;
+    --muted-foreground: 0 0% 45%;
+    --accent: 245 68% 61%; /* #6358de */
+    --accent-foreground: 0 0% 100%;
     --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 222 36% 18%; /* #232f48 approx */
-    --input: 222 36% 18%;
-    --ring: 220 85% 50%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 0 0% 90%;
+    --input: 0 0% 90%;
+    --ring: 162 87% 32%;
     --radius: 0.5rem;
+    --nav-bg: #d7fec8;
   }
 }
 
@@ -41,19 +42,19 @@ html {
   }
 }
 
-/* Custom scrollbar for a cleaner tech look */
+/* Custom scrollbar */
 ::-webkit-scrollbar {
     width: 8px;
 }
 ::-webkit-scrollbar-track {
-    background: #101622; 
+    background: #ffffff;
 }
 ::-webkit-scrollbar-thumb {
-    background: #232f48; 
+    background: #0b996f;
     border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-    background: #324467; 
+    background: #095a47;
 }
 
 .layout-content-container {
@@ -67,7 +68,7 @@ html {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(10, 17, 40, 0.6); /* #0A1128 with transparency */
+  background: rgba(27, 27, 27, 0.5);
   backdrop-filter: blur(4px);
   display: flex;
   align-items: center;
@@ -76,7 +77,7 @@ html {
 }
 
 .modal-box {
-  background: white;
+  background: #ffffff;
   border: 1px solid #e5e7eb;
   padding: 16px;
   border-radius: 16px;
@@ -84,7 +85,7 @@ html {
   max-width: min(600px, calc(100vw - 24px));
   margin: 12px;
   text-align: center;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.15);
   max-height: calc(100vh - 24px);
   overflow-y: auto;
 }
@@ -98,7 +99,7 @@ html {
 }
 
 .modal-box h2 {
-  color: #0A1128;
+  color: #1b1b1b;
   margin-top: 16px;
   font-family: sans-serif;
   font-size: 1.5rem;
@@ -120,7 +121,7 @@ html {
 .icon-circle {
   width: 60px;
   height: 60px;
-  background: #FF10F015; /* Pink with 15% opacity */
+  background: rgba(11, 153, 111, 0.15);
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -138,10 +139,10 @@ html {
   flex: 1;
   padding: 12px;
   border: 1px solid #E5E7EB;
-  background: white;
+  background: #ffffff;
   border-radius: 8px;
   cursor: pointer;
-  color: #0A1128;
+  color: #1b1b1b;
   font-weight: 600;
   transition: all 0.2s;
 }
@@ -160,8 +161,8 @@ html {
   flex: 1;
   padding: 12px;
   border: none;
-  background: #FF10F0; /* Pink */
-  color: white; /* White text on pink */
+  background: #dc2626;
+  color: white;
   border-radius: 8px;
   cursor: pointer;
   font-weight: 600;
@@ -169,7 +170,7 @@ html {
 }
 
 .btn-danger:hover:not(:disabled) {
-  background: #e00ed0; /* Darker pink on hover */
+  background: #b91c1c;
 }
 
 .btn-danger:disabled {
@@ -181,8 +182,8 @@ html {
   flex: 1;
   padding: 12px;
   border: none;
-  background: #FF10F0; /* Pink */
-  color: white; /* White text on pink */
+  background: #0b996f;
+  color: white;
   border-radius: 8px;
   cursor: pointer;
   font-weight: 600;
@@ -190,7 +191,7 @@ html {
 }
 
 .btn-primary:hover:not(:disabled) {
-  background: #e00ed0; /* Darker pink on hover */
+  background: #095a47;
 }
 
 .btn-primary:disabled {

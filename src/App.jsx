@@ -37,7 +37,7 @@ const ProtectedRoute = ({ children }) => {
 
   if (loading) {
     return (
-      <div className="h-screen w-full bg-[#0b0f19] flex items-center justify-center text-white">
+      <div className="h-screen w-full bg-[#ffffff] flex items-center justify-center text-[#1b1b1b]">
         Loading...
       </div>
     );
@@ -54,10 +54,10 @@ function App() {
   if (!supabase) {
     // ... existing configuration check ...
     return (
-      <div className="h-screen w-full bg-[#101622] flex items-center justify-center text-white px-6">
+      <div className="h-screen w-full bg-[#ffffff] flex items-center justify-center text-[#1b1b1b] px-6">
         <div className="max-w-md text-center">
           <h1 className="text-2xl font-bold text-red-500 mb-4">Configuration Required</h1>
-          <p className="text-slate-400 mb-6">
+          <p className="text-slate-600 mb-6">
             Supabase credentials are missing. Please add
             <code className="bg-slate-800 px-2 py-1 rounded text-primary mx-1">
               VITE_SUPABASE_URL
