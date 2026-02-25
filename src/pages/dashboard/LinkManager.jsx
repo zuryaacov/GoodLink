@@ -1334,6 +1334,7 @@ const LinkManager = () => {
         cancelText="Cancel"
         onConfirm={handleSaveSpace}
         isLoading={spaceModal.isLoading}
+        confirmButtonClass={spaceModal.mode === 'edit' ? 'btn-update-workspace' : 'btn-primary'}
         message={
           <div className="space-y-3 text-left">
             <p className="text-sm text-slate-700">
