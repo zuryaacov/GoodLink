@@ -436,7 +436,7 @@ export default function AccountSettingsPage() {
                 <span
                   className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${
                     currentPlan === 'pro'
-                      ? 'bg-[#FF10F0]/10 text-[#FF10F0] border border-[#FF10F0]/30'
+                      ? 'bg-[#6358de]/10 text-[#6358de] border border-[#6358de]/30'
                       : 'bg-slate-700/30 text-slate-300 border border-slate-600/30'
                   }`}
                 >
@@ -471,11 +471,11 @@ export default function AccountSettingsPage() {
               {currentPlan !== 'pro' ? (
                 <button
                   onClick={handleOpenPaywall}
-                  className="w-full group relative overflow-hidden rounded-xl bg-gradient-to-r from-[#FF10F0] to-[#bc13fe] p-[1px]"
+                  className="w-full group relative overflow-hidden rounded-xl bg-gradient-to-r from-[#6358de] to-[#7c6ee8] p-[1px]"
                 >
-                  <div className="absolute inset-0 bg-gradient-to-r from-[#FF10F0] to-[#bc13fe] opacity-20 group-hover:opacity-40 transition-opacity" />
+                  <div className="absolute inset-0 bg-gradient-to-r from-[#6358de] to-[#7c6ee8] opacity-20 group-hover:opacity-40 transition-opacity" />
                   <div className="relative bg-white rounded-[11px] px-6 py-3 flex items-center justify-center gap-2 group-hover:bg-opacity-90 transition-colors">
-                    <span className="material-symbols-outlined text-[#FF10F0] group-hover:scale-110 transition-transform">
+                    <span className="material-symbols-outlined text-[#6358de] group-hover:scale-110 transition-transform">
                       rocket_launch
                     </span>
                     <span className="font-bold text-[#1b1b1b]">Upgrade to Pro</span>
@@ -487,11 +487,11 @@ export default function AccountSettingsPage() {
                   onClick={() => {
                     window.location.href = '/#pricing';
                   }}
-                  className="w-full group relative overflow-hidden rounded-xl bg-gradient-to-r from-[#FF10F0] to-[#bc13fe] p-[1px]"
+                  className="w-full group relative overflow-hidden rounded-xl bg-gradient-to-r from-[#6358de] to-[#7c6ee8] p-[1px]"
                 >
-                  <div className="absolute inset-0 bg-gradient-to-r from-[#FF10F0] to-[#bc13fe] opacity-20 group-hover:opacity-40 transition-opacity" />
+                  <div className="absolute inset-0 bg-gradient-to-r from-[#6358de] to-[#7c6ee8] opacity-20 group-hover:opacity-40 transition-opacity" />
                   <div className="relative w-full bg-white rounded-[11px] px-6 py-3 flex items-center justify-center gap-2 group-hover:bg-opacity-90 transition-colors">
-                    <span className="font-semibold text-[#FF10F0]">Manage Subscription</span>
+                    <span className="font-semibold text-[#6358de]">Manage Subscription</span>
                   </div>
                 </button>
               )}

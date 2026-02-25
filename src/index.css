@@ -37,8 +37,7 @@ html {
     @apply border-border selection:bg-primary selection:text-white;
   }
   body {
-    @apply bg-background text-foreground font-display antialiased;
-    font-family: 'Plus Jakarta Sans', sans-serif;
+    @apply bg-background text-foreground font-sans antialiased;
   }
 }
 
@@ -101,7 +100,7 @@ html {
 .modal-box h2 {
   color: #1b1b1b;
   margin-top: 16px;
-  font-family: sans-serif;
+  font-family: 'Plus Jakarta Sans', sans-serif;
   font-size: 1.5rem;
   font-weight: 600;
   margin-bottom: 8px;

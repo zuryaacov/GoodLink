@@ -61,7 +61,8 @@ export default {
         sm: "calc(var(--radius) - 4px)",
       },
       fontFamily: {
-        display: ["Inter", "sans-serif"],
+        sans: ["'Plus Jakarta Sans'", "sans-serif"],
+        display: ["'Plus Jakarta Sans'", "sans-serif"],
       },
       boxShadow: {
         "card-mint": "0 4px 20px rgba(0, 245, 155, 0.25)",

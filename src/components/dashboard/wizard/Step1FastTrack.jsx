@@ -848,16 +848,16 @@ const Step1FastTrack = ({
             checkingSlug && validatingButton !== 'pink' ? 'opacity-50 cursor-not-allowed' : ''
           }`}
           style={{
-            backgroundColor: '#FF10F0',
+            backgroundColor: '#6358de',
           }}
           onMouseEnter={(e) => {
             if (!checkingSlug) {
-              e.currentTarget.style.backgroundColor = '#e00ed0';
+              e.currentTarget.style.backgroundColor = '#5348c7';
             }
           }}
           onMouseLeave={(e) => {
             if (!checkingSlug) {
-              e.currentTarget.style.backgroundColor = '#FF10F0';
+              e.currentTarget.style.backgroundColor = '#6358de';
             }
           }}
         >

@@ -257,8 +257,8 @@ const UtmPresetManager = () => {
         <div className="relative z-10 max-w-xl w-full bg-white/90 backdrop-blur-xl border border-slate-200 shadow-2xl rounded-3xl p-8 md:p-10 text-center">
           <div className="mb-6 flex justify-center">
             <div className="relative">
-              <div className="absolute inset-0 bg-[#FF10F0] blur-2xl opacity-25 animate-pulse" />
-              <div className="relative bg-gradient-to-br from-[#FF10F0] to-[#7c3aed] p-4 rounded-2xl shadow-lg shadow-[#FF10F0]/40">
+              <div className="absolute inset-0 bg-[#6358de] blur-2xl opacity-25 animate-pulse" />
+              <div className="relative bg-gradient-to-br from-[#6358de] to-[#7c3aed] p-4 rounded-2xl shadow-lg shadow-[#6358de]/40">
                 <Lock className="w-8 h-8 text-[#1b1b1b]" />
               </div>
             </div>
@@ -272,17 +272,17 @@ const UtmPresetManager = () => {
               {normalizedPlan} plan
             </span>
             &nbsp;does not include UTM preset management. Upgrade to&nbsp;
-            <span className="text-[#FF10F0] font-bold uppercase tracking-wider">
+            <span className="text-[#6358de] font-bold uppercase tracking-wider">
               ADVANCED
             </span> or{' '}
-            <span className="text-[#FF10F0] font-bold uppercase tracking-wider">PRO</span> to create
+            <span className="text-[#6358de] font-bold uppercase tracking-wider">PRO</span> to create
             and manage UTM presets for your campaigns.
           </p>
           <button
             onClick={() => {
               window.location.href = '/#pricing';
             }}
-            className="w-full inline-flex items-center justify-center gap-2 bg-[#FF10F0] text-[#1b1b1b] font-bold py-3.5 px-8 rounded-2xl transition-all hover:bg-[#e00ed0] shadow-xl shadow-[#FF10F0]/30"
+            className="w-full inline-flex items-center justify-center gap-2 bg-[#6358de] text-[#1b1b1b] font-bold py-3.5 px-8 rounded-2xl transition-all hover:bg-[#5348c7] shadow-xl shadow-[#6358de]/30"
           >
             View Plans & Upgrade
           </button>
@@ -302,7 +302,7 @@ const UtmPresetManager = () => {
         </div>
         <button
           onClick={handleNewPreset}
-          className="px-6 py-3 bg-[#FF10F0] hover:bg-[#e00ed0] text-[#1b1b1b] font-bold rounded-xl transition-all shadow-lg shadow-[#FF10F0]/20 flex items-center gap-2"
+          className="px-6 py-3 bg-[#6358de] hover:bg-[#5348c7] text-[#1b1b1b] font-bold rounded-xl transition-all shadow-lg shadow-[#6358de]/20 flex items-center gap-2"
         >
           <span className="material-symbols-outlined">add</span>
           New UTM Preset
@@ -318,7 +318,7 @@ const UtmPresetManager = () => {
           </p>
           <button
             onClick={handleNewPreset}
-            className="px-6 py-3 bg-[#FF10F0] hover:bg-[#e00ed0] text-[#1b1b1b] font-bold rounded-xl transition-all"
+            className="px-6 py-3 bg-[#6358de] hover:bg-[#5348c7] text-[#1b1b1b] font-bold rounded-xl transition-all"
           >
             Create First Preset
           </button>

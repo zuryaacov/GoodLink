@@ -1058,7 +1058,7 @@ const LinkManager = () => {
                         Short Link
                       </span>
                       <span
-                        className={`font-bold text-lg tracking-wide break-all whitespace-normal ${isActive ? 'text-[#FF10F0]' : 'text-gray-500'}`}
+                        className={`font-bold text-lg tracking-wide break-all whitespace-normal ${isActive ? 'text-[#6358de]' : 'text-gray-500'}`}
                         title={link.short_url}
                       >
                         {link.short_url}

@@ -685,16 +685,16 @@ const PixelModal = ({ isOpen, onClose, initialData = null }) => {
                   disabled={isSubmitting}
                   className="px-6 py-2.5 text-sm text-[#1b1b1b] font-bold rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                   style={{
-                    backgroundColor: isSubmitting ? undefined : '#FF10F0',
+                    backgroundColor: isSubmitting ? undefined : '#6358de',
                   }}
                   onMouseEnter={(e) => {
                     if (!isSubmitting) {
-                      e.currentTarget.style.backgroundColor = '#e00ed0';
+                      e.currentTarget.style.backgroundColor = '#5348c7';
                     }
                   }}
                   onMouseLeave={(e) => {
                     if (!isSubmitting) {
-                      e.currentTarget.style.backgroundColor = '#FF10F0';
+                      e.currentTarget.style.backgroundColor = '#6358de';
                     }
                   }}
                 >

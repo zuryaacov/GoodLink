@@ -355,8 +355,8 @@ const CustomDomainsManager = () => {
           {/* Icon */}
           <div className="mb-6 flex justify-center">
             <div className="relative">
-              <div className="absolute inset-0 bg-[#FF10F0] blur-2xl opacity-25 animate-pulse" />
-              <div className="relative bg-gradient-to-br from-[#FF10F0] to-[#7c3aed] p-4 rounded-2xl shadow-lg shadow-[#FF10F0]/40">
+              <div className="absolute inset-0 bg-[#6358de] blur-2xl opacity-25 animate-pulse" />
+              <div className="relative bg-gradient-to-br from-[#6358de] to-[#7c3aed] p-4 rounded-2xl shadow-lg shadow-[#6358de]/40">
                 <Lock className="w-8 h-8 text-[#1b1b1b]" />
               </div>
             </div>
@@ -372,17 +372,17 @@ const CustomDomainsManager = () => {
               {normalizedPlan} plan
             </span>{' '}
             does not include custom domain management. Upgrade to&nbsp;
-            <span className="text-[#FF10F0] font-bold uppercase tracking-wider">
+            <span className="text-[#6358de] font-bold uppercase tracking-wider">
               ADVANCED
             </span> or{' '}
-            <span className="text-[#FF10F0] font-bold uppercase tracking-wider">PRO</span> to
+            <span className="text-[#6358de] font-bold uppercase tracking-wider">PRO</span> to
             connect your own domains and brand your links.
           </p>
 
           {/* Value props */}
           <div className="space-y-4 mb-10 text-left">
-            <div className="flex items-center gap-3 p-3 bg-white/80 rounded-xl border border-slate-200 hover:border-[#FF10F0]/40 transition-colors">
-              <Globe className="w-5 h-5 text-[#FF10F0]" />
+            <div className="flex items-center gap-3 p-3 bg-white/80 rounded-xl border border-slate-200 hover:border-[#6358de]/40 transition-colors">
+              <Globe className="w-5 h-5 text-[#6358de]" />
               <div>
                 <p className="font-semibold text-sm text-[#1b1b1b] italic">Brand Your Links</p>
                 <p className="text-xs text-[#1b1b1b]">
@@ -390,8 +390,8 @@ const CustomDomainsManager = () => {
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-3 p-3 bg-white/80 rounded-xl border border-slate-200 hover:border-[#FF10F0]/40 transition-colors">
-              <BarChart3 className="w-5 h-5 text-[#FF10F0]" />
+            <div className="flex items-center gap-3 p-3 bg-white/80 rounded-xl border border-slate-200 hover:border-[#6358de]/40 transition-colors">
+              <BarChart3 className="w-5 h-5 text-[#6358de]" />
               <div>
                 <p className="font-semibold text-sm text-[#1b1b1b] italic">Professional Appearance</p>
                 <p className="text-xs text-[#1b1b1b]">
@@ -406,7 +406,7 @@ const CustomDomainsManager = () => {
             onClick={() => {
               window.location.href = '/#pricing';
             }}
-            className="group relative w-full inline-flex items-center justify-center gap-2 bg-[#FF10F0] text-[#1b1b1b] font-bold py-3.5 px-8 rounded-2xl transition-all duration-300 hover:bg-[#e00ed0] hover:scale-[1.02] active:scale-[0.98] shadow-xl shadow-[#FF10F0]/30"
+            className="group relative w-full inline-flex items-center justify-center gap-2 bg-[#6358de] text-[#1b1b1b] font-bold py-3.5 px-8 rounded-2xl transition-all duration-300 hover:bg-[#5348c7] hover:scale-[1.02] active:scale-[0.98] shadow-xl shadow-[#6358de]/30"
           >
             <Zap className="w-5 h-5" />
             <span>View Plans & Upgrade</span>
@@ -434,7 +434,7 @@ const CustomDomainsManager = () => {
         </div>
         <button
           onClick={() => navigate('/dashboard/domains/new')}
-          className="px-6 py-3 bg-[#FF10F0] hover:bg-[#e00ed0] text-[#1b1b1b] font-bold rounded-xl transition-all shadow-lg shadow-[#FF10F0]/20 flex items-center gap-2 whitespace-nowrap"
+          className="px-6 py-3 bg-[#6358de] hover:bg-[#5348c7] text-[#1b1b1b] font-bold rounded-xl transition-all shadow-lg shadow-[#6358de]/20 flex items-center gap-2 whitespace-nowrap"
         >
           <span className="material-symbols-outlined">add</span>
           New Domain
@@ -497,7 +497,7 @@ const CustomDomainsManager = () => {
                   {(domain.status === 'pending' || domain.status === 'error') && (
                     <button
                       onClick={() => handleVerifyDNS(domain)}
-                      className="px-4 py-2 bg-[#FF10F0] hover:bg-[#e00ed0] text-[#1b1b1b] font-bold rounded-xl transition-all shadow-lg shadow-[#FF10F0]/20 flex items-center justify-center gap-2 text-sm"
+                      className="px-4 py-2 bg-[#6358de] hover:bg-[#5348c7] text-[#1b1b1b] font-bold rounded-xl transition-all shadow-lg shadow-[#6358de]/20 flex items-center justify-center gap-2 text-sm"
                     >
                       <span className="material-symbols-outlined text-lg">verified</span>
                       Verify DNS

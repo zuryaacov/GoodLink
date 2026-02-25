@@ -600,7 +600,7 @@ const AddDomainModal = ({ isOpen, onClose, domain = null }) => {
             <button
               onClick={handleNext}
               disabled={!domainName.trim() || isSubmitting}
-              className="px-4 sm:px-6 py-2 sm:py-2.5 text-xs sm:text-sm bg-[#FF10F0] hover:bg-[#e00ed0] disabled:opacity-50 disabled:cursor-not-allowed text-[#1b1b1b] font-bold rounded-lg sm:rounded-xl transition-colors flex-shrink-0"
+              className="px-4 sm:px-6 py-2 sm:py-2.5 text-xs sm:text-sm bg-[#6358de] hover:bg-[#5348c7] disabled:opacity-50 disabled:cursor-not-allowed text-[#1b1b1b] font-bold rounded-lg sm:rounded-xl transition-colors flex-shrink-0"
             >
               {isSubmitting ? (
                 <>

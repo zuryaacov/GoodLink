@@ -43,7 +43,7 @@ const Modal = ({
             width="24"
             height="24"
             fill="none"
-            stroke="#FF10F0"
+            stroke="#6358de"
             strokeWidth="2"
             viewBox="0 0 24 24"
           >

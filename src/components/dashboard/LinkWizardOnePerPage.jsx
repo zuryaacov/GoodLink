@@ -190,7 +190,7 @@ export default function LinkWizardOnePerPage({
         title: 'Name your',
         highlight: 'Link',
         highlightClass:
-          'bg-gradient-to-r from-[#FF10F0] to-[#bc13fe] bg-clip-text text-transparent',
+          'bg-gradient-to-r from-[#6358de] to-[#7c6ee8] bg-clip-text text-transparent',
         subtitle: 'What should we call your link ?',
       },
       {
@@ -206,11 +206,11 @@ export default function LinkWizardOnePerPage({
       {
         id: 'domain',
         badge: 'Domain',
-        badgeColor: 'text-[#FF10F0] bg-[#FF10F0]/10',
+        badgeColor: 'text-[#6358de] bg-[#6358de]/10',
         title: 'Select',
         highlight: 'Domain',
         highlightClass:
-          'bg-gradient-to-r from-[#FF10F0] to-[#bc13fe] bg-clip-text text-transparent',
+          'bg-gradient-to-r from-[#6358de] to-[#7c6ee8] bg-clip-text text-transparent',
         subtitle: 'Choose the base for your short link.',
         // For testing: show when plan fits (even with only glynk.to). Normally: && domains.length > 1
         show: isAdvancedOrPro,
@@ -218,11 +218,11 @@ export default function LinkWizardOnePerPage({
       {
         id: 'slug',
         badge: 'Alias',
-        badgeColor: 'text-[#FF10F0] bg-[#FF10F0]/10',
+        badgeColor: 'text-[#6358de] bg-[#6358de]/10',
         title: 'Custom',
         highlight: 'Slug',
         highlightClass:
-          'bg-gradient-to-r from-[#FF10F0] to-[#bc13fe] bg-clip-text text-transparent',
+          'bg-gradient-to-r from-[#6358de] to-[#7c6ee8] bg-clip-text text-transparent',
         subtitle: 'Make it memorable.',
       },
       {
@@ -672,7 +672,7 @@ export default function LinkWizardOnePerPage({
                   <span
                     className={
                       currentStep.highlightClass ||
-                      'bg-gradient-to-r from-[#FF10F0] to-[#bc13fe] bg-clip-text text-transparent'
+                      'bg-gradient-to-r from-[#6358de] to-[#7c6ee8] bg-clip-text text-transparent'
                     }
                   >
                     {currentStep.highlight}
@@ -753,7 +753,7 @@ export default function LinkWizardOnePerPage({
                         onClick={() => updateFormData('domain', d)}
                         className={`p-6 rounded-2xl border-2 text-left transition-all ${
                           isSelected
-                            ? 'border-[#FF10F0] bg-[#FF10F0]/5 shadow-[0_0_20px_rgba(255,16,240,0.2)]'
+                            ? 'border-[#6358de] bg-[#6358de]/5 shadow-[0_0_20px_rgba(255,16,240,0.2)]'
                             : 'border-slate-200 bg-white hover:border-[#324467]'
                         }`}
                       >
@@ -814,7 +814,7 @@ export default function LinkWizardOnePerPage({
                           onClick={() => updateFormData('botAction', opt.value)}
                           className={`p-4 rounded-xl border-2 font-bold transition-all ${
                             isSelected
-                              ? 'border-[#FF10F0] bg-[#FF10F0]/5 shadow-[0_0_20px_rgba(255,16,240,0.2)] text-[#1b1b1b]'
+                              ? 'border-[#6358de] bg-[#6358de]/5 shadow-[0_0_20px_rgba(255,16,240,0.2)] text-[#1b1b1b]'
                               : 'border-slate-200 bg-white text-slate-300 hover:border-[#324467]'
                           }`}
                         >
@@ -968,7 +968,7 @@ export default function LinkWizardOnePerPage({
                             onClick={() => togglePixel(pixel.id)}
                             className={`w-full flex items-center justify-between p-4 rounded-2xl border-2 transition-all ${
                               isSelected
-                                ? 'border-[#FF10F0] bg-[#FF10F0]/5'
+                                ? 'border-[#6358de] bg-[#6358de]/5'
                                 : 'border-slate-200 bg-white hover:border-[#324467]'
                             }`}
                           >
@@ -979,7 +979,7 @@ export default function LinkWizardOnePerPage({
                                 <div className="text-[10px] text-gray-500 uppercase">{name}</div>
                               </div>
                             </div>
-                            <div className={isSelected ? 'text-[#FF10F0]' : 'text-gray-600'}>
+                            <div className={isSelected ? 'text-[#6358de]' : 'text-gray-600'}>
                               <span className="material-symbols-outlined text-xl">
                                 {isSelected ? 'check_circle' : 'circle'}
                               </span>
@@ -1029,7 +1029,7 @@ export default function LinkWizardOnePerPage({
                   <span className="text-gray-500 text-[10px] font-bold uppercase tracking-widest">
                     Short Link
                   </span>
-                  <span className="font-bold text-[#FF10F0] break-all">
+                  <span className="font-bold text-[#6358de] break-all">
                     https://{selectedDomain}/{formData.slug || '—'}
                   </span>
                 </div>
@@ -1113,7 +1113,7 @@ export default function LinkWizardOnePerPage({
             type="button"
             onClick={goNext}
             disabled={validating || urlSafety.loading || (isLast && isSubmitting)}
-            className="flex-1 flex items-center justify-center gap-3 py-5 rounded-2xl font-extrabold text-xl tracking-tight transition-all active:scale-[0.98] shadow-xl bg-[#FF10F0] hover:bg-[#e00ed0] text-[#1b1b1b] disabled:opacity-60 disabled:cursor-not-allowed"
+            className="flex-1 flex items-center justify-center gap-3 py-5 rounded-2xl font-extrabold text-xl tracking-tight transition-all active:scale-[0.98] shadow-xl bg-[#6358de] hover:bg-[#5348c7] text-[#1b1b1b] disabled:opacity-60 disabled:cursor-not-allowed"
           >
             {isLast && isSubmitting ? (
               <>
