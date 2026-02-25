@@ -98,7 +98,7 @@ const Navbar = () => {
                 </Link>
                 <button
                   onClick={handleLogout}
-                  className="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-[#00f59b] hover:bg-[#00e08a] text-[#1b1b1b] text-sm font-bold leading-normal tracking-[0.015em] transition-colors"
+                  className="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-[#c0ffa5] hover:bg-[#b0ef95] text-[#1b1b1b] text-sm font-bold leading-normal tracking-[0.015em] transition-colors"
                 >
                   <span className="truncate">Logout</span>
                 </button>
@@ -169,7 +169,7 @@ const Navbar = () => {
                       handleLogout();
                       setIsOpen(false);
                     }}
-                    className="flex w-full cursor-pointer items-center justify-center rounded-lg h-12 bg-[#00f59b] hover:bg-[#00e08a] text-[#1b1b1b] font-bold transition-colors"
+                    className="flex w-full cursor-pointer items-center justify-center rounded-lg h-12 bg-[#c0ffa5] hover:bg-[#b0ef95] text-[#1b1b1b] font-bold transition-colors"
                   >
                     Logout
                   </button>
