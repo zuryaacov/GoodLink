@@ -775,7 +775,7 @@ const LinkManager = () => {
       <div
         className={
           isFoldersEnabled
-            ? 'sticky top-0 z-30 relative lg:-mt-6 lg:pt-6 -mx-4 px-4 py-3 md:-mx-6 md:px-6 bg-white border-b border-[#6358de] flex flex-col gap-4'
+            ? 'sticky top-0 z-30 relative lg:-mt-6 lg:pt-6 -mx-4 px-4 py-3 md:-mx-6 md:px-6 bg-white border-b border-slate-200 flex flex-col gap-4'
             : 'flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4'
         }
       >
@@ -868,13 +868,13 @@ const LinkManager = () => {
       {isFoldersEnabled && childSpaces.length > 0 && (
         <div className="flex flex-col gap-6 w-full">
           <div className="relative flex items-center gap-6 py-4">
-            <div className="h-[2px] flex-1 bg-gradient-to-r from-transparent via-[#FF00E5]/40 to-[#FF00E5]"></div>
-            <div className="px-8 py-2 rounded-full border border-primary/30 bg-slate-50 shadow-[0_0_30px_rgba(255,0,229,0.2)]">
+            <div className="h-[2px] flex-1 bg-gradient-to-r from-transparent via-[#6358de]/40 to-[#6358de]"></div>
+            <div className="px-8 py-2 rounded-full border border-[#6358de]/30 bg-slate-50 shadow-[0_0_30px_rgba(99,88,222,0.2)]">
               <span className="text-sm font-semibold text-[#1b1b1b] tracking-wider whitespace-nowrap">
                 {KIND_LABEL_PLURAL[nextKind] || 'SPACES'}
               </span>
             </div>
-            <div className="h-[2px] flex-1 bg-gradient-to-r from-[#FF00E5] via-[#FF00E5]/40 to-transparent"></div>
+            <div className="h-[2px] flex-1 bg-gradient-to-r from-[#6358de] via-[#6358de]/40 to-transparent"></div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full">
             {childSpaces.map((space) => {
