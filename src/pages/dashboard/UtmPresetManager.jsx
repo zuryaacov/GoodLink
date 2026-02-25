@@ -317,7 +317,7 @@ const UtmPresetManager = () => {
 
   return (
     <div className="w-full max-w-7xl mx-auto">
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
         <div>
           <h1 className="text-3xl font-bold text-[#1b1b1b] mb-2">UTM Presets</h1>
           <p className="text-[#1b1b1b]">
@@ -326,7 +326,7 @@ const UtmPresetManager = () => {
         </div>
         <button
           onClick={handleNewPreset}
-          className="px-6 py-3 bg-[#6358de] hover:bg-[#5348c7] text-white font-bold rounded-xl transition-all shadow-lg shadow-[#6358de]/20 flex items-center gap-2"
+          className="w-full sm:w-auto px-6 py-3 bg-[#6358de] hover:bg-[#5348c7] text-white font-bold rounded-xl transition-all shadow-lg shadow-[#6358de]/20 flex items-center justify-center gap-2"
         >
           <span className="material-symbols-outlined">add</span>
           New UTM Preset
