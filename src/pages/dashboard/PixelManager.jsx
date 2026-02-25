@@ -407,7 +407,7 @@ const PixelManager = () => {
             onClick={() => {
               window.location.href = '/#pricing';
             }}
-            className="group relative w-full inline-flex items-center justify-center gap-2 bg-[#6358de] text-[#1b1b1b] font-bold py-3.5 px-8 rounded-2xl transition-all duration-300 hover:bg-[#5348c7] hover:scale-[1.02] active:scale-[0.98] shadow-xl shadow-[#6358de]/30"
+            className="group relative w-full inline-flex items-center justify-center gap-2 bg-[#6358de] text-white font-bold py-3.5 px-8 rounded-2xl transition-all duration-300 hover:bg-[#5348c7] hover:scale-[1.02] active:scale-[0.98] shadow-xl shadow-[#6358de]/30"
           >
             <Zap className="w-5 h-5" />
             <span>View Plans & Upgrade</span>
@@ -432,7 +432,7 @@ const PixelManager = () => {
         </div>
         <button
           onClick={() => navigate('/dashboard/pixels/new')}
-          className="flex items-center justify-center gap-2 w-full sm:w-auto px-6 py-3 md:py-2.5 text-[#1b1b1b] font-bold rounded-xl transition-colors shadow-lg text-base md:text-sm"
+          className="flex items-center justify-center gap-2 w-full sm:w-auto px-6 py-3 md:py-2.5 text-white font-bold rounded-xl transition-colors shadow-lg text-base md:text-sm"
           style={{
             backgroundColor: '#6358de',
           }}

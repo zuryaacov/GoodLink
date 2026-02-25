@@ -172,7 +172,7 @@ const Sidebar = ({ className = '', onLinkClick }) => {
                 (location.pathname === '/dashboard' ||
                   location.pathname === '/dashboard/analytics');
               const active = link.href === '/dashboard' ? analyticsActive : isActive;
-              return `flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium transition-all duration-200 ${
+              return `flex items-center gap-3 px-3 py-3 rounded-xl text-base font-medium transition-all duration-200 ${
                 active
                   ? 'bg-secondary-green text-[#1b1b1b] shadow-lg shadow-secondary-green/20'
                   : 'text-slate-600 hover:text-[#1b1b1b] hover:bg-slate-100'
@@ -191,7 +191,7 @@ const Sidebar = ({ className = '', onLinkClick }) => {
             {getInitials(userName)}
           </div>
           <div className="flex flex-col flex-1 min-w-0">
-            <span className="text-sm font-bold text-[#1b1b1b] truncate">
+            <span className="text-base font-bold text-[#1b1b1b] truncate">
               {userName ? `Hello, ${userName}` : 'Hello'}
             </span>
             <span className="text-xs text-slate-500">{getPlanDisplayName(planType)}</span>
@@ -200,7 +200,7 @@ const Sidebar = ({ className = '', onLinkClick }) => {
 
         <button
           onClick={handleLogout}
-          className="flex items-center justify-center gap-3 px-3 py-2 w-full text-slate-600 hover:text-[#1b1b1b] hover:bg-slate-100 rounded-xl transition-all duration-200 text-sm font-medium"
+          className="flex items-center justify-center gap-3 px-3 py-2 w-full text-slate-600 hover:text-[#1b1b1b] hover:bg-slate-100 rounded-xl transition-all duration-200 text-base font-medium"
         >
           Logout
         </button>

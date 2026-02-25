@@ -406,7 +406,7 @@ const CustomDomainsManager = () => {
             onClick={() => {
               window.location.href = '/#pricing';
             }}
-            className="group relative w-full inline-flex items-center justify-center gap-2 bg-[#6358de] text-[#1b1b1b] font-bold py-3.5 px-8 rounded-2xl transition-all duration-300 hover:bg-[#5348c7] hover:scale-[1.02] active:scale-[0.98] shadow-xl shadow-[#6358de]/30"
+            className="group relative w-full inline-flex items-center justify-center gap-2 bg-[#6358de] text-white font-bold py-3.5 px-8 rounded-2xl transition-all duration-300 hover:bg-[#5348c7] hover:scale-[1.02] active:scale-[0.98] shadow-xl shadow-[#6358de]/30"
           >
             <Zap className="w-5 h-5" />
             <span>View Plans & Upgrade</span>
@@ -434,7 +434,7 @@ const CustomDomainsManager = () => {
         </div>
         <button
           onClick={() => navigate('/dashboard/domains/new')}
-          className="px-6 py-3 bg-[#6358de] hover:bg-[#5348c7] text-[#1b1b1b] font-bold rounded-xl transition-all shadow-lg shadow-[#6358de]/20 flex items-center gap-2 whitespace-nowrap"
+          className="px-6 py-3 bg-[#6358de] hover:bg-[#5348c7] text-white font-bold rounded-xl transition-all shadow-lg shadow-[#6358de]/20 flex items-center gap-2 whitespace-nowrap"
         >
           <span className="material-symbols-outlined">add</span>
           New Domain
@@ -497,7 +497,7 @@ const CustomDomainsManager = () => {
                   {(domain.status === 'pending' || domain.status === 'error') && (
                     <button
                       onClick={() => handleVerifyDNS(domain)}
-                      className="px-4 py-2 bg-[#6358de] hover:bg-[#5348c7] text-[#1b1b1b] font-bold rounded-xl transition-all shadow-lg shadow-[#6358de]/20 flex items-center justify-center gap-2 text-sm"
+                      className="px-4 py-2 bg-[#6358de] hover:bg-[#5348c7] text-white font-bold rounded-xl transition-all shadow-lg shadow-[#6358de]/20 flex items-center justify-center gap-2 text-sm"
                     >
                       <span className="material-symbols-outlined text-lg">verified</span>
                       Verify DNS

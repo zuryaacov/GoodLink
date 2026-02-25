@@ -282,7 +282,7 @@ const UtmPresetManager = () => {
             onClick={() => {
               window.location.href = '/#pricing';
             }}
-            className="w-full inline-flex items-center justify-center gap-2 bg-[#6358de] text-[#1b1b1b] font-bold py-3.5 px-8 rounded-2xl transition-all hover:bg-[#5348c7] shadow-xl shadow-[#6358de]/30"
+            className="w-full inline-flex items-center justify-center gap-2 bg-[#6358de] text-white font-bold py-3.5 px-8 rounded-2xl transition-all hover:bg-[#5348c7] shadow-xl shadow-[#6358de]/30"
           >
             View Plans & Upgrade
           </button>
@@ -302,7 +302,7 @@ const UtmPresetManager = () => {
         </div>
         <button
           onClick={handleNewPreset}
-          className="px-6 py-3 bg-[#6358de] hover:bg-[#5348c7] text-[#1b1b1b] font-bold rounded-xl transition-all shadow-lg shadow-[#6358de]/20 flex items-center gap-2"
+          className="px-6 py-3 bg-[#6358de] hover:bg-[#5348c7] text-white font-bold rounded-xl transition-all shadow-lg shadow-[#6358de]/20 flex items-center gap-2"
         >
           <span className="material-symbols-outlined">add</span>
           New UTM Preset
@@ -318,7 +318,7 @@ const UtmPresetManager = () => {
           </p>
           <button
             onClick={handleNewPreset}
-            className="px-6 py-3 bg-[#6358de] hover:bg-[#5348c7] text-[#1b1b1b] font-bold rounded-xl transition-all"
+            className="px-6 py-3 bg-[#6358de] hover:bg-[#5348c7] text-white font-bold rounded-xl transition-all"
           >
             Create First Preset
           </button>

@@ -844,7 +844,7 @@ const Step1FastTrack = ({
             // If validation failed, errors are already shown by handleCheckSlug
           }}
           disabled={checkingSlug}
-          className={`w-full px-4 sm:px-6 py-3 text-sm sm:text-base text-[#1b1b1b] font-bold rounded-xl transition-all flex items-center justify-center gap-2 ${
+          className={`w-full px-4 sm:px-6 py-3 text-sm sm:text-base text-white font-bold rounded-xl transition-all flex items-center justify-center gap-2 ${
             checkingSlug && validatingButton !== 'pink' ? 'opacity-50 cursor-not-allowed' : ''
           }`}
           style={{

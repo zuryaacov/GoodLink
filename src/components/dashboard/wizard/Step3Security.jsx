@@ -554,7 +554,7 @@ const Step3Security = ({ formData, updateFormData, onValidationRequest }) => {
                 <button
                   onClick={handleAddGeoRule}
                   disabled={!newGeoRule.country || !newGeoRule.url}
-                  className="flex-1 px-4 py-2.5 sm:py-3 bg-[#6358de] hover:bg-[#5348c7] disabled:opacity-50 disabled:cursor-not-allowed text-[#1b1b1b] font-bold rounded-xl transition-colors text-sm sm:text-base"
+                  className="flex-1 px-4 py-2.5 sm:py-3 bg-[#6358de] hover:bg-[#5348c7] disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold rounded-xl transition-colors text-sm sm:text-base"
                 >
                   {editingRuleIndex !== null ? 'Update Rule' : 'Add Rule'}
                 </button>

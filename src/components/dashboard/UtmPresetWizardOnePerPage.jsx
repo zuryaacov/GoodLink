@@ -568,7 +568,7 @@ export default function UtmPresetWizardOnePerPage({ initialData, onSave, onBack,
             type="button"
             onClick={goNext}
             disabled={loading}
-            className="flex-1 flex items-center justify-center gap-3 py-5 rounded-2xl font-extrabold text-xl tracking-tight transition-all bg-[#6358de] hover:bg-[#5348c7] text-[#1b1b1b] disabled:opacity-60 disabled:cursor-not-allowed shadow-xl"
+            className="flex-1 flex items-center justify-center gap-3 py-5 rounded-2xl font-extrabold text-xl tracking-tight transition-all bg-[#6358de] hover:bg-[#5348c7] text-white disabled:opacity-60 disabled:cursor-not-allowed shadow-xl"
           >
             {loading ? (
               <span className="material-symbols-outlined animate-spin text-2xl">refresh</span>
