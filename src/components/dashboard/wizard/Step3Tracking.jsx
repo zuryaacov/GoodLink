@@ -118,7 +118,7 @@ const Step3Tracking = ({ formData, updateFormData }) => {
         <button
           onClick={() => updateFormData('serverSideTracking', !formData.serverSideTracking)}
           className={`relative w-14 h-7 sm:w-12 sm:h-6 rounded-full transition-colors flex-shrink-0 ${
-            formData.serverSideTracking ? 'bg-secondary-green' : 'bg-slate-200'
+            formData.serverSideTracking ? 'bg-[#00F59B]' : 'bg-slate-200'
           }`}
           aria-label="Toggle server-side tracking"
         >

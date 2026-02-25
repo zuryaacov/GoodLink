@@ -1085,7 +1085,7 @@ const LinkManager = () => {
                         className="absolute opacity-0 w-0 h-0 peer"
                         aria-label="Toggle link status"
                       />
-                      <span className="absolute inset-0 rounded-full bg-[#374151] transition-colors peer-checked:bg-secondary-green" />
+                      <span className="absolute inset-0 rounded-full bg-[#374151] transition-colors peer-checked:bg-[#00F59B]" />
                       <span className="absolute left-[3px] bottom-[3px] w-[18px] h-[18px] bg-white rounded-full transition-transform pointer-events-none peer-checked:translate-x-5" />
                     </label>
                     <span
