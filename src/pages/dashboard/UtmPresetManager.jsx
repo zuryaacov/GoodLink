@@ -152,7 +152,7 @@ const UtmPresetManager = () => {
         <span key={i}>
           {i > 0 && <span className="text-black font-bold">&</span>}
           <span className={`font-bold ${colorClass}`}>{param}=</span>
-          <span className={`${colorClass}`}>{value}</span>
+          <span className={`font-bold ${colorClass}`}>{value}</span>
         </span>
       );
     });
@@ -398,11 +398,11 @@ const UtmPresetManager = () => {
 
                 <div className="space-y-2 mb-4">
                   {queryString ? (
-                    <div className="text-base font-mono break-all bg-white border border-slate-200 p-3 rounded-lg">
+                    <div className="text-base font-mono font-bold break-all bg-white border border-slate-200 p-3 rounded-lg">
                       {renderColoredQueryString(queryString)}
                     </div>
                   ) : (
-                    <div className="text-xs text-black italic p-3 rounded-lg bg-white border border-slate-200">
+                    <div className="text-xs text-black font-bold italic p-3 rounded-lg bg-white border border-slate-200">
                       No UTM parameters set
                     </div>
                   )}
@@ -410,31 +410,31 @@ const UtmPresetManager = () => {
                   {preset.utm_source && (
                     <div className="flex items-center gap-2 text-sm font-bold">
                       <span className="text-blue-400 font-mono text-sm w-20">source:</span>
-                      <span className="text-black">{preset.utm_source}</span>
+                      <span className="text-black font-bold">{preset.utm_source}</span>
                     </div>
                   )}
                   {preset.utm_medium && (
                     <div className="flex items-center gap-2 text-sm font-bold">
                       <span className="text-purple-400 font-mono text-sm w-20">medium:</span>
-                      <span className="text-black">{preset.utm_medium}</span>
+                      <span className="text-black font-bold">{preset.utm_medium}</span>
                     </div>
                   )}
                   {preset.utm_campaign && (
                     <div className="flex items-center gap-2 text-sm font-bold">
                       <span className="text-yellow-400 font-mono text-sm w-20">campaign:</span>
-                      <span className="text-black">{preset.utm_campaign}</span>
+                      <span className="text-black font-bold">{preset.utm_campaign}</span>
                     </div>
                   )}
                   {preset.utm_content && (
                     <div className="flex items-center gap-2 text-sm font-bold">
                       <span className="text-emerald-400 font-mono text-sm w-20">content:</span>
-                      <span className="text-black">{preset.utm_content}</span>
+                      <span className="text-black font-bold">{preset.utm_content}</span>
                     </div>
                   )}
                   {preset.utm_term && (
                     <div className="flex items-center gap-2 text-sm font-bold">
                       <span className="text-orange-400 font-mono text-sm w-20">term:</span>
-                      <span className="text-black">{preset.utm_term}</span>
+                      <span className="text-black font-bold">{preset.utm_term}</span>
                     </div>
                   )}
                 </div>
@@ -442,7 +442,7 @@ const UtmPresetManager = () => {
                 <div className="flex gap-2">
                   <button
                     onClick={() => handleCopy(preset)}
-                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-slate-200 hover:bg-slate-300 text-black rounded-lg transition-colors text-sm font-medium"
+                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-slate-200 hover:bg-slate-300 text-black rounded-lg transition-colors text-sm font-bold"
                   >
                     {copiedId === preset.id ? (
                       <>
