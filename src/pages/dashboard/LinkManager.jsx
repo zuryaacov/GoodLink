@@ -775,7 +775,7 @@ const LinkManager = () => {
       <div
         className={
           isFoldersEnabled
-            ? 'sticky top-0 z-30 relative lg:-mt-6 lg:pt-6 -mx-4 px-4 py-3 md:-mx-6 md:px-6 bg-white border-b border-slate-200 shadow-[0_10px_30px_rgba(0,0,0,0.35)] flex flex-col gap-4'
+            ? 'sticky top-0 z-30 relative lg:-mt-6 lg:pt-6 -mx-4 px-4 py-3 md:-mx-6 md:px-6 bg-white border-b border-[#6358de] flex flex-col gap-4'
             : 'flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4'
         }
       >
