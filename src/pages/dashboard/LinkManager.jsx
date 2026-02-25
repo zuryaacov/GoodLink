@@ -867,14 +867,12 @@ const LinkManager = () => {
       {/* Active Grid cards for current level children */}
       {isFoldersEnabled && childSpaces.length > 0 && (
         <div className="flex flex-col gap-6 w-full">
-          <div className="relative flex items-center gap-6 py-4">
-            <div className="h-[2px] flex-1 bg-gradient-to-r from-transparent via-[#6358de]/40 to-[#6358de]"></div>
-            <div className="px-8 py-2 rounded-full border border-[#6358de]/30 bg-slate-50 shadow-[0_0_30px_rgba(99,88,222,0.2)]">
-              <span className="text-sm font-semibold text-[#1b1b1b] tracking-wider whitespace-nowrap">
-                {KIND_LABEL_PLURAL[nextKind] || 'SPACES'}
-              </span>
-            </div>
-            <div className="h-[2px] flex-1 bg-gradient-to-r from-[#6358de] via-[#6358de]/40 to-transparent"></div>
+          <div className="relative flex py-5 items-center">
+            <div className="flex-grow border-t border-[#E5E9E8]"></div>
+            <span className="flex-shrink mx-4 text-xs font-bold uppercase px-3 py-1 rounded-full bg-[#F4F7F6]" style={{ color: '#001E22' }}>
+              {KIND_LABEL_PLURAL[nextKind] || 'SPACES'}
+            </span>
+            <div className="flex-grow border-t border-[#E5E9E8]"></div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full">
             {childSpaces.map((space) => {
