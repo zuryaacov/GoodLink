@@ -285,7 +285,7 @@ const CustomDomainsManager = () => {
   const getStatusColor = (status) => {
     switch (status) {
       case 'active':
-        return 'bg-slate-100 text-black border-slate-200';
+        return 'bg-green-500/20 text-black border-green-500/30';
       case 'pending':
         return 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30';
       case 'error':
@@ -469,7 +469,7 @@ const CustomDomainsManager = () => {
                   <div
                     className={`inline-flex items-center self-start gap-1.5 px-3 py-1 rounded-lg border text-xs font-bold uppercase tracking-wider ${getStatusColor(domain.status)}`}
                   >
-                    <span className="material-symbols-outlined text-base">
+                    <span className={`material-symbols-outlined text-base ${domain.status === 'active' ? 'text-green-400' : ''}`}>
                       {getStatusIcon(domain.status)}
                     </span>
                     <span>{domain.status}</span>
