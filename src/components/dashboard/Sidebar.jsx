@@ -125,7 +125,7 @@ const Sidebar = ({ className = '', onLinkClick }) => {
 
   return (
     <aside className={baseClasses}>
-      <div className="px-6 mb-8">
+      <div className="px-6 mb-8 hidden lg:block">
         <Link
           to="/"
           className="flex items-center gap-3 text-[#1b1b1b] transition-opacity hover:opacity-80"
@@ -181,7 +181,7 @@ const Sidebar = ({ className = '', onLinkClick }) => {
       </nav>
 
       <div className="p-4 border-t border-slate-200 flex flex-col gap-2">
-        <div className="flex items-center gap-3 px-3 py-2">
+        <div className="hidden lg:flex items-center gap-3 px-3 py-2">
           <div className="size-8 rounded-full bg-gradient-to-tr from-primary to-secondary-green flex items-center justify-center text-[#1b1b1b] font-bold text-xs">
             {getInitials(userName)}
           </div>
