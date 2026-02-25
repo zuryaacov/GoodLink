@@ -336,7 +336,7 @@ export default function AccountSettingsPage() {
                   <button
                     type="submit"
                     disabled={saving}
-                    className="bg-[#135bec] hover:bg-[#135bec]/90 text-[#1b1b1b] font-semibold py-3 px-8 rounded-xl transition-all shadow-[0_0_15px_rgba(19,91,236,0.3)] disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                    className="bg-[#6358de] hover:bg-[#5348c7] text-white font-semibold py-3 px-8 rounded-xl transition-all shadow-[0_0_15px_rgba(99,88,222,0.3)] disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                   >
                     {saving && (
                       <span className="material-symbols-outlined animate-spin text-sm">
