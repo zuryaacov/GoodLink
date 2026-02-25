@@ -48,7 +48,7 @@ const CountryPickerBottomSheet = ({ isOpen, onClose, onSelect, selectedCountry }
           animate={{ y: 0 }}
           exit={{ y: '100%' }}
           transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-          className="relative w-full bg-[#101622] rounded-t-2xl shadow-2xl max-h-[80vh] flex flex-col border-t border-[#232f48]"
+          className="relative w-full bg-white rounded-t-2xl shadow-2xl max-h-[80vh] flex flex-col border-t border-slate-200"
         >
           {/* Handle Bar */}
           <div className="flex justify-center pt-3 pb-2">
@@ -56,12 +56,12 @@ const CountryPickerBottomSheet = ({ isOpen, onClose, onSelect, selectedCountry }
           </div>
 
           {/* Header */}
-          <div className="px-4 pb-3 border-b border-[#232f48]">
+          <div className="px-4 pb-3 border-b border-slate-200">
             <div className="flex items-center justify-between mb-3">
-              <h3 className="text-lg font-bold text-white">Select Country</h3>
+              <h3 className="text-lg font-bold text-[#1b1b1b]">Select Country</h3>
               <button
                 onClick={onClose}
-                className="text-slate-400 hover:text-white transition-colors p-1"
+                className="text-slate-400 hover:text-[#1b1b1b] transition-colors p-1"
               >
                 <span className="material-symbols-outlined text-xl">close</span>
               </button>
@@ -77,7 +77,7 @@ const CountryPickerBottomSheet = ({ isOpen, onClose, onSelect, selectedCountry }
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search country..."
-                className="w-full pl-10 pr-4 py-2.5 bg-[#0b0f19] border border-[#232f48] rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-primary transition-colors"
+                className="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-[#1b1b1b] placeholder-slate-500 focus:outline-none focus:border-primary transition-colors"
                 autoFocus
               />
             </div>
@@ -98,13 +98,13 @@ const CountryPickerBottomSheet = ({ isOpen, onClose, onSelect, selectedCountry }
                     className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-colors ${
                       selectedCountry === country.code
                         ? 'bg-primary/20 border border-primary'
-                        : 'bg-[#0b0f19] border border-transparent hover:bg-[#1a1f2e]'
+                        : 'bg-white border border-transparent hover:bg-slate-100'
                     }`}
                   >
                     <span className="text-2xl flex-shrink-0">{getCountryFlag(country.code)}</span>
                     <span
                       className={`flex-1 text-left font-medium ${
-                        selectedCountry === country.code ? 'text-white' : 'text-slate-300'
+                        selectedCountry === country.code ? 'text-[#1b1b1b]' : 'text-slate-300'
                       }`}
                     >
                       {country.name}

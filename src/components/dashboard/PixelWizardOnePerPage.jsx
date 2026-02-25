@@ -79,13 +79,13 @@ const getPlatformLogo = (platform) => {
       );
     case 'taboola':
       return (
-        <div className={`${w} overflow-hidden border border-[#232f48]`}>
+        <div className={`${w} overflow-hidden border border-slate-200`}>
           <img src={taboolaLogo} alt="Taboola" className="w-full h-full object-cover" />
         </div>
       );
     case 'outbrain':
       return (
-        <div className={`${w} overflow-hidden border border-[#232f48]`}>
+        <div className={`${w} overflow-hidden border border-slate-200`}>
           <img src={outbrainLogo} alt="Outbrain" className="w-full h-full object-cover" />
         </div>
       );
@@ -105,7 +105,7 @@ const getPlatformLogo = (platform) => {
       );
     default:
       return (
-        <div className={`${w} bg-[#232f48]`}>
+        <div className={`${w} bg-slate-200`}>
           <span className="text-slate-400 text-xs">?</span>
         </div>
       );
@@ -425,7 +425,7 @@ export default function PixelWizardOnePerPage({ initialData, onSave, onBack, isE
 
   return (
     <div className="flex flex-col flex-1 min-h-0">
-      <div className="h-1 bg-[#232f48] flex-shrink-0">
+      <div className="h-1 bg-slate-200 flex-shrink-0">
         <div
           className="h-full bg-[#135bec] transition-all duration-500 shadow-[0_0_10px_#135bec]"
           style={{ width: `${progressPct}%` }}
@@ -477,7 +477,7 @@ export default function PixelWizardOnePerPage({ initialData, onSave, onBack, isE
 
             {currentStep?.id === 'name' && (
               <>
-                <div className="rounded-2xl bg-[#101622] border-2 border-[#232f48] focus-within:border-[#135bec] transition-all">
+                <div className="rounded-2xl bg-white border-2 border-slate-200 focus-within:border-[#135bec] transition-all">
                   <input
                     type="text"
                     value={formData.name}
@@ -503,7 +503,7 @@ export default function PixelWizardOnePerPage({ initialData, onSave, onBack, isE
                     className={`p-5 rounded-2xl border-2 text-left transition-all flex items-center gap-4 ${
                       formData.platform === p.value
                         ? 'border-[#FF10F0] bg-[#FF10F0]/5'
-                        : 'border-[#232f48] bg-[#101622] hover:border-[#324467]'
+                        : 'border-slate-200 bg-white hover:border-slate-300'
                     }`}
                   >
                     {getPlatformLogo(p.value)}
@@ -515,7 +515,7 @@ export default function PixelWizardOnePerPage({ initialData, onSave, onBack, isE
 
             {currentStep?.id === 'pixelId' && (
               <div className="space-y-2">
-                <div className="rounded-2xl bg-[#101622] border-2 border-[#232f48] focus-within:border-[#135bec] transition-all">
+                <div className="rounded-2xl bg-white border-2 border-slate-200 focus-within:border-[#135bec] transition-all">
                   <input
                     type="text"
                     value={formData.pixelId}
@@ -544,7 +544,7 @@ export default function PixelWizardOnePerPage({ initialData, onSave, onBack, isE
 
             {currentStep?.id === 'capiToken' && (
               <div className="space-y-2">
-                <div className="rounded-2xl bg-[#101622] border-2 border-[#232f48] focus-within:border-[#135bec] transition-all">
+                <div className="rounded-2xl bg-white border-2 border-slate-200 focus-within:border-[#135bec] transition-all">
                   <textarea
                     value={formData.capiToken}
                     onChange={(e) => {
@@ -569,7 +569,7 @@ export default function PixelWizardOnePerPage({ initialData, onSave, onBack, isE
               <div className="space-y-4">
                 {formData.platform === 'taboola' || formData.platform === 'outbrain' ? (
                   <>
-                    <div className="rounded-2xl bg-[#101622] border-2 border-[#232f48] focus-within:border-[#135bec] transition-all">
+                    <div className="rounded-2xl bg-white border-2 border-slate-200 focus-within:border-[#135bec] transition-all">
                       <input
                         type="text"
                         value={formData.eventType}
@@ -591,7 +591,7 @@ export default function PixelWizardOnePerPage({ initialData, onSave, onBack, isE
                   </>
                 ) : (
                   <>
-                    <div className="rounded-2xl bg-[#101622] border-2 border-[#232f48] focus-within:border-[#135bec] transition-all overflow-hidden">
+                    <div className="rounded-2xl bg-white border-2 border-slate-200 focus-within:border-[#135bec] transition-all overflow-hidden">
                       <select
                         value={formData.eventType}
                         onChange={(e) =>
@@ -607,18 +607,18 @@ export default function PixelWizardOnePerPage({ initialData, onSave, onBack, isE
                           <option
                             key={ev.value}
                             value={ev.value}
-                            className="bg-[#101622] text-white"
+                            className="bg-white text-white"
                           >
                             {ev.label}
                           </option>
                         ))}
-                        <option value="custom" className="bg-[#101622] text-white">
+                        <option value="custom" className="bg-white text-white">
                           Custom Event
                         </option>
                       </select>
                     </div>
                     {formData.eventType === 'custom' && (
-                      <div className="rounded-2xl bg-[#101622] border-2 border-[#232f48] focus-within:border-[#135bec] transition-all">
+                      <div className="rounded-2xl bg-white border-2 border-slate-200 focus-within:border-[#135bec] transition-all">
                         <input
                           type="text"
                           value={formData.customEventName}
@@ -643,12 +643,12 @@ export default function PixelWizardOnePerPage({ initialData, onSave, onBack, isE
         </AnimatePresence>
       </div>
 
-      <footer className="fixed bottom-0 left-0 right-0 p-6 bg-[#0b0f19]/95 backdrop-blur border-t border-[#232f48] z-50">
+      <footer className="fixed bottom-0 left-0 right-0 p-6 bg-white/95 backdrop-blur border-t border-slate-200 z-50">
         <div className="max-w-2xl mx-auto flex items-center gap-4">
           <button
             type="button"
             onClick={goBack}
-            className={`flex items-center justify-center p-5 rounded-2xl border border-[#232f48] font-bold text-gray-400 hover:bg-[#232f48] hover:text-white transition-all ${isFirst ? 'invisible' : ''}`}
+            className={`flex items-center justify-center p-5 rounded-2xl border border-slate-200 font-bold text-gray-400 hover:bg-slate-200 hover:text-white transition-all ${isFirst ? 'invisible' : ''}`}
           >
             <span className="material-symbols-outlined text-2xl">chevron_left</span>
           </button>

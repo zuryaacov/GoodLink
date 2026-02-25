@@ -57,7 +57,7 @@ const DNSRecordsDisplay = ({ records, domain }) => {
   const CopyButton = ({ value, fieldName, className = '' }) => (
     <button
       onClick={() => handleCopy(value, fieldName)}
-      className={`px-3 py-1.5 bg-[#232f48] hover:bg-[#324467] text-white text-xs font-medium rounded-lg transition-colors flex items-center gap-2 ${className}`}
+      className={`px-3 py-1.5 bg-slate-200 hover:bg-slate-300 text-white text-xs font-medium rounded-lg transition-colors flex items-center gap-2 ${className}`}
     >
       {copiedField === fieldName ? (
         <>
@@ -93,7 +93,7 @@ const DNSRecordsDisplay = ({ records, domain }) => {
               key={record.id}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="bg-[#101622] border border-[#232f48] rounded-xl p-5 space-y-4"
+              className="bg-white border border-slate-200 rounded-xl p-5 space-y-4"
             >
               <div className="flex items-center justify-between gap-3">
                 <h5 className="text-base font-bold text-white">Record {index + 1}</h5>
@@ -106,7 +106,7 @@ const DNSRecordsDisplay = ({ records, domain }) => {
                 <div className="flex items-center justify-between gap-3">
                   <div className="flex-1 min-w-0">
                     <label className="text-xs text-slate-500 mb-1 block">Host/Name:</label>
-                    <code className="block px-3 py-2 bg-[#0b0f19] border border-[#232f48] rounded-lg text-sm text-white font-mono break-all">
+                    <code className="block px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm text-white font-mono break-all">
                       {record.host}
                     </code>
                   </div>
@@ -118,7 +118,7 @@ const DNSRecordsDisplay = ({ records, domain }) => {
                 <div className="flex items-center justify-between gap-3">
                   <div className="flex-1 min-w-0">
                     <label className="text-xs text-slate-500 mb-1 block">Value:</label>
-                    <code className="block px-3 py-2 bg-[#0b0f19] border border-[#232f48] rounded-lg text-sm text-white font-mono break-all">
+                    <code className="block px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm text-white font-mono break-all">
                       {record.value}
                     </code>
                   </div>
@@ -134,7 +134,7 @@ const DNSRecordsDisplay = ({ records, domain }) => {
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-[#101622]/50 border border-dashed border-[#232f48] rounded-xl p-6 text-center"
+          className="bg-white/50 border border-dashed border-slate-200 rounded-xl p-6 text-center"
         >
           <div className="flex flex-col items-center gap-3">
             <span className="material-symbols-outlined text-primary animate-pulse text-3xl">
@@ -157,11 +157,11 @@ const DNSRecordsDisplay = ({ records, domain }) => {
           <li>
             <strong>Double Domain Names:</strong> In the "Host" field, do not include your full
             domain. For example, use{' '}
-            <code className="bg-[#0b0f19] px-1 py-0.5 rounded text-yellow-300">
+            <code className="bg-white px-1 py-0.5 rounded text-yellow-300">
               _cf-custom-hostname.www
             </code>{' '}
             instead of{' '}
-            <code className="bg-[#0b0f19] px-1 py-0.5 rounded text-yellow-300">
+            <code className="bg-white px-1 py-0.5 rounded text-yellow-300">
               _cf-custom-hostname.www.tipul4u.com
             </code>
             .

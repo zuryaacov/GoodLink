@@ -38,7 +38,7 @@ const Step4Security = ({ formData, updateFormData }) => {
               className={`w-full flex items-start justify-between p-4 rounded-xl border transition-colors text-left ${
                 formData.fraudShield === option.value
                   ? 'border-primary bg-primary/10'
-                  : 'border-[#232f48] bg-[#0b0f19] hover:border-[#324467]'
+                  : 'border-slate-200 bg-white hover:border-slate-300'
               }`}
             >
               <div>
@@ -87,7 +87,7 @@ const Step4Security = ({ formData, updateFormData }) => {
               className={`w-full flex items-start justify-between p-4 rounded-xl border transition-colors text-left ${
                 formData.botAction === option.value
                   ? 'border-primary bg-primary/10'
-                  : 'border-[#232f48] bg-[#0b0f19] hover:border-[#324467]'
+                  : 'border-slate-200 bg-white hover:border-slate-300'
               }`}
             >
               <div>
@@ -117,14 +117,14 @@ const Step4Security = ({ formData, updateFormData }) => {
         <label className="block text-sm font-medium text-white mb-3">
           Geo-Targeting Rules <span className="text-slate-500">(Optional)</span>
         </label>
-        <div className="p-4 bg-[#0b0f19] border border-[#232f48] rounded-xl">
+        <div className="p-4 bg-white border border-slate-200 rounded-xl">
           <p className="text-slate-400 text-sm mb-4">
             Set up routing rules based on visitor location
           </p>
           <div className="space-y-3">
             {formData.geoRules && formData.geoRules.length > 0 ? (
               formData.geoRules.map((rule, index) => (
-                <div key={index} className="p-3 bg-[#101622] rounded-lg border border-[#232f48]">
+                <div key={index} className="p-3 bg-white rounded-lg border border-slate-200">
                   <p className="text-white text-sm font-medium">
                     {rule.country} → {rule.url}
                   </p>
@@ -139,7 +139,7 @@ const Step4Security = ({ formData, updateFormData }) => {
               onClick={() => {
                 setModalOpen(true);
               }}
-              className="w-full px-4 py-2 border border-dashed border-[#324467] text-slate-400 hover:text-white hover:border-primary rounded-lg transition-colors text-sm"
+              className="w-full px-4 py-2 border border-dashed border-slate-300 text-slate-500 hover:text-[#1b1b1b] hover:border-primary rounded-lg transition-colors text-sm"
             >
               + Add Geo-Rule
             </button>

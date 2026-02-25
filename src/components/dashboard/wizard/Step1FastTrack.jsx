@@ -637,12 +637,12 @@ const Step1FastTrack = ({
               onChange={handleUrlChange}
               onPaste={handleUrlPaste}
               placeholder="Paste your URL here..."
-              className={`w-full px-4 sm:px-6 py-4 sm:py-5 text-base sm:text-lg bg-[#0b0f19] border-2 rounded-xl sm:rounded-2xl text-white placeholder-slate-500 focus:outline-none transition-all shadow-lg ${
+              className={`w-full px-4 sm:px-6 py-4 sm:py-5 text-base sm:text-lg bg-white border-2 rounded-xl sm:rounded-2xl text-white placeholder-slate-500 focus:outline-none transition-all shadow-lg ${
                 urlError
                   ? 'border-red-500 focus:border-red-500'
                   : safetyCheck.isSafe === true && !safetyCheck.loading
                     ? 'border-green-500/50 focus:border-green-500'
-                    : 'border-[#232f48] focus:border-primary'
+                    : 'border-slate-200 focus:border-primary'
               }`}
               autoFocus
             />
@@ -698,12 +698,12 @@ const Step1FastTrack = ({
                   setIsNameAvailable(null);
                 }}
                 placeholder="Enter internal name for this link"
-                className={`w-full px-4 py-3 bg-[#0b0f19] border-2 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-primary transition-colors ${
+                className={`w-full px-4 py-3 bg-white border-2 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-primary transition-colors ${
                   nameError
                     ? 'border-red-500'
                     : isNameAvailable === true
                       ? 'border-green-500/50'
-                      : 'border-[#232f48]'
+                      : 'border-slate-200'
                 }`}
               />
               {checkingName && (
@@ -736,7 +736,7 @@ const Step1FastTrack = ({
                   className={`px-4 py-2 rounded-lg font-medium text-sm transition-all ${
                     isSelected
                       ? 'bg-primary text-white shadow-lg shadow-primary/30'
-                      : 'bg-[#0b0f19] border border-[#232f48] text-slate-300 hover:border-primary/50'
+                      : 'bg-white border border-slate-200 text-slate-300 hover:border-primary/50'
                   }`}
                 >
                   {domain}
@@ -781,12 +781,12 @@ const Step1FastTrack = ({
             }
           }}
           placeholder="e.g., iphone-deal"
-          className={`w-full px-4 py-3 bg-[#0b0f19] border rounded-xl text-white placeholder-slate-500 focus:outline-none transition-colors text-sm sm:text-base ${
+          className={`w-full px-4 py-3 bg-white border rounded-xl text-white placeholder-slate-500 focus:outline-none transition-colors text-sm sm:text-base ${
             slugError
               ? 'border-red-500 focus:border-red-500'
               : isSlugAvailable === true
                 ? 'border-green-500 focus:border-green-500'
-                : 'border-[#232f48] focus:border-primary'
+                : 'border-slate-200 focus:border-primary'
           }`}
         />
         {slugError && (
@@ -814,7 +814,7 @@ const Step1FastTrack = ({
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="max-w-2xl mx-auto w-full px-2 sm:px-0 p-3 sm:p-4 bg-[#0b0f19] border border-[#232f48] rounded-xl"
+          className="max-w-2xl mx-auto w-full px-2 sm:px-0 p-3 sm:p-4 bg-white border border-slate-200 rounded-xl"
         >
           <p className="text-xs text-slate-500 mb-1">Preview:</p>
           <p className="text-[#10b981] font-mono font-bold text-[1.125rem] sm:text-[1.3125rem] break-all">

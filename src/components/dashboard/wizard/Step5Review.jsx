@@ -33,7 +33,7 @@ const Step5Review = ({ formData, generateRandomSlug }) => {
       </div>
 
       {/* Summary Card */}
-      <div className="bg-[#0b0f19] border border-[#232f48] rounded-2xl p-6 space-y-6">
+      <div className="bg-white border border-slate-200 rounded-2xl p-6 space-y-6">
         {/* Core Details */}
         <div>
           <h4 className="text-sm font-bold text-white mb-4 uppercase tracking-wider">
@@ -70,7 +70,7 @@ const Step5Review = ({ formData, generateRandomSlug }) => {
           formData.utmMedium ||
           formData.utmCampaign ||
           formData.utmContent) && (
-          <div className="border-t border-[#232f48] pt-6">
+          <div className="border-t border-slate-200 pt-6">
             <h4 className="text-sm font-bold text-white mb-4 uppercase tracking-wider">
               UTM Parameters
             </h4>
@@ -99,7 +99,7 @@ const Step5Review = ({ formData, generateRandomSlug }) => {
                   <span className="text-white text-sm font-mono">{formData.utmContent}</span>
                 </div>
               )}
-              <div className="flex justify-between pt-2 border-t border-[#232f48]">
+              <div className="flex justify-between pt-2 border-t border-slate-200">
                 <span className="text-slate-400 text-sm">Parameter Pass-through</span>
                 <span className="text-white text-sm">
                   {formData.parameterPassThrough ? 'Enabled' : 'Disabled'}
@@ -110,7 +110,7 @@ const Step5Review = ({ formData, generateRandomSlug }) => {
         )}
 
         {/* Tracking */}
-        <div className="border-t border-[#232f48] pt-6">
+        <div className="border-t border-slate-200 pt-6">
           <h4 className="text-sm font-bold text-white mb-4 uppercase tracking-wider">Tracking</h4>
           <div className="space-y-2">
             <div className="flex justify-between">
@@ -130,7 +130,7 @@ const Step5Review = ({ formData, generateRandomSlug }) => {
             {formData.customScript && (
               <div>
                 <span className="text-slate-400 text-sm">Custom Script</span>
-                <p className="text-white text-xs font-mono mt-1 bg-[#101622] p-2 rounded break-all">
+                <p className="text-white text-xs font-mono mt-1 bg-white p-2 rounded break-all">
                   {formData.customScript.substring(0, 100)}
                   {formData.customScript.length > 100 ? '...' : ''}
                 </p>
@@ -140,7 +140,7 @@ const Step5Review = ({ formData, generateRandomSlug }) => {
         </div>
 
         {/* Security */}
-        <div className="border-t border-[#232f48] pt-6">
+        <div className="border-t border-slate-200 pt-6">
           <h4 className="text-sm font-bold text-white mb-4 uppercase tracking-wider">
             Security & Routing
           </h4>
@@ -165,22 +165,22 @@ const Step5Review = ({ formData, generateRandomSlug }) => {
         </div>
 
         {/* QR Code (via qrserver.com) */}
-        <div className="border-t border-[#232f48] pt-6">
+        <div className="border-t border-slate-200 pt-6">
           <h4 className="text-sm font-bold text-white mb-4 uppercase tracking-wider">QR Code</h4>
           <div className="flex flex-col items-center gap-3">
             <img
               src={qrCodeUrl}
               alt="QR Code"
-              className="w-[200px] h-[200px] rounded-xl border border-[#232f48] bg-white p-2"
+              className="w-[200px] h-[200px] rounded-xl border border-slate-200 bg-white p-2"
             />
             <p className="text-xs text-slate-500">Scans to: {shortUrl}</p>
           </div>
         </div>
 
         {/* Final URL Preview */}
-        <div className="border-t border-[#232f48] pt-6">
+        <div className="border-t border-slate-200 pt-6">
           <h4 className="text-sm font-bold text-white mb-4 uppercase tracking-wider">Final URL</h4>
-          <div className="p-4 bg-[#101622] border border-primary/30 rounded-xl">
+          <div className="p-4 bg-white border border-primary/30 rounded-xl">
             <p className="text-xs text-slate-500 mb-2">Copy this URL for your ad platform:</p>
             <p className="text-primary font-mono text-sm break-all">{fullUtmString}</p>
           </div>

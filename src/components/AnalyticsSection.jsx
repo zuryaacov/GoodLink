@@ -4,7 +4,7 @@ const AnalyticsSection = () => {
   return (
     <section
       id="resources"
-      className="py-16 px-6 bg-slate-100 dark:bg-[#0c101a] border-y border-slate-200 dark:border-[#232f48]"
+      className="py-16 px-6 bg-slate-100 dark:bg-white border-y border-slate-200 dark:border-slate-200"
     >
       <div className="mx-auto max-w-[1200px] flex flex-col lg:flex-row gap-12 items-center">
         {/* Text Side */}
@@ -39,7 +39,7 @@ const AnalyticsSection = () => {
         </div>
         {/* Chart Component Side */}
         <div className="flex-1 w-full">
-          <div className="rounded-xl border border-slate-200 dark:border-[#324467] bg-white dark:bg-[#192233] p-6 shadow-2xl">
+          <div className="rounded-xl border border-slate-200 dark:border-slate-200 bg-white dark:bg-white p-6 shadow-2xl">
             <div className="flex flex-col gap-2 mb-6">
               <p className="text-slate-500 dark:text-slate-400 text-sm font-medium uppercase tracking-wider">
                 Link Click Performance

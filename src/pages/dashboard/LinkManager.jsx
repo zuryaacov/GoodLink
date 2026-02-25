@@ -663,7 +663,7 @@ const LinkManager = () => {
           return (
             <div
               key={presetId}
-              className="p-3 bg-[#0b0f19] rounded-lg border border-[#232f48] space-y-2"
+              className="p-3 bg-white rounded-lg border border-slate-200 space-y-2"
             >
               {/* Preset Header */}
               <div className="flex items-center gap-2">
@@ -672,7 +672,7 @@ const LinkManager = () => {
                 </div>
                 <span className="text-xs text-slate-500">•</span>
                 <span
-                  className="text-xs text-slate-300 font-medium truncate flex-1"
+                  className="text-xs text-slate-700 font-medium truncate flex-1"
                   title={preset.name}
                 >
                   {preset.name}
@@ -775,12 +775,12 @@ const LinkManager = () => {
       <div
         className={
           isFoldersEnabled
-            ? 'sticky top-0 z-30 relative lg:-mt-6 lg:pt-6 -mx-4 px-4 py-3 md:-mx-6 md:px-6 bg-[#0b0f19] border-b border-[#232f48] shadow-[0_10px_30px_rgba(0,0,0,0.35)] flex flex-col gap-4'
+            ? 'sticky top-0 z-30 relative lg:-mt-6 lg:pt-6 -mx-4 px-4 py-3 md:-mx-6 md:px-6 bg-white border-b border-slate-200 shadow-[0_10px_30px_rgba(0,0,0,0.35)] flex flex-col gap-4'
             : 'flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4'
         }
       >
         {isFoldersEnabled && (
-          <div className="pointer-events-none absolute inset-x-0 -top-20 h-20 lg:-top-6 lg:h-6 bg-[#0b0f19]"></div>
+          <div className="pointer-events-none absolute inset-x-0 -top-20 h-20 lg:-top-6 lg:h-6 bg-white"></div>
         )}
         <div
           className={
@@ -795,7 +795,7 @@ const LinkManager = () => {
                 <button
                   type="button"
                   onClick={() => goToSpace(currentSpace?.parent_id || null)}
-                  className="flex items-center justify-center p-2.5 rounded-2xl border border-[#232f48] text-gray-400 hover:bg-[#232f48] hover:text-white transition-all active:scale-90 flex-shrink-0"
+                  className="flex items-center justify-center p-2.5 rounded-2xl border border-slate-200 text-gray-400 hover:bg-slate-200 hover:text-[#1b1b1b] transition-all active:scale-90 flex-shrink-0"
                   aria-label="Back"
                 >
                   <span className="material-symbols-outlined text-2xl">chevron_left</span>
@@ -811,7 +811,7 @@ const LinkManager = () => {
                   ? handleCreateOption('link')
                   : setCreateMenuOpen((v) => !v)
               }
-              className={`flex items-center justify-center gap-2 ${isFoldersEnabled ? 'w-full sm:w-auto' : 'w-auto'} px-6 py-3 md:py-2.5 text-white font-bold rounded-xl transition-colors shadow-lg text-base md:text-sm bg-[#FF10F0] hover:bg-[#e00ed0]`}
+              className={`flex items-center justify-center gap-2 ${isFoldersEnabled ? 'w-full sm:w-auto' : 'w-auto'} px-6 py-3 md:py-2.5 text-white font-bold rounded-xl transition-colors shadow-lg text-base md:text-sm bg-primary hover:bg-primary/90`}
             >
               <span className="material-symbols-outlined text-xl md:text-base">add</span>
               {createOptions.length === 1 ? 'New Link' : 'Create'}
@@ -823,7 +823,7 @@ const LinkManager = () => {
                   aria-label="Close create menu"
                   onClick={() => setCreateMenuOpen(false)}
                 />
-                <div className="absolute right-0 mt-2 w-56 z-20 rounded-xl border border-[#2a3552] bg-[#101622] shadow-2xl overflow-hidden">
+                <div className="absolute right-0 mt-2 w-56 z-20 rounded-xl border border-slate-200 bg-white shadow-2xl overflow-hidden">
                   {createOptions.map((option) => (
                     <button
                       key={option.id}
@@ -839,11 +839,11 @@ const LinkManager = () => {
           </div>
         </div>
         {isFoldersEnabled && (
-          <div className="flex flex-wrap items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-300">
+          <div className="flex flex-wrap items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-700">
             <button
               type="button"
               onClick={() => goToSpace(null)}
-              className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-[#2a3552] bg-[#101622] hover:bg-[#151d2d] transition-colors"
+              className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 transition-colors"
             >
               <Home size={13} />
               Root
@@ -854,7 +854,7 @@ const LinkManager = () => {
                 <button
                   type="button"
                   onClick={() => goToSpace(b.id)}
-                  className="px-3 py-1.5 rounded-lg border border-[#2a3552] bg-[#101622] hover:bg-[#151d2d] transition-colors"
+                  className="px-3 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 transition-colors"
                 >
                   {b.name}
                 </button>
@@ -869,7 +869,7 @@ const LinkManager = () => {
         <div className="flex flex-col gap-6 w-full">
           <div className="relative flex items-center gap-6 py-4">
             <div className="h-[2px] flex-1 bg-gradient-to-r from-transparent via-[#FF00E5]/40 to-[#FF00E5]"></div>
-            <div className="px-8 py-2 rounded-full border border-[#FF00E5]/30 bg-[#161C2C] shadow-[0_0_30px_rgba(255,0,229,0.2)]">
+            <div className="px-8 py-2 rounded-full border border-primary/30 bg-slate-50 shadow-[0_0_30px_rgba(255,0,229,0.2)]">
               <span className="text-sm font-semibold text-white tracking-wider whitespace-nowrap">
                 {KIND_LABEL_PLURAL[nextKind] || 'SPACES'}
               </span>
@@ -892,11 +892,11 @@ const LinkManager = () => {
                       goToSpace(space.id);
                     }
                   }}
-                  className="group relative text-left bg-[#101622] border border-[#232f48] rounded-[1.25rem] p-6 flex flex-col min-h-[240px] transition-all duration-300 hover:border-[#FF00E5] hover:shadow-[0_12px_30px_rgba(255,0,229,0.18)]"
+                  className="group relative text-left bg-white border border-slate-200 rounded-[1.25rem] p-6 flex flex-col min-h-[240px] transition-all duration-300 hover:border-primary hover:shadow-[0_12px_30px_rgba(255,0,229,0.18)]"
                 >
                   <div className="flex items-start justify-between mb-6">
                     <div>
-                      <h3 className="text-2xl font-bold mb-1 group-hover:text-[#FF00E5] transition-colors">
+                      <h3 className="text-2xl font-bold mb-1 group-hover:text-primary transition-colors">
                         {space.name}
                       </h3>
                       <div className="flex items-center gap-2 text-[#00F0FF] text-xs font-bold uppercase tracking-widest opacity-80">
@@ -904,7 +904,7 @@ const LinkManager = () => {
                         <span>{kindLabel}</span>
                       </div>
                     </div>
-                    <div className="mr-12 bg-[#FF00E5]/10 p-3 rounded-2xl text-[#FF00E5] shadow-[0_0_15px_rgba(255,0,229,0.1)] transition-all">
+                    <div className="mr-12 bg-primary/10 p-3 rounded-2xl text-primary shadow-[0_0_15px_rgba(255,0,229,0.1)] transition-all">
                       <Folder size={24} fill="currentColor" fillOpacity={0.2} />
                     </div>
                   </div>
@@ -915,14 +915,14 @@ const LinkManager = () => {
                         e.stopPropagation();
                         setOpenSpaceMenuId((prev) => (prev === space.id ? null : space.id));
                       }}
-                      className="p-2 rounded-lg bg-[#0b0f19] border border-[#232f48] text-slate-300 hover:text-white hover:border-[#FF00E5]/40 transition-colors"
+                      className="p-2 rounded-lg bg-white border border-slate-200 text-slate-700 hover:text-[#1b1b1b] hover:border-primary/40 transition-colors"
                       aria-label="Space actions"
                     >
                       <span className="material-symbols-outlined text-base">more_vert</span>
                     </button>
                     {openSpaceMenuId === space.id && (
                       <div
-                        className="absolute right-0 mt-2 w-40 rounded-xl border border-[#2a3552] bg-[#101622] shadow-2xl overflow-hidden z-20"
+                        className="absolute right-0 mt-2 w-40 rounded-xl border border-slate-200 bg-white shadow-2xl overflow-hidden z-20"
                         onClick={(e) => e.stopPropagation()}
                       >
                         <button
@@ -943,7 +943,7 @@ const LinkManager = () => {
                     )}
                   </div>
 
-                  <div className="bg-[#0b0f19] border border-[#232f48] rounded-xl p-4 mb-6">
+                  <div className="bg-white border border-slate-200 rounded-xl p-4 mb-6">
                     <div className="text-[10px] text-gray-500 font-bold uppercase mb-1 tracking-widest">
                       Total {kindLabel} Clicks
                     </div>
@@ -952,7 +952,7 @@ const LinkManager = () => {
                     </div>
                   </div>
 
-                  <div className="mt-auto flex items-center justify-between pt-4 border-t border-[#232f48]">
+                  <div className="mt-auto flex items-center justify-between pt-4 border-t border-slate-200">
                     <div className="text-xs font-bold text-white">
                       {new Intl.NumberFormat('en-US').format(stats.linksCount)} Links Inside
                     </div>
@@ -979,19 +979,19 @@ const LinkManager = () => {
       {/* Individual links divider */}
       {directLinks.length > 0 && (
         <div className="relative flex items-center gap-6 py-4">
-          <div className="h-[2px] flex-1 bg-gradient-to-r from-transparent via-[#135bec]/40 to-[#135bec]"></div>
-          <div className="px-8 py-2 rounded-full border border-[#135bec]/30 bg-[#161C2C] shadow-[0_0_30px_rgba(19,91,236,0.2)]">
+          <div className="h-[2px] flex-1 bg-gradient-to-r from-transparent via-[#0b996f]/40 to-[#0b996f]"></div>
+          <div className="px-8 py-2 rounded-full border border-[#0b996f]/30 bg-slate-50 shadow-[0_0_30px_rgba(19,91,236,0.2)]">
             <span className="text-sm font-semibold text-white tracking-wider whitespace-nowrap">
               Links
             </span>
           </div>
-          <div className="h-[2px] flex-1 bg-gradient-to-r from-[#135bec] via-[#135bec]/40 to-transparent"></div>
+          <div className="h-[2px] flex-1 bg-gradient-to-r from-[#0b996f] via-[#0b996f]/40 to-transparent"></div>
         </div>
       )}
 
       {/* Links List */}
       {directLinks.length === 0 && childSpaces.length === 0 ? (
-        <div className="bg-[#101622] border border-[#232f48] rounded-2xl p-4 md:p-6 w-full">
+        <div className="bg-white border border-slate-200 rounded-2xl p-4 md:p-6 w-full">
           <div className="text-center py-12">
             <span className="material-symbols-outlined text-6xl text-slate-600 mb-4">link_off</span>
             <p className="text-slate-400 text-lg mb-2">No items yet</p>
@@ -1009,9 +1009,9 @@ const LinkManager = () => {
             return (
               <div
                 key={link.id}
-                className={`relative bg-[#101622] border border-[#232f48] rounded-[1.25rem] p-6 flex flex-col h-full transition-all duration-300 ease-out overflow-visible ${
+                className={`relative bg-white border border-slate-200 rounded-[1.25rem] p-6 flex flex-col h-full transition-all duration-300 ease-out overflow-visible ${
                   !isActive ? 'opacity-70' : ''
-                } ${isActive ? 'hover:border-[#135bec] hover:shadow-[0_12px_30px_rgba(19,91,236,0.15)]' : ''}`}
+                } ${isActive ? 'hover:border-[#0b996f] hover:shadow-[0_12px_30px_rgba(19,91,236,0.15)]' : ''}`}
               >
                 {/* Header: title, destination, menu */}
                 <div className="flex justify-between items-start mb-6">
@@ -1032,7 +1032,7 @@ const LinkManager = () => {
                 </div>
                 <LinkActionsMenu
                   className="absolute top-4 right-4"
-                  hoverBorderClass="hover:border-[#135bec]/60"
+                  hoverBorderClass="hover:border-[#0b996f]/60"
                   link={link}
                   onRefresh={fetchData}
                   onEdit={(linkToEdit) => navigate(`/dashboard/links/edit/${linkToEdit.id}`)}
@@ -1051,7 +1051,7 @@ const LinkManager = () => {
                 />
 
                 {/* Short Link box */}
-                <div className="bg-[#0b0f19] border border-[#232f48] rounded-xl p-4 mb-6">
+                <div className="bg-white border border-slate-200 rounded-xl p-4 mb-6">
                   <div className="flex items-center justify-between gap-2">
                     <div className="flex flex-col min-w-0 flex-1">
                       <span className="text-[10px] text-gray-500 font-bold uppercase mb-1 tracking-widest">
@@ -1066,7 +1066,7 @@ const LinkManager = () => {
                     </div>
                     <button
                       onClick={() => handleCopy(link.short_url)}
-                      className="copy-btn p-2 bg-[#232f48] hover:bg-gray-600 text-gray-300 rounded-lg transition-all flex-shrink-0 active:scale-90"
+                      className="copy-btn p-2 bg-slate-200 hover:bg-gray-600 text-slate-700 rounded-lg transition-all flex-shrink-0 active:scale-90"
                       title="Copy to clipboard"
                     >
                       <span className="material-symbols-outlined text-base">content_copy</span>
@@ -1075,7 +1075,7 @@ const LinkManager = () => {
                 </div>
 
                 {/* Footer: Active (left), QR (center), Clicks (right) */}
-                <div className="mt-auto flex justify-between items-center pt-4 border-t border-[#232f48]">
+                <div className="mt-auto flex justify-between items-center pt-4 border-t border-slate-200">
                   <div className="flex items-center gap-3">
                     <label className="relative inline-block w-11 h-6 cursor-pointer select-none">
                       <input
@@ -1089,14 +1089,14 @@ const LinkManager = () => {
                       <span className="absolute left-[3px] bottom-[3px] w-[18px] h-[18px] bg-white rounded-full transition-transform pointer-events-none peer-checked:translate-x-5" />
                     </label>
                     <span
-                      className={`text-sm font-semibold ${isActive ? 'text-gray-300' : 'text-gray-500'}`}
+                      className={`text-sm font-semibold ${isActive ? 'text-slate-700' : 'text-gray-500'}`}
                     >
                       {isActive ? 'Active' : 'Paused'}
                     </span>
                   </div>
                   <button
                     onClick={() => setQrModal({ isOpen: true, link })}
-                    className="relative p-2 bg-[#232f48] hover:bg-[#324467] text-gray-300 rounded-lg transition-all active:scale-90 flex items-center justify-center"
+                    className="relative p-2 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-lg transition-all active:scale-90 flex items-center justify-center"
                     title="Open QR Code"
                   >
                     <img src={qrCodeIcon} alt="QR Code" className="w-9 h-9 opacity-90" />
@@ -1147,7 +1147,7 @@ const LinkManager = () => {
               <img
                 src={`https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(qrModal.link.short_url || '')}`}
                 alt="QR Code"
-                className="w-full max-w-[200px] sm:max-w-[280px] md:max-w-[360px] h-auto rounded-xl border border-[#232f48] bg-white p-1.5 sm:p-2"
+                className="w-full max-w-[200px] sm:max-w-[280px] md:max-w-[360px] h-auto rounded-xl border border-slate-200 bg-white p-1.5 sm:p-2"
               />
               <p className="text-slate-400 text-xs sm:text-sm font-mono break-all text-center max-w-full min-w-0 px-1">
                 {qrModal.link.short_url}
@@ -1156,7 +1156,7 @@ const LinkManager = () => {
                 <button
                   type="button"
                   onClick={() => handleDownloadQrPng(qrModal.link.short_url)}
-                  className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-[#232f48] hover:bg-[#324467] text-white text-sm font-medium transition-colors"
+                  className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-slate-200 hover:bg-slate-300 text-white text-sm font-medium transition-colors"
                 >
                   <span className="material-symbols-outlined text-base">download</span>
                   Download PNG
@@ -1164,7 +1164,7 @@ const LinkManager = () => {
                 <button
                   type="button"
                   onClick={() => handleDownloadQrSvg(qrModal.link.short_url)}
-                  className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-[#232f48] hover:bg-[#324467] text-white text-sm font-medium transition-colors"
+                  className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-slate-200 hover:bg-slate-300 text-white text-sm font-medium transition-colors"
                 >
                   <span className="material-symbols-outlined text-base">download</span>
                   Download SVG
@@ -1172,7 +1172,7 @@ const LinkManager = () => {
                 <button
                   type="button"
                   onClick={() => handleCopyQrSvg(qrModal.link.short_url)}
-                  className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-[#232f48] hover:bg-[#324467] text-white text-sm font-medium transition-colors"
+                  className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-slate-200 hover:bg-slate-300 text-white text-sm font-medium transition-colors"
                 >
                   <span className="material-symbols-outlined text-base">content_copy</span>
                   {qrCopyStatus || 'Copy SVG code'}
@@ -1211,7 +1211,7 @@ const LinkManager = () => {
                   }
                   className={`px-3 py-1.5 rounded-full border text-xs font-semibold transition-colors ${
                     moveModal.selectedSpaceId === null
-                      ? 'bg-[#135bec]/15 border-[#135bec]/60 text-[#135bec]'
+                      ? 'bg-[#0b996f]/15 border-[#0b996f]/60 text-[#0b996f]'
                       : 'bg-white border-slate-300 text-slate-700 hover:bg-slate-50'
                   }`}
                 >
@@ -1233,7 +1233,7 @@ const LinkManager = () => {
                         }
                         className={`px-3 py-1.5 rounded-full border text-xs font-semibold transition-colors ${
                           isActive
-                            ? 'bg-[#135bec]/15 border-[#135bec]/60 text-[#135bec]'
+                            ? 'bg-[#0b996f]/15 border-[#0b996f]/60 text-[#0b996f]'
                             : 'bg-white border-slate-300 text-slate-700 hover:bg-slate-50'
                         }`}
                       >
@@ -1266,7 +1266,7 @@ const LinkManager = () => {
                         }
                         className={`text-left px-3 py-2 rounded-xl border transition-colors ${
                           isSelected
-                            ? 'border-[#135bec] bg-[#135bec]/10 text-[#135bec]'
+                            ? 'border-[#0b996f] bg-[#0b996f]/10 text-[#0b996f]'
                             : 'border-slate-300 bg-white text-slate-700 hover:bg-slate-50'
                         }`}
                       >
@@ -1368,7 +1368,7 @@ const LinkActionsMenu = ({
   onMove,
   onShowModal,
   className = '',
-  hoverBorderClass = 'hover:border-[#FF00E5]/40',
+  hoverBorderClass = 'hover:border-primary/40',
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
@@ -1422,7 +1422,7 @@ const LinkActionsMenu = ({
     <div className={`z-10 ${className}`}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className={`p-2 rounded-lg bg-[#0b0f19] border border-[#232f48] text-slate-300 hover:text-white ${hoverBorderClass} transition-colors`}
+        className={`p-2 rounded-lg bg-white border border-slate-200 text-slate-700 hover:text-[#1b1b1b] ${hoverBorderClass} transition-colors`}
         aria-label="Actions menu"
       >
         <span className="material-symbols-outlined text-base">more_vert</span>
@@ -1431,7 +1431,7 @@ const LinkActionsMenu = ({
       {isOpen && (
         <>
           <div className="fixed inset-0 z-10" onClick={() => setIsOpen(false)} />
-          <div className="absolute right-0 mt-2 w-48 bg-[#101622] border border-[#232f48] rounded-xl shadow-2xl z-20 overflow-hidden min-w-max">
+          <div className="absolute right-0 mt-2 w-48 bg-white border border-slate-200 rounded-xl shadow-2xl z-20 overflow-hidden min-w-max">
             <button
               onClick={() => {
                 setIsOpen(false);

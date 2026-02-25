@@ -149,7 +149,7 @@ export default function DomainWizardOnePerPage({
 
   return (
     <div className="flex flex-col flex-1 min-h-0">
-      <div className="h-1 bg-[#232f48] flex-shrink-0">
+      <div className="h-1 bg-slate-200 flex-shrink-0">
         <div
           className="h-full bg-[#135bec] transition-all duration-500 shadow-[0_0_10px_#135bec]"
           style={{ width: `${progressPct}%` }}
@@ -201,7 +201,7 @@ export default function DomainWizardOnePerPage({
 
             {currentStep?.id === 'domain' && (
               <div className="space-y-5">
-                <div className="rounded-2xl bg-[#101622] border-2 border-[#232f48] focus-within:border-[#135bec] transition-all">
+                <div className="rounded-2xl bg-white border-2 border-slate-200 focus-within:border-[#135bec] transition-all">
                   <input
                     type="text"
                     value={domainName}
@@ -223,7 +223,7 @@ export default function DomainWizardOnePerPage({
 
             {currentStep?.id === 'rootRedirect' && (
               <div className="space-y-5">
-                <div className="rounded-2xl bg-[#101622] border-2 border-[#232f48] focus-within:border-[#135bec] transition-all">
+                <div className="rounded-2xl bg-white border-2 border-slate-200 focus-within:border-[#135bec] transition-all">
                   <input
                     type="text"
                     value={rootRedirect}
@@ -254,7 +254,7 @@ export default function DomainWizardOnePerPage({
                       type="button"
                       onClick={onRefreshDns}
                       disabled={isSubmitting}
-                      className="flex items-center gap-2 px-3 py-2 bg-[#232f48] hover:bg-[#324467] text-white text-sm font-medium rounded-xl transition-colors border border-[#232f48]"
+                      className="flex items-center gap-2 px-3 py-2 bg-slate-200 hover:bg-[#324467] text-white text-sm font-medium rounded-xl transition-colors border border-slate-200"
                     >
                       <span
                         className={`material-symbols-outlined text-lg ${isSubmitting ? 'animate-spin' : ''}`}
@@ -268,7 +268,7 @@ export default function DomainWizardOnePerPage({
                 {dnsRecords && dnsRecords.length > 0 ? (
                   <DNSRecordsDisplay records={dnsRecords} domain={domainName} />
                 ) : (
-                  <div className="rounded-2xl bg-[#101622] border border-[#232f48] p-6 text-slate-400 text-sm">
+                  <div className="rounded-2xl bg-white border border-slate-200 p-6 text-slate-400 text-sm">
                     Almost done — please complete the previous step and then continue.
                   </div>
                 )}
@@ -307,12 +307,12 @@ export default function DomainWizardOnePerPage({
         </AnimatePresence>
       </div>
 
-      <footer className="fixed bottom-0 left-0 right-0 p-6 bg-[#0b0f19]/95 backdrop-blur border-t border-[#232f48] z-50">
+      <footer className="fixed bottom-0 left-0 right-0 p-6 bg-white/95 backdrop-blur border-t border-slate-200 z-50">
         <div className="max-w-2xl mx-auto flex items-center gap-4">
           <button
             type="button"
             onClick={goBack}
-            className={`flex items-center justify-center p-5 rounded-2xl border border-[#232f48] font-bold text-gray-400 hover:bg-[#232f48] hover:text-white transition-all ${isFirst ? 'invisible' : ''}`}
+            className={`flex items-center justify-center p-5 rounded-2xl border border-slate-200 font-bold text-gray-400 hover:bg-slate-200 hover:text-white transition-all ${isFirst ? 'invisible' : ''}`}
           >
             <span className="material-symbols-outlined text-2xl">chevron_left</span>
           </button>

@@ -292,7 +292,7 @@ const PixelManager = () => {
         );
       default:
         return (
-          <div className="w-10 h-10 rounded-lg bg-[#232f48] flex items-center justify-center">
+          <div className="w-10 h-10 rounded-lg bg-slate-200 flex items-center justify-center">
             <span className="text-slate-400 text-xs">?</span>
           </div>
         );
@@ -338,7 +338,7 @@ const PixelManager = () => {
   // Show upgrade paywall only if explicitly not PRO
   if (normalizedPlan && normalizedPlan !== 'pro') {
     return (
-      <div className="relative min-h-[480px] w-full flex items-center justify-center p-6 overflow-hidden bg-[#0b0f19] rounded-2xl border border-dashed border-[#232f48]">
+      <div className="relative min-h-[480px] w-full flex items-center justify-center p-6 overflow-hidden bg-white rounded-2xl border border-dashed border-slate-200">
         {/* Background mock layout */}
         <div className="absolute inset-0 opacity-[0.18] blur-[3px] pointer-events-none select-none p-6">
           <div className="max-w-5xl mx-auto space-y-6">
@@ -353,7 +353,7 @@ const PixelManager = () => {
         </div>
 
         {/* Main card */}
-        <div className="relative z-10 max-w-xl w-full bg-[#101622]/90 backdrop-blur-xl border border-[#232f48] shadow-2xl rounded-3xl p-8 md:p-10 text-center">
+        <div className="relative z-10 max-w-xl w-full bg-white/90 backdrop-blur-xl border border-slate-200 shadow-2xl rounded-3xl p-8 md:p-10 text-center">
           {/* Icon */}
           <div className="mb-6 flex justify-center">
             <div className="relative">
@@ -380,7 +380,7 @@ const PixelManager = () => {
 
           {/* Value props */}
           <div className="space-y-4 mb-10 text-left">
-            <div className="flex items-center gap-3 p-3 bg-[#0b0f19]/80 rounded-xl border border-[#232f48] hover:border-[#FF10F0]/40 transition-colors">
+            <div className="flex items-center gap-3 p-3 bg-white/80 rounded-xl border border-slate-200 hover:border-primary/40 transition-colors">
               <Globe className="w-5 h-5 text-[#FF10F0]" />
               <div>
                 <p className="font-semibold text-sm text-white italic">Cross‑platform CAPI</p>
@@ -389,7 +389,7 @@ const PixelManager = () => {
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-3 p-3 bg-[#0b0f19]/80 rounded-xl border border-[#232f48] hover:border-[#FF10F0]/40 transition-colors">
+            <div className="flex items-center gap-3 p-3 bg-white/80 rounded-xl border border-slate-200 hover:border-primary/40 transition-colors">
               <BarChart3 className="w-5 h-5 text-[#FF10F0]" />
               <div>
                 <p className="font-semibold text-sm text-white italic">
@@ -450,7 +450,7 @@ const PixelManager = () => {
 
       {/* Pixels List */}
       {pixels.length === 0 ? (
-        <div className="bg-[#101622] border border-[#232f48] rounded-2xl p-4 md:p-6 w-full">
+        <div className="bg-white border border-slate-200 rounded-2xl p-4 md:p-6 w-full">
           <div className="text-center py-12">
             <span className="material-symbols-outlined text-6xl text-slate-600 mb-4">
               ads_click
@@ -464,7 +464,7 @@ const PixelManager = () => {
           {pixels.map((pixel) => (
             <div
               key={pixel.id}
-              className="bg-[#101622] border border-[#232f48] rounded-xl p-5 transition-all hover:bg-white/5 hover:border-primary/30 flex flex-col gap-4"
+              className="bg-white border border-slate-200 rounded-xl p-5 transition-all hover:bg-white/5 hover:border-primary/30 flex flex-col gap-4"
             >
               {/* Header with Logo and Name */}
               <div className="flex items-start gap-3">
@@ -478,7 +478,7 @@ const PixelManager = () => {
               </div>
 
               {/* Pixel ID */}
-              <div className="p-3 bg-[#0b0f19] rounded-lg border border-[#232f48]">
+              <div className="p-3 bg-white rounded-lg border border-slate-200">
                 <p className="text-xs text-slate-500 mb-1">Pixel ID</p>
                 <p className="font-mono text-sm text-slate-300 break-all">{pixel.pixel_id || ''}</p>
               </div>
@@ -493,7 +493,7 @@ const PixelManager = () => {
 
               {/* Taboola: what to set in Taboola (URL with tglid) */}
               {pixel.platform === 'taboola' && (
-                <div className="p-3 bg-[#0b0f19] rounded-lg border border-[#232f48] text-xs">
+                <div className="p-3 bg-white rounded-lg border border-slate-200 text-xs">
                   <p className="text-slate-500 mb-1.5">
                     Tracking URL / Suffix: Copy and paste the following into your Taboola campaign
                     &quot;Suffix&quot; field
@@ -507,7 +507,7 @@ const PixelManager = () => {
 
               {/* Outbrain: what to set in Outbrain (URL with oglid) */}
               {pixel.platform === 'outbrain' && (
-                <div className="p-3 bg-[#0b0f19] rounded-lg border border-[#232f48] text-xs">
+                <div className="p-3 bg-white rounded-lg border border-slate-200 text-xs">
                   <p className="text-slate-500 mb-1.5">
                     Outbrain Tracking Setup Tracking URL / Suffix: Copy and paste the following into
                     your Outbrain campaign &quot;Suffix&quot; field
@@ -520,13 +520,13 @@ const PixelManager = () => {
               )}
 
               {/* Status & Actions */}
-              <div className="flex items-center justify-between gap-3 pt-2 border-t border-[#232f48]">
+              <div className="flex items-center justify-between gap-3 pt-2 border-t border-slate-200">
                 {/* Status */}
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => handleToggleStatus(pixel.id, pixel.status || 'active')}
                     className={`relative w-12 h-6 rounded-full transition-colors flex-shrink-0 ${
-                      pixel.status === 'active' ? 'bg-primary' : 'bg-[#232f48]'
+                      pixel.status === 'active' ? 'bg-primary' : 'bg-slate-200'
                     }`}
                     aria-label="Toggle CAPI status"
                     title={

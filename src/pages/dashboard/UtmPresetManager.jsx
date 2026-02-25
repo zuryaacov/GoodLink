@@ -242,7 +242,7 @@ const UtmPresetManager = () => {
   const normalizedPlan = (planType || '').toLowerCase();
   if (normalizedPlan === 'free' || normalizedPlan === 'start' || normalizedPlan === 'starter') {
     return (
-      <div className="relative min-h-[480px] w-full flex items-center justify-center p-6 overflow-hidden bg-[#0b0f19] rounded-2xl border border-dashed border-[#232f48]">
+      <div className="relative min-h-[480px] w-full flex items-center justify-center p-6 overflow-hidden bg-white rounded-2xl border border-dashed border-slate-200">
         <div className="absolute inset-0 opacity-[0.18] blur-[3px] pointer-events-none select-none p-6">
           <div className="max-w-5xl mx-auto space-y-6">
             <div className="h-10 bg-[#141b2e] rounded-md w-1/3 mb-8" />
@@ -254,7 +254,7 @@ const UtmPresetManager = () => {
             <div className="h-56 bg-[#141b2e] rounded-xl w-full" />
           </div>
         </div>
-        <div className="relative z-10 max-w-xl w-full bg-[#101622]/90 backdrop-blur-xl border border-[#232f48] shadow-2xl rounded-3xl p-8 md:p-10 text-center">
+        <div className="relative z-10 max-w-xl w-full bg-white/90 backdrop-blur-xl border border-slate-200 shadow-2xl rounded-3xl p-8 md:p-10 text-center">
           <div className="mb-6 flex justify-center">
             <div className="relative">
               <div className="absolute inset-0 bg-[#FF10F0] blur-2xl opacity-25 animate-pulse" />

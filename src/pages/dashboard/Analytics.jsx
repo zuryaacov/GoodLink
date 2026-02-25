@@ -53,7 +53,7 @@ const relativeTime = (dateString) => {
 };
 
 const KPICard = ({ title, value, change, trend, icon, iconBgClass, iconColorClass }) => (
-  <div className="bg-[#101622] border border-[#232f48] rounded-2xl p-5 transition-all hover:border-[#135bec] hover:shadow-[0_4px_20px_rgba(19,91,236,0.1)]">
+  <div className="bg-white border border-slate-200 rounded-2xl p-5 transition-all hover:border-primary hover:shadow-[0_4px_20px_rgba(11,153,111,0.1)]">
     <div className="flex justify-between items-start mb-4">
       <div
         className={`p-2 rounded-lg ${iconBgClass || 'bg-[#135bec]/10'} ${iconColorClass || 'text-[#135bec]'}`}
@@ -72,7 +72,7 @@ const KPICard = ({ title, value, change, trend, icon, iconBgClass, iconColorClas
       )}
     </div>
     <div className="space-y-1">
-      <h3 className="text-gray-400 text-xs uppercase font-bold tracking-widest">{title}</h3>
+      <h3 className="text-slate-500 text-xs uppercase font-bold tracking-widest">{title}</h3>
       <p className="text-3xl font-extrabold text-white">{value}</p>
     </div>
   </div>
@@ -84,10 +84,10 @@ const HumanVsBotCard = ({ humanCount, botCount, unknownCount }) => {
   const botPct = total ? (botCount / total) * 100 : 0;
   const unknownPct = total ? (unknownCount / total) * 100 : 0;
   return (
-    <div className="bg-[#101622] border border-[#232f48] rounded-2xl p-6 flex flex-col items-center transition-all hover:border-[#135bec] hover:shadow-[0_4px_20px_rgba(19,91,236,0.1)] lg:col-span-1">
+    <div className="bg-white border border-slate-200 rounded-2xl p-6 flex flex-col items-center transition-all hover:border-primary hover:shadow-[0_4px_20px_rgba(11,153,111,0.1)] lg:col-span-1">
       <div className="w-full flex justify-between items-center mb-6">
         <h3 className="text-sm font-bold text-gray-200">Human vs. Bot Ratio</h3>
-        <button type="button" className="text-gray-500 hover:text-white p-1">
+        <button type="button" className="text-slate-600 hover:text-[#1b1b1b] p-1">
           <span className="material-symbols-outlined text-lg">more_horiz</span>
         </button>
       </div>
@@ -98,10 +98,10 @@ const HumanVsBotCard = ({ humanCount, botCount, unknownCount }) => {
             background: `conic-gradient(#135bec 0% ${humanPct}%, #FF10F0 ${humanPct}% ${humanPct + botPct}%, #374151 ${humanPct + botPct}% 100%)`,
           }}
         >
-          <div className="w-[120px] h-[120px] bg-[#101622] rounded-full flex items-center justify-center">
+          <div className="w-[120px] h-[120px] bg-white rounded-full flex items-center justify-center">
             <div className="text-center">
               <span className="block text-2xl font-bold text-white">{Math.round(humanPct)}%</span>
-              <span className="block text-[10px] text-gray-500 uppercase font-bold">Human</span>
+              <span className="block text-[10px] text-slate-600 uppercase font-bold">Human</span>
             </div>
           </div>
         </div>
@@ -109,15 +109,15 @@ const HumanVsBotCard = ({ humanCount, botCount, unknownCount }) => {
       <div className="w-full grid grid-cols-2 gap-4 mt-2">
         <div className="flex items-center gap-2">
           <span className="w-3 h-3 rounded-full bg-[#135bec] shrink-0" />
-          <span className="text-xs text-gray-400">Human ({humanCount})</span>
+          <span className="text-xs text-slate-500">Human ({humanCount})</span>
         </div>
         <div className="flex items-center gap-2">
           <span className="w-3 h-3 rounded-full bg-[#FF10F0] shrink-0" />
-          <span className="text-xs text-gray-400">Bot ({botCount})</span>
+          <span className="text-xs text-slate-500">Bot ({botCount})</span>
         </div>
         <div className="flex items-center gap-2">
           <span className="w-3 h-3 rounded-full bg-gray-600 shrink-0" />
-          <span className="text-xs text-gray-400">Unknown ({unknownCount})</span>
+          <span className="text-xs text-slate-500">Unknown ({unknownCount})</span>
         </div>
       </div>
     </div>
@@ -128,7 +128,7 @@ const GeoProgressCard = ({ geographic }) => {
   const total = geographic.reduce((s, i) => s + i.value, 0);
   const colors = ['#135bec', '#FF10F0', '#10b981', '#eab308'];
   return (
-    <div className="bg-[#101622] border border-[#232f48] rounded-2xl p-6 transition-all hover:border-[#135bec] hover:shadow-[0_4px_20px_rgba(19,91,236,0.1)] lg:col-span-2">
+    <div className="bg-white border border-slate-200 rounded-2xl p-6 transition-all hover:border-primary hover:shadow-[0_4px_20px_rgba(11,153,111,0.1)] lg:col-span-2">
       <div className="w-full flex justify-between items-center mb-6">
         <h3 className="text-sm font-bold text-gray-200">Geographic Distribution (Top 15)</h3>
         <button type="button" className="text-[#135bec] text-xs font-bold hover:underline">
@@ -137,7 +137,7 @@ const GeoProgressCard = ({ geographic }) => {
       </div>
       <div className="space-y-5">
         {geographic.length === 0 ? (
-          <p className="text-gray-500 text-sm">No geographic data yet</p>
+          <p className="text-slate-600 text-sm">No geographic data yet</p>
         ) : (
           geographic.slice(0, 15).map((item, i) => {
             const pct = total ? Math.round((item.value / total) * 100) : 0;
@@ -150,7 +150,7 @@ const GeoProgressCard = ({ geographic }) => {
                   <span className="flex items-center gap-2 text-white font-medium">
                     {flag} {item.name}
                   </span>
-                  <span className="text-gray-400">
+                  <span className="text-slate-500">
                     {item.value} click{item.value !== 1 ? 's' : ''} ({pct}%)
                   </span>
                 </div>
@@ -433,20 +433,20 @@ const Analytics = () => {
       </div>
 
       {/* Traffic Log */}
-      <div className="bg-[#101622] border border-[#232f48] rounded-2xl flex flex-col transition-all hover:border-[#135bec] hover:shadow-[0_4px_20px_rgba(19,91,236,0.1)]">
-        <div className="p-6 border-b border-[#232f48] flex justify-between items-center">
+      <div className="bg-white border border-slate-200 rounded-2xl flex flex-col transition-all hover:border-primary hover:shadow-[0_4px_20px_rgba(11,153,111,0.1)]">
+        <div className="p-6 border-b border-slate-200 flex justify-between items-center">
           <h3 className="text-sm font-bold text-gray-200">Traffic Log</h3>
           <div className="flex gap-2">
             <button
               type="button"
-              className="p-2 text-gray-400 hover:text-white hover:bg-[#232f48] rounded-lg transition-colors"
+              className="p-2 text-slate-500 hover:text-[#1b1b1b] hover:bg-slate-200 rounded-lg transition-colors"
               title="Filter"
             >
               <span className="material-symbols-outlined text-lg">filter_list</span>
             </button>
             <button
               type="button"
-              className="p-2 text-gray-400 hover:text-white hover:bg-[#232f48] rounded-lg transition-colors"
+              className="p-2 text-slate-500 hover:text-[#1b1b1b] hover:bg-slate-200 rounded-lg transition-colors"
               title="Download"
             >
               <span className="material-symbols-outlined text-lg">download</span>
@@ -468,7 +468,7 @@ const Analytics = () => {
           ) : (
             <table className="w-full text-left text-sm">
               <thead>
-                <tr className="text-gray-500 border-b border-[#232f48] bg-[#0b0f19]/50">
+                <tr className="text-slate-600 border-b border-slate-200 bg-slate-50">
                   <th className="px-6 py-3 font-bold uppercase text-[10px] tracking-wider">Time</th>
                   <th className="px-6 py-3 font-bold uppercase text-[10px] tracking-wider">
                     Location
@@ -484,7 +484,7 @@ const Analytics = () => {
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#232f48]">
+              <tbody className="divide-y divide-slate-200">
                 {trafficData.map((click) => {
                   const isBot =
                     click.is_bot === true ||
@@ -495,7 +495,7 @@ const Analytics = () => {
                   return (
                     <tr
                       key={click.id}
-                      className="border-b border-[#232f48] transition-colors hover:bg-[rgba(19,91,236,0.05)] last:border-b-0"
+                      className="border-b border-slate-200 transition-colors hover:bg-slate-50 last:border-b-0"
                     >
                       <td className="px-6 py-4 whitespace-nowrap text-gray-300">
                         {relativeTime(click.clicked_at || click.created_at)}
@@ -507,7 +507,7 @@ const Analytics = () => {
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="flex items-center gap-2 text-gray-400">
+                        <div className="flex items-center gap-2 text-slate-500">
                           <span className="material-symbols-outlined text-base">
                             {/(mobile|phone|iphone|android)/i.test(
                               click.device_type || click.user_agent || ''
@@ -533,7 +533,7 @@ const Analytics = () => {
                         <button
                           type="button"
                           onClick={() => handleExpandClick(click.id)}
-                          className="bg-transparent border border-[#232f48] text-gray-400 hover:border-[#135bec] hover:text-white hover:bg-[rgba(19,91,236,0.1)] px-3 py-1.5 rounded-lg text-xs font-bold transition-all"
+                          className="bg-transparent border border-slate-200 text-slate-500 hover:border-primary hover:text-[#1b1b1b] hover:bg-primary/10 px-3 py-1.5 rounded-lg text-xs font-bold transition-all"
                         >
                           More Information
                         </button>
@@ -547,10 +547,10 @@ const Analytics = () => {
         </div>
 
         {trafficData.length > 0 && (
-          <div className="p-4 border-t border-[#232f48] flex justify-center">
+          <div className="p-4 border-t border-slate-200 flex justify-center">
             <button
               type="button"
-              className="text-xs text-gray-500 hover:text-white transition-colors font-medium"
+              className="text-xs text-slate-600 hover:text-[#1b1b1b] transition-colors font-medium"
             >
               View All Logs
             </button>
@@ -570,61 +570,61 @@ const Analytics = () => {
           selectedClick ? (
             <div className="space-y-3 text-left">
               <div className="flex items-center justify-between py-2 border-b border-gray-200">
-                <span className="text-xs font-medium text-gray-500">Date & Time</span>
+                <span className="text-xs font-medium text-slate-600">Date & Time</span>
                 <span className="text-sm text-gray-900 font-mono">
                   {formatDateTime(selectedClick.clicked_at || selectedClick.created_at)}
                 </span>
               </div>
               <div className="flex items-center justify-between py-2 border-b border-gray-200">
-                <span className="text-xs font-medium text-gray-500">Domain</span>
+                <span className="text-xs font-medium text-slate-600">Domain</span>
                 <span className="text-sm text-gray-900">{selectedClick.domain || '—'}</span>
               </div>
               <div className="flex items-center justify-between py-2 border-b border-gray-200">
-                <span className="text-xs font-medium text-gray-500">SLUG</span>
+                <span className="text-xs font-medium text-slate-600">SLUG</span>
                 <span className="text-sm text-gray-900 font-mono">{selectedClick.slug || '—'}</span>
               </div>
               <div className="flex items-center justify-between py-2 border-b border-gray-200">
-                <span className="text-xs font-medium text-gray-500">IP Address</span>
+                <span className="text-xs font-medium text-slate-600">IP Address</span>
                 <span className="text-sm text-gray-900 font-mono">
                   {selectedClick.ip_address || '—'}
                 </span>
               </div>
               <div className="flex items-start justify-between py-2 border-b border-gray-200">
-                <span className="text-xs font-medium text-gray-500">User Agent</span>
+                <span className="text-xs font-medium text-slate-600">User Agent</span>
                 <span className="text-sm text-gray-900 break-all text-right max-w-[70%]">
                   {selectedClick.user_agent || '—'}
                 </span>
               </div>
               <div className="flex items-start justify-between py-2 border-b border-gray-200">
-                <span className="text-xs font-medium text-gray-500">Referrer</span>
+                <span className="text-xs font-medium text-slate-600">Referrer</span>
                 <span className="text-sm text-gray-900 break-all text-right max-w-[70%]">
                   {selectedClick.referer || selectedClick.referrer || '—'}
                 </span>
               </div>
               <div className="flex items-center justify-between py-2 border-b border-gray-200">
-                <span className="text-xs font-medium text-gray-500">Country</span>
+                <span className="text-xs font-medium text-slate-600">Country</span>
                 <span className="text-sm text-gray-900">{selectedClick.country || '—'}</span>
               </div>
               <div className="flex items-center justify-between py-2 border-b border-gray-200">
-                <span className="text-xs font-medium text-gray-500">City</span>
+                <span className="text-xs font-medium text-slate-600">City</span>
                 <span className="text-sm text-gray-900">{selectedClick.city || '—'}</span>
               </div>
               <div className="flex items-center justify-between py-2 border-b border-gray-200">
-                <span className="text-xs font-medium text-gray-500">Device Type</span>
+                <span className="text-xs font-medium text-slate-600">Device Type</span>
                 <span className="text-sm text-gray-900">{selectedClick.device_type || '—'}</span>
               </div>
               <div className="flex items-center justify-between py-2 border-b border-gray-200">
-                <span className="text-xs font-medium text-gray-500">OS</span>
+                <span className="text-xs font-medium text-slate-600">OS</span>
                 <span className="text-sm text-gray-900">
                   {selectedClick.os || '—'} {selectedClick.os_version || ''}
                 </span>
               </div>
               <div className="flex items-center justify-between py-2 border-b border-gray-200">
-                <span className="text-xs font-medium text-gray-500">Browser</span>
+                <span className="text-xs font-medium text-slate-600">Browser</span>
                 <span className="text-sm text-gray-900">{selectedClick.browser || '—'}</span>
               </div>
               <div className="flex items-center justify-between py-2 border-b border-gray-200">
-                <span className="text-xs font-medium text-gray-500">Is Bot</span>
+                <span className="text-xs font-medium text-slate-600">Is Bot</span>
                 <span
                   className={`text-sm font-bold ${selectedClick.is_bot ? 'text-red-600' : 'text-green-600'}`}
                 >
@@ -633,7 +633,7 @@ const Analytics = () => {
               </div>
               {selectedClick.fraud_score !== null && selectedClick.fraud_score !== undefined && (
                 <div className="flex items-center justify-between py-2 border-b border-gray-200">
-                  <span className="text-xs font-medium text-gray-500">Fraud Score</span>
+                  <span className="text-xs font-medium text-slate-600">Fraud Score</span>
                   <span
                     className={`text-sm font-bold ${selectedClick.fraud_score > 80 ? 'text-red-600' : selectedClick.fraud_score > 50 ? 'text-yellow-600' : 'text-green-600'}`}
                   >
@@ -642,7 +642,7 @@ const Analytics = () => {
                 </div>
               )}
               <div className="flex items-center justify-between py-2 border-b border-gray-200">
-                <span className="text-xs font-medium text-gray-500">VPN</span>
+                <span className="text-xs font-medium text-slate-600">VPN</span>
                 <span
                   className={`text-sm font-bold ${selectedClick.is_vpn ? 'text-yellow-600' : 'text-gray-600'}`}
                 >
@@ -650,7 +650,7 @@ const Analytics = () => {
                 </span>
               </div>
               <div className="flex items-center justify-between py-2 border-b border-gray-200">
-                <span className="text-xs font-medium text-gray-500">Proxy</span>
+                <span className="text-xs font-medium text-slate-600">Proxy</span>
                 <span
                   className={`text-sm font-bold ${selectedClick.is_proxy ? 'text-yellow-600' : 'text-gray-600'}`}
                 >
@@ -659,7 +659,7 @@ const Analytics = () => {
               </div>
               {selectedClick.verdict && (
                 <div className="flex items-start justify-between py-2 border-b border-gray-200">
-                  <span className="text-xs font-medium text-gray-500">Verdict</span>
+                  <span className="text-xs font-medium text-slate-600">Verdict</span>
                   <span className="text-sm text-gray-900 text-right max-w-[70%]">
                     {selectedClick.verdict}
                   </span>
@@ -667,7 +667,7 @@ const Analytics = () => {
               )}
               {selectedClick.target_url && (
                 <div className="flex items-start justify-between py-2 border-b border-gray-200">
-                  <span className="text-xs font-medium text-gray-500">Target URL</span>
+                  <span className="text-xs font-medium text-slate-600">Target URL</span>
                   <span className="text-sm text-gray-900 break-all text-right max-w-[70%] font-mono">
                     {selectedClick.target_url}
                   </span>
@@ -675,7 +675,7 @@ const Analytics = () => {
               )}
               {selectedClick.query_params && (
                 <div className="flex items-start justify-between py-2 border-b border-gray-200">
-                  <span className="text-xs font-medium text-gray-500">Query Params</span>
+                  <span className="text-xs font-medium text-slate-600">Query Params</span>
                   <span className="text-sm text-gray-900 break-all text-right max-w-[70%] font-mono">
                     {typeof selectedClick.query_params === 'string'
                       ? selectedClick.query_params
@@ -685,7 +685,7 @@ const Analytics = () => {
               )}
               {selectedClick.session_id && (
                 <div className="flex items-center justify-between py-2 border-b border-gray-200">
-                  <span className="text-xs font-medium text-gray-500">Session ID</span>
+                  <span className="text-xs font-medium text-slate-600">Session ID</span>
                   <span className="text-sm text-gray-900 font-mono">
                     {selectedClick.session_id}
                   </span>

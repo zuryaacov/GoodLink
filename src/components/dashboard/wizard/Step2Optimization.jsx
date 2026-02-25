@@ -153,7 +153,7 @@ const Step2Optimization = ({ formData, updateFormData }) => {
                     className={`w-full relative p-4 rounded-xl border-2 transition-all text-left ${
                       isSelected
                         ? 'border-primary bg-primary/10 shadow-lg'
-                        : 'border-[#232f48] bg-[#0b0f19] hover:border-[#324467]'
+                        : 'border-slate-200 bg-white hover:border-slate-300'
                     }`}
                   >
                     <div className="flex items-start gap-3">
@@ -229,7 +229,7 @@ const Step2Optimization = ({ formData, updateFormData }) => {
                   className={`p-4 rounded-xl border-2 text-left transition-all ${
                     isSelected
                       ? 'border-primary bg-primary/10'
-                      : 'border-[#232f48] bg-[#0b0f19] hover:border-[#324467]'
+                      : 'border-slate-200 bg-white hover:border-slate-300'
                   }`}
                 >
                   <p className="font-bold text-white">{opt.label}</p>
@@ -342,7 +342,7 @@ const Step2Optimization = ({ formData, updateFormData }) => {
                       );
                     case 'taboola':
                       return (
-                        <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden border border-[#232f48]">
+                        <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden border border-slate-200">
                           <img
                             src={taboolaLogo}
                             alt="Taboola"
@@ -352,7 +352,7 @@ const Step2Optimization = ({ formData, updateFormData }) => {
                       );
                     case 'outbrain':
                       return (
-                        <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden border border-[#232f48]">
+                        <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden border border-slate-200">
                           <img
                             src={outbrainLogo}
                             alt="Outbrain"
@@ -362,7 +362,7 @@ const Step2Optimization = ({ formData, updateFormData }) => {
                       );
                     default:
                       return (
-                        <div className="w-8 h-8 rounded-lg bg-[#232f48] flex items-center justify-center flex-shrink-0">
+                        <div className="w-8 h-8 rounded-lg bg-slate-200 flex items-center justify-center flex-shrink-0">
                           <span className="text-slate-400 text-xs">?</span>
                         </div>
                       );
@@ -397,7 +397,7 @@ const Step2Optimization = ({ formData, updateFormData }) => {
                     className={`w-full flex items-center justify-between p-4 rounded-xl border transition-all ${
                       isSelected
                         ? 'border-primary bg-primary/10'
-                        : 'border-[#232f48] bg-[#0b0f19] hover:border-[#324467]'
+                        : 'border-slate-200 bg-white hover:border-slate-300'
                     }`}
                   >
                     <div className="flex items-center gap-4 flex-1 min-w-0">

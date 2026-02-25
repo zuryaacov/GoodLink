@@ -1,7 +1,7 @@
 import React from 'react';
 
 const StatCard = ({ title, value, change, icon, trend }) => (
-  <div className="bg-[#101622] border border-[#232f48] rounded-2xl p-6 relative overflow-hidden group hover:border-[#324467] transition-colors">
+  <div className="bg-white border border-slate-200 rounded-2xl p-6 relative overflow-hidden group hover:border-slate-300 transition-colors">
     <div className="flex justify-between items-start mb-4">
       <div className="p-3 bg-primary/10 rounded-xl text-primary group-hover:bg-primary group-hover:text-white transition-colors">
         <span className="material-symbols-outlined text-[24px]">{icon}</span>
@@ -41,7 +41,7 @@ const DashboardOverview = () => {
       </div>
 
       {/* Top Links Section */}
-      <div className="bg-[#101622] border border-[#232f48] rounded-2xl p-4 md:p-6">
+      <div className="bg-white border border-slate-200 rounded-2xl p-4 md:p-6">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-xl font-bold text-white">Top Performing Links</h2>
           <button className="text-primary text-sm font-bold hover:underline">View All</button>
@@ -50,7 +50,7 @@ const DashboardOverview = () => {
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="border-b border-[#232f48] text-slate-400 text-xs uppercase tracking-wider">
+              <tr className="border-b border-slate-200 text-slate-400 text-xs uppercase tracking-wider">
                 <th className="p-4 font-medium">Link Name</th>
                 <th className="p-4 font-medium text-right md:text-left">Clicks</th>
                 <th className="p-4 font-medium hidden md:table-cell">Conversions</th>
@@ -58,7 +58,7 @@ const DashboardOverview = () => {
               </tr>
             </thead>
             <tbody className="text-sm">
-              <tr className="border-b border-[#232f48]/50 hover:bg-white/5 transition-colors">
+              <tr className="border-b border-slate-200/50 hover:bg-slate-50 transition-colors">
                 <td className="p-4">
                   <div className="flex flex-col">
                     <span className="text-white font-bold">Summer Sale Campaign</span>
@@ -75,7 +75,7 @@ const DashboardOverview = () => {
                   </span>
                 </td>
               </tr>
-              <tr className="border-b border-[#232f48]/50 hover:bg-white/5 transition-colors">
+              <tr className="border-b border-slate-200/50 hover:bg-slate-50 transition-colors">
                 <td className="p-4">
                   <div className="flex flex-col">
                     <span className="text-white font-bold">Instagram Bio</span>

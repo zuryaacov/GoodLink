@@ -192,10 +192,10 @@ const AbuseReportPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#0b0f19] text-white">
-      <header className="border-b border-[#232f48] py-4 px-6">
+    <div className="min-h-screen bg-white text-[#1b1b1b]">
+      <header className="border-b border-slate-200 py-4 px-6">
         <div className="max-w-3xl mx-auto">
-          <Link to="/" className="flex items-center gap-3 text-white transition-opacity hover:opacity-80 w-fit">
+          <Link to="/" className="flex items-center gap-3 text-[#1b1b1b] transition-opacity hover:opacity-80 w-fit">
             <div className="size-9 text-primary">
               <svg fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 <path
@@ -245,7 +245,7 @@ const AbuseReportPage = () => {
           <>
             <h1 className="text-2xl md:text-3xl font-bold mb-6">Abuse / DMCA Report</h1>
 
-            <section className="mb-8 rounded-xl bg-[#101622] border border-[#232f48] p-5 md:p-6 whitespace-pre-line text-sm md:text-base text-slate-300 leading-relaxed">
+            <section className="mb-8 rounded-xl bg-white border border-slate-200 p-5 md:p-6 whitespace-pre-line text-sm md:text-base text-slate-300 leading-relaxed">
               {LEGAL_TEXT}
             </section>
 
@@ -257,7 +257,7 @@ const AbuseReportPage = () => {
               )}
 
               <div>
-                <label className="block text-sm font-medium text-slate-300 mb-2">
+                <label className="block text-sm font-medium text-slate-700 mb-2">
                   Offending link <span className="text-red-400">*</span>
                 </label>
                 <input
@@ -268,7 +268,7 @@ const AbuseReportPage = () => {
                     setFieldErrors((prev) => ({ ...prev, reportedUrl: null }));
                   }}
                   placeholder="https://glynk.to/xxxx or full Goodlink URL"
-                  className="w-full px-4 py-3 rounded-xl bg-[#0b0f19] border border-[#232f48] text-white placeholder-slate-500 focus:outline-none focus:border-[#135bec]"
+                  className="w-full px-4 py-3 rounded-xl bg-white border border-slate-200 text-[#1b1b1b] placeholder-slate-500 focus:outline-none focus:border-primary"
                 />
                 {fieldErrors.reportedUrl && (
                   <p className="mt-1 text-sm text-red-400">{fieldErrors.reportedUrl}</p>
@@ -276,13 +276,13 @@ const AbuseReportPage = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-300 mb-2">
+                <label className="block text-sm font-medium text-slate-700 mb-2">
                   Category <span className="text-red-400">*</span>
                 </label>
                 <select
                   value={category}
                   onChange={(e) => setCategory(e.target.value)}
-                  className="w-full px-4 py-3 rounded-xl bg-[#0b0f19] border border-[#232f48] text-white focus:outline-none focus:border-[#135bec]"
+                  className="w-full px-4 py-3 rounded-xl bg-white border border-slate-200 text-[#1b1b1b] focus:outline-none focus:border-primary"
                 >
                   {CATEGORIES.map((opt) => (
                     <option key={opt.value} value={opt.value}>
@@ -293,18 +293,18 @@ const AbuseReportPage = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-300 mb-2">Description (optional)</label>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Description (optional)</label>
                 <textarea
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   rows={4}
                   placeholder="Additional details, evidence, or screenshots description"
-                  className="w-full px-4 py-3 rounded-xl bg-[#0b0f19] border border-[#232f48] text-white placeholder-slate-500 focus:outline-none focus:border-[#135bec] resize-y"
+                  className="w-full px-4 py-3 rounded-xl bg-white border border-slate-200 text-[#1b1b1b] placeholder-slate-500 focus:outline-none focus:border-primary resize-y"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-300 mb-2">
+                <label className="block text-sm font-medium text-slate-700 mb-2">
                   Your email <span className="text-red-400">*</span>
                 </label>
                 <input
@@ -315,7 +315,7 @@ const AbuseReportPage = () => {
                     setFieldErrors((prev) => ({ ...prev, reporterEmail: null }));
                   }}
                   placeholder="you@example.com"
-                  className="w-full px-4 py-3 rounded-xl bg-[#0b0f19] border border-[#232f48] text-white placeholder-slate-500 focus:outline-none focus:border-[#135bec]"
+                  className="w-full px-4 py-3 rounded-xl bg-white border border-slate-200 text-[#1b1b1b] placeholder-slate-500 focus:outline-none focus:border-primary"
                 />
                 {fieldErrors.reporterEmail && (
                   <p className="mt-1 text-sm text-red-400">{fieldErrors.reporterEmail}</p>

@@ -222,7 +222,7 @@ export default function AccountSettingsPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-full text-white">
+      <div className="flex items-center justify-center h-full text-[#1b1b1b]">
         <span className="material-symbols-outlined animate-spin text-4xl text-[#135bec]">
           refresh
         </span>
@@ -243,7 +243,7 @@ export default function AccountSettingsPage() {
       >
         {/* Header */}
         <div>
-          <h1 className="text-3xl font-bold text-white mb-2">Account Settings</h1>
+          <h1 className="text-3xl font-bold text-[#1b1b1b] mb-2">Account Settings</h1>
           <p className="text-slate-400">Manage your profile, preferences, and subscription.</p>
         </div>
 
@@ -252,8 +252,8 @@ export default function AccountSettingsPage() {
           {/* Left Column: Profile & Settings */}
           <div className="lg:col-span-2 space-y-6">
             {/* User Profile Card */}
-            <div className="bg-[#101622] border border-[#232f48] rounded-2xl p-6">
-              <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
+            <div className="bg-white border border-slate-200 rounded-2xl p-6">
+              <h2 className="text-xl font-bold text-[#1b1b1b] mb-6 flex items-center gap-2">
                 <span className="material-symbols-outlined text-[#135bec]">person</span>
                 Personal Information
               </h2>
@@ -266,7 +266,7 @@ export default function AccountSettingsPage() {
                     type="text"
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
-                    className="w-full bg-[#0a0f18] border border-[#232f48] rounded-xl px-4 py-3 text-white focus:outline-none focus:border-[#135bec] transition-all"
+                    className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-[#1b1b1b] focus:outline-none focus:border-primary transition-all"
                     placeholder="Your Name"
                   />
                 </div>
@@ -283,7 +283,7 @@ export default function AccountSettingsPage() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     disabled={isGoogleUser} // Locked for Google users
-                    className={`w-full bg-[#0a0f18] border border-[#232f48] rounded-xl px-4 py-3 text-white focus:outline-none focus:border-[#135bec] transition-all ${isGoogleUser ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    className={`w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-[#1b1b1b] focus:outline-none focus:border-primary transition-all ${isGoogleUser ? 'opacity-50 cursor-not-allowed' : ''}`}
                     placeholder="name@example.com"
                   />
                   {isGoogleUser && (
@@ -301,7 +301,7 @@ export default function AccountSettingsPage() {
                     <select
                       value={timezone}
                       onChange={(e) => setTimezone(e.target.value)}
-                      className="w-full bg-[#0a0f18] border border-[#232f48] rounded-xl px-4 py-3 text-white appearance-none focus:outline-none focus:border-[#135bec] transition-all cursor-pointer"
+                      className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-[#1b1b1b] appearance-none focus:outline-none focus:border-primary transition-all cursor-pointer"
                     >
                       {COMMON_TIMEZONES.map((tz) => (
                         <option key={tz.value} value={tz.value}>
@@ -336,7 +336,7 @@ export default function AccountSettingsPage() {
                   <button
                     type="submit"
                     disabled={saving}
-                    className="bg-[#135bec] hover:bg-[#135bec]/90 text-white font-semibold py-3 px-8 rounded-xl transition-all shadow-[0_0_15px_rgba(19,91,236,0.3)] disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                    className="bg-[#135bec] hover:bg-[#135bec]/90 text-[#1b1b1b] font-semibold py-3 px-8 rounded-xl transition-all shadow-[0_0_15px_rgba(19,91,236,0.3)] disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                   >
                     {saving && (
                       <span className="material-symbols-outlined animate-spin text-sm">
@@ -351,8 +351,8 @@ export default function AccountSettingsPage() {
 
             {/* Password Change Section (Only for Email Users) */}
             {!isGoogleUser && (
-              <div className="bg-[#101622] border border-[#232f48] rounded-2xl p-6">
-                <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
+              <div className="bg-white border border-slate-200 rounded-2xl p-6">
+                <h2 className="text-xl font-bold text-[#1b1b1b] mb-6 flex items-center gap-2">
                   <span className="material-symbols-outlined text-[#135bec]">lock</span>
                   Security
                 </h2>
@@ -360,13 +360,13 @@ export default function AccountSettingsPage() {
                 {!showPasswordChange ? (
                   <button
                     onClick={() => setShowPasswordChange(true)}
-                    className="flex items-center gap-2 text-slate-300 hover:text-white transition-colors border border-[#232f48] hover:border-slate-500 rounded-lg px-4 py-2"
+                    className="flex items-center gap-2 text-slate-300 hover:text-[#1b1b1b] transition-colors border border-slate-200 hover:border-slate-500 rounded-lg px-4 py-2"
                   >
                     Change Password
                   </button>
                 ) : (
-                  <div className="space-y-4 bg-[#0a0f18] p-4 rounded-xl border border-[#232f48]">
-                    <h3 className="text-white font-semibold mb-2">Change Password</h3>
+                  <div className="space-y-4 bg-white p-4 rounded-xl border border-slate-200">
+                    <h3 className="text-[#1b1b1b] font-semibold mb-2">Change Password</h3>
 
                     <div>
                       <label className="block text-xs font-medium text-slate-400 mb-1">
@@ -376,7 +376,7 @@ export default function AccountSettingsPage() {
                         type="password"
                         value={newPassword}
                         onChange={(e) => setNewPassword(e.target.value)}
-                        className="w-full bg-[#101622] border border-[#232f48] rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-[#135bec]"
+                        className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-[#1b1b1b] text-sm focus:outline-none focus:border-primary"
                         placeholder="Min. 8 characters"
                       />
                     </div>
@@ -389,7 +389,7 @@ export default function AccountSettingsPage() {
                         type="password"
                         value={confirmPassword}
                         onChange={(e) => setConfirmPassword(e.target.value)}
-                        className={`w-full bg-[#101622] border border-[#232f48] rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-[#135bec] ${
+                        className={`w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-[#1b1b1b] text-sm focus:outline-none focus:border-primary ${
                           confirmPassword && newPassword !== confirmPassword ? 'border-red-500' : ''
                         }`}
                         placeholder="Retype password"
@@ -407,7 +407,7 @@ export default function AccountSettingsPage() {
                           setNewPassword('');
                           setConfirmPassword('');
                         }}
-                        className="text-slate-400 hover:text-white text-xs px-3 py-2"
+                        className="text-slate-400 hover:text-[#1b1b1b] text-xs px-3 py-2"
                       >
                         Cancel
                       </button>
@@ -417,7 +417,7 @@ export default function AccountSettingsPage() {
                         disabled={
                           !newPassword || newPassword !== confirmPassword || newPassword.length < 8
                         }
-                        className="bg-[#135bec] text-white text-xs font-bold px-4 py-2 rounded-lg disabled:opacity-50"
+                        className="bg-[#135bec] text-[#1b1b1b] text-xs font-bold px-4 py-2 rounded-lg disabled:opacity-50"
                       >
                         Update Password
                       </button>
@@ -430,7 +430,7 @@ export default function AccountSettingsPage() {
 
           {/* Right Column: Plan Status */}
           <div className="lg:col-span-1 space-y-6">
-            <div className="bg-gradient-to-b from-[#101622] to-[#0a0f18] border border-[#232f48] rounded-2xl p-6 relative overflow-hidden">
+            <div className="bg-gradient-to-b from-white to-slate-50 border border-slate-200 rounded-2xl p-6 relative overflow-hidden">
               {/* Status Badge */}
               <div className="absolute top-4 right-4">
                 <span
@@ -444,25 +444,25 @@ export default function AccountSettingsPage() {
                 </span>
               </div>
 
-              <h2 className="text-xl font-bold text-white mb-1">Subscription</h2>
+              <h2 className="text-xl font-bold text-[#1b1b1b] mb-1">Subscription</h2>
               <p className="text-slate-400 text-sm mb-6">Your current plan status.</p>
 
               <div className="space-y-4 mb-8">
-                <div className="flex justify-between items-center text-sm border-b border-[#232f48] pb-3">
+                <div className="flex justify-between items-center text-sm border-b border-slate-200 pb-3">
                   <span className="text-slate-400">Links Created</span>
-                  <span className="text-white font-mono">
+                  <span className="text-[#1b1b1b] font-mono">
                     {linksCount} / {planDetails.maxLinks}
                   </span>
                 </div>
-                <div className="flex justify-between items-center text-sm border-b border-[#232f48] pb-3">
+                <div className="flex justify-between items-center text-sm border-b border-slate-200 pb-3">
                   <span className="text-slate-400">Monthly Clicks</span>
-                  <span className="text-white font-mono">
+                  <span className="text-[#1b1b1b] font-mono">
                     {monthlyClicksCount.toLocaleString()} / {planDetails.maxClicks}
                   </span>
                 </div>
-                <div className="flex justify-between items-center text-sm border-b border-[#232f48] pb-3">
+                <div className="flex justify-between items-center text-sm border-b border-slate-200 pb-3">
                   <span className="text-slate-400">Custom Domains</span>
-                  <span className="text-white font-mono">
+                  <span className="text-[#1b1b1b] font-mono">
                     {domainsCount} / {planDetails.domains}
                   </span>
                 </div>
@@ -474,11 +474,11 @@ export default function AccountSettingsPage() {
                   className="w-full group relative overflow-hidden rounded-xl bg-gradient-to-r from-[#FF10F0] to-[#bc13fe] p-[1px]"
                 >
                   <div className="absolute inset-0 bg-gradient-to-r from-[#FF10F0] to-[#bc13fe] opacity-20 group-hover:opacity-40 transition-opacity" />
-                  <div className="relative bg-[#101622] rounded-[11px] px-6 py-3 flex items-center justify-center gap-2 group-hover:bg-opacity-90 transition-colors">
+                  <div className="relative bg-white rounded-[11px] px-6 py-3 flex items-center justify-center gap-2 group-hover:bg-opacity-90 transition-colors">
                     <span className="material-symbols-outlined text-[#FF10F0] group-hover:scale-110 transition-transform">
                       rocket_launch
                     </span>
-                    <span className="font-bold text-white">Upgrade to Pro</span>
+                    <span className="font-bold text-[#1b1b1b]">Upgrade to Pro</span>
                   </div>
                 </button>
               ) : (
@@ -490,7 +490,7 @@ export default function AccountSettingsPage() {
                   className="w-full group relative overflow-hidden rounded-xl bg-gradient-to-r from-[#FF10F0] to-[#bc13fe] p-[1px]"
                 >
                   <div className="absolute inset-0 bg-gradient-to-r from-[#FF10F0] to-[#bc13fe] opacity-20 group-hover:opacity-40 transition-opacity" />
-                  <div className="relative w-full bg-[#101622] rounded-[11px] px-6 py-3 flex items-center justify-center gap-2 group-hover:bg-opacity-90 transition-colors">
+                  <div className="relative w-full bg-white rounded-[11px] px-6 py-3 flex items-center justify-center gap-2 group-hover:bg-opacity-90 transition-colors">
                     <span className="font-semibold text-[#FF10F0]">Manage Subscription</span>
                   </div>
                 </button>

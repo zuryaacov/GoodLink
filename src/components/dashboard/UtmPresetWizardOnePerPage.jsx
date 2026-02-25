@@ -79,7 +79,7 @@ const getPlatformLogo = (platform) => {
     case 'taboola':
       return (
         <div
-          className={`${w} flex items-center justify-center overflow-hidden border border-[#232f48]`}
+          className={`${w} flex items-center justify-center overflow-hidden border border-slate-200`}
         >
           <img src={taboolaLogo} alt="Taboola" className="w-full h-full object-cover" />
         </div>
@@ -87,7 +87,7 @@ const getPlatformLogo = (platform) => {
     case 'outbrain':
       return (
         <div
-          className={`${w} flex items-center justify-center overflow-hidden border border-[#232f48]`}
+          className={`${w} flex items-center justify-center overflow-hidden border border-slate-200`}
         >
           <img src={outbrainLogo} alt="Outbrain" className="w-full h-full object-cover" />
         </div>
@@ -108,7 +108,7 @@ const getPlatformLogo = (platform) => {
       );
     default:
       return (
-        <div className={`${w} bg-[#232f48] flex items-center justify-center`}>
+        <div className={`${w} bg-slate-200 flex items-center justify-center`}>
           <span className="text-slate-400 text-xs">?</span>
         </div>
       );
@@ -392,7 +392,7 @@ export default function UtmPresetWizardOnePerPage({ initialData, onSave, onBack,
   };
 
   const PreviewBlock = () => (
-    <div className="mt-6 rounded-2xl bg-[#101622] border border-[#232f48] p-4">
+    <div className="mt-6 rounded-2xl bg-white border border-slate-200 p-4">
       <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2">
         Preview Query String
       </p>
@@ -428,7 +428,7 @@ export default function UtmPresetWizardOnePerPage({ initialData, onSave, onBack,
 
   return (
     <div className="flex flex-col flex-1 min-h-0">
-      <div className="h-1 bg-[#232f48] flex-shrink-0">
+      <div className="h-1 bg-slate-200 flex-shrink-0">
         <div
           className="h-full bg-[#135bec] transition-all duration-500 shadow-[0_0_10px_#135bec]"
           style={{ width: `${progressPct}%` }}
@@ -480,7 +480,7 @@ export default function UtmPresetWizardOnePerPage({ initialData, onSave, onBack,
 
             {currentStep?.id === 'name' && (
               <>
-                <div className="rounded-2xl bg-[#101622] border-2 border-[#232f48] focus-within:border-[#135bec] transition-all">
+                <div className="rounded-2xl bg-white border-2 border-slate-200 focus-within:border-[#135bec] transition-all">
                   <input
                     type="text"
                     value={presetName}
@@ -506,7 +506,7 @@ export default function UtmPresetWizardOnePerPage({ initialData, onSave, onBack,
                     className={`p-5 rounded-2xl border-2 text-left transition-all flex items-center gap-4 ${
                       platform === p.id
                         ? 'border-[#FF10F0] bg-[#FF10F0]/5'
-                        : 'border-[#232f48] bg-[#101622] hover:border-[#324467]'
+                        : 'border-slate-200 bg-white hover:border-slate-300'
                     }`}
                   >
                     {getPlatformLogo(p.id)}
@@ -534,8 +534,8 @@ export default function UtmPresetWizardOnePerPage({ initialData, onSave, onBack,
                               onClick={() => handleChipClick(utmStep.key, option)}
                               className={`px-4 py-2.5 rounded-xl text-sm font-bold transition-all border-2 ${
                                 isSelected
-                                  ? 'border-[#FF10F0] bg-[#FF10F0]/10 text-white'
-                                  : 'border-[#232f48] bg-[#101622] text-slate-300 hover:border-[#324467]'
+                                  ? 'border-primary bg-primary/10 text-[#1b1b1b]'
+                                  : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300'
                               }`}
                             >
                               {option}
@@ -555,12 +555,12 @@ export default function UtmPresetWizardOnePerPage({ initialData, onSave, onBack,
         </AnimatePresence>
       </div>
 
-      <footer className="fixed bottom-0 left-0 right-0 p-6 bg-[#0b0f19]/95 backdrop-blur border-t border-[#232f48] z-50">
+      <footer className="fixed bottom-0 left-0 right-0 p-6 bg-white/95 backdrop-blur border-t border-slate-200 z-50">
         <div className="max-w-2xl mx-auto flex items-center gap-4">
           <button
             type="button"
             onClick={goBack}
-            className={`flex items-center justify-center p-5 rounded-2xl border border-[#232f48] font-bold text-gray-400 hover:bg-[#232f48] hover:text-white transition-all ${isFirst ? 'invisible' : ''}`}
+            className={`flex items-center justify-center p-5 rounded-2xl border border-slate-200 font-bold text-gray-400 hover:bg-slate-200 hover:text-white transition-all ${isFirst ? 'invisible' : ''}`}
           >
             <span className="material-symbols-outlined text-2xl">chevron_left</span>
           </button>

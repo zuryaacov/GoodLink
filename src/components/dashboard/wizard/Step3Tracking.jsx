@@ -52,19 +52,19 @@ const Step3Tracking = ({ formData, updateFormData }) => {
       className="space-y-6"
     >
       <div>
-        <h3 className="text-xl font-bold text-white mb-2">Step 3: Tracking & CAPI</h3>
+        <h3 className="text-xl font-bold text-[#1b1b1b] mb-2">Step 3: Tracking & CAPI</h3>
         <p className="text-slate-400 text-sm">Configure CAPI tracking and server-side reporting</p>
       </div>
 
       {/* CAPI Selection */}
       <div>
-        <label className="block text-sm font-medium text-white mb-3">
+        <label className="block text-sm font-medium text-[#1b1b1b] mb-3">
           Select CAPI Profiles <span className="text-slate-500">(Multi-select)</span>
         </label>
         {loadingPixels ? (
           <div className="text-slate-400 text-sm">Loading CAPI...</div>
         ) : availablePixels.length === 0 ? (
-          <div className="p-4 bg-[#0b0f19] border border-[#232f48] rounded-xl text-center">
+          <div className="p-4 bg-white border border-slate-200 rounded-xl text-center">
             <p className="text-slate-400 text-sm mb-2">No CAPI profiles configured yet</p>
             <p className="text-slate-500 text-xs">Go to CAPI Manager to add tracking profiles</p>
           </div>
@@ -79,7 +79,7 @@ const Step3Tracking = ({ formData, updateFormData }) => {
                   className={`w-full flex items-center justify-between p-4 rounded-xl border transition-colors ${
                     isSelected
                       ? 'border-primary bg-primary/10'
-                      : 'border-[#232f48] bg-[#0b0f19] hover:border-[#324467]'
+                      : 'border-slate-200 bg-white hover:border-slate-300'
                   }`}
                 >
                   <div className="flex items-center gap-3">
@@ -89,11 +89,11 @@ const Step3Tracking = ({ formData, updateFormData }) => {
                       }`}
                     >
                       {isSelected && (
-                        <span className="material-symbols-outlined text-white text-sm">check</span>
+                        <span className="material-symbols-outlined text-[#1b1b1b] text-sm">check</span>
                       )}
                     </div>
                     <div className="text-left">
-                      <p className="text-white font-medium">{pixel.name}</p>
+                      <p className="text-[#1b1b1b] font-medium">{pixel.name}</p>
                       <p className="text-slate-500 text-xs capitalize">{pixel.type}</p>
                     </div>
                   </div>
@@ -105,9 +105,9 @@ const Step3Tracking = ({ formData, updateFormData }) => {
       </div>
 
       {/* Server-Side Tracking */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-4 bg-[#0b0f19] border border-[#232f48] rounded-xl">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-4 bg-white border border-slate-200 rounded-xl">
         <div className="flex-1">
-          <label className="block text-sm font-medium text-white mb-1">
+          <label className="block text-sm font-medium text-[#1b1b1b] mb-1">
             Server-Side Tracking (CAPI)
           </label>
           <p className="text-xs text-slate-500">
@@ -118,7 +118,7 @@ const Step3Tracking = ({ formData, updateFormData }) => {
         <button
           onClick={() => updateFormData('serverSideTracking', !formData.serverSideTracking)}
           className={`relative w-14 h-7 sm:w-12 sm:h-6 rounded-full transition-colors flex-shrink-0 ${
-            formData.serverSideTracking ? 'bg-primary' : 'bg-[#232f48]'
+            formData.serverSideTracking ? 'bg-primary' : 'bg-slate-200'
           }`}
           aria-label="Toggle server-side tracking"
         >
@@ -132,7 +132,7 @@ const Step3Tracking = ({ formData, updateFormData }) => {
 
       {/* Custom Script */}
       <div>
-        <label className="block text-sm font-medium text-white mb-2">
+        <label className="block text-sm font-medium text-[#1b1b1b] mb-2">
           Custom Script <span className="text-slate-500">(Optional)</span>
         </label>
         <textarea
@@ -140,7 +140,7 @@ const Step3Tracking = ({ formData, updateFormData }) => {
           onChange={(e) => updateFormData('customScript', e.target.value)}
           placeholder="Add custom JavaScript code that will be injected on the redirect page..."
           rows={6}
-          className="w-full px-4 py-3 bg-[#0b0f19] border border-[#232f48] rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-primary transition-colors resize-none font-mono text-sm"
+          className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-[#1b1b1b] placeholder-slate-500 focus:outline-none focus:border-primary transition-colors resize-none font-mono text-sm"
         />
         <p className="text-xs text-slate-500 mt-1">
           This script will run on the intermediate redirect page before forwarding to the target URL

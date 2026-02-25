@@ -409,11 +409,11 @@ const PixelModal = ({ isOpen, onClose, initialData = null }) => {
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="relative bg-[#101622] border border-[#232f48] rounded-xl sm:rounded-2xl shadow-2xl w-full max-w-2xl max-h-[95vh] sm:max-h-[90vh] flex flex-col overflow-hidden m-2 sm:m-0"
+              className="relative bg-white border border-slate-200 rounded-xl sm:rounded-2xl shadow-2xl w-full max-w-2xl max-h-[95vh] sm:max-h-[90vh] flex flex-col overflow-hidden m-2 sm:m-0"
               onClick={(e) => e.stopPropagation()}
             >
               {/* Header */}
-              <div className="flex items-center justify-between p-4 sm:p-6 border-b border-[#232f48] flex-shrink-0">
+              <div className="flex items-center justify-between p-4 sm:p-6 border-b border-slate-200 flex-shrink-0">
                 <div className="flex-1 min-w-0 pr-2">
                   <h2 className="text-xl sm:text-2xl font-bold text-white">
                     {isEditMode ? 'Edit CAPI' : 'Create New CAPI'}
@@ -448,10 +448,10 @@ const PixelModal = ({ isOpen, onClose, initialData = null }) => {
                         if (errors.name) setErrors({ ...errors, name: null });
                       }}
                       placeholder="e.g., FB - Main Account"
-                      className={`w-full px-4 py-3 bg-[#0b0f19] border rounded-xl text-white placeholder-slate-500 focus:outline-none transition-colors ${
+                      className={`w-full px-4 py-3 bg-white border rounded-xl text-white placeholder-slate-500 focus:outline-none transition-colors ${
                         errors.name
                           ? 'border-red-500 focus:border-red-500'
-                          : 'border-[#232f48] focus:border-primary'
+                          : 'border-slate-200 focus:border-primary'
                       }`}
                     />
                     {errors.name && <p className="text-red-400 text-xs mt-1">{errors.name}</p>}
@@ -481,7 +481,7 @@ const PixelModal = ({ isOpen, onClose, initialData = null }) => {
                         });
                         if (errors.platform) setErrors({ ...errors, platform: null });
                       }}
-                      className="w-full px-4 py-3 bg-[#0b0f19] border border-[#232f48] rounded-xl text-white focus:outline-none focus:border-primary transition-colors"
+                      className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-white focus:outline-none focus:border-primary transition-colors"
                     >
                       {PLATFORMS_WITH_PLACEHOLDERS.map((platform) => (
                         <option key={platform.value} value={platform.value}>
@@ -516,10 +516,10 @@ const PixelModal = ({ isOpen, onClose, initialData = null }) => {
                             ? 'Enter Account Id'
                             : 'Enter Pixel ID')
                       }
-                      className={`w-full px-4 py-3 bg-[#0b0f19] border rounded-xl text-white placeholder-slate-500 focus:outline-none transition-colors font-mono text-sm ${
+                      className={`w-full px-4 py-3 bg-white border rounded-xl text-white placeholder-slate-500 focus:outline-none transition-colors font-mono text-sm ${
                         errors.pixelId
                           ? 'border-red-500 focus:border-red-500'
-                          : 'border-[#232f48] focus:border-primary'
+                          : 'border-slate-200 focus:border-primary'
                       }`}
                     />
                     {errors.pixelId && (
@@ -570,10 +570,10 @@ const PixelModal = ({ isOpen, onClose, initialData = null }) => {
                             if (errors.eventType) setErrors({ ...errors, eventType: null });
                           }}
                           placeholder="e.g. lead, purchase, PAGE_VIEW (case-sensitive)"
-                          className={`w-full px-4 py-3 bg-[#0b0f19] border rounded-xl text-white placeholder-slate-500 focus:outline-none transition-colors ${
+                          className={`w-full px-4 py-3 bg-white border rounded-xl text-white placeholder-slate-500 focus:outline-none transition-colors ${
                             errors.eventType
                               ? 'border-red-500 focus:border-red-500'
-                              : 'border-[#232f48] focus:border-primary'
+                              : 'border-slate-200 focus:border-primary'
                           }`}
                         />
                         {errors.eventType && (
@@ -596,10 +596,10 @@ const PixelModal = ({ isOpen, onClose, initialData = null }) => {
                             if (errors.eventType) setErrors({ ...errors, eventType: null });
                           }}
                           placeholder="e.g. arrival (default), lead, purchase (case-sensitive)"
-                          className={`w-full px-4 py-3 bg-[#0b0f19] border rounded-xl text-white placeholder-slate-500 focus:outline-none transition-colors ${
+                          className={`w-full px-4 py-3 bg-white border rounded-xl text-white placeholder-slate-500 focus:outline-none transition-colors ${
                             errors.eventType
                               ? 'border-red-500 focus:border-red-500'
-                              : 'border-[#232f48] focus:border-primary'
+                              : 'border-slate-200 focus:border-primary'
                           }`}
                         />
                         {errors.eventType && (
@@ -627,7 +627,7 @@ const PixelModal = ({ isOpen, onClose, initialData = null }) => {
                               if (errors.customEventName)
                                 setErrors({ ...errors, customEventName: null });
                             }}
-                            className="w-full px-4 py-3 bg-[#0b0f19] border border-[#232f48] rounded-xl text-white focus:outline-none focus:border-primary transition-colors"
+                            className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-white focus:outline-none focus:border-primary transition-colors"
                           >
                             {availableEvents.map((event) => (
                               <option key={event.value} value={event.value}>
@@ -652,10 +652,10 @@ const PixelModal = ({ isOpen, onClose, initialData = null }) => {
                                   setErrors({ ...errors, customEventName: null });
                               }}
                               placeholder="e.g., High_Quality_User, ClickedToOffer"
-                              className={`w-full px-4 py-3 bg-[#0b0f19] border rounded-xl text-white placeholder-slate-500 focus:outline-none transition-colors ${
+                              className={`w-full px-4 py-3 bg-white border rounded-xl text-white placeholder-slate-500 focus:outline-none transition-colors ${
                                 errors.customEventName
                                   ? 'border-red-500 focus:border-red-500'
-                                  : 'border-[#232f48] focus:border-primary'
+                                  : 'border-slate-200 focus:border-primary'
                               }`}
                             />
                             {errors.customEventName && (
@@ -673,10 +673,10 @@ const PixelModal = ({ isOpen, onClose, initialData = null }) => {
               </div>
 
               {/* Footer */}
-              <div className="flex items-center justify-end gap-3 p-4 sm:p-6 border-t border-[#232f48] flex-shrink-0">
+              <div className="flex items-center justify-end gap-3 p-4 sm:p-6 border-t border-slate-200 flex-shrink-0">
                 <button
                   onClick={onClose}
-                  className="px-4 py-2 text-sm bg-[#232f48] text-white hover:bg-[#324467] rounded-xl font-bold transition-colors"
+                  className="px-4 py-2 text-sm bg-slate-200 text-[#1b1b1b] hover:bg-slate-300 rounded-xl font-bold transition-colors"
                 >
                   Cancel
                 </button>

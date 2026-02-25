@@ -110,19 +110,19 @@ function getPlatformLogo(platform) {
       );
     case 'taboola':
       return (
-        <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 overflow-hidden border border-[#232f48]">
+        <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 overflow-hidden border border-slate-200">
           <img src={taboolaLogo} alt="Taboola" className="w-full h-full object-cover" />
         </div>
       );
     case 'outbrain':
       return (
-        <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 overflow-hidden border border-[#232f48]">
+        <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 overflow-hidden border border-slate-200">
           <img src={outbrainLogo} alt="Outbrain" className="w-full h-full object-cover" />
         </div>
       );
     default:
       return (
-        <div className="w-10 h-10 rounded-xl bg-[#232f48] flex items-center justify-center flex-shrink-0">
+        <div className="w-10 h-10 rounded-xl bg-slate-200 flex items-center justify-center flex-shrink-0">
           <span className="text-white text-sm font-bold">
             {(PLATFORM_NAMES[platform] || platform).charAt(0)}
           </span>
@@ -632,7 +632,7 @@ export default function LinkWizardOnePerPage({
   return (
     <div className="flex flex-col flex-1 min-h-0">
       {/* Progress bar */}
-      <div className="h-1 bg-[#232f48] flex-shrink-0">
+      <div className="h-1 bg-slate-200 flex-shrink-0">
         <div
           className="h-full bg-[#135bec] transition-all duration-500 shadow-[0_0_10px_#135bec]"
           style={{ width: `${progressPct}%` }}
@@ -683,7 +683,7 @@ export default function LinkWizardOnePerPage({
 
               {/* Step: Name */}
               {currentStep.id === 'name' && (
-                <div className="rounded-2xl bg-[#101622] border-2 border-[#232f48] focus-within:border-[#135bec] focus-within:shadow-[0_0_15px_rgba(19,91,236,0.3)] transition-all">
+                <div className="rounded-2xl bg-white border-2 border-slate-200 focus-within:border-[#135bec] focus-within:shadow-[0_0_15px_rgba(19,91,236,0.3)] transition-all">
                   <input
                     type="text"
                     value={formData.name || ''}
@@ -709,7 +709,7 @@ export default function LinkWizardOnePerPage({
               {/* Step: URL */}
               {currentStep.id === 'url' && (
                 <div className="space-y-2">
-                  <div className="rounded-2xl bg-[#101622] border-2 border-[#232f48] focus-within:border-[#135bec] focus-within:shadow-[0_0_15px_rgba(19,91,236,0.3)] transition-all">
+                  <div className="rounded-2xl bg-white border-2 border-slate-200 focus-within:border-[#135bec] focus-within:shadow-[0_0_15px_rgba(19,91,236,0.3)] transition-all">
                     <input
                       type="url"
                       value={formData.targetUrl || ''}
@@ -754,7 +754,7 @@ export default function LinkWizardOnePerPage({
                         className={`p-6 rounded-2xl border-2 text-left transition-all ${
                           isSelected
                             ? 'border-[#FF10F0] bg-[#FF10F0]/5 shadow-[0_0_20px_rgba(255,16,240,0.2)]'
-                            : 'border-[#232f48] bg-[#101622] hover:border-[#324467]'
+                            : 'border-slate-200 bg-white hover:border-[#324467]'
                         }`}
                       >
                         <span className="text-xl font-bold text-white">{d}</span>
@@ -774,7 +774,7 @@ export default function LinkWizardOnePerPage({
               {/* Step: Slug */}
               {currentStep.id === 'slug' && (
                 <div className="space-y-2">
-                  <div className="flex items-center rounded-2xl bg-[#101622] border-2 border-[#232f48] focus-within:border-[#135bec] overflow-hidden transition-all">
+                  <div className="flex items-center rounded-2xl bg-white border-2 border-slate-200 focus-within:border-[#135bec] overflow-hidden transition-all">
                     <div className="pl-6 text-[#135bec] font-bold text-lg flex-shrink-0">
                       {selectedDomain}/
                     </div>
@@ -815,7 +815,7 @@ export default function LinkWizardOnePerPage({
                           className={`p-4 rounded-xl border-2 font-bold transition-all ${
                             isSelected
                               ? 'border-[#FF10F0] bg-[#FF10F0]/5 shadow-[0_0_20px_rgba(255,16,240,0.2)] text-white'
-                              : 'border-[#232f48] bg-[#101622] text-slate-300 hover:border-[#324467]'
+                              : 'border-slate-200 bg-white text-slate-300 hover:border-[#324467]'
                           }`}
                         >
                           {opt.label}
@@ -828,7 +828,7 @@ export default function LinkWizardOnePerPage({
                       <p className="text-xs text-gray-500 mb-2 uppercase font-bold tracking-widest">
                         Redirect Bots to
                       </p>
-                      <div className="rounded-xl bg-[#101622] border-2 border-[#232f48] focus-within:border-[#135bec] transition-all">
+                      <div className="rounded-xl bg-white border-2 border-slate-200 focus-within:border-[#135bec] transition-all">
                         <input
                           type="url"
                           value={formData.fallbackUrl || ''}
@@ -856,7 +856,7 @@ export default function LinkWizardOnePerPage({
                       {formData.geoRules.map((rule, idx) => (
                         <div
                           key={idx}
-                          className="flex items-center justify-between bg-[#101622] p-4 rounded-xl border border-[#232f48]"
+                          className="flex items-center justify-between bg-white p-4 rounded-xl border border-slate-200"
                         >
                           <div className="flex items-center gap-3 min-w-0">
                             <span className="bg-[#135bec]/20 text-[#135bec] px-2 py-1 rounded text-[10px] font-bold flex-shrink-0">
@@ -879,13 +879,13 @@ export default function LinkWizardOnePerPage({
                     <button
                       type="button"
                       onClick={() => setShowGeoForm(true)}
-                      className="w-full flex items-center justify-center gap-2 p-4 rounded-xl border-2 border-dashed border-[#232f48] text-slate-400 hover:border-[#135bec] hover:text-white transition-all"
+                      className="w-full flex items-center justify-center gap-2 p-4 rounded-xl border-2 border-dashed border-slate-200 text-slate-400 hover:border-[#135bec] hover:text-white transition-all"
                     >
                       <span className="material-symbols-outlined">add</span>
                       Add geo rule
                     </button>
                   ) : (
-                    <div className="p-4 bg-[#101622] border-2 border-[#232f48] rounded-2xl space-y-4">
+                    <div className="p-4 bg-white border-2 border-slate-200 rounded-2xl space-y-4">
                       <div>
                         <label className="text-xs font-bold text-gray-500 uppercase block mb-2">
                           If Country is
@@ -895,7 +895,7 @@ export default function LinkWizardOnePerPage({
                           onChange={(e) =>
                             setNewGeoRule((r) => ({ ...r, country: e.target.value }))
                           }
-                          className="w-full bg-[#0b0f19] border border-[#232f48] rounded-xl p-4 text-white outline-none focus:border-[#135bec]"
+                          className="w-full bg-white border border-slate-200 rounded-xl p-4 text-white outline-none focus:border-[#135bec]"
                         >
                           <option value="">Select...</option>
                           {countriesData.map((c) => (
@@ -917,7 +917,7 @@ export default function LinkWizardOnePerPage({
                           value={newGeoRule.url}
                           onChange={(e) => setNewGeoRule((r) => ({ ...r, url: e.target.value.toLowerCase() }))}
                           placeholder="https://..."
-                          className="w-full bg-[#0b0f19] border border-[#232f48] rounded-xl p-4 text-white outline-none focus:border-[#135bec]"
+                          className="w-full bg-white border border-slate-200 rounded-xl p-4 text-white outline-none focus:border-[#135bec]"
                         />
                         {geoRuleErrors.url && (
                           <p className="text-red-400 text-xs mt-1">{geoRuleErrors.url}</p>
@@ -927,7 +927,7 @@ export default function LinkWizardOnePerPage({
                         <button
                           type="button"
                           onClick={() => setShowGeoForm(false)}
-                          className="flex-1 py-3 rounded-xl font-bold bg-[#232f48] text-white"
+                          className="flex-1 py-3 rounded-xl font-bold bg-slate-200 text-white"
                         >
                           Cancel
                         </button>
@@ -969,7 +969,7 @@ export default function LinkWizardOnePerPage({
                             className={`w-full flex items-center justify-between p-4 rounded-2xl border-2 transition-all ${
                               isSelected
                                 ? 'border-[#FF10F0] bg-[#FF10F0]/5'
-                                : 'border-[#232f48] bg-[#101622] hover:border-[#324467]'
+                                : 'border-slate-200 bg-white hover:border-[#324467]'
                             }`}
                           >
                             <div className="flex items-center gap-4">
@@ -1018,14 +1018,14 @@ export default function LinkWizardOnePerPage({
                 Review your GoodLink configuration below.
               </p>
 
-              <div className="bg-[#101622] border border-[#232f48] rounded-2xl p-6 space-y-4 text-left">
-                <div className="flex justify-between items-center border-b border-[#232f48] pb-3">
+              <div className="bg-white border border-slate-200 rounded-2xl p-6 space-y-4 text-left">
+                <div className="flex justify-between items-center border-b border-slate-200 pb-3">
                   <span className="text-gray-500 text-[10px] font-bold uppercase tracking-widest">
                     Link Name
                   </span>
                   <span className="font-bold text-white">{formData.name || '—'}</span>
                 </div>
-                <div className="flex justify-between items-center border-b border-[#232f48] pb-3">
+                <div className="flex justify-between items-center border-b border-slate-200 pb-3">
                   <span className="text-gray-500 text-[10px] font-bold uppercase tracking-widest">
                     Short Link
                   </span>
@@ -1033,7 +1033,7 @@ export default function LinkWizardOnePerPage({
                     https://{selectedDomain}/{formData.slug || '—'}
                   </span>
                 </div>
-                <div className="flex justify-between items-center border-b border-[#232f48] pb-3">
+                <div className="flex justify-between items-center border-b border-slate-200 pb-3">
                   <span className="text-gray-500 text-[10px] font-bold uppercase tracking-widest">
                     Destination
                   </span>
@@ -1044,7 +1044,7 @@ export default function LinkWizardOnePerPage({
                     {formData.targetUrl || '—'}
                   </span>
                 </div>
-                <div className="flex justify-between items-center border-b border-[#232f48] pb-3">
+                <div className="flex justify-between items-center border-b border-slate-200 pb-3">
                   <span className="text-gray-500 text-[10px] font-bold uppercase tracking-widest">
                     Bot Action
                   </span>
@@ -1056,7 +1056,7 @@ export default function LinkWizardOnePerPage({
                         : 'Allow'}
                   </span>
                 </div>
-                <div className="flex justify-between items-center border-b border-[#232f48] pb-3">
+                <div className="flex justify-between items-center border-b border-slate-200 pb-3">
                   <span className="text-gray-500 text-[10px] font-bold uppercase tracking-widest">
                     Geo Rules
                   </span>
@@ -1077,7 +1077,7 @@ export default function LinkWizardOnePerPage({
 
                 {/* QR Code (qrserver.com) */}
                 {formData.slug && (
-                  <div className="border-t border-[#232f48] pt-4 mt-4">
+                  <div className="border-t border-slate-200 pt-4 mt-4">
                     <span className="text-gray-500 text-[10px] font-bold uppercase tracking-widest block mb-3">
                       QR Code
                     </span>
@@ -1085,7 +1085,7 @@ export default function LinkWizardOnePerPage({
                       <img
                         src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(`https://${selectedDomain}/${formData.slug}`)}`}
                         alt="QR Code"
-                        className="w-[180px] h-[180px] rounded-xl border border-[#232f48] bg-white p-2"
+                        className="w-[180px] h-[180px] rounded-xl border border-slate-200 bg-white p-2"
                       />
                       <p className="text-xs text-slate-500">Scans to short link</p>
                     </div>
@@ -1098,12 +1098,12 @@ export default function LinkWizardOnePerPage({
       </div>
 
       {/* Footer */}
-      <footer className="fixed bottom-0 left-0 right-0 p-6 bg-[#0b0f19]/95 backdrop-blur border-t border-[#232f48] z-50">
+      <footer className="fixed bottom-0 left-0 right-0 p-6 bg-white/95 backdrop-blur border-t border-slate-200 z-50">
         <div className="max-w-2xl mx-auto flex items-center gap-4">
           <button
             type="button"
             onClick={goBack}
-            className={`flex items-center justify-center p-5 rounded-2xl border border-[#232f48] font-bold text-gray-400 hover:bg-[#232f48] hover:text-white transition-all active:scale-90 ${
+            className={`flex items-center justify-center p-5 rounded-2xl border border-slate-200 font-bold text-gray-400 hover:bg-slate-200 hover:text-white transition-all active:scale-90 ${
               isFirst ? 'invisible' : ''
             }`}
           >

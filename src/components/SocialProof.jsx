@@ -2,7 +2,7 @@ import React from 'react';
 
 const SocialProof = () => {
   return (
-    <section className="border-y border-slate-200 dark:border-[#232f48] bg-slate-50 dark:bg-[#0c101a] py-8">
+    <section className="border-y border-slate-200 dark:border-slate-200 bg-slate-50 dark:bg-white py-8">
       <div className="mx-auto max-w-[1200px] px-6 text-center">
         <p className="mb-6 text-sm font-semibold text-slate-500 uppercase tracking-widest">
           Trusted by 4,000+ Marketers

@@ -418,10 +418,10 @@ const AddDomainModal = ({ isOpen, onClose, domain = null }) => {
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: 50 }}
           transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-          className="relative bg-[#0b0f19] rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col overflow-hidden border border-[#232f48]"
+          className="relative bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col overflow-hidden border border-slate-200"
         >
           {/* Header */}
-          <div className="flex items-center justify-between p-3 sm:p-6 border-b border-[#232f48] flex-shrink-0">
+          <div className="flex items-center justify-between p-3 sm:p-6 border-b border-slate-200 flex-shrink-0">
             <h2 className="text-xl sm:text-2xl font-bold text-white">
               {domain ? 'Edit Domain' : 'Add Custom Domain'}
             </h2>
@@ -434,7 +434,7 @@ const AddDomainModal = ({ isOpen, onClose, domain = null }) => {
           </div>
 
           {/* Stepper */}
-          <div className="p-3 sm:p-6 border-b border-[#232f48] flex-shrink-0">
+          <div className="p-3 sm:p-6 border-b border-slate-200 flex-shrink-0">
             <div className="flex justify-between items-center">
               {steps.map((step, index) => (
                 <React.Fragment key={step.number}>
@@ -443,7 +443,7 @@ const AddDomainModal = ({ isOpen, onClose, domain = null }) => {
                       className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center font-bold text-sm sm:text-base ${
                         currentStep >= step.number
                           ? 'bg-primary text-white'
-                          : 'bg-[#232f48] text-slate-400'
+                          : 'bg-slate-200 text-slate-600'
                       }`}
                     >
                       {step.number}
@@ -459,7 +459,7 @@ const AddDomainModal = ({ isOpen, onClose, domain = null }) => {
                   {index < steps.length - 1 && (
                     <div
                       className={`w-6 sm:w-12 h-0.5 flex-shrink-0 ${
-                        currentStep > step.number ? 'bg-primary' : 'bg-[#232f48]'
+                        currentStep > step.number ? 'bg-primary' : 'bg-slate-200'
                       }`}
                     />
                   )}
@@ -486,7 +486,7 @@ const AddDomainModal = ({ isOpen, onClose, domain = null }) => {
                       value={domainName}
                       onChange={(e) => setDomainName(e.target.value)}
                       placeholder="mybrand.com"
-                      className="w-full px-4 py-3 bg-[#101622] border border-[#232f48] rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-primary transition-colors"
+                      className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-[#1b1b1b] placeholder-slate-400 focus:outline-none focus:border-primary transition-colors"
                       autoFocus
                     />
                     <p className="text-xs text-slate-500 mt-2">
@@ -515,7 +515,7 @@ const AddDomainModal = ({ isOpen, onClose, domain = null }) => {
                         setRootRedirectError(null);
                       }}
                       placeholder="RootRedirect.com"
-                      className="w-full px-4 py-3 bg-[#101622] border border-[#232f48] rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-primary transition-colors"
+                      className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-[#1b1b1b] placeholder-slate-400 focus:outline-none focus:border-primary transition-colors"
                     />
                     {rootRedirectError && (
                       <div className="bg-red-500/20 border border-red-500/30 rounded-xl p-4 mt-3">
@@ -587,10 +587,10 @@ const AddDomainModal = ({ isOpen, onClose, domain = null }) => {
           </div>
 
           {/* Footer */}
-          <div className="flex items-center justify-between p-3 sm:p-6 border-t border-[#232f48] flex-shrink-0 gap-2">
+          <div className="flex items-center justify-between p-3 sm:p-6 border-t border-slate-200 flex-shrink-0 gap-2">
             <button
               onClick={() => (currentStep > 1 ? setCurrentStep(currentStep - 1) : handleClose())}
-              className="px-3 sm:px-4 py-2 text-xs sm:text-sm rounded-lg sm:rounded-xl font-bold transition-colors flex-shrink-0 bg-[#232f48] text-white hover:bg-[#324467]"
+              className="px-3 sm:px-4 py-2 text-xs sm:text-sm rounded-lg sm:rounded-xl font-bold transition-colors flex-shrink-0 bg-slate-200 text-white hover:bg-slate-300"
             >
               {currentStep === 1 ? 'Cancel' : 'Previous'}
             </button>

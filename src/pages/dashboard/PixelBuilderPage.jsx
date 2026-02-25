@@ -149,7 +149,7 @@ const PixelBuilderPage = () => {
 
   if (initialLoading || (id && !initialData)) {
     return (
-      <div className="min-h-screen bg-[#0b0f19] flex items-center justify-center">
+      <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="text-center">
           <span className="material-symbols-outlined text-4xl text-slate-600 animate-spin">
             refresh
@@ -161,8 +161,8 @@ const PixelBuilderPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[#0b0f19] flex flex-col">
-      <div className="flex-shrink-0 z-10 bg-[#0b0f19] border-b border-slate-800 px-4 py-4">
+    <div className="min-h-screen bg-white flex flex-col">
+      <div className="flex-shrink-0 z-10 bg-white border-b border-slate-800 px-4 py-4">
         <div className="max-w-4xl mx-auto flex items-center gap-4">
           <button
             onClick={() => navigate('/dashboard/pixels')}

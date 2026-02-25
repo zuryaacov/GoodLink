@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 
 const Footer = () => {
   return (
-    <footer className="border-t border-slate-200 dark:border-[#232f48] bg-white dark:bg-[#111722] py-12 px-6">
+    <footer className="border-t border-slate-200 dark:border-slate-200 bg-white dark:bg-[#111722] py-12 px-6">
       <div className="mx-auto max-w-[1200px]">
         <div className="grid grid-cols-2 gap-8 md:grid-cols-4 lg:grid-cols-5">
           <div className="col-span-2 lg:col-span-2 flex flex-col gap-4">
@@ -131,7 +131,7 @@ const Footer = () => {
             </a>
           </div>
         </div>
-        <div className="mt-12 border-t border-slate-200 dark:border-[#232f48] pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
+        <div className="mt-12 border-t border-slate-200 dark:border-slate-200 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
           <p className="text-sm text-slate-500 dark:text-slate-400">
             © 2024 GoodLink.ai. All rights reserved.
           </p>
