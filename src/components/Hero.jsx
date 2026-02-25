@@ -30,7 +30,7 @@ const Hero = ({ user }) => {
               {!user && (
                 <Link
                   to="/login"
-                  className="flex h-12 min-w-[140px] cursor-pointer items-center justify-center rounded-lg bg-[#cdffb7] hover:bg-[#b8e99e] px-6 text-[#1b1b1b] text-base font-bold transition-all"
+                  className="flex h-12 min-w-[140px] cursor-pointer items-center justify-center rounded-lg bg-[#6358de] hover:bg-[#5348c7] px-6 text-white text-base font-bold transition-all"
                 >
                   Get started
                 </Link>
