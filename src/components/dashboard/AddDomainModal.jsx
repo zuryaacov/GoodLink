@@ -422,12 +422,12 @@ const AddDomainModal = ({ isOpen, onClose, domain = null }) => {
         >
           {/* Header */}
           <div className="flex items-center justify-between p-3 sm:p-6 border-b border-slate-200 flex-shrink-0">
-            <h2 className="text-xl sm:text-2xl font-bold text-white">
+            <h2 className="text-xl sm:text-2xl font-bold text-[#1b1b1b]">
               {domain ? 'Edit Domain' : 'Add Custom Domain'}
             </h2>
             <button
               onClick={handleClose}
-              className="text-[#1b1b1b] hover:text-white transition-colors"
+              className="text-[#1b1b1b] hover:text-[#1b1b1b] transition-colors"
             >
               <span className="material-symbols-outlined text-2xl">close</span>
             </button>
@@ -442,7 +442,7 @@ const AddDomainModal = ({ isOpen, onClose, domain = null }) => {
                     <div
                       className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center font-bold text-sm sm:text-base ${
                         currentStep >= step.number
-                          ? 'bg-primary text-white'
+                          ? 'bg-primary text-[#1b1b1b]'
                           : 'bg-slate-200 text-slate-600'
                       }`}
                     >
@@ -450,7 +450,7 @@ const AddDomainModal = ({ isOpen, onClose, domain = null }) => {
                     </div>
                     <div
                       className={`mt-1 text-xs sm:text-sm text-center whitespace-nowrap ${
-                        currentStep >= step.number ? 'text-white' : 'text-slate-500'
+                        currentStep >= step.number ? 'text-[#1b1b1b]' : 'text-slate-500'
                       }`}
                     >
                       {step.title}
@@ -480,7 +480,7 @@ const AddDomainModal = ({ isOpen, onClose, domain = null }) => {
                   className="space-y-4 sm:space-y-6"
                 >
                   <div>
-                    <label className="block text-sm font-medium text-white mb-2">Domain URL</label>
+                    <label className="block text-sm font-medium text-[#1b1b1b] mb-2">Domain URL</label>
                     <input
                       type="text"
                       value={domainName}
@@ -500,10 +500,10 @@ const AddDomainModal = ({ isOpen, onClose, domain = null }) => {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-white mb-1">
+                    <label className="block text-sm font-medium text-[#1b1b1b] mb-1">
                       Root Redirect
                     </label>
-                    <p className="text-sm font-bold mb-2 text-white">
+                    <p className="text-sm font-bold mb-2 text-[#1b1b1b]">
                       Visitors accessing the domain without a referral slug will be automatically
                       redirected to the root domain.
                     </p>
@@ -535,7 +535,7 @@ const AddDomainModal = ({ isOpen, onClose, domain = null }) => {
                   className="space-y-4 sm:space-y-6"
                 >
                   <div>
-                    <h3 className="text-lg font-bold text-white mb-2">DNS Configuration</h3>
+                    <h3 className="text-lg font-bold text-[#1b1b1b] mb-2">DNS Configuration</h3>
                     <p className="text-sm text-[#1b1b1b] mb-4">
                       Add these DNS records to your domain registrar (e.g., Cloudflare, GoDaddy)
                     </p>
@@ -553,7 +553,7 @@ const AddDomainModal = ({ isOpen, onClose, domain = null }) => {
                   className="space-y-4 sm:space-y-6"
                 >
                   <div className="text-center space-y-4">
-                    <h3 className="text-lg font-bold text-white">Verify DNS Records</h3>
+                    <h3 className="text-lg font-bold text-[#1b1b1b]">Verify DNS Records</h3>
                     <p className="text-sm text-[#1b1b1b]">
                       Click below to verify that your DNS records are configured correctly. This may
                       take a few minutes after adding the DNS records.
@@ -566,7 +566,7 @@ const AddDomainModal = ({ isOpen, onClose, domain = null }) => {
                     <button
                       onClick={handleVerify}
                       disabled={isVerifying}
-                      className="px-6 py-3 bg-primary hover:bg-primary/90 text-white font-bold rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 mx-auto"
+                      className="px-6 py-3 bg-primary hover:bg-primary/90 text-[#1b1b1b] font-bold rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 mx-auto"
                     >
                       {isVerifying ? (
                         <>
@@ -590,7 +590,7 @@ const AddDomainModal = ({ isOpen, onClose, domain = null }) => {
           <div className="flex items-center justify-between p-3 sm:p-6 border-t border-slate-200 flex-shrink-0 gap-2">
             <button
               onClick={() => (currentStep > 1 ? setCurrentStep(currentStep - 1) : handleClose())}
-              className="px-3 sm:px-4 py-2 text-xs sm:text-sm rounded-lg sm:rounded-xl font-bold transition-colors flex-shrink-0 bg-slate-200 text-white hover:bg-slate-300"
+              className="px-3 sm:px-4 py-2 text-xs sm:text-sm rounded-lg sm:rounded-xl font-bold transition-colors flex-shrink-0 bg-slate-200 text-[#1b1b1b] hover:bg-slate-300"
             >
               {currentStep === 1 ? 'Cancel' : 'Previous'}
             </button>
@@ -600,7 +600,7 @@ const AddDomainModal = ({ isOpen, onClose, domain = null }) => {
             <button
               onClick={handleNext}
               disabled={!domainName.trim() || isSubmitting}
-              className="px-4 sm:px-6 py-2 sm:py-2.5 text-xs sm:text-sm bg-[#FF10F0] hover:bg-[#e00ed0] disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold rounded-lg sm:rounded-xl transition-colors flex-shrink-0"
+              className="px-4 sm:px-6 py-2 sm:py-2.5 text-xs sm:text-sm bg-[#FF10F0] hover:bg-[#e00ed0] disabled:opacity-50 disabled:cursor-not-allowed text-[#1b1b1b] font-bold rounded-lg sm:rounded-xl transition-colors flex-shrink-0"
             >
               {isSubmitting ? (
                 <>

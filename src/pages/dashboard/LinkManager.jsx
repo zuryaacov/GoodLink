@@ -801,7 +801,7 @@ const LinkManager = () => {
                   <span className="material-symbols-outlined text-2xl">chevron_left</span>
                 </button>
               )}
-              <h1 className="text-2xl md:text-3xl font-bold text-white truncate">{pageTitle}</h1>
+              <h1 className="text-2xl md:text-3xl font-bold text-[#1b1b1b] truncate">{pageTitle}</h1>
             </div>
           </div>
           <div className={isFoldersEnabled ? 'relative w-full sm:w-auto' : 'relative ml-auto'}>
@@ -811,7 +811,7 @@ const LinkManager = () => {
                   ? handleCreateOption('link')
                   : setCreateMenuOpen((v) => !v)
               }
-              className={`flex items-center justify-center gap-2 ${isFoldersEnabled ? 'w-full sm:w-auto' : 'w-auto'} px-6 py-3 md:py-2.5 text-white font-bold rounded-xl transition-colors shadow-lg text-base md:text-sm bg-primary hover:bg-primary/90`}
+              className={`flex items-center justify-center gap-2 ${isFoldersEnabled ? 'w-full sm:w-auto' : 'w-auto'} px-6 py-3 md:py-2.5 text-[#1b1b1b] font-bold rounded-xl transition-colors shadow-lg text-base md:text-sm bg-primary hover:bg-primary/90`}
             >
               <span className="material-symbols-outlined text-xl md:text-base">add</span>
               {createOptions.length === 1 ? 'New Link' : 'Create'}
@@ -828,7 +828,7 @@ const LinkManager = () => {
                     <button
                       key={option.id}
                       onClick={() => handleCreateOption(option.id)}
-                      className="w-full px-4 py-3 text-left text-white hover:bg-white/5 transition-colors"
+                      className="w-full px-4 py-3 text-left text-[#1b1b1b] hover:bg-white/5 transition-colors"
                     >
                       {option.label}
                     </button>
@@ -870,7 +870,7 @@ const LinkManager = () => {
           <div className="relative flex items-center gap-6 py-4">
             <div className="h-[2px] flex-1 bg-gradient-to-r from-transparent via-[#FF00E5]/40 to-[#FF00E5]"></div>
             <div className="px-8 py-2 rounded-full border border-primary/30 bg-slate-50 shadow-[0_0_30px_rgba(255,0,229,0.2)]">
-              <span className="text-sm font-semibold text-white tracking-wider whitespace-nowrap">
+              <span className="text-sm font-semibold text-[#1b1b1b] tracking-wider whitespace-nowrap">
                 {KIND_LABEL_PLURAL[nextKind] || 'SPACES'}
               </span>
             </div>
@@ -928,7 +928,7 @@ const LinkManager = () => {
                         <button
                           type="button"
                           onClick={() => openEditSpaceModal(space)}
-                          className="w-full px-4 py-2.5 text-left text-white hover:bg-white/5 transition-colors text-sm"
+                          className="w-full px-4 py-2.5 text-left text-[#1b1b1b] hover:bg-white/5 transition-colors text-sm"
                         >
                           Update
                         </button>
@@ -947,13 +947,13 @@ const LinkManager = () => {
                     <div className="text-[10px] text-gray-500 font-bold uppercase mb-1 tracking-widest">
                       Total {kindLabel} Clicks
                     </div>
-                    <div className="text-2xl font-extrabold text-white">
+                    <div className="text-2xl font-extrabold text-[#1b1b1b]">
                       {new Intl.NumberFormat('en-US').format(stats.clicks)}
                     </div>
                   </div>
 
                   <div className="mt-auto flex items-center justify-between pt-4 border-t border-slate-200">
-                    <div className="text-xs font-bold text-white">
+                    <div className="text-xs font-bold text-[#1b1b1b]">
                       {new Intl.NumberFormat('en-US').format(stats.linksCount)} Links Inside
                     </div>
                     <div className="flex items-center gap-2 text-xs font-bold text-[#00F2B5]">
@@ -981,7 +981,7 @@ const LinkManager = () => {
         <div className="relative flex items-center gap-6 py-4">
           <div className="h-[2px] flex-1 bg-gradient-to-r from-transparent via-[#0b996f]/40 to-[#0b996f]"></div>
           <div className="px-8 py-2 rounded-full border border-[#0b996f]/30 bg-slate-50 shadow-[0_0_30px_rgba(19,91,236,0.2)]">
-            <span className="text-sm font-semibold text-white tracking-wider whitespace-nowrap">
+            <span className="text-sm font-semibold text-[#1b1b1b] tracking-wider whitespace-nowrap">
               Links
             </span>
           </div>
@@ -1017,7 +1017,7 @@ const LinkManager = () => {
                 <div className="flex justify-between items-start mb-6">
                   <div className="flex-1 min-w-0 pr-4">
                     <h3
-                      className="text-4xl font-bold text-white mb-1 break-words"
+                      className="text-4xl font-bold text-[#1b1b1b] mb-1 break-words"
                       title={link.name || 'Untitled'}
                     >
                       {link.name || 'Untitled'}
@@ -1102,10 +1102,10 @@ const LinkManager = () => {
                     <img src={qrCodeIcon} alt="QR Code" className="w-9 h-9 opacity-90" />
                     <span className="absolute inset-0 flex items-center justify-center pointer-events-none">
                       <span
-                        className="flex items-center justify-center w-[18px] h-[18px] rounded-full bg-[#1a2332] text-white shadow-[0_2px_6px_rgba(0,0,0,0.3)]"
+                        className="flex items-center justify-center w-[18px] h-[18px] rounded-full bg-[#1a2332] text-[#1b1b1b] shadow-[0_2px_6px_rgba(0,0,0,0.3)]"
                         aria-hidden
                       >
-                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-white">
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-[#1b1b1b]">
                           <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
                           <polyline points="15 3 21 3 21 9" />
                           <line x1="10" y1="14" x2="21" y2="3" />
@@ -1156,7 +1156,7 @@ const LinkManager = () => {
                 <button
                   type="button"
                   onClick={() => handleDownloadQrPng(qrModal.link.short_url)}
-                  className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-slate-200 hover:bg-slate-300 text-white text-sm font-medium transition-colors"
+                  className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-slate-200 hover:bg-slate-300 text-[#1b1b1b] text-sm font-medium transition-colors"
                 >
                   <span className="material-symbols-outlined text-base">download</span>
                   Download PNG
@@ -1164,7 +1164,7 @@ const LinkManager = () => {
                 <button
                   type="button"
                   onClick={() => handleDownloadQrSvg(qrModal.link.short_url)}
-                  className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-slate-200 hover:bg-slate-300 text-white text-sm font-medium transition-colors"
+                  className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-slate-200 hover:bg-slate-300 text-[#1b1b1b] text-sm font-medium transition-colors"
                 >
                   <span className="material-symbols-outlined text-base">download</span>
                   Download SVG
@@ -1172,7 +1172,7 @@ const LinkManager = () => {
                 <button
                   type="button"
                   onClick={() => handleCopyQrSvg(qrModal.link.short_url)}
-                  className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-slate-200 hover:bg-slate-300 text-white text-sm font-medium transition-colors"
+                  className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-slate-200 hover:bg-slate-300 text-[#1b1b1b] text-sm font-medium transition-colors"
                 >
                   <span className="material-symbols-outlined text-base">content_copy</span>
                   {qrCopyStatus || 'Copy SVG code'}
@@ -1437,7 +1437,7 @@ const LinkActionsMenu = ({
                 setIsOpen(false);
                 onEdit(link);
               }}
-              className="w-full px-4 py-3 text-left text-white hover:bg-white/5 transition-colors flex items-center gap-3 text-sm"
+              className="w-full px-4 py-3 text-left text-[#1b1b1b] hover:bg-white/5 transition-colors flex items-center gap-3 text-sm"
             >
               <span className="material-symbols-outlined text-base">edit</span>
               Edit
@@ -1447,7 +1447,7 @@ const LinkActionsMenu = ({
                 setIsOpen(false);
                 if (onAnalytics) onAnalytics(link);
               }}
-              className="w-full px-4 py-3 text-left text-white hover:bg-white/5 transition-colors flex items-center gap-3 text-sm"
+              className="w-full px-4 py-3 text-left text-[#1b1b1b] hover:bg-white/5 transition-colors flex items-center gap-3 text-sm"
             >
               <span className="material-symbols-outlined text-base">insights</span>
               Analytics
@@ -1457,7 +1457,7 @@ const LinkActionsMenu = ({
                 setIsOpen(false);
                 handleDuplicate();
               }}
-              className="w-full px-4 py-3 text-left text-white hover:bg-white/5 transition-colors flex items-center gap-3 text-sm"
+              className="w-full px-4 py-3 text-left text-[#1b1b1b] hover:bg-white/5 transition-colors flex items-center gap-3 text-sm"
             >
               <span className="material-symbols-outlined text-base">content_copy</span>
               Duplicate
@@ -1468,7 +1468,7 @@ const LinkActionsMenu = ({
                   setIsOpen(false);
                   onMove(link);
                 }}
-                className="w-full px-4 py-3 text-left text-white hover:bg-white/5 transition-colors flex items-center gap-3 text-sm"
+                className="w-full px-4 py-3 text-left text-[#1b1b1b] hover:bg-white/5 transition-colors flex items-center gap-3 text-sm"
               >
                 <span className="material-symbols-outlined text-base">drive_file_move</span>
                 Move

@@ -123,7 +123,7 @@ function getPlatformLogo(platform) {
     default:
       return (
         <div className="w-10 h-10 rounded-xl bg-slate-200 flex items-center justify-center flex-shrink-0">
-          <span className="text-white text-sm font-bold">
+          <span className="text-[#1b1b1b] text-sm font-bold">
             {(PLATFORM_NAMES[platform] || platform).charAt(0)}
           </span>
         </div>
@@ -667,7 +667,7 @@ export default function LinkWizardOnePerPage({
                     {stepIndex + 1}/{totalSteps}
                   </span>
                 </div>
-                <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-white">
+                <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-[#1b1b1b]">
                   {currentStep.title}{' '}
                   <span
                     className={
@@ -692,7 +692,7 @@ export default function LinkWizardOnePerPage({
                       setNameError(null);
                     }}
                     placeholder="e.g. Black Friday Promo"
-                    className="w-full bg-transparent py-5 px-6 text-xl outline-none border-none text-white placeholder-slate-500"
+                    className="w-full bg-transparent py-5 px-6 text-xl outline-none border-none text-[#1b1b1b] placeholder-slate-500"
                   />
                   {nameError && <p className="text-red-400 text-xs px-6 pb-3">{nameError}</p>}
                   {validating && (
@@ -718,7 +718,7 @@ export default function LinkWizardOnePerPage({
                         setUrlError(null);
                       }}
                       placeholder="https://..."
-                      className="w-full bg-transparent py-5 px-6 text-xl outline-none border-none text-white placeholder-slate-500"
+                      className="w-full bg-transparent py-5 px-6 text-xl outline-none border-none text-[#1b1b1b] placeholder-slate-500"
                     />
                   </div>
                   {urlSafety.loading && (
@@ -757,7 +757,7 @@ export default function LinkWizardOnePerPage({
                             : 'border-slate-200 bg-white hover:border-[#324467]'
                         }`}
                       >
-                        <span className="text-xl font-bold text-white">{d}</span>
+                        <span className="text-xl font-bold text-[#1b1b1b]">{d}</span>
                         <span className="block text-xs text-gray-500 uppercase mt-1">
                           {d === 'glynk.to'
                             ? 'Short & Sweet'
@@ -786,7 +786,7 @@ export default function LinkWizardOnePerPage({
                         setSlugError(null);
                       }}
                       placeholder="my-deal"
-                      className="flex-1 bg-transparent py-5 px-3 text-xl outline-none font-semibold border-none text-white placeholder-slate-500"
+                      className="flex-1 bg-transparent py-5 px-3 text-xl outline-none font-semibold border-none text-[#1b1b1b] placeholder-slate-500"
                     />
                   </div>
                   {slugError && <p className="text-red-400 text-xs">{slugError}</p>}
@@ -814,7 +814,7 @@ export default function LinkWizardOnePerPage({
                           onClick={() => updateFormData('botAction', opt.value)}
                           className={`p-4 rounded-xl border-2 font-bold transition-all ${
                             isSelected
-                              ? 'border-[#FF10F0] bg-[#FF10F0]/5 shadow-[0_0_20px_rgba(255,16,240,0.2)] text-white'
+                              ? 'border-[#FF10F0] bg-[#FF10F0]/5 shadow-[0_0_20px_rgba(255,16,240,0.2)] text-[#1b1b1b]'
                               : 'border-slate-200 bg-white text-slate-300 hover:border-[#324467]'
                           }`}
                         >
@@ -837,7 +837,7 @@ export default function LinkWizardOnePerPage({
                             setFallbackUrlError(null);
                           }}
                           placeholder="https://google.com"
-                          className="w-full bg-transparent py-4 px-4 outline-none border-none text-white placeholder-slate-500"
+                          className="w-full bg-transparent py-4 px-4 outline-none border-none text-[#1b1b1b] placeholder-slate-500"
                         />
                       </div>
                       {fallbackUrlError && (
@@ -879,7 +879,7 @@ export default function LinkWizardOnePerPage({
                     <button
                       type="button"
                       onClick={() => setShowGeoForm(true)}
-                      className="w-full flex items-center justify-center gap-2 p-4 rounded-xl border-2 border-dashed border-slate-200 text-[#1b1b1b] hover:border-[#135bec] hover:text-white transition-all"
+                      className="w-full flex items-center justify-center gap-2 p-4 rounded-xl border-2 border-dashed border-slate-200 text-[#1b1b1b] hover:border-[#135bec] hover:text-[#1b1b1b] transition-all"
                     >
                       <span className="material-symbols-outlined">add</span>
                       Add geo rule
@@ -895,7 +895,7 @@ export default function LinkWizardOnePerPage({
                           onChange={(e) =>
                             setNewGeoRule((r) => ({ ...r, country: e.target.value }))
                           }
-                          className="w-full bg-white border border-slate-200 rounded-xl p-4 text-white outline-none focus:border-[#135bec]"
+                          className="w-full bg-white border border-slate-200 rounded-xl p-4 text-[#1b1b1b] outline-none focus:border-[#135bec]"
                         >
                           <option value="">Select...</option>
                           {countriesData.map((c) => (
@@ -917,7 +917,7 @@ export default function LinkWizardOnePerPage({
                           value={newGeoRule.url}
                           onChange={(e) => setNewGeoRule((r) => ({ ...r, url: e.target.value.toLowerCase() }))}
                           placeholder="https://..."
-                          className="w-full bg-white border border-slate-200 rounded-xl p-4 text-white outline-none focus:border-[#135bec]"
+                          className="w-full bg-white border border-slate-200 rounded-xl p-4 text-[#1b1b1b] outline-none focus:border-[#135bec]"
                         />
                         {geoRuleErrors.url && (
                           <p className="text-red-400 text-xs mt-1">{geoRuleErrors.url}</p>
@@ -927,14 +927,14 @@ export default function LinkWizardOnePerPage({
                         <button
                           type="button"
                           onClick={() => setShowGeoForm(false)}
-                          className="flex-1 py-3 rounded-xl font-bold bg-slate-200 text-white"
+                          className="flex-1 py-3 rounded-xl font-bold bg-slate-200 text-[#1b1b1b]"
                         >
                           Cancel
                         </button>
                         <button
                           type="button"
                           onClick={addGeoRule}
-                          className="flex-1 py-3 rounded-xl font-bold bg-[#10b981] text-white"
+                          className="flex-1 py-3 rounded-xl font-bold bg-[#10b981] text-[#1b1b1b]"
                         >
                           Add Rule
                         </button>
@@ -975,7 +975,7 @@ export default function LinkWizardOnePerPage({
                             <div className="flex items-center gap-4">
                               {getPlatformLogo(pixel.platform)}
                               <div className="text-left">
-                                <div className="font-bold text-white">{pixel.name}</div>
+                                <div className="font-bold text-[#1b1b1b]">{pixel.name}</div>
                                 <div className="text-[10px] text-gray-500 uppercase">{name}</div>
                               </div>
                             </div>
@@ -1011,7 +1011,7 @@ export default function LinkWizardOnePerPage({
               <div className="w-20 h-20 bg-[#10b981]/20 text-[#10b981] rounded-full flex items-center justify-center mx-auto border-4 border-[#10b981]/10">
                 <span className="material-symbols-outlined text-4xl">check</span>
               </div>
-              <h1 className="text-3xl sm:text-4xl font-extrabold text-white">
+              <h1 className="text-3xl sm:text-4xl font-extrabold text-[#1b1b1b]">
                 Final <span className="text-[#10b981]">Launch</span>
               </h1>
               <p className="text-gray-400 font-medium text-2xl">
@@ -1023,7 +1023,7 @@ export default function LinkWizardOnePerPage({
                   <span className="text-gray-500 text-[10px] font-bold uppercase tracking-widest">
                     Link Name
                   </span>
-                  <span className="font-bold text-white">{formData.name || '—'}</span>
+                  <span className="font-bold text-[#1b1b1b]">{formData.name || '—'}</span>
                 </div>
                 <div className="flex justify-between items-center border-b border-slate-200 pb-3">
                   <span className="text-gray-500 text-[10px] font-bold uppercase tracking-widest">
@@ -1103,7 +1103,7 @@ export default function LinkWizardOnePerPage({
           <button
             type="button"
             onClick={goBack}
-            className={`flex items-center justify-center p-5 rounded-2xl border border-slate-200 font-bold text-gray-400 hover:bg-slate-200 hover:text-white transition-all active:scale-90 ${
+            className={`flex items-center justify-center p-5 rounded-2xl border border-slate-200 font-bold text-gray-400 hover:bg-slate-200 hover:text-[#1b1b1b] transition-all active:scale-90 ${
               isFirst ? 'invisible' : ''
             }`}
           >
@@ -1113,7 +1113,7 @@ export default function LinkWizardOnePerPage({
             type="button"
             onClick={goNext}
             disabled={validating || urlSafety.loading || (isLast && isSubmitting)}
-            className="flex-1 flex items-center justify-center gap-3 py-5 rounded-2xl font-extrabold text-xl tracking-tight transition-all active:scale-[0.98] shadow-xl bg-[#FF10F0] hover:bg-[#e00ed0] text-white disabled:opacity-60 disabled:cursor-not-allowed"
+            className="flex-1 flex items-center justify-center gap-3 py-5 rounded-2xl font-extrabold text-xl tracking-tight transition-all active:scale-[0.98] shadow-xl bg-[#FF10F0] hover:bg-[#e00ed0] text-[#1b1b1b] disabled:opacity-60 disabled:cursor-not-allowed"
           >
             {isLast && isSubmitting ? (
               <>

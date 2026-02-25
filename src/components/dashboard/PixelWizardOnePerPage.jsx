@@ -461,7 +461,7 @@ export default function PixelWizardOnePerPage({ initialData, onSave, onBack, isE
                   {stepIndex + 1}/{totalSteps}
                 </span>
               </div>
-              <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-white">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-[#1b1b1b]">
                 {currentStep?.title}{' '}
                 <span
                   className={
@@ -486,7 +486,7 @@ export default function PixelWizardOnePerPage({ initialData, onSave, onBack, isE
                       setFieldErrors((prev) => ({ ...prev, name: null }));
                     }}
                     placeholder="e.g. FB - Main Account"
-                    className="w-full bg-transparent py-5 px-6 text-xl outline-none border-none text-white placeholder-slate-500"
+                    className="w-full bg-transparent py-5 px-6 text-xl outline-none border-none text-[#1b1b1b] placeholder-slate-500"
                   />
                 </div>
                 {fieldErrors.name && <p className="text-red-400 text-xs">{fieldErrors.name}</p>}
@@ -507,7 +507,7 @@ export default function PixelWizardOnePerPage({ initialData, onSave, onBack, isE
                     }`}
                   >
                     {getPlatformLogo(p.value)}
-                    <span className="font-bold text-white">{p.label}</span>
+                    <span className="font-bold text-[#1b1b1b]">{p.label}</span>
                   </button>
                 ))}
               </div>
@@ -530,7 +530,7 @@ export default function PixelWizardOnePerPage({ initialData, onSave, onBack, isE
                       setFieldErrors((prev) => ({ ...prev, pixelId: null }));
                     }}
                     placeholder={currentPlatform?.placeholder}
-                    className="w-full bg-transparent py-5 px-6 text-xl outline-none border-none text-white placeholder-slate-500 font-mono"
+                    className="w-full bg-transparent py-5 px-6 text-xl outline-none border-none text-[#1b1b1b] placeholder-slate-500 font-mono"
                   />
                 </div>
                 {fieldErrors.pixelId && (
@@ -553,7 +553,7 @@ export default function PixelWizardOnePerPage({ initialData, onSave, onBack, isE
                     }}
                     placeholder={getCapiTokenPlaceholder(formData.platform)}
                     rows={4}
-                    className="w-full bg-transparent py-4 px-6 text-base outline-none border-none text-white placeholder-slate-500 font-mono resize-y"
+                    className="w-full bg-transparent py-4 px-6 text-base outline-none border-none text-[#1b1b1b] placeholder-slate-500 font-mono resize-y"
                   />
                 </div>
                 {fieldErrors.capiToken && (
@@ -582,7 +582,7 @@ export default function PixelWizardOnePerPage({ initialData, onSave, onBack, isE
                             ? 'e.g. lead, purchase, page_view'
                             : 'e.g. arrival, lead, purchase'
                         }
-                        className="w-full bg-transparent py-5 px-6 text-xl outline-none border-none text-white placeholder-slate-500"
+                        className="w-full bg-transparent py-5 px-6 text-xl outline-none border-none text-[#1b1b1b] placeholder-slate-500"
                       />
                     </div>
                     {fieldErrors.eventType && (
@@ -601,18 +601,18 @@ export default function PixelWizardOnePerPage({ initialData, onSave, onBack, isE
                             customEventName: e.target.value === 'custom' ? p.customEventName : '',
                           }))
                         }
-                        className="w-full bg-transparent py-5 px-6 text-lg outline-none border-none text-white appearance-none cursor-pointer"
+                        className="w-full bg-transparent py-5 px-6 text-lg outline-none border-none text-[#1b1b1b] appearance-none cursor-pointer"
                       >
                         {availableEvents.map((ev) => (
                           <option
                             key={ev.value}
                             value={ev.value}
-                            className="bg-white text-white"
+                            className="bg-white text-[#1b1b1b]"
                           >
                             {ev.label}
                           </option>
                         ))}
-                        <option value="custom" className="bg-white text-white">
+                        <option value="custom" className="bg-white text-[#1b1b1b]">
                           Custom Event
                         </option>
                       </select>
@@ -627,7 +627,7 @@ export default function PixelWizardOnePerPage({ initialData, onSave, onBack, isE
                             setFieldErrors((prev) => ({ ...prev, customEventName: null }));
                           }}
                           placeholder="e.g. High_Quality_User"
-                          className="w-full bg-transparent py-5 px-6 text-xl outline-none border-none text-white placeholder-slate-500"
+                          className="w-full bg-transparent py-5 px-6 text-xl outline-none border-none text-[#1b1b1b] placeholder-slate-500"
                         />
                       </div>
                     )}
@@ -648,7 +648,7 @@ export default function PixelWizardOnePerPage({ initialData, onSave, onBack, isE
           <button
             type="button"
             onClick={goBack}
-            className={`flex items-center justify-center p-5 rounded-2xl border border-slate-200 font-bold text-gray-400 hover:bg-slate-200 hover:text-white transition-all ${isFirst ? 'invisible' : ''}`}
+            className={`flex items-center justify-center p-5 rounded-2xl border border-slate-200 font-bold text-gray-400 hover:bg-slate-200 hover:text-[#1b1b1b] transition-all ${isFirst ? 'invisible' : ''}`}
           >
             <span className="material-symbols-outlined text-2xl">chevron_left</span>
           </button>
@@ -656,7 +656,7 @@ export default function PixelWizardOnePerPage({ initialData, onSave, onBack, isE
             type="button"
             onClick={goNext}
             disabled={loading}
-            className="flex-1 flex items-center justify-center gap-3 py-5 rounded-2xl font-extrabold text-xl tracking-tight transition-all bg-[#FF10F0] hover:bg-[#e00ed0] text-white disabled:opacity-60 disabled:cursor-not-allowed shadow-xl"
+            className="flex-1 flex items-center justify-center gap-3 py-5 rounded-2xl font-extrabold text-xl tracking-tight transition-all bg-[#FF10F0] hover:bg-[#e00ed0] text-[#1b1b1b] disabled:opacity-60 disabled:cursor-not-allowed shadow-xl"
           >
             {loading ? (
               <span className="material-symbols-outlined animate-spin text-2xl">refresh</span>

@@ -130,7 +130,7 @@ const CTASection = () => {
           <div className="inline-flex items-center rounded-full bg-primary/10 px-3 py-1 text-sm font-medium text-primary border border-primary/20">
             Pricing
           </div>
-          <h2 className="text-slate-900 dark:text-white tracking-tight text-3xl md:text-5xl font-black leading-tight">
+          <h2 className="text-slate-900 dark:text-[#1b1b1b] tracking-tight text-3xl md:text-5xl font-black leading-tight">
             Choose Your Plan
           </h2>
           <p className="text-slate-600 dark:text-[#1b1b1b] text-lg md:text-xl font-normal leading-relaxed">
@@ -158,7 +158,7 @@ const CTASection = () => {
               }`}
             >
               {plan.highlighted && (
-                <span className="absolute -top-4 left-1/2 -translate-x-1/2 bg-primary text-white text-xs font-black px-4 py-1.5 rounded-full uppercase tracking-wider z-10">
+                <span className="absolute -top-4 left-1/2 -translate-x-1/2 bg-primary text-[#1b1b1b] text-xs font-black px-4 py-1.5 rounded-full uppercase tracking-wider z-10">
                   Most Popular
                 </span>
               )}
@@ -170,7 +170,7 @@ const CTASection = () => {
               >
                 {/* Plan Header */}
                 <div className="flex flex-col gap-2">
-                  <h3 className="text-slate-900 dark:text-white text-2xl font-black">
+                  <h3 className="text-slate-900 dark:text-[#1b1b1b] text-2xl font-black">
                     {plan.name}
                   </h3>
                   <p className="text-slate-500 dark:text-[#1b1b1b] text-sm">{plan.description}</p>
@@ -178,7 +178,7 @@ const CTASection = () => {
 
                 {/* Price */}
                 <div className="flex items-baseline gap-1">
-                  <span className="text-slate-900 dark:text-white text-5xl font-black">
+                  <span className="text-slate-900 dark:text-[#1b1b1b] text-5xl font-black">
                     ${plan.price}
                   </span>
                   <span className="text-slate-500 dark:text-[#1b1b1b] text-lg font-medium">
@@ -228,7 +228,7 @@ const CTASection = () => {
                   type="button"
                   className={`mt-auto w-full py-4 px-6 rounded-lg font-bold text-base transition-all text-center inline-block active:scale-95 ${
                     plan.highlighted
-                      ? 'bg-primary hover:bg-primary/90 text-white shadow-lg shadow-primary/30'
+                      ? 'bg-primary hover:bg-primary/90 text-[#1b1b1b] shadow-lg shadow-primary/30'
                       : 'bg-slate-100 dark:bg-slate-200 hover:bg-slate-200 dark:hover:bg-slate-300 text-slate-900 dark:text-[#1b1b1b]'
                   }`}
                 >

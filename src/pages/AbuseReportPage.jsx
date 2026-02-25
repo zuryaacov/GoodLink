@@ -235,7 +235,7 @@ const AbuseReportPage = () => {
               </p>
               <Link
                 to="/"
-                className="inline-block mt-8 px-6 py-3 rounded-xl bg-[#135bec] hover:bg-[#1049c8] text-white font-semibold transition-colors"
+                className="inline-block mt-8 px-6 py-3 rounded-xl bg-[#135bec] hover:bg-[#1049c8] text-[#1b1b1b] font-semibold transition-colors"
               >
                 Back to home
               </Link>
@@ -327,7 +327,7 @@ const AbuseReportPage = () => {
               <button
                 type="submit"
                 disabled={loading || !turnstileToken}
-                className="w-full md:w-auto px-6 py-3 rounded-xl bg-[#FF10F0] hover:bg-[#e00ed0] disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold transition-colors"
+                className="w-full md:w-auto px-6 py-3 rounded-xl bg-[#FF10F0] hover:bg-[#e00ed0] disabled:opacity-50 disabled:cursor-not-allowed text-[#1b1b1b] font-bold transition-colors"
               >
                 {loading ? 'Submitting…' : 'Submit report'}
               </button>

@@ -13,7 +13,7 @@ const Step4Security = ({ formData, updateFormData }) => {
       className="space-y-6"
     >
       <div>
-        <h3 className="text-xl font-bold text-white mb-2">Step 4: Security & Routing</h3>
+        <h3 className="text-xl font-bold text-[#1b1b1b] mb-2">Step 4: Security & Routing</h3>
         <p className="text-[#1b1b1b] text-sm">
           Advanced protection and routing options (Pro Features)
         </p>
@@ -21,7 +21,7 @@ const Step4Security = ({ formData, updateFormData }) => {
 
       {/* Fraud Shield */}
       <div>
-        <label className="block text-sm font-medium text-white mb-3">Fraud Shield Protection</label>
+        <label className="block text-sm font-medium text-[#1b1b1b] mb-3">Fraud Shield Protection</label>
         <div className="space-y-2">
           {[
             { value: 'none', label: 'None', description: 'No additional protection' },
@@ -54,7 +54,7 @@ const Step4Security = ({ formData, updateFormData }) => {
                       <div className="w-2 h-2 bg-white rounded-full" />
                     )}
                   </div>
-                  <p className="text-white font-medium">{option.label}</p>
+                  <p className="text-[#1b1b1b] font-medium">{option.label}</p>
                 </div>
                 <p className="text-slate-500 text-xs ml-7">{option.description}</p>
               </div>
@@ -65,7 +65,7 @@ const Step4Security = ({ formData, updateFormData }) => {
 
       {/* Bot Action */}
       <div>
-        <label className="block text-sm font-medium text-white mb-3">Bot Detection Action</label>
+        <label className="block text-sm font-medium text-[#1b1b1b] mb-3">Bot Detection Action</label>
         <p className="text-xs text-slate-500 mb-3">What should happen when a bot is detected ?</p>
         <div className="space-y-2">
           {[
@@ -103,7 +103,7 @@ const Step4Security = ({ formData, updateFormData }) => {
                       <div className="w-2 h-2 bg-white rounded-full" />
                     )}
                   </div>
-                  <p className="text-white font-medium">{option.label}</p>
+                  <p className="text-[#1b1b1b] font-medium">{option.label}</p>
                 </div>
                 <p className="text-slate-500 text-xs ml-7">{option.description}</p>
               </div>
@@ -114,7 +114,7 @@ const Step4Security = ({ formData, updateFormData }) => {
 
       {/* Geo-Targeting */}
       <div>
-        <label className="block text-sm font-medium text-white mb-3">
+        <label className="block text-sm font-medium text-[#1b1b1b] mb-3">
           Geo-Targeting Rules <span className="text-slate-500">(Optional)</span>
         </label>
         <div className="p-4 bg-white border border-slate-200 rounded-xl">
@@ -125,7 +125,7 @@ const Step4Security = ({ formData, updateFormData }) => {
             {formData.geoRules && formData.geoRules.length > 0 ? (
               formData.geoRules.map((rule, index) => (
                 <div key={index} className="p-3 bg-white rounded-lg border border-slate-200">
-                  <p className="text-white text-sm font-medium">
+                  <p className="text-[#1b1b1b] text-sm font-medium">
                     {rule.country} → {rule.url}
                   </p>
                 </div>

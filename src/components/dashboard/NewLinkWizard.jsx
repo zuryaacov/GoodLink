@@ -409,13 +409,13 @@ const NewLinkWizard = ({ isOpen, onClose, initialData = null }) => {
             {/* Header */}
             <div className="flex items-center justify-between p-4 sm:p-6 border-b border-slate-200 flex-shrink-0">
               <div className="flex-1 min-w-0 pr-2">
-                <h2 className="text-xl sm:text-2xl font-bold text-white truncate">
+                <h2 className="text-xl sm:text-2xl font-bold text-[#1b1b1b] truncate">
                   {isEditMode ? 'Edit Link' : 'Add New Link'}
                 </h2>
               </div>
               <button
                 onClick={onClose}
-                className="text-[#1b1b1b] hover:text-white transition-colors p-2 flex-shrink-0"
+                className="text-[#1b1b1b] hover:text-[#1b1b1b] transition-colors p-2 flex-shrink-0"
               >
                 <span className="material-symbols-outlined text-xl sm:text-2xl">close</span>
               </button>

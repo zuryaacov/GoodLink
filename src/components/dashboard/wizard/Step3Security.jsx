@@ -217,13 +217,13 @@ const Step3Security = ({ formData, updateFormData, onValidationRequest }) => {
     >
       {/* Header */}
       <div className="text-center">
-        <h3 className="text-xl sm:text-2xl font-bold text-white mb-2">Security & Logic</h3>
+        <h3 className="text-xl sm:text-2xl font-bold text-[#1b1b1b] mb-2">Security & Logic</h3>
         <p className="text-[#1b1b1b] text-sm">Smart Rules & Protection</p>
       </div>
 
       {/* Bot Action - Dropdown with Icons */}
       <div>
-        <label className="block text-sm font-medium text-white mb-3">Bot Detection Action</label>
+        <label className="block text-sm font-medium text-[#1b1b1b] mb-3">Bot Detection Action</label>
         <p className="text-xs text-slate-500 mb-4">What should happen when a bot is detected ?</p>
         <div className="space-y-2">
           {botActionOptions.map((option) => {
@@ -241,7 +241,7 @@ const Step3Security = ({ formData, updateFormData, onValidationRequest }) => {
                 <div className="text-2xl">{option.icon}</div>
                 <div className="flex-1 text-left">
                   <div className="flex items-center gap-2">
-                    <p className="text-white font-medium">{option.label}</p>
+                    <p className="text-[#1b1b1b] font-medium">{option.label}</p>
                     {isSelected && (
                       <span className="material-symbols-outlined text-primary text-sm">
                         check_circle
@@ -263,7 +263,7 @@ const Step3Security = ({ formData, updateFormData, onValidationRequest }) => {
             exit={{ opacity: 0, height: 0 }}
             className="mt-4 p-4 bg-white border border-slate-200 rounded-xl"
           >
-            <label className="block text-sm font-medium text-white mb-2">
+            <label className="block text-sm font-medium text-[#1b1b1b] mb-2">
               Redirect URL for Bots
             </label>
             <p className="text-xs text-slate-500 mb-3">Where should bots be redirected to ?</p>
@@ -279,7 +279,7 @@ const Step3Security = ({ formData, updateFormData, onValidationRequest }) => {
                   setFallbackUrlValid(false);
                 }}
                 placeholder="https://example.com/bot-page"
-                className={`w-full px-4 py-3 bg-white border-2 rounded-xl text-white placeholder-slate-500 focus:outline-none transition-colors ${
+                className={`w-full px-4 py-3 bg-white border-2 rounded-xl text-[#1b1b1b] placeholder-slate-500 focus:outline-none transition-colors ${
                   fallbackUrlError
                     ? 'border-red-500 focus:border-red-500'
                     : fallbackUrlValid
@@ -312,7 +312,7 @@ const Step3Security = ({ formData, updateFormData, onValidationRequest }) => {
 
       {/* Geo-Targeting - Mobile-First Card Design */}
       <div>
-        <label className="block text-sm font-medium text-white mb-3">
+        <label className="block text-sm font-medium text-[#1b1b1b] mb-3">
           Geo-Targeting Rules <span className="text-slate-500">(Optional)</span>
         </label>
         <p className="text-xs text-slate-500 mb-4">
@@ -331,7 +331,7 @@ const Step3Security = ({ formData, updateFormData, onValidationRequest }) => {
                 Default
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-white font-medium text-sm sm:text-base mb-1">
+                <p className="text-[#1b1b1b] font-medium text-sm sm:text-base mb-1">
                   All other countries
                 </p>
                 <p className="text-[#1b1b1b] text-xs sm:text-sm truncate font-mono">
@@ -368,7 +368,7 @@ const Step3Security = ({ formData, updateFormData, onValidationRequest }) => {
                           If
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-white font-medium text-sm sm:text-base mb-2">
+                          <p className="text-[#1b1b1b] font-medium text-sm sm:text-base mb-2">
                             Country is
                           </p>
                           <button
@@ -376,7 +376,7 @@ const Step3Security = ({ formData, updateFormData, onValidationRequest }) => {
                             className="flex items-center gap-2 px-3 py-2 bg-white border border-slate-200 rounded-lg hover:border-primary transition-colors w-full text-left"
                           >
                             <span className="text-2xl">{getCountryFlag(rule.country)}</span>
-                            <span className="text-white font-medium flex-1">
+                            <span className="text-[#1b1b1b] font-medium flex-1">
                               {getCountryName(rule.country)}
                             </span>
                             <span className="text-slate-500 text-xs font-mono">{rule.country}</span>
@@ -392,14 +392,14 @@ const Step3Security = ({ formData, updateFormData, onValidationRequest }) => {
                           Then
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-white font-medium text-sm sm:text-base mb-2">
+                          <p className="text-[#1b1b1b] font-medium text-sm sm:text-base mb-2">
                             Go to URL
                           </p>
                           <input
                             type="url"
                             value={rule.url}
                             readOnly
-                            className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-white text-xs sm:text-sm font-mono truncate focus:outline-none"
+                            className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-[#1b1b1b] text-xs sm:text-sm font-mono truncate focus:outline-none"
                             onClick={() => handleEditGeoRule(index)}
                           />
                         </div>
@@ -419,7 +419,7 @@ const Step3Security = ({ formData, updateFormData, onValidationRequest }) => {
               className="p-4 sm:p-5 bg-white border-2 border-primary/50 rounded-xl space-y-4"
             >
               <div className="relative" ref={countryPickerRef}>
-                <label className="block text-sm font-medium text-white mb-2">If Country is</label>
+                <label className="block text-sm font-medium text-[#1b1b1b] mb-2">If Country is</label>
                 <button
                   onClick={() => setShowCountryPicker(!showCountryPicker)}
                   className={`w-full flex items-center gap-3 px-4 py-3 bg-white border rounded-xl transition-colors text-left ${
@@ -431,7 +431,7 @@ const Step3Security = ({ formData, updateFormData, onValidationRequest }) => {
                   {newGeoRule.country ? (
                     <>
                       <span className="text-2xl">{getCountryFlag(newGeoRule.country)}</span>
-                      <span className="text-white font-medium flex-1">
+                      <span className="text-[#1b1b1b] font-medium flex-1">
                         {getCountryName(newGeoRule.country)}
                       </span>
                       <span className="text-slate-500 text-xs font-mono">{newGeoRule.country}</span>
@@ -466,7 +466,7 @@ const Step3Security = ({ formData, updateFormData, onValidationRequest }) => {
                           value={countrySearchQuery}
                           onChange={(e) => setCountrySearchQuery(e.target.value)}
                           placeholder="Search country..."
-                          className="w-full pl-10 pr-4 py-2 bg-white border border-slate-200 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-primary transition-colors text-sm"
+                          className="w-full pl-10 pr-4 py-2 bg-white border border-slate-200 rounded-lg text-[#1b1b1b] placeholder-slate-500 focus:outline-none focus:border-primary transition-colors text-sm"
                           autoFocus
                         />
                       </div>
@@ -500,7 +500,7 @@ const Step3Security = ({ formData, updateFormData, onValidationRequest }) => {
                               <span
                                 className={`flex-1 font-medium ${
                                   newGeoRule.country === country.code
-                                    ? 'text-white'
+                                    ? 'text-[#1b1b1b]'
                                     : 'text-slate-300'
                                 }`}
                               >
@@ -530,7 +530,7 @@ const Step3Security = ({ formData, updateFormData, onValidationRequest }) => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-white mb-2">Then go to URL</label>
+                <label className="block text-sm font-medium text-[#1b1b1b] mb-2">Then go to URL</label>
                 <input
                   type="url"
                   value={newGeoRule.url}
@@ -539,7 +539,7 @@ const Step3Security = ({ formData, updateFormData, onValidationRequest }) => {
                     if (geoRuleErrors.url) setGeoRuleErrors({ ...geoRuleErrors, url: null });
                   }}
                   placeholder="https://example.com"
-                  className={`w-full px-4 py-3 bg-white border rounded-xl text-white text-sm placeholder-slate-500 focus:outline-none transition-colors ${
+                  className={`w-full px-4 py-3 bg-white border rounded-xl text-[#1b1b1b] text-sm placeholder-slate-500 focus:outline-none transition-colors ${
                     geoRuleErrors.url
                       ? 'border-red-500 focus:border-red-500'
                       : 'border-slate-200 focus:border-primary'
@@ -554,7 +554,7 @@ const Step3Security = ({ formData, updateFormData, onValidationRequest }) => {
                 <button
                   onClick={handleAddGeoRule}
                   disabled={!newGeoRule.country || !newGeoRule.url}
-                  className="flex-1 px-4 py-2.5 sm:py-3 bg-[#FF10F0] hover:bg-[#e00ed0] disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold rounded-xl transition-colors text-sm sm:text-base"
+                  className="flex-1 px-4 py-2.5 sm:py-3 bg-[#FF10F0] hover:bg-[#e00ed0] disabled:opacity-50 disabled:cursor-not-allowed text-[#1b1b1b] font-bold rounded-xl transition-colors text-sm sm:text-base"
                 >
                   {editingRuleIndex !== null ? 'Update Rule' : 'Add Rule'}
                 </button>
@@ -565,7 +565,7 @@ const Step3Security = ({ formData, updateFormData, onValidationRequest }) => {
                     setEditingRuleIndex(null);
                     setGeoRuleErrors({ country: null, url: null });
                   }}
-                  className="px-4 sm:px-6 py-2.5 sm:py-3 bg-slate-200 hover:bg-slate-300 text-white font-medium rounded-xl transition-colors text-sm sm:text-base"
+                  className="px-4 sm:px-6 py-2.5 sm:py-3 bg-slate-200 hover:bg-slate-300 text-[#1b1b1b] font-medium rounded-xl transition-colors text-sm sm:text-base"
                 >
                   Cancel
                 </button>

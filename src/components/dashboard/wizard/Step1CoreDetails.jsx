@@ -41,13 +41,13 @@ const Step1CoreDetails = ({ formData, updateFormData, generateRandomSlug }) => {
       className="space-y-6"
     >
       <div>
-        <h3 className="text-xl font-bold text-white mb-2">Step 1: Core Details</h3>
+        <h3 className="text-xl font-bold text-[#1b1b1b] mb-2">Step 1: Core Details</h3>
         <p className="text-[#1b1b1b] text-sm">Set up the basic information for your link</p>
       </div>
 
       {/* Link Name */}
       <div>
-        <label className="block text-sm font-medium text-white mb-2">
+        <label className="block text-sm font-medium text-[#1b1b1b] mb-2">
           Link Name <span className="text-slate-500">(Internal use only)</span>
         </label>
         <input
@@ -55,29 +55,29 @@ const Step1CoreDetails = ({ formData, updateFormData, generateRandomSlug }) => {
           value={formData.name}
           onChange={(e) => updateFormData('name', e.target.value)}
           placeholder="e.g., iPhone Campaign January - Facebook"
-          className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-primary transition-colors"
+          className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-[#1b1b1b] placeholder-slate-500 focus:outline-none focus:border-primary transition-colors"
         />
       </div>
 
       {/* Target URL */}
       <div>
-        <label className="block text-sm font-medium text-white mb-2">Target / Affiliate URL</label>
+        <label className="block text-sm font-medium text-[#1b1b1b] mb-2">Target / Affiliate URL</label>
         <textarea
           value={formData.targetUrl}
           onChange={(e) => updateFormData('targetUrl', e.target.value.toLowerCase())}
           placeholder="Paste your long affiliate URL here..."
           rows={3}
-          className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-primary transition-colors resize-none"
+          className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-[#1b1b1b] placeholder-slate-500 focus:outline-none focus:border-primary transition-colors resize-none"
         />
       </div>
 
       {/* Domain Selector */}
       <div>
-        <label className="block text-sm font-medium text-white mb-2">Domain</label>
+        <label className="block text-sm font-medium text-[#1b1b1b] mb-2">Domain</label>
         <select
           value={formData.domain || domains[0]}
           onChange={(e) => updateFormData('domain', e.target.value)}
-          className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-white focus:outline-none focus:border-primary transition-colors"
+          className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-[#1b1b1b] focus:outline-none focus:border-primary transition-colors"
         >
           {domains.map((domain) => (
             <option key={domain} value={domain}>
@@ -89,14 +89,14 @@ const Step1CoreDetails = ({ formData, updateFormData, generateRandomSlug }) => {
 
       {/* Slug */}
       <div>
-        <label className="block text-sm font-medium text-white mb-2">Slug (URL Path)</label>
+        <label className="block text-sm font-medium text-[#1b1b1b] mb-2">Slug (URL Path)</label>
         <div className="flex gap-2">
           <input
             type="text"
             value={formData.slug}
             onChange={(e) => updateFormData('slug', e.target.value)}
             placeholder="e.g., iphone-deal"
-            className="flex-1 px-4 py-3 bg-white border border-slate-200 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-primary transition-colors"
+            className="flex-1 px-4 py-3 bg-white border border-slate-200 rounded-xl text-[#1b1b1b] placeholder-slate-500 focus:outline-none focus:border-primary transition-colors"
           />
           <button
             onClick={handleMagicWand}

@@ -359,18 +359,18 @@ const PixelManager = () => {
             <div className="relative">
               <div className="absolute inset-0 bg-[#FF10F0] blur-2xl opacity-25 animate-pulse" />
               <div className="relative bg-gradient-to-br from-[#FF10F0] to-[#7c3aed] p-4 rounded-2xl shadow-lg shadow-[#FF10F0]/40">
-                <Lock className="w-8 h-8 text-white" />
+                <Lock className="w-8 h-8 text-[#1b1b1b]" />
               </div>
             </div>
           </div>
 
-          <h2 className="text-2xl md:text-3xl font-bold text-white mb-4 tracking-tight">
+          <h2 className="text-2xl md:text-3xl font-bold text-[#1b1b1b] mb-4 tracking-tight">
             Unlock CAPI Manager
           </h2>
 
           <p className="text-sm md:text-base text-slate-300 mb-8 leading-relaxed">
             Your current&nbsp;
-            <span className="font-semibold text-white italic capitalize">
+            <span className="font-semibold text-[#1b1b1b] italic capitalize">
               {normalizedPlan} plan
             </span>{' '}
             does not include CAPI tracking. Upgrade to&nbsp;
@@ -383,7 +383,7 @@ const PixelManager = () => {
             <div className="flex items-center gap-3 p-3 bg-white/80 rounded-xl border border-slate-200 hover:border-primary/40 transition-colors">
               <Globe className="w-5 h-5 text-[#FF10F0]" />
               <div>
-                <p className="font-semibold text-sm text-white italic">Cross‑platform CAPI</p>
+                <p className="font-semibold text-sm text-[#1b1b1b] italic">Cross‑platform CAPI</p>
                 <p className="text-xs text-[#1b1b1b]">
                   Track Meta, TikTok, Google, Taboola, Outbrain and more from one place.
                 </p>
@@ -392,7 +392,7 @@ const PixelManager = () => {
             <div className="flex items-center gap-3 p-3 bg-white/80 rounded-xl border border-slate-200 hover:border-primary/40 transition-colors">
               <BarChart3 className="w-5 h-5 text-[#FF10F0]" />
               <div>
-                <p className="font-semibold text-sm text-white italic">
+                <p className="font-semibold text-sm text-[#1b1b1b] italic">
                   Advanced Attribution & Optimization
                 </p>
                 <p className="text-xs text-[#1b1b1b]">
@@ -407,7 +407,7 @@ const PixelManager = () => {
             onClick={() => {
               window.location.href = '/#pricing';
             }}
-            className="group relative w-full inline-flex items-center justify-center gap-2 bg-[#FF10F0] text-white font-bold py-3.5 px-8 rounded-2xl transition-all duration-300 hover:bg-[#e00ed0] hover:scale-[1.02] active:scale-[0.98] shadow-xl shadow-[#FF10F0]/30"
+            className="group relative w-full inline-flex items-center justify-center gap-2 bg-[#FF10F0] text-[#1b1b1b] font-bold py-3.5 px-8 rounded-2xl transition-all duration-300 hover:bg-[#e00ed0] hover:scale-[1.02] active:scale-[0.98] shadow-xl shadow-[#FF10F0]/30"
           >
             <Zap className="w-5 h-5" />
             <span>View Plans & Upgrade</span>
@@ -427,12 +427,12 @@ const PixelManager = () => {
     <div className="flex flex-col gap-6 md:gap-8 w-full max-w-7xl mx-auto">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="flex flex-col gap-2">
-          <h1 className="text-2xl md:text-3xl font-bold text-white">CAPI Manager</h1>
+          <h1 className="text-2xl md:text-3xl font-bold text-[#1b1b1b]">CAPI Manager</h1>
           <p className="text-sm md:text-base text-[#1b1b1b]">Manage your CAPI tracking</p>
         </div>
         <button
           onClick={() => navigate('/dashboard/pixels/new')}
-          className="flex items-center justify-center gap-2 w-full sm:w-auto px-6 py-3 md:py-2.5 text-white font-bold rounded-xl transition-colors shadow-lg text-base md:text-sm"
+          className="flex items-center justify-center gap-2 w-full sm:w-auto px-6 py-3 md:py-2.5 text-[#1b1b1b] font-bold rounded-xl transition-colors shadow-lg text-base md:text-sm"
           style={{
             backgroundColor: '#FF10F0',
           }}
@@ -470,7 +470,7 @@ const PixelManager = () => {
               <div className="flex items-start gap-3">
                 {getPlatformLogo(pixel.platform)}
                 <div className="flex-1 min-w-0">
-                  <h3 className="text-4xl font-bold text-white break-words line-clamp-2">
+                  <h3 className="text-4xl font-bold text-[#1b1b1b] break-words line-clamp-2">
                     {pixel.name}
                   </h3>
                   <p className="text-slate-500 text-sm mt-1">{getPlatformName(pixel.platform)}</p>

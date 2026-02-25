@@ -464,7 +464,7 @@ export default function UtmPresetWizardOnePerPage({ initialData, onSave, onBack,
                   {stepIndex + 1}/{totalSteps}
                 </span>
               </div>
-              <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-white">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-[#1b1b1b]">
                 {currentStep?.title}{' '}
                 <span
                   className={
@@ -489,7 +489,7 @@ export default function UtmPresetWizardOnePerPage({ initialData, onSave, onBack,
                       setFieldErrors((prev) => ({ ...prev, name: null }));
                     }}
                     placeholder="e.g. Summer Campaign Meta"
-                    className="w-full bg-transparent py-5 px-6 text-xl outline-none border-none text-white placeholder-slate-500"
+                    className="w-full bg-transparent py-5 px-6 text-xl outline-none border-none text-[#1b1b1b] placeholder-slate-500"
                   />
                 </div>
                 {fieldErrors.name && <p className="text-red-400 text-xs">{fieldErrors.name}</p>}
@@ -510,7 +510,7 @@ export default function UtmPresetWizardOnePerPage({ initialData, onSave, onBack,
                     }`}
                   >
                     {getPlatformLogo(p.id)}
-                    <span className="font-bold text-white">{p.name}</span>
+                    <span className="font-bold text-[#1b1b1b]">{p.name}</span>
                   </button>
                 ))}
               </div>
@@ -560,7 +560,7 @@ export default function UtmPresetWizardOnePerPage({ initialData, onSave, onBack,
           <button
             type="button"
             onClick={goBack}
-            className={`flex items-center justify-center p-5 rounded-2xl border border-slate-200 font-bold text-gray-400 hover:bg-slate-200 hover:text-white transition-all ${isFirst ? 'invisible' : ''}`}
+            className={`flex items-center justify-center p-5 rounded-2xl border border-slate-200 font-bold text-gray-400 hover:bg-slate-200 hover:text-[#1b1b1b] transition-all ${isFirst ? 'invisible' : ''}`}
           >
             <span className="material-symbols-outlined text-2xl">chevron_left</span>
           </button>
@@ -568,7 +568,7 @@ export default function UtmPresetWizardOnePerPage({ initialData, onSave, onBack,
             type="button"
             onClick={goNext}
             disabled={loading}
-            className="flex-1 flex items-center justify-center gap-3 py-5 rounded-2xl font-extrabold text-xl tracking-tight transition-all bg-[#FF10F0] hover:bg-[#e00ed0] text-white disabled:opacity-60 disabled:cursor-not-allowed shadow-xl"
+            className="flex-1 flex items-center justify-center gap-3 py-5 rounded-2xl font-extrabold text-xl tracking-tight transition-all bg-[#FF10F0] hover:bg-[#e00ed0] text-[#1b1b1b] disabled:opacity-60 disabled:cursor-not-allowed shadow-xl"
           >
             {loading ? (
               <span className="material-symbols-outlined animate-spin text-2xl">refresh</span>

@@ -573,12 +573,12 @@ const LinkBuilderPage = () => {
         <div className="max-w-4xl mx-auto flex items-center gap-4">
           <button
             onClick={() => navigate(getLinksReturnPath())}
-            className="p-2 text-[#1b1b1b] hover:text-white hover:bg-white/5 rounded-lg transition-colors"
+            className="p-2 text-[#1b1b1b] hover:text-[#1b1b1b] hover:bg-white/5 rounded-lg transition-colors"
           >
             <ArrowLeft size={24} />
           </button>
           <div className="flex-1 min-w-0">
-            <h1 className="text-xl font-bold text-white truncate">
+            <h1 className="text-xl font-bold text-[#1b1b1b] truncate">
               {isEditMode ? 'Edit Link' : 'Add New Link'}
             </h1>
           </div>

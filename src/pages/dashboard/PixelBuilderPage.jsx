@@ -166,11 +166,11 @@ const PixelBuilderPage = () => {
         <div className="max-w-4xl mx-auto flex items-center gap-4">
           <button
             onClick={() => navigate('/dashboard/pixels')}
-            className="p-2 text-[#1b1b1b] hover:text-white hover:bg-white/5 rounded-lg transition-colors"
+            className="p-2 text-[#1b1b1b] hover:text-[#1b1b1b] hover:bg-white/5 rounded-lg transition-colors"
           >
             <ArrowLeft size={24} />
           </button>
-          <h1 className="text-xl font-bold text-white">{id ? 'Edit CAPI' : 'Create New CAPI'}</h1>
+          <h1 className="text-xl font-bold text-[#1b1b1b]">{id ? 'Edit CAPI' : 'Create New CAPI'}</h1>
         </div>
       </div>
       <div className="flex-1 min-h-0 flex flex-col">

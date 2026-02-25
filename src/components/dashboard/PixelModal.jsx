@@ -415,7 +415,7 @@ const PixelModal = ({ isOpen, onClose, initialData = null }) => {
               {/* Header */}
               <div className="flex items-center justify-between p-4 sm:p-6 border-b border-slate-200 flex-shrink-0">
                 <div className="flex-1 min-w-0 pr-2">
-                  <h2 className="text-xl sm:text-2xl font-bold text-white">
+                  <h2 className="text-xl sm:text-2xl font-bold text-[#1b1b1b]">
                     {isEditMode ? 'Edit CAPI' : 'Create New CAPI'}
                   </h2>
                   <p className="text-[#1b1b1b] text-xs sm:text-sm mt-1">
@@ -426,7 +426,7 @@ const PixelModal = ({ isOpen, onClose, initialData = null }) => {
                 </div>
                 <button
                   onClick={onClose}
-                  className="text-[#1b1b1b] hover:text-white transition-colors p-2 flex-shrink-0"
+                  className="text-[#1b1b1b] hover:text-[#1b1b1b] transition-colors p-2 flex-shrink-0"
                 >
                   <span className="material-symbols-outlined text-xl sm:text-2xl">close</span>
                 </button>
@@ -437,7 +437,7 @@ const PixelModal = ({ isOpen, onClose, initialData = null }) => {
                 <form onSubmit={handleSubmit} className="space-y-6">
                   {/* Friendly Name */}
                   <div>
-                    <label className="block text-sm font-medium text-white mb-2">
+                    <label className="block text-sm font-medium text-[#1b1b1b] mb-2">
                       Friendly Name <span className="text-red-400">*</span>
                     </label>
                     <input
@@ -448,7 +448,7 @@ const PixelModal = ({ isOpen, onClose, initialData = null }) => {
                         if (errors.name) setErrors({ ...errors, name: null });
                       }}
                       placeholder="e.g., FB - Main Account"
-                      className={`w-full px-4 py-3 bg-white border rounded-xl text-white placeholder-slate-500 focus:outline-none transition-colors ${
+                      className={`w-full px-4 py-3 bg-white border rounded-xl text-[#1b1b1b] placeholder-slate-500 focus:outline-none transition-colors ${
                         errors.name
                           ? 'border-red-500 focus:border-red-500'
                           : 'border-slate-200 focus:border-primary'
@@ -459,7 +459,7 @@ const PixelModal = ({ isOpen, onClose, initialData = null }) => {
 
                   {/* Platform Select */}
                   <div>
-                    <label className="block text-sm font-medium text-white mb-2">
+                    <label className="block text-sm font-medium text-[#1b1b1b] mb-2">
                       Platform <span className="text-red-400">*</span>
                     </label>
                     <select
@@ -481,7 +481,7 @@ const PixelModal = ({ isOpen, onClose, initialData = null }) => {
                         });
                         if (errors.platform) setErrors({ ...errors, platform: null });
                       }}
-                      className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-white focus:outline-none focus:border-primary transition-colors"
+                      className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-[#1b1b1b] focus:outline-none focus:border-primary transition-colors"
                     >
                       {PLATFORMS_WITH_PLACEHOLDERS.map((platform) => (
                         <option key={platform.value} value={platform.value}>
@@ -493,7 +493,7 @@ const PixelModal = ({ isOpen, onClose, initialData = null }) => {
 
                   {/* Pixel ID / Measurement_Id (Google) */}
                   <div>
-                    <label className="block text-sm font-medium text-white mb-2">
+                    <label className="block text-sm font-medium text-[#1b1b1b] mb-2">
                       {getPixelIdLabel(formData.platform)} <span className="text-red-400">*</span>
                     </label>
                     <input
@@ -516,7 +516,7 @@ const PixelModal = ({ isOpen, onClose, initialData = null }) => {
                             ? 'Enter Account Id'
                             : 'Enter Pixel ID')
                       }
-                      className={`w-full px-4 py-3 bg-white border rounded-xl text-white placeholder-slate-500 focus:outline-none transition-colors font-mono text-sm ${
+                      className={`w-full px-4 py-3 bg-white border rounded-xl text-[#1b1b1b] placeholder-slate-500 focus:outline-none transition-colors font-mono text-sm ${
                         errors.pixelId
                           ? 'border-red-500 focus:border-red-500'
                           : 'border-slate-200 focus:border-primary'
@@ -530,7 +530,7 @@ const PixelModal = ({ isOpen, onClose, initialData = null }) => {
 
                   {/* CAPI Access Token (required) */}
                   <div>
-                    <label className="block text-sm font-medium text-white mb-2">
+                    <label className="block text-sm font-medium text-[#1b1b1b] mb-2">
                       {getCapiTokenLabel(formData.platform)} <span className="text-red-400">*</span>
                     </label>
                     <textarea
@@ -541,7 +541,7 @@ const PixelModal = ({ isOpen, onClose, initialData = null }) => {
                       }}
                       placeholder={getCapiTokenPlaceholder(formData.platform)}
                       rows={5}
-                      className={`w-full min-h-[120px] sm:min-h-[140px] px-4 py-3 bg-[#1e152f] border rounded-xl text-white placeholder-slate-500 focus:outline-none transition-colors font-mono text-sm resize-y ${
+                      className={`w-full min-h-[120px] sm:min-h-[140px] px-4 py-3 bg-white border rounded-xl text-[#1b1b1b] placeholder-slate-500 focus:outline-none transition-colors font-mono text-sm resize-y ${
                         errors.capiToken
                           ? 'border-red-500 focus:border-red-500'
                           : 'border-[#584674] focus:border-primary'
@@ -559,7 +559,7 @@ const PixelModal = ({ isOpen, onClose, initialData = null }) => {
                   <div className="space-y-4">
                     {formData.platform === 'taboola' ? (
                       <div>
-                        <label className="block text-sm font-medium text-white mb-2">
+                        <label className="block text-sm font-medium text-[#1b1b1b] mb-2">
                           Name <span className="text-red-400">*</span>
                         </label>
                         <input
@@ -570,7 +570,7 @@ const PixelModal = ({ isOpen, onClose, initialData = null }) => {
                             if (errors.eventType) setErrors({ ...errors, eventType: null });
                           }}
                           placeholder="e.g. lead, purchase, PAGE_VIEW (case-sensitive)"
-                          className={`w-full px-4 py-3 bg-white border rounded-xl text-white placeholder-slate-500 focus:outline-none transition-colors ${
+                          className={`w-full px-4 py-3 bg-white border rounded-xl text-[#1b1b1b] placeholder-slate-500 focus:outline-none transition-colors ${
                             errors.eventType
                               ? 'border-red-500 focus:border-red-500'
                               : 'border-slate-200 focus:border-primary'
@@ -585,7 +585,7 @@ const PixelModal = ({ isOpen, onClose, initialData = null }) => {
                       </div>
                     ) : formData.platform === 'outbrain' ? (
                       <div>
-                        <label className="block text-sm font-medium text-white mb-2">
+                        <label className="block text-sm font-medium text-[#1b1b1b] mb-2">
                           Conversion Name <span className="text-red-400">*</span>
                         </label>
                         <input
@@ -596,7 +596,7 @@ const PixelModal = ({ isOpen, onClose, initialData = null }) => {
                             if (errors.eventType) setErrors({ ...errors, eventType: null });
                           }}
                           placeholder="e.g. arrival (default), lead, purchase (case-sensitive)"
-                          className={`w-full px-4 py-3 bg-white border rounded-xl text-white placeholder-slate-500 focus:outline-none transition-colors ${
+                          className={`w-full px-4 py-3 bg-white border rounded-xl text-[#1b1b1b] placeholder-slate-500 focus:outline-none transition-colors ${
                             errors.eventType
                               ? 'border-red-500 focus:border-red-500'
                               : 'border-slate-200 focus:border-primary'
@@ -612,7 +612,7 @@ const PixelModal = ({ isOpen, onClose, initialData = null }) => {
                     ) : (
                       <>
                         <div>
-                          <label className="block text-sm font-medium text-white mb-2">
+                          <label className="block text-sm font-medium text-[#1b1b1b] mb-2">
                             {getEventTypeLabel(formData.platform)}
                           </label>
                           <select
@@ -627,7 +627,7 @@ const PixelModal = ({ isOpen, onClose, initialData = null }) => {
                               if (errors.customEventName)
                                 setErrors({ ...errors, customEventName: null });
                             }}
-                            className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-white focus:outline-none focus:border-primary transition-colors"
+                            className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-[#1b1b1b] focus:outline-none focus:border-primary transition-colors"
                           >
                             {availableEvents.map((event) => (
                               <option key={event.value} value={event.value}>
@@ -640,7 +640,7 @@ const PixelModal = ({ isOpen, onClose, initialData = null }) => {
 
                         {formData.eventType === 'custom' && (
                           <div>
-                            <label className="block text-sm font-medium text-white mb-2">
+                            <label className="block text-sm font-medium text-[#1b1b1b] mb-2">
                               Custom Event Name <span className="text-red-400">*</span>
                             </label>
                             <input
@@ -652,7 +652,7 @@ const PixelModal = ({ isOpen, onClose, initialData = null }) => {
                                   setErrors({ ...errors, customEventName: null });
                               }}
                               placeholder="e.g., High_Quality_User, ClickedToOffer"
-                              className={`w-full px-4 py-3 bg-white border rounded-xl text-white placeholder-slate-500 focus:outline-none transition-colors ${
+                              className={`w-full px-4 py-3 bg-white border rounded-xl text-[#1b1b1b] placeholder-slate-500 focus:outline-none transition-colors ${
                                 errors.customEventName
                                   ? 'border-red-500 focus:border-red-500'
                                   : 'border-slate-200 focus:border-primary'
@@ -683,7 +683,7 @@ const PixelModal = ({ isOpen, onClose, initialData = null }) => {
                 <button
                   onClick={handleSubmit}
                   disabled={isSubmitting}
-                  className="px-6 py-2.5 text-sm text-white font-bold rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                  className="px-6 py-2.5 text-sm text-[#1b1b1b] font-bold rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                   style={{
                     backgroundColor: isSubmitting ? undefined : '#FF10F0',
                   }}

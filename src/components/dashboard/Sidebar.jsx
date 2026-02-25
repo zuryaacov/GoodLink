@@ -187,7 +187,7 @@ const Sidebar = ({ className = '', onLinkClick }) => {
 
       <div className="p-4 border-t border-slate-200 flex flex-col gap-2">
         <div className="flex items-center gap-3 px-3 py-2">
-          <div className="size-8 rounded-full bg-gradient-to-tr from-primary to-secondary-green flex items-center justify-center text-white font-bold text-xs">
+          <div className="size-8 rounded-full bg-gradient-to-tr from-primary to-secondary-green flex items-center justify-center text-[#1b1b1b] font-bold text-xs">
             {getInitials(userName)}
           </div>
           <div className="flex flex-col flex-1 min-w-0">

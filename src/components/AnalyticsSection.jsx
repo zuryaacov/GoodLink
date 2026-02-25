@@ -9,7 +9,7 @@ const AnalyticsSection = () => {
       <div className="mx-auto max-w-[1200px] flex flex-col lg:flex-row gap-12 items-center">
         {/* Text Side */}
         <div className="flex-1 flex flex-col gap-6">
-          <h2 className="text-slate-900 dark:text-white text-3xl md:text-4xl font-bold leading-tight">
+          <h2 className="text-slate-900 dark:text-[#1b1b1b] text-3xl md:text-4xl font-bold leading-tight">
             Analytics You Can Trust
           </h2>
           <p className="text-slate-600 dark:text-[#1b1b1b] text-lg">
@@ -45,7 +45,7 @@ const AnalyticsSection = () => {
                 Link Click Performance
               </p>
               <div className="flex items-baseline justify-between">
-                <p className="text-slate-900 dark:text-white text-4xl font-bold tracking-tight">
+                <p className="text-slate-900 dark:text-[#1b1b1b] text-4xl font-bold tracking-tight">
                   1.2M <span className="text-lg font-normal text-slate-500">Clicks</span>
                 </p>
                 <div className="flex items-center gap-1 bg-green-500/10 px-2 py-1 rounded">

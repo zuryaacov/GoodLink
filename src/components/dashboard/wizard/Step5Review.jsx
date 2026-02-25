@@ -28,7 +28,7 @@ const Step5Review = ({ formData, generateRandomSlug }) => {
       className="space-y-6"
     >
       <div>
-        <h3 className="text-xl font-bold text-white mb-2">Step 5: Review & Launch</h3>
+        <h3 className="text-xl font-bold text-[#1b1b1b] mb-2">Step 5: Review & Launch</h3>
         <p className="text-[#1b1b1b] text-sm">Review your link configuration before creating</p>
       </div>
 
@@ -36,26 +36,26 @@ const Step5Review = ({ formData, generateRandomSlug }) => {
       <div className="bg-white border border-slate-200 rounded-2xl p-6 space-y-6">
         {/* Core Details */}
         <div>
-          <h4 className="text-sm font-bold text-white mb-4 uppercase tracking-wider">
+          <h4 className="text-sm font-bold text-[#1b1b1b] mb-4 uppercase tracking-wider">
             Core Details
           </h4>
           <div className="space-y-3">
             <div>
               <p className="text-xs text-slate-500 mb-1">Link Name</p>
-              <p className="text-white font-medium">{formData.name || '—'}</p>
+              <p className="text-[#1b1b1b] font-medium">{formData.name || '—'}</p>
             </div>
             <div>
               <p className="text-xs text-slate-500 mb-1">Target URL</p>
-              <p className="text-white font-mono text-sm break-all">{formData.targetUrl || '—'}</p>
+              <p className="text-[#1b1b1b] font-mono text-sm break-all">{formData.targetUrl || '—'}</p>
             </div>
             <div className="flex gap-4">
               <div className="flex-1">
                 <p className="text-xs text-slate-500 mb-1">Domain</p>
-                <p className="text-white font-medium">{baseUrl}</p>
+                <p className="text-[#1b1b1b] font-medium">{baseUrl}</p>
               </div>
               <div className="flex-1">
                 <p className="text-xs text-slate-500 mb-1">Slug</p>
-                <p className="text-white font-mono text-sm">{finalSlug}</p>
+                <p className="text-[#1b1b1b] font-mono text-sm">{finalSlug}</p>
               </div>
             </div>
             <div>
@@ -71,37 +71,37 @@ const Step5Review = ({ formData, generateRandomSlug }) => {
           formData.utmCampaign ||
           formData.utmContent) && (
           <div className="border-t border-slate-200 pt-6">
-            <h4 className="text-sm font-bold text-white mb-4 uppercase tracking-wider">
+            <h4 className="text-sm font-bold text-[#1b1b1b] mb-4 uppercase tracking-wider">
               UTM Parameters
             </h4>
             <div className="space-y-2">
               {formData.utmSource && (
                 <div className="flex justify-between">
                   <span className="text-[#1b1b1b] text-sm">Source</span>
-                  <span className="text-white text-sm font-mono">{formData.utmSource}</span>
+                  <span className="text-[#1b1b1b] text-sm font-mono">{formData.utmSource}</span>
                 </div>
               )}
               {formData.utmMedium && (
                 <div className="flex justify-between">
                   <span className="text-[#1b1b1b] text-sm">Medium</span>
-                  <span className="text-white text-sm font-mono">{formData.utmMedium}</span>
+                  <span className="text-[#1b1b1b] text-sm font-mono">{formData.utmMedium}</span>
                 </div>
               )}
               {formData.utmCampaign && (
                 <div className="flex justify-between">
                   <span className="text-[#1b1b1b] text-sm">Campaign</span>
-                  <span className="text-white text-sm font-mono">{formData.utmCampaign}</span>
+                  <span className="text-[#1b1b1b] text-sm font-mono">{formData.utmCampaign}</span>
                 </div>
               )}
               {formData.utmContent && (
                 <div className="flex justify-between">
                   <span className="text-[#1b1b1b] text-sm">Content</span>
-                  <span className="text-white text-sm font-mono">{formData.utmContent}</span>
+                  <span className="text-[#1b1b1b] text-sm font-mono">{formData.utmContent}</span>
                 </div>
               )}
               <div className="flex justify-between pt-2 border-t border-slate-200">
                 <span className="text-[#1b1b1b] text-sm">Parameter Pass-through</span>
-                <span className="text-white text-sm">
+                <span className="text-[#1b1b1b] text-sm">
                   {formData.parameterPassThrough ? 'Enabled' : 'Disabled'}
                 </span>
               </div>
@@ -111,11 +111,11 @@ const Step5Review = ({ formData, generateRandomSlug }) => {
 
         {/* Tracking */}
         <div className="border-t border-slate-200 pt-6">
-          <h4 className="text-sm font-bold text-white mb-4 uppercase tracking-wider">Tracking</h4>
+          <h4 className="text-sm font-bold text-[#1b1b1b] mb-4 uppercase tracking-wider">Tracking</h4>
           <div className="space-y-2">
             <div className="flex justify-between">
               <span className="text-[#1b1b1b] text-sm">CAPI Profiles Selected</span>
-              <span className="text-white text-sm">
+              <span className="text-[#1b1b1b] text-sm">
                 {formData.selectedPixels?.length > 0
                   ? `${formData.selectedPixels.length} CAPI profile(s)`
                   : 'None'}
@@ -123,14 +123,14 @@ const Step5Review = ({ formData, generateRandomSlug }) => {
             </div>
             <div className="flex justify-between">
               <span className="text-[#1b1b1b] text-sm">Server-Side Tracking (CAPI)</span>
-              <span className="text-white text-sm">
+              <span className="text-[#1b1b1b] text-sm">
                 {formData.serverSideTracking ? 'Enabled' : 'Disabled'}
               </span>
             </div>
             {formData.customScript && (
               <div>
                 <span className="text-[#1b1b1b] text-sm">Custom Script</span>
-                <p className="text-white text-xs font-mono mt-1 bg-white p-2 rounded break-all">
+                <p className="text-[#1b1b1b] text-xs font-mono mt-1 bg-white p-2 rounded break-all">
                   {formData.customScript.substring(0, 100)}
                   {formData.customScript.length > 100 ? '...' : ''}
                 </p>
@@ -141,23 +141,23 @@ const Step5Review = ({ formData, generateRandomSlug }) => {
 
         {/* Security */}
         <div className="border-t border-slate-200 pt-6">
-          <h4 className="text-sm font-bold text-white mb-4 uppercase tracking-wider">
+          <h4 className="text-sm font-bold text-[#1b1b1b] mb-4 uppercase tracking-wider">
             Security & Routing
           </h4>
           <div className="space-y-2">
             <div className="flex justify-between">
               <span className="text-[#1b1b1b] text-sm">Fraud Shield</span>
-              <span className="text-white text-sm capitalize">{formData.fraudShield}</span>
+              <span className="text-[#1b1b1b] text-sm capitalize">{formData.fraudShield}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-[#1b1b1b] text-sm">Bot Action</span>
-              <span className="text-white text-sm capitalize">
+              <span className="text-[#1b1b1b] text-sm capitalize">
                 {formData.botAction.replace('-', ' ')}
               </span>
             </div>
             <div className="flex justify-between">
               <span className="text-[#1b1b1b] text-sm">Geo-Rules</span>
-              <span className="text-white text-sm">
+              <span className="text-[#1b1b1b] text-sm">
                 {formData.geoRules?.length > 0 ? `${formData.geoRules.length} rule(s)` : 'None'}
               </span>
             </div>
@@ -166,7 +166,7 @@ const Step5Review = ({ formData, generateRandomSlug }) => {
 
         {/* QR Code (via qrserver.com) */}
         <div className="border-t border-slate-200 pt-6">
-          <h4 className="text-sm font-bold text-white mb-4 uppercase tracking-wider">QR Code</h4>
+          <h4 className="text-sm font-bold text-[#1b1b1b] mb-4 uppercase tracking-wider">QR Code</h4>
           <div className="flex flex-col items-center gap-3">
             <img
               src={qrCodeUrl}
@@ -179,7 +179,7 @@ const Step5Review = ({ formData, generateRandomSlug }) => {
 
         {/* Final URL Preview */}
         <div className="border-t border-slate-200 pt-6">
-          <h4 className="text-sm font-bold text-white mb-4 uppercase tracking-wider">Final URL</h4>
+          <h4 className="text-sm font-bold text-[#1b1b1b] mb-4 uppercase tracking-wider">Final URL</h4>
           <div className="p-4 bg-white border border-primary/30 rounded-xl">
             <p className="text-xs text-slate-500 mb-2">Copy this URL for your ad platform:</p>
             <p className="text-primary font-mono text-sm break-all">{fullUtmString}</p>

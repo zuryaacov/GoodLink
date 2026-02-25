@@ -621,7 +621,7 @@ const Step1FastTrack = ({
       {/* Header - Hidden for FREE users */}
       {planType?.toLowerCase() !== 'free' && (
         <div className="text-center">
-          <h3 className="text-xl sm:text-2xl font-bold text-white mb-2">The Fast Track</h3>
+          <h3 className="text-xl sm:text-2xl font-bold text-[#1b1b1b] mb-2">The Fast Track</h3>
           <p className="text-[#1b1b1b] text-xs sm:text-sm">Destination & Identity</p>
         </div>
       )}
@@ -629,7 +629,7 @@ const Step1FastTrack = ({
       {/* Link URL Input */}
       <div className="flex flex-col items-center justify-center">
         <div className="w-full max-w-2xl px-2 sm:px-0">
-          <label className="block text-sm font-medium text-white mb-2">Link</label>
+          <label className="block text-sm font-medium text-[#1b1b1b] mb-2">Link</label>
           <div className="relative">
             <input
               type="text"
@@ -637,7 +637,7 @@ const Step1FastTrack = ({
               onChange={handleUrlChange}
               onPaste={handleUrlPaste}
               placeholder="Paste your URL here..."
-              className={`w-full px-4 sm:px-6 py-4 sm:py-5 text-base sm:text-lg bg-white border-2 rounded-xl sm:rounded-2xl text-white placeholder-slate-500 focus:outline-none transition-all shadow-lg ${
+              className={`w-full px-4 sm:px-6 py-4 sm:py-5 text-base sm:text-lg bg-white border-2 rounded-xl sm:rounded-2xl text-[#1b1b1b] placeholder-slate-500 focus:outline-none transition-all shadow-lg ${
                 urlError
                   ? 'border-red-500 focus:border-red-500'
                   : safetyCheck.isSafe === true && !safetyCheck.loading
@@ -687,7 +687,7 @@ const Step1FastTrack = ({
 
           {/* Internal Name input - always visible */}
           <div className="mt-4">
-            <label className="block text-sm font-medium text-white mb-2">Internal Name</label>
+            <label className="block text-sm font-medium text-[#1b1b1b] mb-2">Internal Name</label>
             <div className="relative">
               <input
                 type="text"
@@ -698,7 +698,7 @@ const Step1FastTrack = ({
                   setIsNameAvailable(null);
                 }}
                 placeholder="Enter internal name for this link"
-                className={`w-full px-4 py-3 bg-white border-2 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-primary transition-colors ${
+                className={`w-full px-4 py-3 bg-white border-2 rounded-xl text-[#1b1b1b] placeholder-slate-500 focus:outline-none focus:border-primary transition-colors ${
                   nameError
                     ? 'border-red-500'
                     : isNameAvailable === true
@@ -725,7 +725,7 @@ const Step1FastTrack = ({
       {/* Domain Selection - Only show when user has custom domains (more than glynk.to) */}
       {domains.length > 1 && (
         <div className="max-w-2xl mx-auto w-full px-2 sm:px-0">
-          <label className="block text-sm font-medium text-white mb-3">Domain</label>
+          <label className="block text-sm font-medium text-[#1b1b1b] mb-3">Domain</label>
           <div className="flex flex-wrap gap-2">
             {domains.map((domain) => {
               const isSelected = (formData.domain || domains[0]) === domain;
@@ -735,7 +735,7 @@ const Step1FastTrack = ({
                   onClick={() => handleDomainSelect(domain)}
                   className={`px-4 py-2 rounded-lg font-medium text-sm transition-all ${
                     isSelected
-                      ? 'bg-primary text-white shadow-lg shadow-primary/30'
+                      ? 'bg-primary text-[#1b1b1b] shadow-lg shadow-primary/30'
                       : 'bg-white border border-slate-200 text-slate-300 hover:border-primary/50'
                   }`}
                 >
@@ -749,7 +749,7 @@ const Step1FastTrack = ({
 
       {/* Slug with Magic Wand */}
       <div className="max-w-2xl mx-auto w-full px-2 sm:px-0">
-        <label className="block text-sm font-medium text-white mb-2">Slug (URL Path)</label>
+        <label className="block text-sm font-medium text-[#1b1b1b] mb-2">Slug (URL Path)</label>
         <input
           type="text"
           value={formData.slug}
@@ -781,7 +781,7 @@ const Step1FastTrack = ({
             }
           }}
           placeholder="e.g., iphone-deal"
-          className={`w-full px-4 py-3 bg-white border rounded-xl text-white placeholder-slate-500 focus:outline-none transition-colors text-sm sm:text-base ${
+          className={`w-full px-4 py-3 bg-white border rounded-xl text-[#1b1b1b] placeholder-slate-500 focus:outline-none transition-colors text-sm sm:text-base ${
             slugError
               ? 'border-red-500 focus:border-red-500'
               : isSlugAvailable === true
@@ -844,7 +844,7 @@ const Step1FastTrack = ({
             // If validation failed, errors are already shown by handleCheckSlug
           }}
           disabled={checkingSlug}
-          className={`w-full px-4 sm:px-6 py-3 text-sm sm:text-base text-white font-bold rounded-xl transition-all flex items-center justify-center gap-2 ${
+          className={`w-full px-4 sm:px-6 py-3 text-sm sm:text-base text-[#1b1b1b] font-bold rounded-xl transition-all flex items-center justify-center gap-2 ${
             checkingSlug && validatingButton !== 'pink' ? 'opacity-50 cursor-not-allowed' : ''
           }`}
           style={{
@@ -917,7 +917,7 @@ const Step1FastTrack = ({
               }
             }}
             disabled={checkingSlug}
-            className={`w-full px-4 sm:px-6 py-3 text-sm sm:text-base bg-primary hover:bg-primary/90 text-white font-bold rounded-xl transition-all flex items-center justify-center gap-2 ${
+            className={`w-full px-4 sm:px-6 py-3 text-sm sm:text-base bg-primary hover:bg-primary/90 text-[#1b1b1b] font-bold rounded-xl transition-all flex items-center justify-center gap-2 ${
               checkingSlug && validatingButton !== 'blue' ? 'opacity-50 cursor-not-allowed' : ''
             }`}
           >

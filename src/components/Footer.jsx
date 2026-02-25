@@ -9,7 +9,7 @@ const Footer = () => {
           <div className="col-span-2 lg:col-span-2 flex flex-col gap-4">
             <Link
               to="/"
-              className="flex items-center gap-3 text-white transition-opacity hover:opacity-80"
+              className="flex items-center gap-3 text-[#1b1b1b] transition-opacity hover:opacity-80"
             >
               <div className="size-10 text-primary">
                 <svg fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -44,7 +44,7 @@ const Footer = () => {
             </p>
           </div>
           <div className="flex flex-col gap-4">
-            <h4 className="font-bold text-slate-900 dark:text-white">Product</h4>
+            <h4 className="font-bold text-slate-900 dark:text-[#1b1b1b]">Product</h4>
             <a
               className="text-sm text-slate-500 dark:text-[#1b1b1b] hover:text-primary transition-colors"
               href="#"
@@ -71,7 +71,7 @@ const Footer = () => {
             </a>
           </div>
           <div className="flex flex-col gap-4">
-            <h4 className="font-bold text-slate-900 dark:text-white">Resources</h4>
+            <h4 className="font-bold text-slate-900 dark:text-[#1b1b1b]">Resources</h4>
             <a
               className="text-sm text-slate-500 dark:text-[#1b1b1b] hover:text-primary transition-colors"
               href="#"
@@ -98,7 +98,7 @@ const Footer = () => {
             </a>
           </div>
           <div className="flex flex-col gap-4">
-            <h4 className="font-bold text-slate-900 dark:text-white">Company</h4>
+            <h4 className="font-bold text-slate-900 dark:text-[#1b1b1b]">Company</h4>
             <Link
               to="/abuse"
               className="text-sm text-slate-500 dark:text-[#1b1b1b] hover:text-primary transition-colors"

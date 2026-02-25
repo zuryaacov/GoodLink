@@ -185,7 +185,7 @@ export default function DomainWizardOnePerPage({
                   {stepIndex + 1}/{totalSteps}
                 </span>
               </div>
-              <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-white">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-[#1b1b1b]">
                 {currentStep?.title}{' '}
                 <span
                   className={
@@ -211,7 +211,7 @@ export default function DomainWizardOnePerPage({
                     }}
                     placeholder="mybrand.com"
                     disabled={!!isEdit}
-                    className="w-full bg-transparent py-5 px-6 text-xl outline-none border-none text-white placeholder-slate-500 disabled:opacity-60"
+                    className="w-full bg-transparent py-5 px-6 text-xl outline-none border-none text-[#1b1b1b] placeholder-slate-500 disabled:opacity-60"
                   />
                 </div>
                 {fieldErrors.domain && <p className="text-red-400 text-xs">{fieldErrors.domain}</p>}
@@ -232,7 +232,7 @@ export default function DomainWizardOnePerPage({
                       setFieldErrors((prev) => ({ ...prev, rootRedirect: null }));
                     }}
                     placeholder="https://example.com"
-                    className="w-full bg-transparent py-5 px-6 text-xl outline-none border-none text-white placeholder-slate-500"
+                    className="w-full bg-transparent py-5 px-6 text-xl outline-none border-none text-[#1b1b1b] placeholder-slate-500"
                   />
                 </div>
                 {(fieldErrors.rootRedirect || rootRedirectError) && (
@@ -254,7 +254,7 @@ export default function DomainWizardOnePerPage({
                       type="button"
                       onClick={onRefreshDns}
                       disabled={isSubmitting}
-                      className="flex items-center gap-2 px-3 py-2 bg-slate-200 hover:bg-[#324467] text-white text-sm font-medium rounded-xl transition-colors border border-slate-200"
+                      className="flex items-center gap-2 px-3 py-2 bg-slate-200 hover:bg-[#324467] text-[#1b1b1b] text-sm font-medium rounded-xl transition-colors border border-slate-200"
                     >
                       <span
                         className={`material-symbols-outlined text-lg ${isSubmitting ? 'animate-spin' : ''}`}
@@ -285,7 +285,7 @@ export default function DomainWizardOnePerPage({
                   type="button"
                   onClick={onVerify}
                   disabled={isVerifying}
-                  className="w-full flex items-center justify-center gap-3 py-5 rounded-2xl font-bold text-lg bg-[#10b981] hover:bg-[#0d9668] text-white disabled:opacity-60 disabled:cursor-not-allowed transition-all border-2 border-[#10b981]/30"
+                  className="w-full flex items-center justify-center gap-3 py-5 rounded-2xl font-bold text-lg bg-[#10b981] hover:bg-[#0d9668] text-[#1b1b1b] disabled:opacity-60 disabled:cursor-not-allowed transition-all border-2 border-[#10b981]/30"
                 >
                   {isVerifying ? (
                     <>
@@ -312,7 +312,7 @@ export default function DomainWizardOnePerPage({
           <button
             type="button"
             onClick={goBack}
-            className={`flex items-center justify-center p-5 rounded-2xl border border-slate-200 font-bold text-gray-400 hover:bg-slate-200 hover:text-white transition-all ${isFirst ? 'invisible' : ''}`}
+            className={`flex items-center justify-center p-5 rounded-2xl border border-slate-200 font-bold text-gray-400 hover:bg-slate-200 hover:text-[#1b1b1b] transition-all ${isFirst ? 'invisible' : ''}`}
           >
             <span className="material-symbols-outlined text-2xl">chevron_left</span>
           </button>
@@ -320,7 +320,7 @@ export default function DomainWizardOnePerPage({
             type="button"
             onClick={goNext}
             disabled={currentStep?.id === 'rootRedirect' && isSubmitting}
-            className="flex-1 flex items-center justify-center gap-3 py-5 rounded-2xl font-extrabold text-xl tracking-tight transition-all bg-[#FF10F0] hover:bg-[#e00ed0] text-white disabled:opacity-60 disabled:cursor-not-allowed shadow-xl"
+            className="flex-1 flex items-center justify-center gap-3 py-5 rounded-2xl font-extrabold text-xl tracking-tight transition-all bg-[#FF10F0] hover:bg-[#e00ed0] text-[#1b1b1b] disabled:opacity-60 disabled:cursor-not-allowed shadow-xl"
           >
             {isSubmitting ? (
               <>

@@ -85,13 +85,13 @@ const getPlatformLogo = (platform) => {
       );
     case 'taboola':
       return (
-        <div className="w-12 h-12 rounded-lg flex items-center justify-center overflow-hidden border border-slate-700">
+        <div className="w-12 h-12 rounded-lg flex items-center justify-center overflow-hidden border border-slate-200">
           <img src={taboolaLogo} alt="Taboola" className="w-full h-full object-cover" />
         </div>
       );
     case 'outbrain':
       return (
-        <div className="w-12 h-12 rounded-lg flex items-center justify-center overflow-hidden border border-slate-700">
+        <div className="w-12 h-12 rounded-lg flex items-center justify-center overflow-hidden border border-slate-200">
           <img src={outbrainLogo} alt="Outbrain" className="w-full h-full object-cover" />
         </div>
       );
@@ -112,7 +112,7 @@ const getPlatformLogo = (platform) => {
       );
     default:
       return (
-        <div className="w-12 h-12 rounded-lg bg-slate-700 flex items-center justify-center">
+        <div className="w-12 h-12 rounded-lg bg-slate-200 flex items-center justify-center">
           <span className="text-[#1b1b1b] text-xs">?</span>
         </div>
       );
@@ -435,14 +435,14 @@ const UtmPresetBuilder = ({ isOpen, onClose, editingPreset, links }) => {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-      <div className="bg-slate-900 border border-slate-700 rounded-3xl p-6 md:p-8 max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+      <div className="bg-slate-900 border border-slate-200 rounded-3xl p-6 md:p-8 max-w-4xl w-full max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold text-white">
+          <h2 className="text-2xl font-bold text-[#1b1b1b]">
             {editingPreset ? 'Edit UTM Preset' : 'Create New UTM Preset'}
           </h2>
           <button
             onClick={onClose}
-            className="p-2 text-[#1b1b1b] hover:text-white hover:bg-white/5 rounded-lg transition-colors"
+            className="p-2 text-[#1b1b1b] hover:text-[#1b1b1b] hover:bg-white/5 rounded-lg transition-colors"
           >
             <X size={24} />
           </button>
@@ -463,7 +463,7 @@ const UtmPresetBuilder = ({ isOpen, onClose, editingPreset, links }) => {
               value={presetName}
               onChange={(e) => setPresetName(e.target.value)}
               placeholder="e.g., Summer Campaign Meta"
-              className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-primary"
+              className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-[#1b1b1b] focus:outline-none focus:border-primary"
             />
             <p className="text-xs text-slate-500 mt-1">
               This preset will be linked to a link when editing/adding a link
@@ -473,7 +473,7 @@ const UtmPresetBuilder = ({ isOpen, onClose, editingPreset, links }) => {
           {/* Step 1: Platform Selection */}
           <div>
             <div className="flex items-center gap-2 mb-4">
-              <span className="bg-primary text-white w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold">
+              <span className="bg-primary text-[#1b1b1b] w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold">
                 1
               </span>
               <h3 className="text-sm font-bold text-[#1b1b1b] uppercase tracking-widest">
@@ -487,14 +487,14 @@ const UtmPresetBuilder = ({ isOpen, onClose, editingPreset, links }) => {
                   onClick={() => handlePlatformChange(p.id)}
                   className={`relative group flex flex-col items-center gap-3 p-4 rounded-xl border-2 transition-all ${
                     selectedPlatform === p.id
-                      ? `border-primary bg-primary/10 text-white`
-                      : 'border-slate-700 bg-slate-200 text-[#1b1b1b] hover:border-slate-600'
+                      ? `border-primary bg-primary/10 text-[#1b1b1b]`
+                      : 'border-slate-200 bg-slate-200 text-[#1b1b1b] hover:border-slate-600'
                   }`}
                 >
                   {getPlatformLogo(p.id)}
                   <span className="font-bold text-xs text-center">{p.name}</span>
                   {selectedPlatform === p.id && (
-                    <div className="absolute -top-2 -right-2 bg-primary text-white rounded-full p-1">
+                    <div className="absolute -top-2 -right-2 bg-primary text-[#1b1b1b] rounded-full p-1">
                       <CheckCircle2 size={14} />
                     </div>
                   )}
@@ -506,7 +506,7 @@ const UtmPresetBuilder = ({ isOpen, onClose, editingPreset, links }) => {
           {/* Step 2: UTM Parameters as Chips */}
           <div>
             <div className="flex items-center gap-2 mb-4">
-              <span className="bg-primary text-white w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold">
+              <span className="bg-primary text-[#1b1b1b] w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold">
                 2
               </span>
               <h3 className="text-sm font-bold text-[#1b1b1b] uppercase tracking-widest">
@@ -544,8 +544,8 @@ const UtmPresetBuilder = ({ isOpen, onClose, editingPreset, links }) => {
                           onClick={() => handleChipClick(utmType.id, option)}
                           className={`px-4 py-2 rounded-lg text-sm font-bold transition-all border ${
                             isSelected
-                              ? 'bg-primary text-white border-primary shadow-lg scale-105'
-                              : 'bg-slate-800 text-slate-300 border-slate-700 hover:border-slate-600 hover:bg-slate-750'
+                              ? 'bg-primary text-[#1b1b1b] border-primary shadow-lg scale-105'
+                              : 'bg-white text-slate-300 border-slate-200 hover:border-slate-600 hover:bg-slate-750'
                           }`}
                         >
                           {option}
@@ -564,7 +564,7 @@ const UtmPresetBuilder = ({ isOpen, onClose, editingPreset, links }) => {
           {/* Step 3: Preview URL */}
           <div>
             <div className="flex items-center gap-2 mb-4">
-              <span className="bg-primary text-white w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold">
+              <span className="bg-primary text-[#1b1b1b] w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold">
                 3
               </span>
               <h3 className="text-sm font-bold text-[#1b1b1b] uppercase tracking-widest">
@@ -621,7 +621,7 @@ const UtmPresetBuilder = ({ isOpen, onClose, editingPreset, links }) => {
                 handleSave();
               }}
               disabled={loading || !presetName.trim()}
-              className="flex-1 px-6 py-3 bg-primary hover:bg-primary/90 text-white font-bold rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              className="flex-1 px-6 py-3 bg-primary hover:bg-primary/90 text-[#1b1b1b] font-bold rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
               {loading ? (
                 <>
@@ -637,7 +637,7 @@ const UtmPresetBuilder = ({ isOpen, onClose, editingPreset, links }) => {
             </button>
             <button
               onClick={onClose}
-              className="px-6 py-3 bg-slate-700 hover:bg-slate-600 text-white font-bold rounded-xl transition-all"
+              className="px-6 py-3 bg-slate-200 hover:bg-slate-300 text-[#1b1b1b] font-bold rounded-xl transition-all"
             >
               Cancel
             </button>

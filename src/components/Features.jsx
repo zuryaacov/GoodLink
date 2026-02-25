@@ -61,7 +61,7 @@ const Features = () => {
           <div className="inline-flex items-center rounded-full bg-primary/10 px-3 py-1 text-sm font-medium text-primary border border-primary/20">
             Features
           </div>
-          <h2 className="text-slate-900 dark:text-white tracking-tight text-3xl md:text-5xl font-black leading-tight">
+          <h2 className="text-slate-900 dark:text-[#1b1b1b] tracking-tight text-3xl md:text-5xl font-black leading-tight">
             Engineered for Performance
           </h2>
           <p className="text-slate-600 dark:text-[#1b1b1b] text-lg md:text-xl font-normal leading-relaxed">
@@ -83,11 +83,11 @@ const Features = () => {
               variants={itemVariants}
               className="group flex flex-col gap-4 rounded-xl border border-white/10 dark:border-[#324467] bg-white/5 dark:bg-[#192233]/50 backdrop-blur-md p-6 shadow-sm hover:shadow-xl hover:border-primary/50 transition-all duration-300"
             >
-              <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 text-primary group-hover:bg-primary group-hover:text-white transition-colors">
+              <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 text-primary group-hover:bg-primary group-hover:text-[#1b1b1b] transition-colors">
                 <span className="material-symbols-outlined text-3xl">{feature.icon}</span>
               </div>
               <div className="flex flex-col gap-2">
-                <h3 className="text-slate-900 dark:text-white text-lg font-bold leading-tight">
+                <h3 className="text-slate-900 dark:text-[#1b1b1b] text-lg font-bold leading-tight">
                   {feature.title}
                 </h3>
                 <p className="text-slate-500 dark:text-[#1b1b1b] text-sm leading-normal">

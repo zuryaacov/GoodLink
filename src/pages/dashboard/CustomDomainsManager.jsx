@@ -357,18 +357,18 @@ const CustomDomainsManager = () => {
             <div className="relative">
               <div className="absolute inset-0 bg-[#FF10F0] blur-2xl opacity-25 animate-pulse" />
               <div className="relative bg-gradient-to-br from-[#FF10F0] to-[#7c3aed] p-4 rounded-2xl shadow-lg shadow-[#FF10F0]/40">
-                <Lock className="w-8 h-8 text-white" />
+                <Lock className="w-8 h-8 text-[#1b1b1b]" />
               </div>
             </div>
           </div>
 
-          <h2 className="text-2xl md:text-3xl font-bold text-white mb-4 tracking-tight">
+          <h2 className="text-2xl md:text-3xl font-bold text-[#1b1b1b] mb-4 tracking-tight">
             Unlock Custom Domains
           </h2>
 
           <p className="text-sm md:text-base text-slate-300 mb-8 leading-relaxed">
             Your current&nbsp;
-            <span className="font-semibold text-white italic capitalize">
+            <span className="font-semibold text-[#1b1b1b] italic capitalize">
               {normalizedPlan} plan
             </span>{' '}
             does not include custom domain management. Upgrade to&nbsp;
@@ -384,7 +384,7 @@ const CustomDomainsManager = () => {
             <div className="flex items-center gap-3 p-3 bg-white/80 rounded-xl border border-slate-200 hover:border-[#FF10F0]/40 transition-colors">
               <Globe className="w-5 h-5 text-[#FF10F0]" />
               <div>
-                <p className="font-semibold text-sm text-white italic">Brand Your Links</p>
+                <p className="font-semibold text-sm text-[#1b1b1b] italic">Brand Your Links</p>
                 <p className="text-xs text-[#1b1b1b]">
                   Use your own domain (e.g., go.mybrand.com) instead of the default short links.
                 </p>
@@ -393,7 +393,7 @@ const CustomDomainsManager = () => {
             <div className="flex items-center gap-3 p-3 bg-white/80 rounded-xl border border-slate-200 hover:border-[#FF10F0]/40 transition-colors">
               <BarChart3 className="w-5 h-5 text-[#FF10F0]" />
               <div>
-                <p className="font-semibold text-sm text-white italic">Professional Appearance</p>
+                <p className="font-semibold text-sm text-[#1b1b1b] italic">Professional Appearance</p>
                 <p className="text-xs text-[#1b1b1b]">
                   Build trust with branded links that match your business identity.
                 </p>
@@ -406,7 +406,7 @@ const CustomDomainsManager = () => {
             onClick={() => {
               window.location.href = '/#pricing';
             }}
-            className="group relative w-full inline-flex items-center justify-center gap-2 bg-[#FF10F0] text-white font-bold py-3.5 px-8 rounded-2xl transition-all duration-300 hover:bg-[#e00ed0] hover:scale-[1.02] active:scale-[0.98] shadow-xl shadow-[#FF10F0]/30"
+            className="group relative w-full inline-flex items-center justify-center gap-2 bg-[#FF10F0] text-[#1b1b1b] font-bold py-3.5 px-8 rounded-2xl transition-all duration-300 hover:bg-[#e00ed0] hover:scale-[1.02] active:scale-[0.98] shadow-xl shadow-[#FF10F0]/30"
           >
             <Zap className="w-5 h-5" />
             <span>View Plans & Upgrade</span>
@@ -427,14 +427,14 @@ const CustomDomainsManager = () => {
     <div className="flex flex-col gap-6 md:gap-8 w-full max-w-7xl mx-auto">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="flex flex-col gap-2">
-          <h1 className="text-2xl sm:text-3xl font-bold text-white">Custom Domains</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold text-[#1b1b1b]">Custom Domains</h1>
           <p className="text-[#1b1b1b] text-sm sm:text-base">
             Brand your links with custom domains (e.g., go.mybrand.com)
           </p>
         </div>
         <button
           onClick={() => navigate('/dashboard/domains/new')}
-          className="px-6 py-3 bg-[#FF10F0] hover:bg-[#e00ed0] text-white font-bold rounded-xl transition-all shadow-lg shadow-[#FF10F0]/20 flex items-center gap-2 whitespace-nowrap"
+          className="px-6 py-3 bg-[#FF10F0] hover:bg-[#e00ed0] text-[#1b1b1b] font-bold rounded-xl transition-all shadow-lg shadow-[#FF10F0]/20 flex items-center gap-2 whitespace-nowrap"
         >
           <span className="material-symbols-outlined">add</span>
           New Domain
@@ -461,7 +461,7 @@ const CustomDomainsManager = () => {
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b border-slate-200">
                 <div className="flex flex-col gap-2">
                   <h3
-                    className="text-4xl font-bold text-white tracking-tight break-all"
+                    className="text-4xl font-bold text-[#1b1b1b] tracking-tight break-all"
                     title={domain.domain}
                   >
                     {domain.domain}
@@ -497,7 +497,7 @@ const CustomDomainsManager = () => {
                   {(domain.status === 'pending' || domain.status === 'error') && (
                     <button
                       onClick={() => handleVerifyDNS(domain)}
-                      className="px-4 py-2 bg-[#FF10F0] hover:bg-[#e00ed0] text-white font-bold rounded-xl transition-all shadow-lg shadow-[#FF10F0]/20 flex items-center justify-center gap-2 text-sm"
+                      className="px-4 py-2 bg-[#FF10F0] hover:bg-[#e00ed0] text-[#1b1b1b] font-bold rounded-xl transition-all shadow-lg shadow-[#FF10F0]/20 flex items-center justify-center gap-2 text-sm"
                     >
                       <span className="material-symbols-outlined text-lg">verified</span>
                       Verify DNS
@@ -589,14 +589,14 @@ const CustomDomainsManager = () => {
                                 </span>
                               </div>
                               <div className="flex items-center gap-3 bg-white p-3 rounded-xl border border-slate-200 group hover:border-primary/20 transition-all">
-                                <code className="text-sm md:text-base text-white font-mono flex-1 truncate selection:bg-primary/40">
+                                <code className="text-sm md:text-base text-[#1b1b1b] font-mono flex-1 truncate selection:bg-primary/40">
                                   {record.host || record.name}
                                 </code>
                                 <button
                                   onClick={() =>
                                     navigator.clipboard.writeText(record.host || record.name)
                                   }
-                                  className="w-10 h-10 flex items-center justify-center bg-slate-200 hover:bg-primary text-white rounded-lg transition-all shadow-xl active:scale-90"
+                                  className="w-10 h-10 flex items-center justify-center bg-slate-200 hover:bg-primary text-[#1b1b1b] rounded-lg transition-all shadow-xl active:scale-90"
                                   title="Copy Host"
                                 >
                                   <span className="material-symbols-outlined text-xl">
@@ -622,7 +622,7 @@ const CustomDomainsManager = () => {
                                 </code>
                                 <button
                                   onClick={() => navigator.clipboard.writeText(record.value)}
-                                  className="w-10 h-10 flex items-center justify-center bg-slate-200 hover:bg-primary text-white rounded-lg transition-all shadow-xl active:scale-90 flex-shrink-0"
+                                  className="w-10 h-10 flex items-center justify-center bg-slate-200 hover:bg-primary text-[#1b1b1b] rounded-lg transition-all shadow-xl active:scale-90 flex-shrink-0"
                                   title="Copy Value"
                                 >
                                   <span className="material-symbols-outlined text-xl">

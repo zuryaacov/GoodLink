@@ -3,7 +3,7 @@ import React from 'react';
 const StatCard = ({ title, value, change, icon, trend }) => (
   <div className="bg-white border border-slate-200 rounded-2xl p-6 relative overflow-hidden group hover:border-slate-300 transition-colors">
     <div className="flex justify-between items-start mb-4">
-      <div className="p-3 bg-primary/10 rounded-xl text-primary group-hover:bg-primary group-hover:text-white transition-colors">
+      <div className="p-3 bg-primary/10 rounded-xl text-primary group-hover:bg-primary group-hover:text-[#1b1b1b] transition-colors">
         <span className="material-symbols-outlined text-[24px]">{icon}</span>
       </div>
       {change && (
@@ -15,7 +15,7 @@ const StatCard = ({ title, value, change, icon, trend }) => (
       )}
     </div>
     <h3 className="text-[#1b1b1b] text-sm font-medium mb-1">{title}</h3>
-    <p className="text-3xl font-bold text-white tracking-tight">{value}</p>
+    <p className="text-3xl font-bold text-[#1b1b1b] tracking-tight">{value}</p>
   </div>
 );
 
@@ -23,7 +23,7 @@ const DashboardOverview = () => {
   return (
     <div className="flex flex-col gap-8 max-w-7xl mx-auto">
       <div className="flex flex-col gap-2">
-        <h1 className="text-3xl font-bold text-white">Dashboard</h1>
+        <h1 className="text-3xl font-bold text-[#1b1b1b]">Dashboard</h1>
         <p className="text-[#1b1b1b]">Welcome back! Here's what's happening with your links.</p>
       </div>
 
@@ -43,7 +43,7 @@ const DashboardOverview = () => {
       {/* Top Links Section */}
       <div className="bg-white border border-slate-200 rounded-2xl p-4 md:p-6">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-bold text-white">Top Performing Links</h2>
+          <h2 className="text-xl font-bold text-[#1b1b1b]">Top Performing Links</h2>
           <button className="text-primary text-sm font-bold hover:underline">View All</button>
         </div>
 
@@ -61,14 +61,14 @@ const DashboardOverview = () => {
               <tr className="border-b border-slate-200/50 hover:bg-slate-50 transition-colors">
                 <td className="p-4">
                   <div className="flex flex-col">
-                    <span className="text-white font-bold">Summer Sale Campaign</span>
+                    <span className="text-[#1b1b1b] font-bold">Summer Sale Campaign</span>
                     <span className="text-slate-500 text-xs truncate max-w-[150px] md:max-w-none">
                       goodlink.ai/summer24
                     </span>
                   </div>
                 </td>
-                <td className="p-4 text-white text-right md:text-left">4,231</td>
-                <td className="p-4 text-white hidden md:table-cell">312</td>
+                <td className="p-4 text-[#1b1b1b] text-right md:text-left">4,231</td>
+                <td className="p-4 text-[#1b1b1b] hidden md:table-cell">312</td>
                 <td className="p-4 hidden md:table-cell">
                   <span className="text-green-400 bg-green-400/10 px-2 py-1 rounded text-xs font-bold">
                     Active
@@ -78,14 +78,14 @@ const DashboardOverview = () => {
               <tr className="border-b border-slate-200/50 hover:bg-slate-50 transition-colors">
                 <td className="p-4">
                   <div className="flex flex-col">
-                    <span className="text-white font-bold">Instagram Bio</span>
+                    <span className="text-[#1b1b1b] font-bold">Instagram Bio</span>
                     <span className="text-slate-500 text-xs truncate max-w-[150px] md:max-w-none">
                       goodlink.ai/ig-bio
                     </span>
                   </div>
                 </td>
-                <td className="p-4 text-white text-right md:text-left">2,105</td>
-                <td className="p-4 text-white hidden md:table-cell">156</td>
+                <td className="p-4 text-[#1b1b1b] text-right md:text-left">2,105</td>
+                <td className="p-4 text-[#1b1b1b] hidden md:table-cell">156</td>
                 <td className="p-4 hidden md:table-cell">
                   <span className="text-green-400 bg-green-400/10 px-2 py-1 rounded text-xs font-bold">
                     Active

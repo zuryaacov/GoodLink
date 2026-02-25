@@ -57,7 +57,7 @@ const DNSRecordsDisplay = ({ records, domain }) => {
   const CopyButton = ({ value, fieldName, className = '' }) => (
     <button
       onClick={() => handleCopy(value, fieldName)}
-      className={`px-3 py-1.5 bg-slate-200 hover:bg-slate-300 text-white text-xs font-medium rounded-lg transition-colors flex items-center gap-2 ${className}`}
+      className={`px-3 py-1.5 bg-slate-200 hover:bg-slate-300 text-[#1b1b1b] text-xs font-medium rounded-lg transition-colors flex items-center gap-2 ${className}`}
     >
       {copiedField === fieldName ? (
         <>
@@ -77,7 +77,7 @@ const DNSRecordsDisplay = ({ records, domain }) => {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h4 className="text-lg font-bold text-white mb-2">🌐 Connect Your Custom Domain</h4>
+        <h4 className="text-lg font-bold text-[#1b1b1b] mb-2">🌐 Connect Your Custom Domain</h4>
         <p className="text-sm text-[#1b1b1b]">
           Add all records exactly as shown below.
         </p>
@@ -96,7 +96,7 @@ const DNSRecordsDisplay = ({ records, domain }) => {
               className="bg-white border border-slate-200 rounded-xl p-5 space-y-4"
             >
               <div className="flex items-center justify-between gap-3">
-                <h5 className="text-base font-bold text-white">Record {index + 1}</h5>
+                <h5 className="text-base font-bold text-[#1b1b1b]">Record {index + 1}</h5>
                 <span className="px-2.5 py-1 rounded-md bg-primary/20 text-primary border border-primary/30 text-xs font-bold">
                   {record.type}
                 </span>
@@ -106,7 +106,7 @@ const DNSRecordsDisplay = ({ records, domain }) => {
                 <div className="flex items-center justify-between gap-3">
                   <div className="flex-1 min-w-0">
                     <label className="text-xs text-slate-500 mb-1 block">Host/Name:</label>
-                    <code className="block px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm text-white font-mono break-all">
+                    <code className="block px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm text-[#1b1b1b] font-mono break-all">
                       {record.host}
                     </code>
                   </div>
@@ -118,7 +118,7 @@ const DNSRecordsDisplay = ({ records, domain }) => {
                 <div className="flex items-center justify-between gap-3">
                   <div className="flex-1 min-w-0">
                     <label className="text-xs text-slate-500 mb-1 block">Value:</label>
-                    <code className="block px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm text-white font-mono break-all">
+                    <code className="block px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm text-[#1b1b1b] font-mono break-all">
                       {record.value}
                     </code>
                   </div>
@@ -141,7 +141,7 @@ const DNSRecordsDisplay = ({ records, domain }) => {
               pending
             </span>
             <div>
-              <p className="text-white font-bold text-sm">Generating DNS Records...</p>
+              <p className="text-[#1b1b1b] font-bold text-sm">Generating DNS Records...</p>
               <p className="text-[#1b1b1b] text-xs mt-1">
                 Cloudflare is preparing your records. This can take up to 60 seconds.
               </p>

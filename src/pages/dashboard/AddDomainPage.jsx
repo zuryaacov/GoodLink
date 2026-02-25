@@ -421,11 +421,11 @@ const AddDomainPage = () => {
         <div className="max-w-4xl mx-auto flex items-center gap-4">
           <button
             onClick={() => navigate('/dashboard/domains')}
-            className="p-2 text-[#1b1b1b] hover:text-white hover:bg-white/5 rounded-lg transition-colors"
+            className="p-2 text-[#1b1b1b] hover:text-[#1b1b1b] hover:bg-white/5 rounded-lg transition-colors"
           >
             <ArrowLeft size={24} />
           </button>
-          <h1 className="text-xl font-bold text-white">
+          <h1 className="text-xl font-bold text-[#1b1b1b]">
             {id ? 'Edit Domain' : 'Add Custom Domain'}
           </h1>
         </div>

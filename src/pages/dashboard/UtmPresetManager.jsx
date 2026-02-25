@@ -259,16 +259,16 @@ const UtmPresetManager = () => {
             <div className="relative">
               <div className="absolute inset-0 bg-[#FF10F0] blur-2xl opacity-25 animate-pulse" />
               <div className="relative bg-gradient-to-br from-[#FF10F0] to-[#7c3aed] p-4 rounded-2xl shadow-lg shadow-[#FF10F0]/40">
-                <Lock className="w-8 h-8 text-white" />
+                <Lock className="w-8 h-8 text-[#1b1b1b]" />
               </div>
             </div>
           </div>
-          <h2 className="text-2xl md:text-3xl font-bold text-white mb-4 tracking-tight">
+          <h2 className="text-2xl md:text-3xl font-bold text-[#1b1b1b] mb-4 tracking-tight">
             Unlock UTM Presets
           </h2>
           <p className="text-sm md:text-base text-slate-300 mb-8 leading-relaxed">
             Your current&nbsp;
-            <span className="font-semibold text-white italic capitalize">
+            <span className="font-semibold text-[#1b1b1b] italic capitalize">
               {normalizedPlan} plan
             </span>
             &nbsp;does not include UTM preset management. Upgrade to&nbsp;
@@ -282,7 +282,7 @@ const UtmPresetManager = () => {
             onClick={() => {
               window.location.href = '/#pricing';
             }}
-            className="w-full inline-flex items-center justify-center gap-2 bg-[#FF10F0] text-white font-bold py-3.5 px-8 rounded-2xl transition-all hover:bg-[#e00ed0] shadow-xl shadow-[#FF10F0]/30"
+            className="w-full inline-flex items-center justify-center gap-2 bg-[#FF10F0] text-[#1b1b1b] font-bold py-3.5 px-8 rounded-2xl transition-all hover:bg-[#e00ed0] shadow-xl shadow-[#FF10F0]/30"
           >
             View Plans & Upgrade
           </button>
@@ -295,14 +295,14 @@ const UtmPresetManager = () => {
     <div className="w-full max-w-7xl mx-auto">
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-white mb-2">UTM Presets</h1>
+          <h1 className="text-3xl font-bold text-[#1b1b1b] mb-2">UTM Presets</h1>
           <p className="text-[#1b1b1b]">
             Create and manage UTM parameter presets for your campaigns
           </p>
         </div>
         <button
           onClick={handleNewPreset}
-          className="px-6 py-3 bg-[#FF10F0] hover:bg-[#e00ed0] text-white font-bold rounded-xl transition-all shadow-lg shadow-[#FF10F0]/20 flex items-center gap-2"
+          className="px-6 py-3 bg-[#FF10F0] hover:bg-[#e00ed0] text-[#1b1b1b] font-bold rounded-xl transition-all shadow-lg shadow-[#FF10F0]/20 flex items-center gap-2"
         >
           <span className="material-symbols-outlined">add</span>
           New UTM Preset
@@ -312,13 +312,13 @@ const UtmPresetManager = () => {
       {presets.length === 0 ? (
         <div className="bg-slate-800/50 border border-slate-700 rounded-2xl p-12 text-center">
           <span className="material-symbols-outlined text-6xl text-slate-600 mb-4">campaign</span>
-          <h3 className="text-xl font-bold text-white mb-2">No UTM Presets Yet</h3>
+          <h3 className="text-xl font-bold text-[#1b1b1b] mb-2">No UTM Presets Yet</h3>
           <p className="text-[#1b1b1b] mb-6">
             Create your first UTM preset to start tracking your campaigns
           </p>
           <button
             onClick={handleNewPreset}
-            className="px-6 py-3 bg-[#FF10F0] hover:bg-[#e00ed0] text-white font-bold rounded-xl transition-all"
+            className="px-6 py-3 bg-[#FF10F0] hover:bg-[#e00ed0] text-[#1b1b1b] font-bold rounded-xl transition-all"
           >
             Create First Preset
           </button>
@@ -340,7 +340,7 @@ const UtmPresetManager = () => {
               >
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex-1">
-                    <h3 className="text-4xl font-bold text-white mb-1">{preset.name}</h3>
+                    <h3 className="text-4xl font-bold text-[#1b1b1b] mb-1">{preset.name}</h3>
                     <div className="flex flex-wrap items-center gap-2">
                       <span
                         className={`inline-block px-2 py-1 rounded-lg text-xs font-bold ${platform.colorClass}`}
@@ -357,7 +357,7 @@ const UtmPresetManager = () => {
                   <div className="flex gap-2">
                     <button
                       onClick={() => handleEdit(preset)}
-                      className="p-2 text-[#1b1b1b] hover:text-white hover:bg-white/5 rounded-lg transition-colors"
+                      className="p-2 text-[#1b1b1b] hover:text-[#1b1b1b] hover:bg-white/5 rounded-lg transition-colors"
                       title="Edit"
                     >
                       <Edit2 size={16} />
@@ -418,7 +418,7 @@ const UtmPresetManager = () => {
                 <div className="flex gap-2">
                   <button
                     onClick={() => handleCopy(preset)}
-                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition-colors text-sm font-medium"
+                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-slate-200 hover:bg-slate-300 text-[#1b1b1b] rounded-lg transition-colors text-sm font-medium"
                   >
                     {copiedId === preset.id ? (
                       <>

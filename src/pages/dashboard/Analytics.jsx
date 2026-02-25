@@ -73,7 +73,7 @@ const KPICard = ({ title, value, change, trend, icon, iconBgClass, iconColorClas
     </div>
     <div className="space-y-1">
       <h3 className="text-slate-500 text-xs uppercase font-bold tracking-widest">{title}</h3>
-      <p className="text-3xl font-extrabold text-white">{value}</p>
+      <p className="text-3xl font-extrabold text-[#1b1b1b]">{value}</p>
     </div>
   </div>
 );
@@ -100,7 +100,7 @@ const HumanVsBotCard = ({ humanCount, botCount, unknownCount }) => {
         >
           <div className="w-[120px] h-[120px] bg-white rounded-full flex items-center justify-center">
             <div className="text-center">
-              <span className="block text-2xl font-bold text-white">{Math.round(humanPct)}%</span>
+              <span className="block text-2xl font-bold text-[#1b1b1b]">{Math.round(humanPct)}%</span>
               <span className="block text-[10px] text-slate-600 uppercase font-bold">Human</span>
             </div>
           </div>
@@ -147,7 +147,7 @@ const GeoProgressCard = ({ geographic }) => {
             return (
               <div key={item.name}>
                 <div className="flex justify-between text-xs mb-1">
-                  <span className="flex items-center gap-2 text-white font-medium">
+                  <span className="flex items-center gap-2 text-[#1b1b1b] font-medium">
                     {flag} {item.name}
                   </span>
                   <span className="text-slate-500">
@@ -363,11 +363,11 @@ const Analytics = () => {
   return (
     <div className="flex flex-col gap-6 max-w-7xl mx-auto">
       <div className="flex flex-col gap-2">
-        <h1 className="text-3xl font-bold text-white">Analytics</h1>
+        <h1 className="text-3xl font-bold text-[#1b1b1b]">Analytics</h1>
         {isSingleLink ? (
           <p className="text-[#1b1b1b] text-sm">
             Data for this link only:{' '}
-            <span className="font-mono text-white break-all">{singleLinkUrl}</span>
+            <span className="font-mono text-[#1b1b1b] break-all">{singleLinkUrl}</span>
             {' · '}
             <button
               type="button"
@@ -503,7 +503,7 @@ const Analytics = () => {
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className="flex items-center gap-2">
                           <span className="text-lg">{flag}</span>
-                          <span className="text-white font-medium">{location}</span>
+                          <span className="text-[#1b1b1b] font-medium">{location}</span>
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">

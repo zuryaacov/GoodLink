@@ -126,14 +126,14 @@ const Step2Optimization = ({ formData, updateFormData }) => {
     >
       {/* Header */}
       <div className="text-center">
-        <h3 className="text-2xl font-bold text-white mb-2">Optimization & Marketing</h3>
+        <h3 className="text-2xl font-bold text-[#1b1b1b] mb-2">Optimization & Marketing</h3>
         <p className="text-[#1b1b1b] text-sm">UTM & Pixels</p>
       </div>
 
       {/* UTM Presets - User's Custom Presets */}
       {false && availablePresets.length > 0 && (
         <div>
-          <label className="block text-sm font-medium text-white mb-4">UTM Presets</label>
+          <label className="block text-sm font-medium text-[#1b1b1b] mb-4">UTM Presets</label>
           {loadingPresets ? (
             <div className="text-[#1b1b1b] text-sm">Loading presets...</div>
           ) : (
@@ -166,7 +166,7 @@ const Step2Optimization = ({ formData, updateFormData }) => {
                         }`}
                       >
                         {isSelected && (
-                          <span className="material-symbols-outlined text-white text-sm">
+                          <span className="material-symbols-outlined text-[#1b1b1b] text-sm">
                             check
                           </span>
                         )}
@@ -184,7 +184,7 @@ const Step2Optimization = ({ formData, updateFormData }) => {
                             </span>
                           )}
                           <h4
-                            className={`font-bold text-sm ${isSelected ? 'text-white' : 'text-slate-300'}`}
+                            className={`font-bold text-sm ${isSelected ? 'text-[#1b1b1b]' : 'text-[#1b1b1b]'}`}
                           >
                             {preset.name}
                           </h4>
@@ -211,7 +211,7 @@ const Step2Optimization = ({ formData, updateFormData }) => {
       {/* How do you want to track conversions? - Hidden for now (CAPI only). Restore when Pixel option is reintroduced.
       {availablePixels.length > 0 && (
         <div>
-          <label className="block text-sm font-medium text-white mb-4">
+          <label className="block text-sm font-medium text-[#1b1b1b] mb-4">
             How do you want to track conversions?
           </label>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
@@ -232,7 +232,7 @@ const Step2Optimization = ({ formData, updateFormData }) => {
                       : 'border-slate-200 bg-white hover:border-slate-300'
                   }`}
                 >
-                  <p className="font-bold text-white">{opt.label}</p>
+                  <p className="font-bold text-[#1b1b1b]">{opt.label}</p>
                   <p className="text-xs text-slate-500 mt-0.5">{opt.desc}</p>
                 </button>
               );
@@ -245,7 +245,7 @@ const Step2Optimization = ({ formData, updateFormData }) => {
       {/* CAPI Selection with Liveness Indicator - Only show if pixels exist */}
       {availablePixels.length > 0 && (
         <div>
-          <label className="block text-sm font-medium text-white mb-4">CAPI Selection</label>
+          <label className="block text-sm font-medium text-[#1b1b1b] mb-4">CAPI Selection</label>
           {loadingPixels ? (
             <div className="text-[#1b1b1b] text-sm">Loading CAPI...</div>
           ) : (
@@ -407,14 +407,14 @@ const Step2Optimization = ({ formData, updateFormData }) => {
                         }`}
                       >
                         {isSelected && (
-                          <span className="material-symbols-outlined text-white text-sm">
+                          <span className="material-symbols-outlined text-[#1b1b1b] text-sm">
                             check
                           </span>
                         )}
                       </div>
                       {getPlatformLogo(pixel.platform)}
                       <div className="text-left flex-1 min-w-0">
-                        <p className="text-white font-medium truncate">{pixel.name}</p>
+                        <p className="text-[#1b1b1b] font-medium truncate">{pixel.name}</p>
                         <p className="text-slate-500 text-xs">{getPlatformName(pixel.platform)}</p>
                       </div>
                     </div>

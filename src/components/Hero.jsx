@@ -15,7 +15,7 @@ const Hero = () => {
             className="flex flex-col gap-8 flex-1 text-center lg:text-left"
           >
             <div className="flex flex-col gap-4">
-              <h1 className="text-slate-900 dark:text-white text-4xl font-black leading-tight tracking-tight md:text-5xl lg:text-6xl">
+              <h1 className="text-slate-900 dark:text-[#1b1b1b] text-4xl font-black leading-tight tracking-tight md:text-5xl lg:text-6xl">
                 Own Your Data. <br />
                 <span className="text-primary">Secure Your Links.</span> <br />
                 Maximize Profits.
@@ -26,10 +26,10 @@ const Hero = () => {
               </h2>
             </div>
             <div className="flex flex-wrap gap-4 justify-center lg:justify-start">
-              <button className="flex h-12 min-w-[140px] cursor-pointer items-center justify-center rounded-lg bg-primary hover:bg-primary/90 px-6 text-white text-base font-bold transition-all shadow-lg shadow-primary/25">
+              <button className="flex h-12 min-w-[140px] cursor-pointer items-center justify-center rounded-lg bg-primary hover:bg-primary/90 px-6 text-[#1b1b1b] text-base font-bold transition-all shadow-lg shadow-primary/25">
                 Get Started for Free
               </button>
-              <button className="flex h-12 min-w-[140px] cursor-pointer items-center justify-center rounded-lg bg-slate-200 dark:bg-slate-200 hover:bg-slate-300 dark:hover:bg-slate-300 px-6 text-slate-900 dark:text-white text-base font-bold transition-all">
+              <button className="flex h-12 min-w-[140px] cursor-pointer items-center justify-center rounded-lg bg-slate-200 dark:bg-slate-200 hover:bg-slate-300 dark:hover:bg-slate-300 px-6 text-slate-900 dark:text-[#1b1b1b] text-base font-bold transition-all">
                 View Demo
               </button>
             </div>
@@ -73,7 +73,7 @@ const Hero = () => {
                     <div className="text-[8px] sm:text-[10px] uppercase text-[#1b1b1b] font-bold">
                       Conv. Rate
                     </div>
-                    <div className="text-xs sm:text-sm font-bold text-white">+12.4%</div>
+                    <div className="text-xs sm:text-sm font-bold text-[#1b1b1b]">+12.4%</div>
                   </div>
                 </div>
                 <div className="h-0.5 sm:h-1 w-full bg-slate-700 rounded-full overflow-hidden">

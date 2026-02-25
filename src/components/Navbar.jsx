@@ -97,7 +97,7 @@ const Navbar = () => {
               <>
                 <Link
                   to="/dashboard"
-                  className="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-primary text-white hover:bg-primary/90 text-sm font-bold leading-normal tracking-[0.015em] transition-colors"
+                  className="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-primary text-[#1b1b1b] hover:bg-primary/90 text-sm font-bold leading-normal tracking-[0.015em] transition-colors"
                 >
                   <span className="truncate">Dashboard</span>
                 </Link>
@@ -111,7 +111,7 @@ const Navbar = () => {
             ) : (
               <Link
                 to="/login"
-                className="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-primary hover:bg-primary/90 text-white text-sm font-bold leading-normal tracking-[0.015em] transition-colors shadow-lg shadow-primary/30"
+                className="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-primary hover:bg-primary/90 text-[#1b1b1b] text-sm font-bold leading-normal tracking-[0.015em] transition-colors shadow-lg shadow-primary/30"
               >
                 <span className="truncate">Login</span>
               </Link>
@@ -182,7 +182,7 @@ const Navbar = () => {
                   <Link
                     to="/login"
                     onClick={() => setIsOpen(false)}
-                    className="flex w-full cursor-pointer items-center justify-center rounded-lg h-12 bg-primary text-white font-bold transition-colors shadow-lg shadow-primary/30"
+                    className="flex w-full cursor-pointer items-center justify-center rounded-lg h-12 bg-primary text-[#1b1b1b] font-bold transition-colors shadow-lg shadow-primary/30"
                   >
                     Login
                   </Link>
