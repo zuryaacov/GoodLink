@@ -593,10 +593,10 @@ const AuthPage = () => {
       </div>
       <h2 className="text-3xl font-bold leading-tight tracking-tight text-[#1b1b1b]">
         <b>
-          <span className="text-[#10b981]">Good</span>
+          <span className="text-primary">Good</span>
         </b>
         <b>
-          <span className="text-[#135bec]"> Link</span>
+          <span className="text-primary"> Link</span>
         </b>
       </h2>
     </Link>

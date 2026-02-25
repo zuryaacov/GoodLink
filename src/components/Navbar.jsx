@@ -67,10 +67,10 @@ const Navbar = () => {
           </div>
           <h2 className="text-3xl font-bold leading-tight tracking-tight">
             <b>
-              <span className="text-primary-green">Good</span>
-            </b>
-            <b>
-              <span className="text-accent"> Link</span>
+<span className="text-primary">Good</span>
+              </b>
+              <b>
+                <span className="text-primary"> Link</span>
             </b>
           </h2>
         </Link>
