@@ -140,7 +140,7 @@ const Step2UTMParameters = ({ formData, updateFormData }) => {
         <button
           onClick={() => updateFormData('parameterPassThrough', !formData.parameterPassThrough)}
           className={`relative w-14 h-7 sm:w-12 sm:h-6 rounded-full transition-colors flex-shrink-0 ${
-            formData.parameterPassThrough ? 'bg-primary' : 'bg-slate-200'
+            formData.parameterPassThrough ? 'bg-secondary-green' : 'bg-slate-200'
           }`}
           aria-label="Toggle parameter pass-through"
         >

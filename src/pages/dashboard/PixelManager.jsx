@@ -526,7 +526,7 @@ const PixelManager = () => {
                   <button
                     onClick={() => handleToggleStatus(pixel.id, pixel.status || 'active')}
                     className={`relative w-12 h-6 rounded-full transition-colors flex-shrink-0 ${
-                      pixel.status === 'active' ? 'bg-primary' : 'bg-slate-200'
+                      pixel.status === 'active' ? 'bg-secondary-green' : 'bg-slate-200'
                     }`}
                     aria-label="Toggle CAPI status"
                     title={
