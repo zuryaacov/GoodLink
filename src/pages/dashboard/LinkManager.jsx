@@ -1058,7 +1058,7 @@ const LinkManager = () => {
                         Short Link
                       </span>
                       <span
-                        className={`font-bold text-lg tracking-wide break-all whitespace-normal ${isActive ? 'text-[#6358de]' : 'text-gray-500'}`}
+                        className="font-bold text-lg tracking-wide break-all whitespace-normal text-[#0b996f]"
                         title={link.short_url}
                       >
                         {link.short_url}
@@ -1102,7 +1102,7 @@ const LinkManager = () => {
                     <img src={qrCodeIcon} alt="QR Code" className="w-9 h-9 opacity-90" />
                     <span className="absolute inset-0 flex items-center justify-center pointer-events-none">
                       <span
-                        className="flex items-center justify-center w-[18px] h-[18px] rounded-full bg-[#1a2332] text-[#1b1b1b] shadow-[0_2px_6px_rgba(0,0,0,0.3)]"
+                        className="flex items-center justify-center w-[18px] h-[18px] rounded-full bg-white text-[#1b1b1b] shadow-[0_2px_6px_rgba(0,0,0,0.15)]"
                         aria-hidden
                       >
                         <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-[#1b1b1b]">
