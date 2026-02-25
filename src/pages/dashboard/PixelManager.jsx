@@ -293,7 +293,7 @@ const PixelManager = () => {
       default:
         return (
           <div className="w-10 h-10 rounded-lg bg-slate-200 flex items-center justify-center">
-            <span className="text-slate-400 text-xs">?</span>
+            <span className="text-[#1b1b1b] text-xs">?</span>
           </div>
         );
     }
@@ -329,7 +329,7 @@ const PixelManager = () => {
           <span className="material-symbols-outlined text-4xl text-slate-600 animate-spin">
             refresh
           </span>
-          <p className="text-slate-400 mt-4">Loading CAPI...</p>
+          <p className="text-[#1b1b1b] mt-4">Loading CAPI...</p>
         </div>
       </div>
     );
@@ -384,7 +384,7 @@ const PixelManager = () => {
               <Globe className="w-5 h-5 text-[#FF10F0]" />
               <div>
                 <p className="font-semibold text-sm text-white italic">Cross‑platform CAPI</p>
-                <p className="text-xs text-slate-400">
+                <p className="text-xs text-[#1b1b1b]">
                   Track Meta, TikTok, Google, Taboola, Outbrain and more from one place.
                 </p>
               </div>
@@ -395,7 +395,7 @@ const PixelManager = () => {
                 <p className="font-semibold text-sm text-white italic">
                   Advanced Attribution & Optimization
                 </p>
-                <p className="text-xs text-slate-400">
+                <p className="text-xs text-[#1b1b1b]">
                   Optimize ROAS with unified CAPI events and cleaner reporting.
                 </p>
               </div>
@@ -428,7 +428,7 @@ const PixelManager = () => {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="flex flex-col gap-2">
           <h1 className="text-2xl md:text-3xl font-bold text-white">CAPI Manager</h1>
-          <p className="text-sm md:text-base text-slate-400">Manage your CAPI tracking</p>
+          <p className="text-sm md:text-base text-[#1b1b1b]">Manage your CAPI tracking</p>
         </div>
         <button
           onClick={() => navigate('/dashboard/pixels/new')}
@@ -455,7 +455,7 @@ const PixelManager = () => {
             <span className="material-symbols-outlined text-6xl text-slate-600 mb-4">
               ads_click
             </span>
-            <p className="text-slate-400 text-lg mb-2">No CAPI profiles yet</p>
+            <p className="text-[#1b1b1b] text-lg mb-2">No CAPI profiles yet</p>
             <p className="text-slate-500 text-sm">Create your first CAPI profile to get started</p>
           </div>
         </div>
@@ -541,7 +541,7 @@ const PixelManager = () => {
                       }`}
                     />
                   </button>
-                  <span className="text-sm text-slate-400 font-medium">
+                  <span className="text-sm text-[#1b1b1b] font-medium">
                     {pixel.status === 'active' ? 'ACTIVE' : 'PAUSED'}
                   </span>
                 </div>
@@ -552,7 +552,7 @@ const PixelManager = () => {
                     onClick={() => {
                       navigate(`/dashboard/pixels/edit/${pixel.id}`);
                     }}
-                    className="text-slate-400 hover:text-primary transition-colors p-2"
+                    className="text-[#1b1b1b] hover:text-primary transition-colors p-2"
                     title="Edit CAPI"
                   >
                     <span className="material-symbols-outlined text-base">edit</span>
@@ -566,7 +566,7 @@ const PixelManager = () => {
                         isLoading: false,
                       });
                     }}
-                    className="text-slate-400 hover:text-red-400 transition-colors p-2"
+                    className="text-[#1b1b1b] hover:text-red-400 transition-colors p-2"
                     title="Delete CAPI"
                   >
                     <span className="material-symbols-outlined text-base">delete</span>

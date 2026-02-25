@@ -14,7 +14,7 @@ const Step4Security = ({ formData, updateFormData }) => {
     >
       <div>
         <h3 className="text-xl font-bold text-white mb-2">Step 4: Security & Routing</h3>
-        <p className="text-slate-400 text-sm">
+        <p className="text-[#1b1b1b] text-sm">
           Advanced protection and routing options (Pro Features)
         </p>
       </div>
@@ -118,7 +118,7 @@ const Step4Security = ({ formData, updateFormData }) => {
           Geo-Targeting Rules <span className="text-slate-500">(Optional)</span>
         </label>
         <div className="p-4 bg-white border border-slate-200 rounded-xl">
-          <p className="text-slate-400 text-sm mb-4">
+          <p className="text-[#1b1b1b] text-sm mb-4">
             Set up routing rules based on visitor location
           </p>
           <div className="space-y-3">

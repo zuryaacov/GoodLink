@@ -14,7 +14,7 @@ const StatCard = ({ title, value, change, icon, trend }) => (
         </span>
       )}
     </div>
-    <h3 className="text-slate-400 text-sm font-medium mb-1">{title}</h3>
+    <h3 className="text-[#1b1b1b] text-sm font-medium mb-1">{title}</h3>
     <p className="text-3xl font-bold text-white tracking-tight">{value}</p>
   </div>
 );
@@ -24,7 +24,7 @@ const DashboardOverview = () => {
     <div className="flex flex-col gap-8 max-w-7xl mx-auto">
       <div className="flex flex-col gap-2">
         <h1 className="text-3xl font-bold text-white">Dashboard</h1>
-        <p className="text-slate-400">Welcome back! Here's what's happening with your links.</p>
+        <p className="text-[#1b1b1b]">Welcome back! Here's what's happening with your links.</p>
       </div>
 
       {/* Stats Grid */}
@@ -50,7 +50,7 @@ const DashboardOverview = () => {
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="border-b border-slate-200 text-slate-400 text-xs uppercase tracking-wider">
+              <tr className="border-b border-slate-200 text-[#1b1b1b] text-xs uppercase tracking-wider">
                 <th className="p-4 font-medium">Link Name</th>
                 <th className="p-4 font-medium text-right md:text-left">Clicks</th>
                 <th className="p-4 font-medium hidden md:table-cell">Conversions</th>

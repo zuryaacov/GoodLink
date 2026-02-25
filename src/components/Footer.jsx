@@ -38,7 +38,7 @@ const Footer = () => {
                 </b>
               </h2>
             </Link>
-            <p className="text-sm text-slate-500 dark:text-slate-400 max-w-xs">
+            <p className="text-sm text-slate-500 dark:text-[#1b1b1b] max-w-xs">
               The advanced link management platform for high-performance marketers. Track, optimize,
               and scale.
             </p>
@@ -46,25 +46,25 @@ const Footer = () => {
           <div className="flex flex-col gap-4">
             <h4 className="font-bold text-slate-900 dark:text-white">Product</h4>
             <a
-              className="text-sm text-slate-500 dark:text-slate-400 hover:text-primary transition-colors"
+              className="text-sm text-slate-500 dark:text-[#1b1b1b] hover:text-primary transition-colors"
               href="#"
             >
               Features
             </a>
             <a
-              className="text-sm text-slate-500 dark:text-slate-400 hover:text-primary transition-colors"
+              className="text-sm text-slate-500 dark:text-[#1b1b1b] hover:text-primary transition-colors"
               href="#"
             >
               Pricing
             </a>
             <a
-              className="text-sm text-slate-500 dark:text-slate-400 hover:text-primary transition-colors"
+              className="text-sm text-slate-500 dark:text-[#1b1b1b] hover:text-primary transition-colors"
               href="#"
             >
               Integrations
             </a>
             <a
-              className="text-sm text-slate-500 dark:text-slate-400 hover:text-primary transition-colors"
+              className="text-sm text-slate-500 dark:text-[#1b1b1b] hover:text-primary transition-colors"
               href="#"
             >
               API
@@ -73,25 +73,25 @@ const Footer = () => {
           <div className="flex flex-col gap-4">
             <h4 className="font-bold text-slate-900 dark:text-white">Resources</h4>
             <a
-              className="text-sm text-slate-500 dark:text-slate-400 hover:text-primary transition-colors"
+              className="text-sm text-slate-500 dark:text-[#1b1b1b] hover:text-primary transition-colors"
               href="#"
             >
               Documentation
             </a>
             <a
-              className="text-sm text-slate-500 dark:text-slate-400 hover:text-primary transition-colors"
+              className="text-sm text-slate-500 dark:text-[#1b1b1b] hover:text-primary transition-colors"
               href="#"
             >
               Blog
             </a>
             <a
-              className="text-sm text-slate-500 dark:text-slate-400 hover:text-primary transition-colors"
+              className="text-sm text-slate-500 dark:text-[#1b1b1b] hover:text-primary transition-colors"
               href="#"
             >
               Community
             </a>
             <a
-              className="text-sm text-slate-500 dark:text-slate-400 hover:text-primary transition-colors"
+              className="text-sm text-slate-500 dark:text-[#1b1b1b] hover:text-primary transition-colors"
               href="#"
             >
               Help Center
@@ -101,30 +101,30 @@ const Footer = () => {
             <h4 className="font-bold text-slate-900 dark:text-white">Company</h4>
             <Link
               to="/abuse"
-              className="text-sm text-slate-500 dark:text-slate-400 hover:text-primary transition-colors"
+              className="text-sm text-slate-500 dark:text-[#1b1b1b] hover:text-primary transition-colors"
             >
               Abuse / DMCA
             </Link>
             <a
-              className="text-sm text-slate-500 dark:text-slate-400 hover:text-primary transition-colors"
+              className="text-sm text-slate-500 dark:text-[#1b1b1b] hover:text-primary transition-colors"
               href="#"
             >
               About
             </a>
             <a
-              className="text-sm text-slate-500 dark:text-slate-400 hover:text-primary transition-colors"
+              className="text-sm text-slate-500 dark:text-[#1b1b1b] hover:text-primary transition-colors"
               href="#"
             >
               Careers
             </a>
             <a
-              className="text-sm text-slate-500 dark:text-slate-400 hover:text-primary transition-colors"
+              className="text-sm text-slate-500 dark:text-[#1b1b1b] hover:text-primary transition-colors"
               href="#"
             >
               Legal
             </a>
             <a
-              className="text-sm text-slate-500 dark:text-slate-400 hover:text-primary transition-colors"
+              className="text-sm text-slate-500 dark:text-[#1b1b1b] hover:text-primary transition-colors"
               href="#"
             >
               Contact
@@ -132,17 +132,17 @@ const Footer = () => {
           </div>
         </div>
         <div className="mt-12 border-t border-slate-200 dark:border-slate-200 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
-          <p className="text-sm text-slate-500 dark:text-slate-400">
+          <p className="text-sm text-slate-500 dark:text-[#1b1b1b]">
             © 2024 GoodLink.ai. All rights reserved.
           </p>
           <div className="flex gap-4">
-            <a className="text-slate-400 hover:text-primary transition-colors" href="#">
+            <a className="text-[#1b1b1b] hover:text-primary transition-colors" href="#">
               <span className="material-symbols-outlined">thumb_up</span>
             </a>
-            <a className="text-slate-400 hover:text-primary transition-colors" href="#">
+            <a className="text-[#1b1b1b] hover:text-primary transition-colors" href="#">
               <span className="material-symbols-outlined">share</span>
             </a>
-            <a className="text-slate-400 hover:text-primary transition-colors" href="#">
+            <a className="text-[#1b1b1b] hover:text-primary transition-colors" href="#">
               <span className="material-symbols-outlined">mail</span>
             </a>
           </div>

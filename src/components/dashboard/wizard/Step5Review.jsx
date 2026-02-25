@@ -29,7 +29,7 @@ const Step5Review = ({ formData, generateRandomSlug }) => {
     >
       <div>
         <h3 className="text-xl font-bold text-white mb-2">Step 5: Review & Launch</h3>
-        <p className="text-slate-400 text-sm">Review your link configuration before creating</p>
+        <p className="text-[#1b1b1b] text-sm">Review your link configuration before creating</p>
       </div>
 
       {/* Summary Card */}
@@ -77,30 +77,30 @@ const Step5Review = ({ formData, generateRandomSlug }) => {
             <div className="space-y-2">
               {formData.utmSource && (
                 <div className="flex justify-between">
-                  <span className="text-slate-400 text-sm">Source</span>
+                  <span className="text-[#1b1b1b] text-sm">Source</span>
                   <span className="text-white text-sm font-mono">{formData.utmSource}</span>
                 </div>
               )}
               {formData.utmMedium && (
                 <div className="flex justify-between">
-                  <span className="text-slate-400 text-sm">Medium</span>
+                  <span className="text-[#1b1b1b] text-sm">Medium</span>
                   <span className="text-white text-sm font-mono">{formData.utmMedium}</span>
                 </div>
               )}
               {formData.utmCampaign && (
                 <div className="flex justify-between">
-                  <span className="text-slate-400 text-sm">Campaign</span>
+                  <span className="text-[#1b1b1b] text-sm">Campaign</span>
                   <span className="text-white text-sm font-mono">{formData.utmCampaign}</span>
                 </div>
               )}
               {formData.utmContent && (
                 <div className="flex justify-between">
-                  <span className="text-slate-400 text-sm">Content</span>
+                  <span className="text-[#1b1b1b] text-sm">Content</span>
                   <span className="text-white text-sm font-mono">{formData.utmContent}</span>
                 </div>
               )}
               <div className="flex justify-between pt-2 border-t border-slate-200">
-                <span className="text-slate-400 text-sm">Parameter Pass-through</span>
+                <span className="text-[#1b1b1b] text-sm">Parameter Pass-through</span>
                 <span className="text-white text-sm">
                   {formData.parameterPassThrough ? 'Enabled' : 'Disabled'}
                 </span>
@@ -114,7 +114,7 @@ const Step5Review = ({ formData, generateRandomSlug }) => {
           <h4 className="text-sm font-bold text-white mb-4 uppercase tracking-wider">Tracking</h4>
           <div className="space-y-2">
             <div className="flex justify-between">
-              <span className="text-slate-400 text-sm">CAPI Profiles Selected</span>
+              <span className="text-[#1b1b1b] text-sm">CAPI Profiles Selected</span>
               <span className="text-white text-sm">
                 {formData.selectedPixels?.length > 0
                   ? `${formData.selectedPixels.length} CAPI profile(s)`
@@ -122,14 +122,14 @@ const Step5Review = ({ formData, generateRandomSlug }) => {
               </span>
             </div>
             <div className="flex justify-between">
-              <span className="text-slate-400 text-sm">Server-Side Tracking (CAPI)</span>
+              <span className="text-[#1b1b1b] text-sm">Server-Side Tracking (CAPI)</span>
               <span className="text-white text-sm">
                 {formData.serverSideTracking ? 'Enabled' : 'Disabled'}
               </span>
             </div>
             {formData.customScript && (
               <div>
-                <span className="text-slate-400 text-sm">Custom Script</span>
+                <span className="text-[#1b1b1b] text-sm">Custom Script</span>
                 <p className="text-white text-xs font-mono mt-1 bg-white p-2 rounded break-all">
                   {formData.customScript.substring(0, 100)}
                   {formData.customScript.length > 100 ? '...' : ''}
@@ -146,17 +146,17 @@ const Step5Review = ({ formData, generateRandomSlug }) => {
           </h4>
           <div className="space-y-2">
             <div className="flex justify-between">
-              <span className="text-slate-400 text-sm">Fraud Shield</span>
+              <span className="text-[#1b1b1b] text-sm">Fraud Shield</span>
               <span className="text-white text-sm capitalize">{formData.fraudShield}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-slate-400 text-sm">Bot Action</span>
+              <span className="text-[#1b1b1b] text-sm">Bot Action</span>
               <span className="text-white text-sm capitalize">
                 {formData.botAction.replace('-', ' ')}
               </span>
             </div>
             <div className="flex justify-between">
-              <span className="text-slate-400 text-sm">Geo-Rules</span>
+              <span className="text-[#1b1b1b] text-sm">Geo-Rules</span>
               <span className="text-white text-sm">
                 {formData.geoRules?.length > 0 ? `${formData.geoRules.length} rule(s)` : 'None'}
               </span>

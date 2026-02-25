@@ -654,7 +654,7 @@ const LinkManager = () => {
 
           const platformInfo = PLATFORMS[preset.platform] || {
             name: preset.platform,
-            colorClass: 'text-slate-400 bg-slate-400/10',
+            colorClass: 'text-[#1b1b1b] bg-[#1b1b1b]/10',
           };
 
           const presetUrl = buildPresetUrl(link, preset);
@@ -692,7 +692,7 @@ const LinkManager = () => {
                 <button
                   id={copyBtnId}
                   onClick={() => handleCopy(presetUrl, copyBtnId)}
-                  className="text-slate-400 hover:text-primary transition-colors p-1.5 rounded flex-shrink-0 mt-0.5"
+                  className="text-[#1b1b1b] hover:text-primary transition-colors p-1.5 rounded flex-shrink-0 mt-0.5"
                   title="Copy Preset URL"
                 >
                   <span className="material-symbols-outlined text-base">content_copy</span>
@@ -755,7 +755,7 @@ const LinkManager = () => {
           <span className="material-symbols-outlined text-4xl text-slate-600 animate-spin">
             refresh
           </span>
-          <p className="text-slate-400 mt-4">Loading links...</p>
+          <p className="text-[#1b1b1b] mt-4">Loading links...</p>
         </div>
       </div>
     );
@@ -994,7 +994,7 @@ const LinkManager = () => {
         <div className="bg-white border border-slate-200 rounded-2xl p-4 md:p-6 w-full">
           <div className="text-center py-12">
             <span className="material-symbols-outlined text-6xl text-slate-600 mb-4">link_off</span>
-            <p className="text-slate-400 text-lg mb-2">No items yet</p>
+            <p className="text-[#1b1b1b] text-lg mb-2">No items yet</p>
             <p className="text-slate-500 text-sm">
               {isFoldersEnabled
                 ? 'Create a new workspace/campaign/group, or add a link directly here.'
@@ -1149,7 +1149,7 @@ const LinkManager = () => {
                 alt="QR Code"
                 className="w-full max-w-[200px] sm:max-w-[280px] md:max-w-[360px] h-auto rounded-xl border border-slate-200 bg-white p-1.5 sm:p-2"
               />
-              <p className="text-slate-400 text-xs sm:text-sm font-mono break-all text-center max-w-full min-w-0 px-1">
+              <p className="text-[#1b1b1b] text-xs sm:text-sm font-mono break-all text-center max-w-full min-w-0 px-1">
                 {qrModal.link.short_url}
               </p>
               <div className="flex flex-wrap items-center justify-center gap-2 w-full">
@@ -1221,7 +1221,7 @@ const LinkManager = () => {
                   const isActive = moveModal.selectedSpaceId === space.id;
                   return (
                     <React.Fragment key={space.id}>
-                      <ChevronRight size={12} className="text-slate-400" />
+                      <ChevronRight size={12} className="text-[#1b1b1b]" />
                       <button
                         type="button"
                         onClick={() =>

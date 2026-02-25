@@ -49,7 +49,7 @@ const Step2UTMParameters = ({ formData, updateFormData }) => {
     >
       <div>
         <h3 className="text-xl font-bold text-[#1b1b1b] mb-2">Step 2: UTM Parameters</h3>
-        <p className="text-slate-400 text-sm">Create the marketing identity for your link</p>
+        <p className="text-[#1b1b1b] text-sm">Create the marketing identity for your link</p>
       </div>
 
       {/* Platform Presets */}

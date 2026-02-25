@@ -41,7 +41,7 @@ const Navbar = () => {
   ];
 
   return (
-    <header className="sticky top-0 z-50 flex flex-col border-b border-solid border-[#0b996f]/20 bg-nav-bg backdrop-blur-md">
+    <header className="sticky top-0 z-50 flex flex-col border-b border-solid border-[#0b996f]/20 bg-white backdrop-blur-md">
       <div className="flex items-center justify-between px-6 py-4 lg:px-20">
         <Link
           to="/"
@@ -136,7 +136,7 @@ const Navbar = () => {
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
-            className="md:hidden flex flex-col border-t border-primary/20 bg-nav-bg overflow-hidden"
+            className="md:hidden flex flex-col border-t border-primary/20 bg-white overflow-hidden"
           >
             <motion.div
               initial={{ opacity: 0, y: -10 }}

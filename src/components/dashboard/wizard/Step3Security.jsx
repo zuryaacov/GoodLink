@@ -218,7 +218,7 @@ const Step3Security = ({ formData, updateFormData, onValidationRequest }) => {
       {/* Header */}
       <div className="text-center">
         <h3 className="text-xl sm:text-2xl font-bold text-white mb-2">Security & Logic</h3>
-        <p className="text-slate-400 text-sm">Smart Rules & Protection</p>
+        <p className="text-[#1b1b1b] text-sm">Smart Rules & Protection</p>
       </div>
 
       {/* Bot Action - Dropdown with Icons */}
@@ -334,7 +334,7 @@ const Step3Security = ({ formData, updateFormData, onValidationRequest }) => {
                 <p className="text-white font-medium text-sm sm:text-base mb-1">
                   All other countries
                 </p>
-                <p className="text-slate-400 text-xs sm:text-sm truncate font-mono">
+                <p className="text-[#1b1b1b] text-xs sm:text-sm truncate font-mono">
                   {formData.targetUrl || 'Default target URL'}
                 </p>
               </div>
@@ -439,7 +439,7 @@ const Step3Security = ({ formData, updateFormData, onValidationRequest }) => {
                   ) : (
                     <>
                       <span className="material-symbols-outlined text-slate-500">public</span>
-                      <span className="text-slate-400 flex-1">Select country...</span>
+                      <span className="text-[#1b1b1b] flex-1">Select country...</span>
                     </>
                   )}
                   <span
@@ -475,7 +475,7 @@ const Step3Security = ({ formData, updateFormData, onValidationRequest }) => {
                     {/* Countries List */}
                     <div className="overflow-y-auto max-h-48">
                       {filteredCountries.length === 0 ? (
-                        <div className="p-4 text-center text-slate-400 text-sm">
+                        <div className="p-4 text-center text-[#1b1b1b] text-sm">
                           No countries found
                         </div>
                       ) : (

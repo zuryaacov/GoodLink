@@ -78,7 +78,7 @@ const DNSRecordsDisplay = ({ records, domain }) => {
       {/* Header */}
       <div>
         <h4 className="text-lg font-bold text-white mb-2">🌐 Connect Your Custom Domain</h4>
-        <p className="text-sm text-slate-400">
+        <p className="text-sm text-[#1b1b1b]">
           Add all records exactly as shown below.
         </p>
         <p className="text-xs text-primary mt-2 font-semibold">
@@ -142,7 +142,7 @@ const DNSRecordsDisplay = ({ records, domain }) => {
             </span>
             <div>
               <p className="text-white font-bold text-sm">Generating DNS Records...</p>
-              <p className="text-slate-400 text-xs mt-1">
+              <p className="text-[#1b1b1b] text-xs mt-1">
                 Cloudflare is preparing your records. This can take up to 60 seconds.
               </p>
             </div>

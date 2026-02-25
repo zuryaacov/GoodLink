@@ -696,7 +696,7 @@ export default function LinkWizardOnePerPage({
                   />
                   {nameError && <p className="text-red-400 text-xs px-6 pb-3">{nameError}</p>}
                   {validating && (
-                    <p className="text-slate-400 text-xs px-6 pb-3 flex items-center gap-2">
+                    <p className="text-[#1b1b1b] text-xs px-6 pb-3 flex items-center gap-2">
                       <span className="material-symbols-outlined animate-spin text-sm">
                         refresh
                       </span>
@@ -722,7 +722,7 @@ export default function LinkWizardOnePerPage({
                     />
                   </div>
                   {urlSafety.loading && (
-                    <p className="text-slate-400 text-xs flex items-center gap-2">
+                    <p className="text-[#1b1b1b] text-xs flex items-center gap-2">
                       <span className="material-symbols-outlined animate-spin text-sm">
                         refresh
                       </span>
@@ -791,7 +791,7 @@ export default function LinkWizardOnePerPage({
                   </div>
                   {slugError && <p className="text-red-400 text-xs">{slugError}</p>}
                   {validating && (
-                    <p className="text-slate-400 text-xs flex items-center gap-2">
+                    <p className="text-[#1b1b1b] text-xs flex items-center gap-2">
                       <span className="material-symbols-outlined animate-spin text-sm">
                         refresh
                       </span>
@@ -879,7 +879,7 @@ export default function LinkWizardOnePerPage({
                     <button
                       type="button"
                       onClick={() => setShowGeoForm(true)}
-                      className="w-full flex items-center justify-center gap-2 p-4 rounded-xl border-2 border-dashed border-slate-200 text-slate-400 hover:border-[#135bec] hover:text-white transition-all"
+                      className="w-full flex items-center justify-center gap-2 p-4 rounded-xl border-2 border-dashed border-slate-200 text-[#1b1b1b] hover:border-[#135bec] hover:text-white transition-all"
                     >
                       <span className="material-symbols-outlined">add</span>
                       Add geo rule
@@ -948,7 +948,7 @@ export default function LinkWizardOnePerPage({
               {currentStep.id === 'capi' && (
                 <div className="flex flex-col min-h-0 flex-1">
                   {loadingPixels ? (
-                    <p className="text-slate-400">Loading CAPI...</p>
+                    <p className="text-[#1b1b1b]">Loading CAPI...</p>
                   ) : availablePixels.length === 0 ? (
                     <p className="text-slate-500 text-sm">
                       No CAPI profiles yet. Add one in CAPI Manager.

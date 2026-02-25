@@ -61,7 +61,7 @@ const CountryPickerBottomSheet = ({ isOpen, onClose, onSelect, selectedCountry }
               <h3 className="text-lg font-bold text-[#1b1b1b]">Select Country</h3>
               <button
                 onClick={onClose}
-                className="text-slate-400 hover:text-[#1b1b1b] transition-colors p-1"
+                className="text-[#1b1b1b] hover:text-[#1b1b1b] transition-colors p-1"
               >
                 <span className="material-symbols-outlined text-xl">close</span>
               </button>
@@ -87,7 +87,7 @@ const CountryPickerBottomSheet = ({ isOpen, onClose, onSelect, selectedCountry }
           <div className="flex-1 overflow-y-auto px-4 py-3">
             {filteredCountries.length === 0 ? (
               <div className="text-center py-8">
-                <p className="text-slate-400 text-sm">No countries found</p>
+                <p className="text-[#1b1b1b] text-sm">No countries found</p>
               </div>
             ) : (
               <div className="space-y-1">

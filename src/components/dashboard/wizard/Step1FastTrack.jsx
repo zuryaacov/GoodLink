@@ -622,7 +622,7 @@ const Step1FastTrack = ({
       {planType?.toLowerCase() !== 'free' && (
         <div className="text-center">
           <h3 className="text-xl sm:text-2xl font-bold text-white mb-2">The Fast Track</h3>
-          <p className="text-slate-400 text-xs sm:text-sm">Destination & Identity</p>
+          <p className="text-[#1b1b1b] text-xs sm:text-sm">Destination & Identity</p>
         </div>
       )}
 
@@ -649,7 +649,7 @@ const Step1FastTrack = ({
             <div className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 flex items-center gap-1 sm:gap-2">
               {/* Only show loading/success/error indicators after CHECK button click */}
               {checkingSlug && safetyCheck.loading && (
-                <div className="flex items-center gap-1 sm:gap-2 text-slate-400 text-xs sm:text-sm">
+                <div className="flex items-center gap-1 sm:gap-2 text-[#1b1b1b] text-xs sm:text-sm">
                   <span className="material-symbols-outlined animate-spin text-primary text-base sm:text-lg">
                     refresh
                   </span>

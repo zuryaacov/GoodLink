@@ -418,7 +418,7 @@ const PixelModal = ({ isOpen, onClose, initialData = null }) => {
                   <h2 className="text-xl sm:text-2xl font-bold text-white">
                     {isEditMode ? 'Edit CAPI' : 'Create New CAPI'}
                   </h2>
-                  <p className="text-slate-400 text-xs sm:text-sm mt-1">
+                  <p className="text-[#1b1b1b] text-xs sm:text-sm mt-1">
                     {isEditMode
                       ? 'Update your CAPI tracking profile'
                       : 'Add a new CAPI tracking profile'}
@@ -426,7 +426,7 @@ const PixelModal = ({ isOpen, onClose, initialData = null }) => {
                 </div>
                 <button
                   onClick={onClose}
-                  className="text-slate-400 hover:text-white transition-colors p-2 flex-shrink-0"
+                  className="text-[#1b1b1b] hover:text-white transition-colors p-2 flex-shrink-0"
                 >
                   <span className="material-symbols-outlined text-xl sm:text-2xl">close</span>
                 </button>

@@ -113,7 +113,7 @@ const getPlatformLogo = (platform) => {
     default:
       return (
         <div className="w-12 h-12 rounded-lg bg-slate-700 flex items-center justify-center">
-          <span className="text-slate-400 text-xs">?</span>
+          <span className="text-[#1b1b1b] text-xs">?</span>
         </div>
       );
   }
@@ -442,7 +442,7 @@ const UtmPresetBuilder = ({ isOpen, onClose, editingPreset, links }) => {
           </h2>
           <button
             onClick={onClose}
-            className="p-2 text-slate-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors"
+            className="p-2 text-[#1b1b1b] hover:text-white hover:bg-white/5 rounded-lg transition-colors"
           >
             <X size={24} />
           </button>
@@ -476,7 +476,7 @@ const UtmPresetBuilder = ({ isOpen, onClose, editingPreset, links }) => {
               <span className="bg-primary text-white w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold">
                 1
               </span>
-              <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest">
+              <h3 className="text-sm font-bold text-[#1b1b1b] uppercase tracking-widest">
                 Select Platform
               </h3>
             </div>
@@ -488,7 +488,7 @@ const UtmPresetBuilder = ({ isOpen, onClose, editingPreset, links }) => {
                   className={`relative group flex flex-col items-center gap-3 p-4 rounded-xl border-2 transition-all ${
                     selectedPlatform === p.id
                       ? `border-primary bg-primary/10 text-white`
-                      : 'border-slate-700 bg-slate-800 text-slate-400 hover:border-slate-600'
+                      : 'border-slate-700 bg-slate-200 text-[#1b1b1b] hover:border-slate-600'
                   }`}
                 >
                   {getPlatformLogo(p.id)}
@@ -509,7 +509,7 @@ const UtmPresetBuilder = ({ isOpen, onClose, editingPreset, links }) => {
               <span className="bg-primary text-white w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold">
                 2
               </span>
-              <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest">
+              <h3 className="text-sm font-bold text-[#1b1b1b] uppercase tracking-widest">
                 Select UTM Parameters
               </h3>
             </div>
@@ -567,7 +567,7 @@ const UtmPresetBuilder = ({ isOpen, onClose, editingPreset, links }) => {
               <span className="bg-primary text-white w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold">
                 3
               </span>
-              <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest">
+              <h3 className="text-sm font-bold text-[#1b1b1b] uppercase tracking-widest">
                 Preview Query String
               </h3>
             </div>

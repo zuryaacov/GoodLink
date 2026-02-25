@@ -133,7 +133,7 @@ const CTASection = () => {
           <h2 className="text-slate-900 dark:text-white tracking-tight text-3xl md:text-5xl font-black leading-tight">
             Choose Your Plan
           </h2>
-          <p className="text-slate-600 dark:text-slate-400 text-lg md:text-xl font-normal leading-relaxed">
+          <p className="text-slate-600 dark:text-[#1b1b1b] text-lg md:text-xl font-normal leading-relaxed">
             Flexible pricing designed to scale with your business. Start free, upgrade when you're
             ready.
           </p>
@@ -173,7 +173,7 @@ const CTASection = () => {
                   <h3 className="text-slate-900 dark:text-white text-2xl font-black">
                     {plan.name}
                   </h3>
-                  <p className="text-slate-500 dark:text-slate-400 text-sm">{plan.description}</p>
+                  <p className="text-slate-500 dark:text-[#1b1b1b] text-sm">{plan.description}</p>
                 </div>
 
                 {/* Price */}
@@ -181,7 +181,7 @@ const CTASection = () => {
                   <span className="text-slate-900 dark:text-white text-5xl font-black">
                     ${plan.price}
                   </span>
-                  <span className="text-slate-500 dark:text-slate-400 text-lg font-medium">
+                  <span className="text-slate-500 dark:text-[#1b1b1b] text-lg font-medium">
                     /month
                   </span>
                 </div>

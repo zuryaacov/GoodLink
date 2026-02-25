@@ -558,7 +558,7 @@ const LinkBuilderPage = () => {
           <span className="material-symbols-outlined text-4xl text-slate-600 animate-spin">
             refresh
           </span>
-          <p className="text-slate-400 mt-4">Loading...</p>
+          <p className="text-[#1b1b1b] mt-4">Loading...</p>
         </div>
       </div>
     );
@@ -573,7 +573,7 @@ const LinkBuilderPage = () => {
         <div className="max-w-4xl mx-auto flex items-center gap-4">
           <button
             onClick={() => navigate(getLinksReturnPath())}
-            className="p-2 text-slate-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors"
+            className="p-2 text-[#1b1b1b] hover:text-white hover:bg-white/5 rounded-lg transition-colors"
           >
             <ArrowLeft size={24} />
           </button>

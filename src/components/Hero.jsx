@@ -20,7 +20,7 @@ const Hero = () => {
                 <span className="text-primary">Secure Your Links.</span> <br />
                 Maximize Profits.
               </h1>
-              <h2 className="text-slate-600 dark:text-slate-400 text-lg font-normal leading-relaxed md:text-xl max-w-2xl mx-auto lg:mx-0">
+              <h2 className="text-slate-600 dark:text-[#1b1b1b] text-lg font-normal leading-relaxed md:text-xl max-w-2xl mx-auto lg:mx-0">
                 The ultimate link management ecosystem for elite affiliate marketers and media
                 buyers. Track every click, pixel, and conversion with precision.
               </h2>
@@ -33,7 +33,7 @@ const Hero = () => {
                 View Demo
               </button>
             </div>
-            <div className="flex items-center gap-2 justify-center lg:justify-start text-sm text-slate-500 dark:text-slate-400">
+            <div className="flex items-center gap-2 justify-center lg:justify-start text-sm text-slate-500 dark:text-[#1b1b1b]">
               <span className="material-symbols-outlined text-lg">check_circle</span>
               <span>No credit card required</span>
               <span className="mx-2">•</span>
@@ -70,7 +70,7 @@ const Hero = () => {
                     </span>
                   </div>
                   <div>
-                    <div className="text-[8px] sm:text-[10px] uppercase text-slate-400 font-bold">
+                    <div className="text-[8px] sm:text-[10px] uppercase text-[#1b1b1b] font-bold">
                       Conv. Rate
                     </div>
                     <div className="text-xs sm:text-sm font-bold text-white">+12.4%</div>

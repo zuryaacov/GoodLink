@@ -244,7 +244,7 @@ export default function AccountSettingsPage() {
         {/* Header */}
         <div>
           <h1 className="text-3xl font-bold text-[#1b1b1b] mb-2">Account Settings</h1>
-          <p className="text-slate-400">Manage your profile, preferences, and subscription.</p>
+          <p className="text-[#1b1b1b]">Manage your profile, preferences, and subscription.</p>
         </div>
 
         {/* Main Grid */}
@@ -261,7 +261,7 @@ export default function AccountSettingsPage() {
               <form onSubmit={handleUpdateProfile} className="space-y-6">
                 {/* Full Name */}
                 <div>
-                  <label className="block text-sm font-medium text-slate-400 mb-2">Full Name</label>
+                  <label className="block text-sm font-medium text-[#1b1b1b] mb-2">Full Name</label>
                   <input
                     type="text"
                     value={fullName}
@@ -273,7 +273,7 @@ export default function AccountSettingsPage() {
 
                 {/* Email Address */}
                 <div>
-                  <label className="block text-sm font-medium text-slate-400 mb-2">
+                  <label className="block text-sm font-medium text-[#1b1b1b] mb-2">
                     Email Address
                   </label>
                   <input
@@ -296,7 +296,7 @@ export default function AccountSettingsPage() {
 
                 {/* Timezone Selector */}
                 <div>
-                  <label className="block text-sm font-medium text-slate-400 mb-2">Timezone</label>
+                  <label className="block text-sm font-medium text-[#1b1b1b] mb-2">Timezone</label>
                   <div className="relative">
                     <select
                       value={timezone}
@@ -309,7 +309,7 @@ export default function AccountSettingsPage() {
                         </option>
                       ))}
                     </select>
-                    <span className="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
+                    <span className="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-[#1b1b1b] pointer-events-none">
                       expand_more
                     </span>
                   </div>
@@ -369,7 +369,7 @@ export default function AccountSettingsPage() {
                     <h3 className="text-[#1b1b1b] font-semibold mb-2">Change Password</h3>
 
                     <div>
-                      <label className="block text-xs font-medium text-slate-400 mb-1">
+                      <label className="block text-xs font-medium text-[#1b1b1b] mb-1">
                         New Password
                       </label>
                       <input
@@ -382,7 +382,7 @@ export default function AccountSettingsPage() {
                     </div>
 
                     <div>
-                      <label className="block text-xs font-medium text-slate-400 mb-1">
+                      <label className="block text-xs font-medium text-[#1b1b1b] mb-1">
                         Confirm New Password
                       </label>
                       <input
@@ -407,7 +407,7 @@ export default function AccountSettingsPage() {
                           setNewPassword('');
                           setConfirmPassword('');
                         }}
-                        className="text-slate-400 hover:text-[#1b1b1b] text-xs px-3 py-2"
+                        className="text-[#1b1b1b] hover:text-[#1b1b1b] text-xs px-3 py-2"
                       >
                         Cancel
                       </button>
@@ -445,23 +445,23 @@ export default function AccountSettingsPage() {
               </div>
 
               <h2 className="text-xl font-bold text-[#1b1b1b] mb-1">Subscription</h2>
-              <p className="text-slate-400 text-sm mb-6">Your current plan status.</p>
+              <p className="text-[#1b1b1b] text-sm mb-6">Your current plan status.</p>
 
               <div className="space-y-4 mb-8">
                 <div className="flex justify-between items-center text-sm border-b border-slate-200 pb-3">
-                  <span className="text-slate-400">Links Created</span>
+                  <span className="text-[#1b1b1b]">Links Created</span>
                   <span className="text-[#1b1b1b] font-mono">
                     {linksCount} / {planDetails.maxLinks}
                   </span>
                 </div>
                 <div className="flex justify-between items-center text-sm border-b border-slate-200 pb-3">
-                  <span className="text-slate-400">Monthly Clicks</span>
+                  <span className="text-[#1b1b1b]">Monthly Clicks</span>
                   <span className="text-[#1b1b1b] font-mono">
                     {monthlyClicksCount.toLocaleString()} / {planDetails.maxClicks}
                   </span>
                 </div>
                 <div className="flex justify-between items-center text-sm border-b border-slate-200 pb-3">
-                  <span className="text-slate-400">Custom Domains</span>
+                  <span className="text-[#1b1b1b]">Custom Domains</span>
                   <span className="text-[#1b1b1b] font-mono">
                     {domainsCount} / {planDetails.domains}
                   </span>

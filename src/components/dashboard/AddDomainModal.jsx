@@ -427,7 +427,7 @@ const AddDomainModal = ({ isOpen, onClose, domain = null }) => {
             </h2>
             <button
               onClick={handleClose}
-              className="text-slate-400 hover:text-white transition-colors"
+              className="text-[#1b1b1b] hover:text-white transition-colors"
             >
               <span className="material-symbols-outlined text-2xl">close</span>
             </button>
@@ -536,7 +536,7 @@ const AddDomainModal = ({ isOpen, onClose, domain = null }) => {
                 >
                   <div>
                     <h3 className="text-lg font-bold text-white mb-2">DNS Configuration</h3>
-                    <p className="text-sm text-slate-400 mb-4">
+                    <p className="text-sm text-[#1b1b1b] mb-4">
                       Add these DNS records to your domain registrar (e.g., Cloudflare, GoDaddy)
                     </p>
                     {dnsRecords && <DNSRecordsDisplay records={dnsRecords} domain={domainName} />}
@@ -554,7 +554,7 @@ const AddDomainModal = ({ isOpen, onClose, domain = null }) => {
                 >
                   <div className="text-center space-y-4">
                     <h3 className="text-lg font-bold text-white">Verify DNS Records</h3>
-                    <p className="text-sm text-slate-400">
+                    <p className="text-sm text-[#1b1b1b]">
                       Click below to verify that your DNS records are configured correctly. This may
                       take a few minutes after adding the DNS records.
                     </p>
@@ -594,7 +594,7 @@ const AddDomainModal = ({ isOpen, onClose, domain = null }) => {
             >
               {currentStep === 1 ? 'Cancel' : 'Previous'}
             </button>
-            <div className="text-slate-400 text-xs sm:text-sm whitespace-nowrap">
+            <div className="text-[#1b1b1b] text-xs sm:text-sm whitespace-nowrap">
               Step {currentStep} of {steps.length}
             </div>
             <button

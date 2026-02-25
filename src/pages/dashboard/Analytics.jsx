@@ -353,7 +353,7 @@ const Analytics = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-full">
-        <div className="text-slate-400">Loading analytics...</div>
+        <div className="text-[#1b1b1b]">Loading analytics...</div>
       </div>
     );
   }
@@ -365,7 +365,7 @@ const Analytics = () => {
       <div className="flex flex-col gap-2">
         <h1 className="text-3xl font-bold text-white">Analytics</h1>
         {isSingleLink ? (
-          <p className="text-slate-400 text-sm">
+          <p className="text-[#1b1b1b] text-sm">
             Data for this link only:{' '}
             <span className="font-mono text-white break-all">{singleLinkUrl}</span>
             {' · '}
@@ -378,7 +378,7 @@ const Analytics = () => {
             </button>
           </p>
         ) : (
-          <p className="text-slate-400 text-sm">
+          <p className="text-[#1b1b1b] text-sm">
             Welcome back! Here&apos;s what&apos;s happening with your links.
           </p>
         )}
@@ -460,7 +460,7 @@ const Analytics = () => {
               <span className="material-symbols-outlined text-6xl text-slate-600 mb-4 block">
                 traffic
               </span>
-              <p className="text-slate-400 text-lg mb-2">No traffic data yet</p>
+              <p className="text-[#1b1b1b] text-lg mb-2">No traffic data yet</p>
               <p className="text-slate-500 text-sm">
                 Traffic will appear here once users click your links
               </p>

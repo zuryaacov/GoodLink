@@ -42,7 +42,7 @@ const Step1CoreDetails = ({ formData, updateFormData, generateRandomSlug }) => {
     >
       <div>
         <h3 className="text-xl font-bold text-white mb-2">Step 1: Core Details</h3>
-        <p className="text-slate-400 text-sm">Set up the basic information for your link</p>
+        <p className="text-[#1b1b1b] text-sm">Set up the basic information for your link</p>
       </div>
 
       {/* Link Name */}

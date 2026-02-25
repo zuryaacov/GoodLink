@@ -268,7 +268,7 @@ export default function DomainWizardOnePerPage({
                 {dnsRecords && dnsRecords.length > 0 ? (
                   <DNSRecordsDisplay records={dnsRecords} domain={domainName} />
                 ) : (
-                  <div className="rounded-2xl bg-white border border-slate-200 p-6 text-slate-400 text-sm">
+                  <div className="rounded-2xl bg-white border border-slate-200 p-6 text-[#1b1b1b] text-sm">
                     Almost done — please complete the previous step and then continue.
                   </div>
                 )}
@@ -277,7 +277,7 @@ export default function DomainWizardOnePerPage({
 
             {currentStep?.id === 'verify' && (
               <div className="space-y-6">
-                <p className="text-slate-400 text-sm">
+                <p className="text-[#1b1b1b] text-sm">
                   Click the button below to verify your DNS configuration. Propagation can take a
                   few minutes after adding records.
                 </p>

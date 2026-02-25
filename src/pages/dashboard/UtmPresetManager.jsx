@@ -233,7 +233,7 @@ const UtmPresetManager = () => {
           <span className="material-symbols-outlined text-4xl text-slate-600 animate-spin">
             refresh
           </span>
-          <p className="text-slate-400 mt-4">Loading UTM presets...</p>
+          <p className="text-[#1b1b1b] mt-4">Loading UTM presets...</p>
         </div>
       </div>
     );
@@ -296,7 +296,7 @@ const UtmPresetManager = () => {
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-3xl font-bold text-white mb-2">UTM Presets</h1>
-          <p className="text-slate-400">
+          <p className="text-[#1b1b1b]">
             Create and manage UTM parameter presets for your campaigns
           </p>
         </div>
@@ -313,7 +313,7 @@ const UtmPresetManager = () => {
         <div className="bg-slate-800/50 border border-slate-700 rounded-2xl p-12 text-center">
           <span className="material-symbols-outlined text-6xl text-slate-600 mb-4">campaign</span>
           <h3 className="text-xl font-bold text-white mb-2">No UTM Presets Yet</h3>
-          <p className="text-slate-400 mb-6">
+          <p className="text-[#1b1b1b] mb-6">
             Create your first UTM preset to start tracking your campaigns
           </p>
           <button
@@ -328,7 +328,7 @@ const UtmPresetManager = () => {
           {presets.map((preset) => {
             const platform = PLATFORMS[preset.platform] || {
               name: preset.platform,
-              colorClass: 'text-slate-400 bg-slate-400/10',
+              colorClass: 'text-[#1b1b1b] bg-[#1b1b1b]/10',
             };
             // Display query string without encoding (to show {{}} instead of %7B%7D)
             const queryString = buildUtmQueryString(preset, false);
@@ -357,14 +357,14 @@ const UtmPresetManager = () => {
                   <div className="flex gap-2">
                     <button
                       onClick={() => handleEdit(preset)}
-                      className="p-2 text-slate-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors"
+                      className="p-2 text-[#1b1b1b] hover:text-white hover:bg-white/5 rounded-lg transition-colors"
                       title="Edit"
                     >
                       <Edit2 size={16} />
                     </button>
                     <button
                       onClick={() => handleDelete(preset)}
-                      className="p-2 text-slate-400 hover:text-red-400 hover:bg-red-400/10 rounded-lg transition-colors"
+                      className="p-2 text-[#1b1b1b] hover:text-red-400 hover:bg-red-400/10 rounded-lg transition-colors"
                       title="Delete"
                     >
                       <Trash2 size={16} />

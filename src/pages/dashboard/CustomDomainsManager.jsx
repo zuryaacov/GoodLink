@@ -291,7 +291,7 @@ const CustomDomainsManager = () => {
       case 'error':
         return 'bg-red-500/20 text-red-400 border-red-500/30';
       default:
-        return 'bg-slate-500/20 text-slate-400 border-slate-500/30';
+        return 'bg-slate-200 text-[#1b1b1b] border-slate-500/30';
     }
   };
 
@@ -326,7 +326,7 @@ const CustomDomainsManager = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-full">
-        <div className="text-slate-400">Loading domains...</div>
+        <div className="text-[#1b1b1b]">Loading domains...</div>
       </div>
     );
   }
@@ -385,7 +385,7 @@ const CustomDomainsManager = () => {
               <Globe className="w-5 h-5 text-[#FF10F0]" />
               <div>
                 <p className="font-semibold text-sm text-white italic">Brand Your Links</p>
-                <p className="text-xs text-slate-400">
+                <p className="text-xs text-[#1b1b1b]">
                   Use your own domain (e.g., go.mybrand.com) instead of the default short links.
                 </p>
               </div>
@@ -394,7 +394,7 @@ const CustomDomainsManager = () => {
               <BarChart3 className="w-5 h-5 text-[#FF10F0]" />
               <div>
                 <p className="font-semibold text-sm text-white italic">Professional Appearance</p>
-                <p className="text-xs text-slate-400">
+                <p className="text-xs text-[#1b1b1b]">
                   Build trust with branded links that match your business identity.
                 </p>
               </div>
@@ -428,7 +428,7 @@ const CustomDomainsManager = () => {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="flex flex-col gap-2">
           <h1 className="text-2xl sm:text-3xl font-bold text-white">Custom Domains</h1>
-          <p className="text-slate-400 text-sm sm:text-base">
+          <p className="text-[#1b1b1b] text-sm sm:text-base">
             Brand your links with custom domains (e.g., go.mybrand.com)
           </p>
         </div>
@@ -446,7 +446,7 @@ const CustomDomainsManager = () => {
         <div className="bg-white border border-slate-200 rounded-2xl p-4 md:p-6 w-full">
           <div className="text-center py-12">
             <span className="material-symbols-outlined text-6xl text-slate-600 mb-4">public</span>
-            <p className="text-slate-400 text-lg mb-2">No custom domains yet</p>
+            <p className="text-[#1b1b1b] text-lg mb-2">No custom domains yet</p>
             <p className="text-slate-500 text-sm">Create your first custom domain to get started</p>
           </div>
         </div>
@@ -475,7 +475,7 @@ const CustomDomainsManager = () => {
                     <span>{domain.status}</span>
                   </div>
                   {domain.root_redirect && (
-                    <div className="flex items-center gap-2 text-slate-400 text-sm mt-1">
+                    <div className="flex items-center gap-2 text-[#1b1b1b] text-sm mt-1">
                       <span className="material-symbols-outlined text-sm">
                         subdirectory_arrow_right
                       </span>
@@ -551,7 +551,7 @@ const CustomDomainsManager = () => {
 
                   if (!displayedRecords || displayedRecords.length === 0) {
                     return (
-                      <div className="bg-white border border-slate-200 rounded-xl p-4 text-sm text-slate-400">
+                      <div className="bg-white border border-slate-200 rounded-xl p-4 text-sm text-[#1b1b1b]">
                         {dnsLoadingByDomainId[domain.id]
                           ? 'Loading DNS records...'
                           : 'No DNS records available yet.'}

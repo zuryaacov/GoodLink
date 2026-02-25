@@ -64,7 +64,7 @@ const Features = () => {
           <h2 className="text-slate-900 dark:text-white tracking-tight text-3xl md:text-5xl font-black leading-tight">
             Engineered for Performance
           </h2>
-          <p className="text-slate-600 dark:text-slate-400 text-lg md:text-xl font-normal leading-relaxed">
+          <p className="text-slate-600 dark:text-[#1b1b1b] text-lg md:text-xl font-normal leading-relaxed">
             Tools designed to give you the competitive edge in media buying. Stop losing data and
             start scaling your campaigns.
           </p>
@@ -90,7 +90,7 @@ const Features = () => {
                 <h3 className="text-slate-900 dark:text-white text-lg font-bold leading-tight">
                   {feature.title}
                 </h3>
-                <p className="text-slate-500 dark:text-slate-400 text-sm leading-normal">
+                <p className="text-slate-500 dark:text-[#1b1b1b] text-sm leading-normal">
                   {feature.description}
                 </p>
               </div>

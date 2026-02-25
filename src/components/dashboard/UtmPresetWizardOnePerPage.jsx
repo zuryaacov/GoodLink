@@ -109,7 +109,7 @@ const getPlatformLogo = (platform) => {
     default:
       return (
         <div className={`${w} bg-slate-200 flex items-center justify-center`}>
-          <span className="text-slate-400 text-xs">?</span>
+          <span className="text-[#1b1b1b] text-xs">?</span>
         </div>
       );
   }

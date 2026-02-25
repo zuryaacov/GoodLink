@@ -12,7 +12,7 @@ const AnalyticsSection = () => {
           <h2 className="text-slate-900 dark:text-white text-3xl md:text-4xl font-bold leading-tight">
             Analytics You Can Trust
           </h2>
-          <p className="text-slate-600 dark:text-slate-400 text-lg">
+          <p className="text-slate-600 dark:text-[#1b1b1b] text-lg">
             Stop flying blind. Our dashboard gives you a granular view of every interaction.
             Visualize trends, spot anomalies, and optimize your ROI in real-time.
           </p>
@@ -41,7 +41,7 @@ const AnalyticsSection = () => {
         <div className="flex-1 w-full">
           <div className="rounded-xl border border-slate-200 dark:border-slate-200 bg-white dark:bg-white p-6 shadow-2xl">
             <div className="flex flex-col gap-2 mb-6">
-              <p className="text-slate-500 dark:text-slate-400 text-sm font-medium uppercase tracking-wider">
+              <p className="text-slate-500 dark:text-[#1b1b1b] text-sm font-medium uppercase tracking-wider">
                 Link Click Performance
               </p>
               <div className="flex items-baseline justify-between">
@@ -55,7 +55,7 @@ const AnalyticsSection = () => {
                   <p className="text-green-600 dark:text-green-400 text-sm font-bold">+12.5%</p>
                 </div>
               </div>
-              <p className="text-slate-400 text-sm">Last 30 Days</p>
+              <p className="text-[#1b1b1b] text-sm">Last 30 Days</p>
             </div>
             {/* Chart SVG */}
             <div className="w-full h-[200px] relative">
@@ -85,13 +85,13 @@ const AnalyticsSection = () => {
               </svg>
             </div>
             <div className="flex justify-between mt-6 px-2">
-              <p className="text-slate-400 dark:text-slate-500 text-xs font-bold uppercase">Mon</p>
-              <p className="text-slate-400 dark:text-slate-500 text-xs font-bold uppercase">Tue</p>
-              <p className="text-slate-400 dark:text-slate-500 text-xs font-bold uppercase">Wed</p>
-              <p className="text-slate-400 dark:text-slate-500 text-xs font-bold uppercase">Thu</p>
-              <p className="text-slate-400 dark:text-slate-500 text-xs font-bold uppercase">Fri</p>
-              <p className="text-slate-400 dark:text-slate-500 text-xs font-bold uppercase">Sat</p>
-              <p className="text-slate-400 dark:text-slate-500 text-xs font-bold uppercase">Sun</p>
+              <p className="text-[#1b1b1b] dark:text-[#1b1b1b] text-xs font-bold uppercase">Mon</p>
+              <p className="text-[#1b1b1b] dark:text-[#1b1b1b] text-xs font-bold uppercase">Tue</p>
+              <p className="text-[#1b1b1b] dark:text-[#1b1b1b] text-xs font-bold uppercase">Wed</p>
+              <p className="text-[#1b1b1b] dark:text-[#1b1b1b] text-xs font-bold uppercase">Thu</p>
+              <p className="text-[#1b1b1b] dark:text-[#1b1b1b] text-xs font-bold uppercase">Fri</p>
+              <p className="text-[#1b1b1b] dark:text-[#1b1b1b] text-xs font-bold uppercase">Sat</p>
+              <p className="text-[#1b1b1b] dark:text-[#1b1b1b] text-xs font-bold uppercase">Sun</p>
             </div>
           </div>
         </div>

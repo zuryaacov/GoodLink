@@ -127,7 +127,7 @@ const Step2Optimization = ({ formData, updateFormData }) => {
       {/* Header */}
       <div className="text-center">
         <h3 className="text-2xl font-bold text-white mb-2">Optimization & Marketing</h3>
-        <p className="text-slate-400 text-sm">UTM & Pixels</p>
+        <p className="text-[#1b1b1b] text-sm">UTM & Pixels</p>
       </div>
 
       {/* UTM Presets - User's Custom Presets */}
@@ -135,7 +135,7 @@ const Step2Optimization = ({ formData, updateFormData }) => {
         <div>
           <label className="block text-sm font-medium text-white mb-4">UTM Presets</label>
           {loadingPresets ? (
-            <div className="text-slate-400 text-sm">Loading presets...</div>
+            <div className="text-[#1b1b1b] text-sm">Loading presets...</div>
           ) : (
             <div className="space-y-3">
               {availablePresets.map((preset) => {
@@ -143,7 +143,7 @@ const Step2Optimization = ({ formData, updateFormData }) => {
                 const isSelected = selectedPresets.includes(preset.id);
                 const platformInfo = PLATFORMS[preset.platform] || {
                   name: preset.platform,
-                  colorClass: 'text-slate-400 bg-slate-400/10',
+                  colorClass: 'text-[#1b1b1b] bg-[#1b1b1b]/10',
                 };
 
                 return (
@@ -247,7 +247,7 @@ const Step2Optimization = ({ formData, updateFormData }) => {
         <div>
           <label className="block text-sm font-medium text-white mb-4">CAPI Selection</label>
           {loadingPixels ? (
-            <div className="text-slate-400 text-sm">Loading CAPI...</div>
+            <div className="text-[#1b1b1b] text-sm">Loading CAPI...</div>
           ) : (
             <div className="space-y-3">
               {availablePixels.map((pixel) => {
@@ -363,7 +363,7 @@ const Step2Optimization = ({ formData, updateFormData }) => {
                     default:
                       return (
                         <div className="w-8 h-8 rounded-lg bg-slate-200 flex items-center justify-center flex-shrink-0">
-                          <span className="text-slate-400 text-xs">?</span>
+                          <span className="text-[#1b1b1b] text-xs">?</span>
                         </div>
                       );
                   }

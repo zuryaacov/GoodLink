@@ -516,7 +516,7 @@ const AuthPage = () => {
         </div>
 
         {/* Requirements checklist */}
-        <ul className="text-xs space-y-1 text-slate-400">
+        <ul className="text-xs space-y-1 text-[#1b1b1b]">
           <li
             className={`flex items-center gap-2 ${
               checks.length ? 'text-green-500 font-medium' : ''
@@ -631,7 +631,7 @@ const AuthPage = () => {
               >
                 <div className="text-center mb-2">
                   <h1 className="text-2xl font-bold text-[#1b1b1b] mb-2">Welcome Back</h1>
-                  <p className="text-slate-400">Log in to your GoodLink.ai account</p>
+                  <p className="text-[#1b1b1b]">Log in to your GoodLink.ai account</p>
                 </div>
 
                 {error && (
@@ -740,7 +740,7 @@ const AuthPage = () => {
                   Google
                 </button>
 
-                <p className="text-center text-sm text-slate-400 mt-2">
+                <p className="text-center text-sm text-[#1b1b1b] mt-2">
                   Don't have an account?{' '}
                   <button
                     onClick={() => {
@@ -768,7 +768,7 @@ const AuthPage = () => {
               >
                 <div className="text-center mb-2">
                   <h1 className="text-2xl font-bold text-[#1b1b1b] mb-2">Join GoodLink.ai</h1>
-                  <p className="text-slate-400">Start securing your data today</p>
+                  <p className="text-[#1b1b1b]">Start securing your data today</p>
                 </div>
 
                 {error && (
@@ -925,7 +925,7 @@ const AuthPage = () => {
                   Google
                 </button>
 
-                <p className="text-center text-sm text-slate-400 mt-2">
+                <p className="text-center text-sm text-[#1b1b1b] mt-2">
                   Already have an account?{' '}
                   <button
                     onClick={() => {
@@ -953,7 +953,7 @@ const AuthPage = () => {
               >
                 <div className="text-center mb-2">
                   <h1 className="text-2xl font-bold text-[#1b1b1b] mb-2">Reset Password</h1>
-                  <p className="text-slate-400">We'll send you recovery instructions</p>
+                  <p className="text-[#1b1b1b]">We'll send you recovery instructions</p>
                 </div>
 
                 {error && (
