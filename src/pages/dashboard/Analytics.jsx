@@ -72,7 +72,7 @@ const KPICard = ({ title, value, change, trend, icon, iconBgClass, iconColorClas
       )}
     </div>
     <div className="space-y-1">
-      <h3 className="text-slate-500 text-xs uppercase font-bold tracking-widest">{title}</h3>
+      <h3 className="text-[#1b1b1b] text-xs uppercase font-bold tracking-widest">{title}</h3>
       <p className="text-3xl font-extrabold text-[#1b1b1b]">{value}</p>
     </div>
   </div>
@@ -86,8 +86,8 @@ const HumanVsBotCard = ({ humanCount, botCount, unknownCount }) => {
   return (
     <div className="bg-card-bg border border-card-border rounded-2xl p-6 flex flex-col items-center transition-all hover:shadow-card-mint lg:col-span-1">
       <div className="w-full flex justify-between items-center mb-6">
-        <h3 className="text-sm font-bold text-gray-200">Human vs. Bot Ratio</h3>
-        <button type="button" className="text-slate-600 hover:text-[#1b1b1b] p-1">
+        <h3 className="text-sm font-bold text-[#1b1b1b]">Human vs. Bot Ratio</h3>
+        <button type="button" className="text-[#1b1b1b] hover:text-[#1b1b1b] p-1">
           <span className="material-symbols-outlined text-lg">more_horiz</span>
         </button>
       </div>
@@ -101,7 +101,7 @@ const HumanVsBotCard = ({ humanCount, botCount, unknownCount }) => {
           <div className="w-[120px] h-[120px] bg-white rounded-full flex items-center justify-center">
             <div className="text-center">
               <span className="block text-2xl font-bold text-[#1b1b1b]">{Math.round(humanPct)}%</span>
-              <span className="block text-[10px] text-slate-600 uppercase font-bold">Human</span>
+              <span className="block text-[10px] text-[#1b1b1b] uppercase font-bold">Human</span>
             </div>
           </div>
         </div>
@@ -109,15 +109,15 @@ const HumanVsBotCard = ({ humanCount, botCount, unknownCount }) => {
       <div className="w-full grid grid-cols-2 gap-4 mt-2">
         <div className="flex items-center gap-2">
           <span className="w-3 h-3 rounded-full bg-[#135bec] shrink-0" />
-          <span className="text-xs text-slate-500">Human ({humanCount})</span>
+          <span className="text-xs text-[#1b1b1b]">Human ({humanCount})</span>
         </div>
         <div className="flex items-center gap-2">
           <span className="w-3 h-3 rounded-full bg-[#6358de] shrink-0" />
-          <span className="text-xs text-slate-500">Bot ({botCount})</span>
+          <span className="text-xs text-[#1b1b1b]">Bot ({botCount})</span>
         </div>
         <div className="flex items-center gap-2">
           <span className="w-3 h-3 rounded-full bg-gray-600 shrink-0" />
-          <span className="text-xs text-slate-500">Unknown ({unknownCount})</span>
+          <span className="text-xs text-[#1b1b1b]">Unknown ({unknownCount})</span>
         </div>
       </div>
     </div>
@@ -130,14 +130,14 @@ const GeoProgressCard = ({ geographic }) => {
   return (
     <div className="bg-card-bg border border-card-border rounded-2xl p-6 transition-all hover:shadow-card-mint lg:col-span-2">
       <div className="w-full flex justify-between items-center mb-6">
-        <h3 className="text-sm font-bold text-gray-200">Geographic Distribution (Top 15)</h3>
+        <h3 className="text-sm font-bold text-[#1b1b1b]">Geographic Distribution (Top 15)</h3>
         <button type="button" className="text-[#135bec] text-xs font-bold hover:underline">
           View Map
         </button>
       </div>
       <div className="space-y-5">
         {geographic.length === 0 ? (
-          <p className="text-slate-600 text-sm">No geographic data yet</p>
+          <p className="text-[#1b1b1b] text-sm">No geographic data yet</p>
         ) : (
           geographic.slice(0, 15).map((item, i) => {
             const pct = total ? Math.round((item.value / total) * 100) : 0;
@@ -150,7 +150,7 @@ const GeoProgressCard = ({ geographic }) => {
                   <span className="flex items-center gap-2 text-[#1b1b1b] font-medium">
                     {flag} {item.name}
                   </span>
-                  <span className="text-slate-500">
+                  <span className="text-[#1b1b1b]">
                     {item.value} click{item.value !== 1 ? 's' : ''} ({pct}%)
                   </span>
                 </div>
@@ -435,18 +435,18 @@ const Analytics = () => {
       {/* Traffic Log */}
       <div className="bg-card-bg border border-card-border rounded-2xl flex flex-col transition-all hover:shadow-card-mint">
         <div className="p-6 border-b border-slate-200 flex justify-between items-center">
-          <h3 className="text-sm font-bold text-gray-200">Traffic Log</h3>
+          <h3 className="text-sm font-bold text-[#1b1b1b]">Traffic Log</h3>
           <div className="flex gap-2">
             <button
               type="button"
-              className="p-2 text-slate-500 hover:text-[#1b1b1b] hover:bg-slate-200 rounded-lg transition-colors"
+              className="p-2 text-[#1b1b1b] hover:text-[#1b1b1b] hover:bg-slate-200 rounded-lg transition-colors"
               title="Filter"
             >
               <span className="material-symbols-outlined text-lg">filter_list</span>
             </button>
             <button
               type="button"
-              className="p-2 text-slate-500 hover:text-[#1b1b1b] hover:bg-slate-200 rounded-lg transition-colors"
+              className="p-2 text-[#1b1b1b] hover:text-[#1b1b1b] hover:bg-slate-200 rounded-lg transition-colors"
               title="Download"
             >
               <span className="material-symbols-outlined text-lg">download</span>
@@ -457,18 +457,18 @@ const Analytics = () => {
         <div className="overflow-x-auto">
           {trafficData.length === 0 ? (
             <div className="text-center py-12">
-              <span className="material-symbols-outlined text-6xl text-slate-600 mb-4 block">
+              <span className="material-symbols-outlined text-6xl text-[#1b1b1b] mb-4 block">
                 traffic
               </span>
               <p className="text-[#1b1b1b] text-lg mb-2">No traffic data yet</p>
-              <p className="text-slate-500 text-sm">
+              <p className="text-[#1b1b1b] text-sm">
                 Traffic will appear here once users click your links
               </p>
             </div>
           ) : (
             <table className="w-full text-left text-sm">
               <thead>
-                <tr className="text-slate-600 border-b border-slate-200 bg-slate-50">
+                <tr className="text-[#1b1b1b] border-b border-slate-200 bg-slate-50">
                   <th className="px-6 py-3 font-bold uppercase text-[10px] tracking-wider">Time</th>
                   <th className="px-6 py-3 font-bold uppercase text-[10px] tracking-wider">
                     Location
@@ -497,7 +497,7 @@ const Analytics = () => {
                       key={click.id}
                       className="border-b border-slate-200 transition-colors hover:bg-slate-50 last:border-b-0"
                     >
-                      <td className="px-6 py-4 whitespace-nowrap text-gray-300">
+                      <td className="px-6 py-4 whitespace-nowrap text-[#1b1b1b]">
                         {relativeTime(click.clicked_at || click.created_at)}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
@@ -507,7 +507,7 @@ const Analytics = () => {
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="flex items-center gap-2 text-slate-500">
+                        <div className="flex items-center gap-2 text-[#1b1b1b]">
                           <span className="material-symbols-outlined text-base">
                             {/(mobile|phone|iphone|android)/i.test(
                               click.device_type || click.user_agent || ''
@@ -533,7 +533,7 @@ const Analytics = () => {
                         <button
                           type="button"
                           onClick={() => handleExpandClick(click.id)}
-                          className="bg-transparent border border-slate-200 text-slate-500 hover:border-primary hover:text-[#1b1b1b] hover:bg-primary/10 px-3 py-1.5 rounded-lg text-xs font-bold transition-all"
+                          className="bg-transparent border border-slate-200 text-[#1b1b1b] hover:border-primary hover:text-[#1b1b1b] hover:bg-primary/10 px-3 py-1.5 rounded-lg text-xs font-bold transition-all"
                         >
                           More Information
                         </button>
@@ -550,7 +550,7 @@ const Analytics = () => {
           <div className="p-4 border-t border-slate-200 flex justify-center">
             <button
               type="button"
-              className="text-xs text-slate-600 hover:text-[#1b1b1b] transition-colors font-medium"
+              className="text-xs text-[#1b1b1b] hover:text-[#1b1b1b] transition-colors font-medium"
             >
               View All Logs
             </button>
@@ -570,61 +570,61 @@ const Analytics = () => {
           selectedClick ? (
             <div className="space-y-3 text-left">
               <div className="flex items-center justify-between py-2 border-b border-gray-200">
-                <span className="text-xs font-medium text-slate-600">Date & Time</span>
-                <span className="text-sm text-gray-900 font-mono">
+                <span className="text-xs font-medium text-[#1b1b1b]">Date & Time</span>
+                <span className="text-sm text-[#1b1b1b] font-mono">
                   {formatDateTime(selectedClick.clicked_at || selectedClick.created_at)}
                 </span>
               </div>
               <div className="flex items-center justify-between py-2 border-b border-gray-200">
-                <span className="text-xs font-medium text-slate-600">Domain</span>
-                <span className="text-sm text-gray-900">{selectedClick.domain || '—'}</span>
+                <span className="text-xs font-medium text-[#1b1b1b]">Domain</span>
+                <span className="text-sm text-[#1b1b1b]">{selectedClick.domain || '—'}</span>
               </div>
               <div className="flex items-center justify-between py-2 border-b border-gray-200">
-                <span className="text-xs font-medium text-slate-600">SLUG</span>
-                <span className="text-sm text-gray-900 font-mono">{selectedClick.slug || '—'}</span>
+                <span className="text-xs font-medium text-[#1b1b1b]">SLUG</span>
+                <span className="text-sm text-[#1b1b1b] font-mono">{selectedClick.slug || '—'}</span>
               </div>
               <div className="flex items-center justify-between py-2 border-b border-gray-200">
-                <span className="text-xs font-medium text-slate-600">IP Address</span>
-                <span className="text-sm text-gray-900 font-mono">
+                <span className="text-xs font-medium text-[#1b1b1b]">IP Address</span>
+                <span className="text-sm text-[#1b1b1b] font-mono">
                   {selectedClick.ip_address || '—'}
                 </span>
               </div>
               <div className="flex items-start justify-between py-2 border-b border-gray-200">
-                <span className="text-xs font-medium text-slate-600">User Agent</span>
-                <span className="text-sm text-gray-900 break-all text-right max-w-[70%]">
+                <span className="text-xs font-medium text-[#1b1b1b]">User Agent</span>
+                <span className="text-sm text-[#1b1b1b] break-all text-right max-w-[70%]">
                   {selectedClick.user_agent || '—'}
                 </span>
               </div>
               <div className="flex items-start justify-between py-2 border-b border-gray-200">
-                <span className="text-xs font-medium text-slate-600">Referrer</span>
-                <span className="text-sm text-gray-900 break-all text-right max-w-[70%]">
+                <span className="text-xs font-medium text-[#1b1b1b]">Referrer</span>
+                <span className="text-sm text-[#1b1b1b] break-all text-right max-w-[70%]">
                   {selectedClick.referer || selectedClick.referrer || '—'}
                 </span>
               </div>
               <div className="flex items-center justify-between py-2 border-b border-gray-200">
-                <span className="text-xs font-medium text-slate-600">Country</span>
-                <span className="text-sm text-gray-900">{selectedClick.country || '—'}</span>
+                <span className="text-xs font-medium text-[#1b1b1b]">Country</span>
+                <span className="text-sm text-[#1b1b1b]">{selectedClick.country || '—'}</span>
               </div>
               <div className="flex items-center justify-between py-2 border-b border-gray-200">
-                <span className="text-xs font-medium text-slate-600">City</span>
-                <span className="text-sm text-gray-900">{selectedClick.city || '—'}</span>
+                <span className="text-xs font-medium text-[#1b1b1b]">City</span>
+                <span className="text-sm text-[#1b1b1b]">{selectedClick.city || '—'}</span>
               </div>
               <div className="flex items-center justify-between py-2 border-b border-gray-200">
-                <span className="text-xs font-medium text-slate-600">Device Type</span>
-                <span className="text-sm text-gray-900">{selectedClick.device_type || '—'}</span>
+                <span className="text-xs font-medium text-[#1b1b1b]">Device Type</span>
+                <span className="text-sm text-[#1b1b1b]">{selectedClick.device_type || '—'}</span>
               </div>
               <div className="flex items-center justify-between py-2 border-b border-gray-200">
-                <span className="text-xs font-medium text-slate-600">OS</span>
-                <span className="text-sm text-gray-900">
+                <span className="text-xs font-medium text-[#1b1b1b]">OS</span>
+                <span className="text-sm text-[#1b1b1b]">
                   {selectedClick.os || '—'} {selectedClick.os_version || ''}
                 </span>
               </div>
               <div className="flex items-center justify-between py-2 border-b border-gray-200">
-                <span className="text-xs font-medium text-slate-600">Browser</span>
-                <span className="text-sm text-gray-900">{selectedClick.browser || '—'}</span>
+                <span className="text-xs font-medium text-[#1b1b1b]">Browser</span>
+                <span className="text-sm text-[#1b1b1b]">{selectedClick.browser || '—'}</span>
               </div>
               <div className="flex items-center justify-between py-2 border-b border-gray-200">
-                <span className="text-xs font-medium text-slate-600">Is Bot</span>
+                <span className="text-xs font-medium text-[#1b1b1b]">Is Bot</span>
                 <span
                   className={`text-sm font-bold ${selectedClick.is_bot ? 'text-red-600' : 'text-green-600'}`}
                 >
@@ -633,7 +633,7 @@ const Analytics = () => {
               </div>
               {selectedClick.fraud_score !== null && selectedClick.fraud_score !== undefined && (
                 <div className="flex items-center justify-between py-2 border-b border-gray-200">
-                  <span className="text-xs font-medium text-slate-600">Fraud Score</span>
+                  <span className="text-xs font-medium text-[#1b1b1b]">Fraud Score</span>
                   <span
                     className={`text-sm font-bold ${selectedClick.fraud_score > 80 ? 'text-red-600' : selectedClick.fraud_score > 50 ? 'text-yellow-600' : 'text-green-600'}`}
                   >
@@ -642,41 +642,41 @@ const Analytics = () => {
                 </div>
               )}
               <div className="flex items-center justify-between py-2 border-b border-gray-200">
-                <span className="text-xs font-medium text-slate-600">VPN</span>
+                <span className="text-xs font-medium text-[#1b1b1b]">VPN</span>
                 <span
-                  className={`text-sm font-bold ${selectedClick.is_vpn ? 'text-yellow-600' : 'text-gray-600'}`}
+                  className={`text-sm font-bold ${selectedClick.is_vpn ? 'text-yellow-600' : 'text-[#1b1b1b]'}`}
                 >
                   {selectedClick.is_vpn ? 'Yes' : 'No'}
                 </span>
               </div>
               <div className="flex items-center justify-between py-2 border-b border-gray-200">
-                <span className="text-xs font-medium text-slate-600">Proxy</span>
+                <span className="text-xs font-medium text-[#1b1b1b]">Proxy</span>
                 <span
-                  className={`text-sm font-bold ${selectedClick.is_proxy ? 'text-yellow-600' : 'text-gray-600'}`}
+                  className={`text-sm font-bold ${selectedClick.is_proxy ? 'text-yellow-600' : 'text-[#1b1b1b]'}`}
                 >
                   {selectedClick.is_proxy ? 'Yes' : 'No'}
                 </span>
               </div>
               {selectedClick.verdict && (
                 <div className="flex items-start justify-between py-2 border-b border-gray-200">
-                  <span className="text-xs font-medium text-slate-600">Verdict</span>
-                  <span className="text-sm text-gray-900 text-right max-w-[70%]">
+                  <span className="text-xs font-medium text-[#1b1b1b]">Verdict</span>
+                  <span className="text-sm text-[#1b1b1b] text-right max-w-[70%]">
                     {selectedClick.verdict}
                   </span>
                 </div>
               )}
               {selectedClick.target_url && (
                 <div className="flex items-start justify-between py-2 border-b border-gray-200">
-                  <span className="text-xs font-medium text-slate-600">Target URL</span>
-                  <span className="text-sm text-gray-900 break-all text-right max-w-[70%] font-mono">
+                  <span className="text-xs font-medium text-[#1b1b1b]">Target URL</span>
+                  <span className="text-sm text-[#1b1b1b] break-all text-right max-w-[70%] font-mono">
                     {selectedClick.target_url}
                   </span>
                 </div>
               )}
               {selectedClick.query_params && (
                 <div className="flex items-start justify-between py-2 border-b border-gray-200">
-                  <span className="text-xs font-medium text-slate-600">Query Params</span>
-                  <span className="text-sm text-gray-900 break-all text-right max-w-[70%] font-mono">
+                  <span className="text-xs font-medium text-[#1b1b1b]">Query Params</span>
+                  <span className="text-sm text-[#1b1b1b] break-all text-right max-w-[70%] font-mono">
                     {typeof selectedClick.query_params === 'string'
                       ? selectedClick.query_params
                       : JSON.stringify(selectedClick.query_params)}
@@ -685,8 +685,8 @@ const Analytics = () => {
               )}
               {selectedClick.session_id && (
                 <div className="flex items-center justify-between py-2 border-b border-gray-200">
-                  <span className="text-xs font-medium text-slate-600">Session ID</span>
-                  <span className="text-sm text-gray-900 font-mono">
+                  <span className="text-xs font-medium text-[#1b1b1b]">Session ID</span>
+                  <span className="text-sm text-[#1b1b1b] font-mono">
                     {selectedClick.session_id}
                   </span>
                 </div>
