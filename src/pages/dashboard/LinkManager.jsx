@@ -904,7 +904,7 @@ const LinkManager = () => {
                         <span>{kindLabel}</span>
                       </div>
                     </div>
-                    <div className="mr-12 bg-primary/10 p-3 rounded-2xl text-primary shadow-[0_0_15px_rgba(255,0,229,0.1)] transition-all">
+                    <div className="mr-12 bg-[#6358de]/10 p-3 rounded-2xl text-[#6358de] shadow-[0_0_15px_rgba(99,88,222,0.1)] transition-all">
                       <Folder size={24} fill="currentColor" fillOpacity={0.2} />
                     </div>
                   </div>
