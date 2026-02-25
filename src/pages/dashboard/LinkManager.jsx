@@ -74,13 +74,13 @@ const LinkManager = () => {
   const [qrCopyStatus, setQrCopyStatus] = useState('');
 
   const getQrSvgString = useCallback((url) => {
-    const qr = new QRCode(url, { container: 'svg-viewbox', join: true });
+    const qr = new QRCode(url, { container: 'svg-viewbox', join: true, background: '#ffffff' });
     return qr.svg();
   }, []);
 
   const handleDownloadQrPng = useCallback(async (shortUrl) => {
     try {
-      const apiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(shortUrl)}`;
+      const apiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=400x400&bgcolor=FFFFFF&data=${encodeURIComponent(shortUrl)}`;
       const res = await fetch(apiUrl);
       const blob = await res.blob();
       const u = URL.createObjectURL(blob);
@@ -1145,7 +1145,7 @@ const LinkManager = () => {
           qrModal.link ? (
             <div className="flex flex-col items-center gap-2 sm:gap-4 p-0 sm:p-2 w-full min-w-0">
               <img
-                src={`https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(qrModal.link.short_url || '')}`}
+                src={`https://api.qrserver.com/v1/create-qr-code/?size=400x400&bgcolor=FFFFFF&data=${encodeURIComponent(qrModal.link.short_url || '')}`}
                 alt="QR Code"
                 className="w-full max-w-[200px] sm:max-w-[280px] md:max-w-[360px] h-auto rounded-xl border border-slate-200 bg-white p-1.5 sm:p-2"
               />

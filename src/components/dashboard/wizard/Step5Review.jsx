@@ -18,7 +18,7 @@ const Step5Review = ({ formData, generateRandomSlug }) => {
 
   const fullUtmString = buildUtmString();
 
-  const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(shortUrl)}`;
+  const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&bgcolor=FFFFFF&data=${encodeURIComponent(shortUrl)}`;
 
   return (
     <motion.div

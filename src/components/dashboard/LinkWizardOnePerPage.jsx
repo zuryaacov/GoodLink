@@ -1083,7 +1083,7 @@ export default function LinkWizardOnePerPage({
                     </span>
                     <div className="flex flex-col items-center gap-2">
                       <img
-                        src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(`https://${selectedDomain}/${formData.slug}`)}`}
+                        src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&bgcolor=FFFFFF&data=${encodeURIComponent(`https://${selectedDomain}/${formData.slug}`)}`}
                         alt="QR Code"
                         className="w-[180px] h-[180px] rounded-xl border border-slate-200 bg-white p-2"
                       />
