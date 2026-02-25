@@ -134,6 +134,30 @@ const UtmPresetManager = () => {
     return params.length > 0 ? params.join('&') : '';
   };
 
+  const UTM_PARAM_COLORS = {
+    utm_source: 'text-blue-400',
+    utm_medium: 'text-purple-400',
+    utm_campaign: 'text-yellow-400',
+    utm_content: 'text-emerald-400',
+    utm_term: 'text-orange-400',
+  };
+
+  const renderColoredQueryString = (str) => {
+    return str.split('&').map((segment, i) => {
+      const match = segment.match(/^(utm_\w+)=(.+)$/);
+      if (!match) return <span key={i} className="text-black">{segment}</span>;
+      const [, param, value] = match;
+      const colorClass = UTM_PARAM_COLORS[param] || 'text-black';
+      return (
+        <span key={i}>
+          {i > 0 && <span className="text-black font-bold">&</span>}
+          <span className={`font-bold ${colorClass}`}>{param}=</span>
+          <span className={`${colorClass}`}>{value}</span>
+        </span>
+      );
+    });
+  };
+
   const handleCopy = async (preset) => {
     try {
       // Don't encode - copy raw values with {} brackets (same as display)
@@ -374,8 +398,8 @@ const UtmPresetManager = () => {
 
                 <div className="space-y-2 mb-4">
                   {queryString ? (
-                    <div className="text-base font-mono font-bold text-black break-all bg-white border border-slate-200 p-3 rounded-lg">
-                      {queryString}
+                    <div className="text-base font-mono break-all bg-white border border-slate-200 p-3 rounded-lg">
+                      {renderColoredQueryString(queryString)}
                     </div>
                   ) : (
                     <div className="text-xs text-black italic p-3 rounded-lg bg-white border border-slate-200">
