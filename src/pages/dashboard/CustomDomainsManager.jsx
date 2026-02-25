@@ -467,12 +467,12 @@ const CustomDomainsManager = () => {
                     {domain.domain}
                   </h3>
                   <div
-                    className={`inline-flex items-center self-start gap-1.5 px-3 py-1 rounded-lg border text-xs font-bold uppercase tracking-wider ${getStatusColor(domain.status)}`}
+                    className={`inline-flex items-center self-start gap-1.5 px-3 py-1 rounded-lg border text-xs font-bold tracking-wider ${getStatusColor(domain.status)}`}
                   >
                     <span className={`material-symbols-outlined text-base ${domain.status === 'active' ? 'text-green-400' : ''}`}>
                       {getStatusIcon(domain.status)}
                     </span>
-                    <span>{domain.status}</span>
+                    <span>{domain.status ? domain.status.charAt(0).toUpperCase() + domain.status.slice(1).toLowerCase() : ''}</span>
                   </div>
                   {domain.root_redirect && (
                     <div className="flex items-center gap-2 text-[#1b1b1b] text-sm mt-1">
@@ -589,7 +589,7 @@ const CustomDomainsManager = () => {
                                 </span>
                               </div>
                               <div className="flex items-center gap-3 bg-white p-3 rounded-xl border border-slate-200 group hover:border-primary/20 transition-all">
-                                <code className="text-sm md:text-base text-[#1b1b1b] font-mono flex-1 truncate selection:bg-primary/40">
+                                <code className="text-sm md:text-base text-black font-mono font-bold flex-1 truncate selection:bg-primary/40">
                                   {record.host || record.name}
                                 </code>
                                 <button
@@ -617,7 +617,7 @@ const CustomDomainsManager = () => {
                                 </span>
                               </div>
                               <div className="flex items-center gap-3 bg-white p-3 rounded-xl border border-slate-200 group hover:border-primary/20 transition-all">
-                                <code className="text-sm md:text-lg text-green-400 font-mono flex-1 break-all leading-tight selection:bg-primary/30">
+                                <code className="text-sm md:text-lg text-black font-mono font-bold flex-1 break-all leading-tight selection:bg-primary/30">
                                   {record.value}
                                 </code>
                                 <button
