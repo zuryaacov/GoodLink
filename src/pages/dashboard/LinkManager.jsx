@@ -131,6 +131,7 @@ const LinkManager = () => {
     onConfirm: null,
     isLoading: false,
   });
+  const [deleteLinkModal, setDeleteLinkModal] = useState({ isOpen: false, link: null, isLoading: false });
 
   useEffect(() => {
     fetchData();
@@ -563,6 +564,38 @@ const LinkManager = () => {
       isSaving: false,
       error: null,
     });
+  };
+
+  const handleDeleteLink = async () => {
+    const link = deleteLinkModal.link;
+    if (!link) return;
+    setDeleteLinkModal((prev) => ({ ...prev, isLoading: true }));
+    try {
+      const deletedAt = new Date().toISOString();
+      const { error } = await supabase
+        .from('links')
+        .update({ status: 'deleted', deleted_at: deletedAt })
+        .eq('id', link.id);
+      if (error) throw error;
+      try {
+        await deleteLinkFromRedis(link.domain, link.slug);
+      } catch (redisError) {
+        console.warn('⚠️ [LinkManager] Failed to delete from Redis:', redisError);
+      }
+      setDeleteLinkModal({ isOpen: false, link: null, isLoading: false });
+      fetchData();
+    } catch (err) {
+      console.error('Error deleting link:', err);
+      setDeleteLinkModal((prev) => ({ ...prev, isLoading: false }));
+      setModalState({
+        isOpen: true,
+        type: 'error',
+        title: 'Error',
+        message: 'Error deleting link. Please try again.',
+        onConfirm: null,
+        isLoading: false,
+      });
+    }
   };
 
   const handleMoveLink = async () => {
@@ -1044,6 +1077,7 @@ const LinkManager = () => {
                   }
                   onMove={isFoldersEnabled ? openMoveModal : null}
                   onShowModal={(modalConfig) => setModalState(modalConfig)}
+                  onDeleteClick={(linkToDelete) => setDeleteLinkModal({ isOpen: true, link: linkToDelete, isLoading: false })}
                 />
 
                 {/* Short Link box */}
@@ -1297,6 +1331,26 @@ const LinkManager = () => {
         isLoading={modalState.isLoading}
       />
 
+      {/* Delete Link Modal - rendered here so overlay covers full screen like Delete Workspace */}
+      <Modal
+        isOpen={deleteLinkModal.isOpen}
+        onClose={() => !deleteLinkModal.isLoading && setDeleteLinkModal({ isOpen: false, link: null, isLoading: false })}
+        title="Delete this link?"
+        message={
+          deleteLinkModal.link ? (
+            <>
+              Are you sure you want to delete <strong>{deleteLinkModal.link.short_url}</strong>? This will stop all
+              traffic to this destination.
+            </>
+          ) : null
+        }
+        type="delete"
+        confirmText="Delete Link"
+        cancelText="Cancel"
+        onConfirm={handleDeleteLink}
+        isLoading={deleteLinkModal.isLoading}
+      />
+
       {/* UTM Presets Modal */}
       <Modal
         isOpen={utmPresetsModal.isOpen}
@@ -1364,48 +1418,11 @@ const LinkActionsMenu = ({
   onAnalytics,
   onMove,
   onShowModal,
+  onDeleteClick,
   className = '',
   hoverBorderClass = 'hover:border-primary/40',
 }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
-
-  const handleDelete = async () => {
-    setIsDeleting(true);
-    try {
-      const deletedAt = new Date().toISOString();
-      const { error } = await supabase
-        .from('links')
-        .update({
-          status: 'deleted',
-          deleted_at: deletedAt,
-        })
-        .eq('id', link.id);
-
-      if (error) throw error;
-
-      // Delete from Redis cache so redirects stop immediately
-      try {
-        await deleteLinkFromRedis(link.domain, link.slug);
-      } catch (redisError) {
-        console.warn('⚠️ [LinkManager] Failed to delete from Redis:', redisError);
-      }
-
-      setDeleteModalOpen(false);
-      setIsOpen(false);
-      onRefresh();
-    } catch (error) {
-      console.error('Error deleting link:', error);
-      setDeleteModalOpen(false);
-      setIsDeleting(false);
-      // Show error modal - we'll need to pass a callback to show modal
-      // For now, we'll use a simple alert as fallback
-      alert('Error deleting link. Please try again.');
-    } finally {
-      setIsDeleting(false);
-    }
-  };
 
   const handleDuplicate = () => {
     setIsOpen(false);
@@ -1474,7 +1491,7 @@ const LinkActionsMenu = ({
             <button
               onClick={() => {
                 setIsOpen(false);
-                setDeleteModalOpen(true);
+                if (onDeleteClick) onDeleteClick(link);
               }}
               className="w-full px-4 py-3 text-left text-red-400 hover:bg-red-400/10 transition-colors flex items-center gap-3 text-sm"
             >
@@ -1484,24 +1501,6 @@ const LinkActionsMenu = ({
           </div>
         </>
       )}
-
-      {/* Delete Confirmation Modal */}
-      <Modal
-        isOpen={deleteModalOpen}
-        onClose={() => !isDeleting && setDeleteModalOpen(false)}
-        title="Delete this link?"
-        message={
-          <>
-            Are you sure you want to delete <strong>{link.short_url}</strong>? This will stop all
-            traffic to this destination.
-          </>
-        }
-        type="delete"
-        confirmText="Delete Link"
-        cancelText="Cancel"
-        onConfirm={handleDelete}
-        isLoading={isDeleting}
-      />
     </div>
   );
 };
