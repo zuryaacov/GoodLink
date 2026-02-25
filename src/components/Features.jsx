@@ -58,7 +58,7 @@ const Features = () => {
           transition={{ duration: 0.6 }}
           className="flex flex-col items-center text-center gap-4 max-w-3xl mx-auto"
         >
-          <div className="inline-flex items-center rounded-full bg-primary/10 px-3 py-1 text-sm font-medium text-primary border border-primary/20">
+          <div className="inline-flex items-center rounded-full bg-[#6358de]/10 px-3 py-1 text-sm font-medium text-[#6358de] border border-[#6358de]/20">
             Features
           </div>
           <h2 className="text-slate-900 dark:text-[#1b1b1b] tracking-tight text-3xl md:text-5xl font-black leading-tight">
@@ -81,9 +81,9 @@ const Features = () => {
             <motion.div
               key={index}
               variants={itemVariants}
-              className="group flex flex-col gap-4 rounded-xl border border-white/10 dark:border-[#324467] bg-white/5 dark:bg-[#192233]/50 backdrop-blur-md p-6 shadow-sm hover:shadow-xl hover:border-primary/50 transition-all duration-300"
+              className="group flex flex-col gap-4 rounded-xl border border-white/10 dark:border-[#324467] bg-white/5 dark:bg-[#192233]/50 backdrop-blur-md p-6 shadow-sm hover:shadow-xl hover:border-[#6358de]/50 transition-all duration-300"
             >
-              <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 text-primary group-hover:bg-primary group-hover:text-[#1b1b1b] transition-colors">
+              <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-[#6358de]/10 text-[#6358de] group-hover:bg-[#6358de] group-hover:text-white transition-colors">
                 <span className="material-symbols-outlined text-3xl">{feature.icon}</span>
               </div>
               <div className="flex flex-col gap-2">
