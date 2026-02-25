@@ -242,7 +242,7 @@ const UtmPresetManager = () => {
   const normalizedPlan = (planType || '').toLowerCase();
   if (normalizedPlan === 'free' || normalizedPlan === 'start' || normalizedPlan === 'starter') {
     return (
-      <div className="relative min-h-[480px] w-full flex items-center justify-center p-6 overflow-hidden bg-card-bg rounded-2xl border border-dashed border-card-border">
+      <div className="relative min-h-[480px] w-full flex items-center justify-center p-6 overflow-hidden bg-white rounded-2xl border border-dashed border-card-border">
         <div className="absolute inset-0 opacity-[0.18] blur-[3px] pointer-events-none select-none p-6">
           <div className="max-w-5xl mx-auto space-y-6">
             <div className="h-10 bg-[#141b2e] rounded-md w-1/3 mb-8" />
@@ -310,10 +310,10 @@ const UtmPresetManager = () => {
       </div>
 
       {presets.length === 0 ? (
-        <div className="bg-card-bg border border-card-border rounded-2xl p-12 text-center hover:shadow-card-mint transition-all">
-          <span className="material-symbols-outlined text-6xl text-slate-600 mb-4">campaign</span>
-          <h3 className="text-xl font-bold text-[#1b1b1b] mb-2">No UTM Presets Yet</h3>
-          <p className="text-[#1b1b1b] mb-6">
+        <div className="bg-white border border-card-border rounded-2xl p-12 text-center hover:shadow-card-mint transition-all">
+          <span className="material-symbols-outlined text-6xl text-black mb-4">campaign</span>
+          <h3 className="text-xl font-bold text-black mb-2">No UTM Presets Yet</h3>
+          <p className="text-black mb-6">
             Create your first UTM preset to start tracking your campaigns
           </p>
           <button
@@ -328,7 +328,7 @@ const UtmPresetManager = () => {
           {presets.map((preset) => {
             const platform = PLATFORMS[preset.platform] || {
               name: preset.platform,
-              colorClass: 'text-[#1b1b1b] bg-[#1b1b1b]/10',
+              colorClass: 'text-black bg-slate-200',
             };
             // Display query string without encoding (to show {{}} instead of %7B%7D)
             const queryString = buildUtmQueryString(preset, false);
@@ -336,11 +336,11 @@ const UtmPresetManager = () => {
             return (
               <div
                 key={preset.id}
-                className="bg-card-bg border border-card-border rounded-xl p-6 hover:shadow-card-mint transition-all"
+                className="bg-white border border-card-border rounded-xl p-6 hover:shadow-card-mint transition-all"
               >
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex-1">
-                    <h3 className="text-4xl font-bold text-[#1b1b1b] mb-1">{preset.name}</h3>
+                    <h3 className="text-4xl font-bold text-black mb-1">{preset.name}</h3>
                     <div className="flex flex-wrap items-center gap-2">
                       <span
                         className={`inline-block px-2 py-1 rounded-lg text-xs font-bold ${platform.colorClass}`}
@@ -357,14 +357,14 @@ const UtmPresetManager = () => {
                   <div className="flex gap-2">
                     <button
                       onClick={() => handleEdit(preset)}
-                      className="p-2 text-[#1b1b1b] hover:text-[#1b1b1b] hover:bg-white/5 rounded-lg transition-colors"
+                      className="p-2 text-black hover:text-black hover:bg-slate-100 rounded-lg transition-colors"
                       title="Edit"
                     >
                       <Edit2 size={16} />
                     </button>
                     <button
                       onClick={() => handleDelete(preset)}
-                      className="p-2 text-[#1b1b1b] hover:text-red-400 hover:bg-red-400/10 rounded-lg transition-colors"
+                      className="p-2 text-black hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-colors"
                       title="Delete"
                     >
                       <Trash2 size={16} />
@@ -374,43 +374,43 @@ const UtmPresetManager = () => {
 
                 <div className="space-y-2 mb-4">
                   {queryString ? (
-                    <div className="text-base font-mono font-bold text-emerald-400 break-all bg-slate-900/50 p-3 rounded-lg">
+                    <div className="text-base font-mono font-bold text-black break-all bg-slate-100 p-3 rounded-lg">
                       {queryString}
                     </div>
                   ) : (
-                    <div className="text-xs text-slate-500 italic p-3 rounded-lg">
+                    <div className="text-xs text-black italic p-3 rounded-lg bg-slate-50">
                       No UTM parameters set
                     </div>
                   )}
 
                   {preset.utm_source && (
                     <div className="flex items-center gap-2 text-sm">
-                      <span className="text-blue-400 font-mono text-xs w-20">source:</span>
-                      <span className="text-slate-300">{preset.utm_source}</span>
+                      <span className="text-black font-mono text-xs w-20">source:</span>
+                      <span className="text-black">{preset.utm_source}</span>
                     </div>
                   )}
                   {preset.utm_medium && (
                     <div className="flex items-center gap-2 text-sm">
-                      <span className="text-purple-400 font-mono text-xs w-20">medium:</span>
-                      <span className="text-slate-300">{preset.utm_medium}</span>
+                      <span className="text-black font-mono text-xs w-20">medium:</span>
+                      <span className="text-black">{preset.utm_medium}</span>
                     </div>
                   )}
                   {preset.utm_campaign && (
                     <div className="flex items-center gap-2 text-sm">
-                      <span className="text-yellow-400 font-mono text-xs w-20">campaign:</span>
-                      <span className="text-slate-300">{preset.utm_campaign}</span>
+                      <span className="text-black font-mono text-xs w-20">campaign:</span>
+                      <span className="text-black">{preset.utm_campaign}</span>
                     </div>
                   )}
                   {preset.utm_content && (
                     <div className="flex items-center gap-2 text-sm">
-                      <span className="text-emerald-400 font-mono text-xs w-20">content:</span>
-                      <span className="text-slate-300">{preset.utm_content}</span>
+                      <span className="text-black font-mono text-xs w-20">content:</span>
+                      <span className="text-black">{preset.utm_content}</span>
                     </div>
                   )}
                   {preset.utm_term && (
                     <div className="flex items-center gap-2 text-sm">
-                      <span className="text-orange-400 font-mono text-xs w-20">term:</span>
-                      <span className="text-slate-300">{preset.utm_term}</span>
+                      <span className="text-black font-mono text-xs w-20">term:</span>
+                      <span className="text-black">{preset.utm_term}</span>
                     </div>
                   )}
                 </div>
@@ -418,7 +418,7 @@ const UtmPresetManager = () => {
                 <div className="flex gap-2">
                   <button
                     onClick={() => handleCopy(preset)}
-                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-slate-200 hover:bg-slate-300 text-[#1b1b1b] rounded-lg transition-colors text-sm font-medium"
+                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-slate-200 hover:bg-slate-300 text-black rounded-lg transition-colors text-sm font-medium"
                   >
                     {copiedId === preset.id ? (
                       <>
