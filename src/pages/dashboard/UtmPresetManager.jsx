@@ -374,41 +374,41 @@ const UtmPresetManager = () => {
 
                 <div className="space-y-2 mb-4">
                   {queryString ? (
-                    <div className="text-base font-mono font-bold text-black break-all bg-slate-100 p-3 rounded-lg">
+                    <div className="text-base font-mono font-bold text-black break-all bg-white border border-slate-200 p-3 rounded-lg">
                       {queryString}
                     </div>
                   ) : (
-                    <div className="text-xs text-black italic p-3 rounded-lg bg-slate-50">
+                    <div className="text-xs text-black italic p-3 rounded-lg bg-white border border-slate-200">
                       No UTM parameters set
                     </div>
                   )}
 
                   {preset.utm_source && (
-                    <div className="flex items-center gap-2 text-sm">
+                    <div className="flex items-center gap-2 text-sm font-bold">
                       <span className="text-black font-mono text-xs w-20">source:</span>
                       <span className="text-black">{preset.utm_source}</span>
                     </div>
                   )}
                   {preset.utm_medium && (
-                    <div className="flex items-center gap-2 text-sm">
+                    <div className="flex items-center gap-2 text-sm font-bold">
                       <span className="text-black font-mono text-xs w-20">medium:</span>
                       <span className="text-black">{preset.utm_medium}</span>
                     </div>
                   )}
                   {preset.utm_campaign && (
-                    <div className="flex items-center gap-2 text-sm">
+                    <div className="flex items-center gap-2 text-sm font-bold">
                       <span className="text-black font-mono text-xs w-20">campaign:</span>
                       <span className="text-black">{preset.utm_campaign}</span>
                     </div>
                   )}
                   {preset.utm_content && (
-                    <div className="flex items-center gap-2 text-sm">
+                    <div className="flex items-center gap-2 text-sm font-bold">
                       <span className="text-black font-mono text-xs w-20">content:</span>
                       <span className="text-black">{preset.utm_content}</span>
                     </div>
                   )}
                   {preset.utm_term && (
-                    <div className="flex items-center gap-2 text-sm">
+                    <div className="flex items-center gap-2 text-sm font-bold">
                       <span className="text-black font-mono text-xs w-20">term:</span>
                       <span className="text-black">{preset.utm_term}</span>
                     </div>
@@ -428,7 +428,7 @@ const UtmPresetManager = () => {
                     ) : (
                       <>
                         <Copy size={16} />
-                        Copy Query String
+                        Copy UTM Preset
                       </>
                     )}
                   </button>
