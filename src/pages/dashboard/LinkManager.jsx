@@ -1066,7 +1066,7 @@ const LinkManager = () => {
                     </div>
                     <button
                       onClick={() => handleCopy(link.short_url)}
-                      className="copy-btn p-2 bg-slate-200 hover:bg-gray-600 text-slate-700 rounded-lg transition-all flex-shrink-0 active:scale-90"
+                      className="copy-btn p-2 bg-white hover:bg-slate-200 text-slate-700 rounded-lg transition-all flex-shrink-0 active:scale-90 border border-slate-200"
                       title="Copy to clipboard"
                     >
                       <span className="material-symbols-outlined text-base">content_copy</span>
