@@ -385,31 +385,31 @@ const UtmPresetManager = () => {
 
                   {preset.utm_source && (
                     <div className="flex items-center gap-2 text-sm font-bold">
-                      <span className="text-black font-mono text-xs w-20">source:</span>
+                      <span className="text-blue-400 font-mono text-xs w-20">source:</span>
                       <span className="text-black">{preset.utm_source}</span>
                     </div>
                   )}
                   {preset.utm_medium && (
                     <div className="flex items-center gap-2 text-sm font-bold">
-                      <span className="text-black font-mono text-xs w-20">medium:</span>
+                      <span className="text-purple-400 font-mono text-xs w-20">medium:</span>
                       <span className="text-black">{preset.utm_medium}</span>
                     </div>
                   )}
                   {preset.utm_campaign && (
                     <div className="flex items-center gap-2 text-sm font-bold">
-                      <span className="text-black font-mono text-xs w-20">campaign:</span>
+                      <span className="text-yellow-400 font-mono text-xs w-20">campaign:</span>
                       <span className="text-black">{preset.utm_campaign}</span>
                     </div>
                   )}
                   {preset.utm_content && (
                     <div className="flex items-center gap-2 text-sm font-bold">
-                      <span className="text-black font-mono text-xs w-20">content:</span>
+                      <span className="text-emerald-400 font-mono text-xs w-20">content:</span>
                       <span className="text-black">{preset.utm_content}</span>
                     </div>
                   )}
                   {preset.utm_term && (
                     <div className="flex items-center gap-2 text-sm font-bold">
-                      <span className="text-black font-mono text-xs w-20">term:</span>
+                      <span className="text-orange-400 font-mono text-xs w-20">term:</span>
                       <span className="text-black">{preset.utm_term}</span>
                     </div>
                   )}
