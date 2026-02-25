@@ -1026,7 +1026,7 @@ const LinkManager = () => {
                       {truncateText(link.target_url, 60)}
                     </p>
                   </div>
-                  <div className="mr-12 bg-[#00F59B]/10 p-4 rounded-3xl text-[#00F59B] shadow-[0_0_20px_rgba(0,245,155,0.15)] -rotate-3">
+                  <div className="mr-12 bg-[#0b996f]/10 p-4 rounded-3xl text-[#0b996f] shadow-[0_0_20px_rgba(11,153,111,0.15)] -rotate-3">
                     <LinkIcon size={24} />
                   </div>
                 </div>
