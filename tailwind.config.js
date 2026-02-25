@@ -21,7 +21,7 @@ export default {
           foreground: "hsl(var(--accent-foreground))",
         },
         "nav-bg": "#f9fff6",
-        "card-bg": "#F8FAFB",
+        "card-bg": "#FCFDFD",
         "card-border": "#E5E9E8",
         "background-light": "#f6f6f8",
         "background-dark": "#101622",
