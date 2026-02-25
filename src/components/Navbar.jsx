@@ -41,7 +41,7 @@ const Navbar = () => {
   ];
 
   return (
-    <header className="sticky top-0 z-50 flex flex-col border-b border-solid border-[#0b996f]/20 bg-white backdrop-blur-md">
+    <header className="sticky top-0 z-50 flex flex-col border-b border-solid border-[#0b996f]/20 bg-[#00f59b] backdrop-blur-md">
       <div className="flex items-center justify-between px-6 py-4 lg:px-20">
         <Link
           to="/"
@@ -65,13 +65,8 @@ const Navbar = () => {
               ></path>
             </svg>
           </div>
-          <h2 className="text-3xl font-bold leading-tight tracking-tight">
-            <b>
-<span className="text-primary">Good</span>
-              </b>
-              <b>
-                <span className="text-primary"> Link</span>
-            </b>
+          <h2 className="text-3xl font-bold leading-tight tracking-tight text-[#6358de]">
+            GoodLink
           </h2>
         </Link>
 

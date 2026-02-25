@@ -41,13 +41,8 @@ const DashboardLayout = () => {
                 ></path>
               </svg>
             </div>
-            <h2 className="text-xl font-bold leading-tight tracking-tight">
-              <b>
-<span className="text-primary">Good</span>
-                </b>
-                <b>
-                  <span className="text-primary"> Link</span>
-              </b>
+            <h2 className="text-xl font-bold leading-tight tracking-tight text-[#6358de]">
+              GoodLink
             </h2>
           </Link>
 

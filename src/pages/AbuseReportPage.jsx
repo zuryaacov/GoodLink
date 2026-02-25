@@ -214,8 +214,8 @@ const AbuseReportPage = () => {
                 />
               </svg>
             </div>
-            <span className="text-2xl font-bold leading-tight tracking-tight text-black">
-              Good Link
+            <span className="text-2xl font-bold leading-tight tracking-tight text-[#6358de]">
+              GoodLink
             </span>
           </Link>
         </div>
