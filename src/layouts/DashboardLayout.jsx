@@ -23,7 +23,7 @@ const DashboardLayout = () => {
         {/* Mobile Header */}
         <header className="lg:hidden h-16 bg-white border-b border-slate-200 flex items-center justify-between px-4 fixed top-0 left-0 right-0 z-40">
           <Link to="/" className="flex items-center gap-2">
-            <div className="size-8 text-primary flex-shrink-0">
+            <div className="size-5 sm:size-8 text-primary flex-shrink-0">
               <svg fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 <path
                   d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"
