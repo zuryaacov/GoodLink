@@ -73,10 +73,10 @@ const Hero = ({ user }) => {
                     </span>
                   </div>
                   <div>
-                    <div className="text-[8px] sm:text-[10px] uppercase text-[#1b1b1b] font-bold">
+                    <div className="text-[8px] sm:text-[10px] uppercase text-white font-bold">
                       Conv. Rate
                     </div>
-                    <div className="text-xs sm:text-sm font-bold text-[#1b1b1b]">+12.4%</div>
+                    <div className="text-xs sm:text-sm font-bold text-white">+12.4%</div>
                   </div>
                 </div>
                 <div className="h-0.5 sm:h-1 w-full bg-slate-700 rounded-full overflow-hidden">
