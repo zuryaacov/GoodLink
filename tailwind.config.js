@@ -20,7 +20,7 @@ export default {
           DEFAULT: "#6358de",
           foreground: "hsl(var(--accent-foreground))",
         },
-        "nav-bg": "#d7fec8",
+        "nav-bg": "#f9fff6",
         "background-light": "#f6f6f8",
         "background-dark": "#101622",
         background: "hsl(var(--background))",

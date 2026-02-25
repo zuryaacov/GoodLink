@@ -174,7 +174,7 @@ const Sidebar = ({ className = '', onLinkClick }) => {
               const active = link.href === '/dashboard' ? analyticsActive : isActive;
               return `flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium transition-all duration-200 ${
                 active
-                  ? 'bg-primary text-white shadow-lg shadow-primary/20'
+                  ? 'bg-secondary-green text-[#1b1b1b] shadow-lg shadow-secondary-green/20'
                   : 'text-slate-600 hover:text-[#1b1b1b] hover:bg-slate-100'
               }`;
             }}
