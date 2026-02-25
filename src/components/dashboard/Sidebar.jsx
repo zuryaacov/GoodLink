@@ -180,14 +180,14 @@ const Sidebar = ({ className = '', onLinkClick }) => {
         ))}
         <button
           onClick={handleLogout}
-          className="flex items-center gap-3 px-3 py-3 rounded-xl text-base font-medium transition-all duration-200 text-slate-600 hover:text-[#1b1b1b] hover:bg-slate-100 w-full text-left"
+          className="lg:hidden flex items-center gap-3 px-3 py-3 rounded-xl text-base font-medium transition-all duration-200 text-slate-600 hover:text-[#1b1b1b] hover:bg-slate-100 w-full text-left"
         >
           <span className="material-symbols-outlined text-[20px]">logout</span>
           Logout
         </button>
       </nav>
 
-      <div className="p-4 border-t border-slate-200 hidden lg:block">
+      <div className="p-4 border-t border-slate-200 flex flex-col gap-2 hidden lg:block">
         <div className="flex items-center gap-3 px-3 py-2">
           <div className="size-8 rounded-full bg-gradient-to-tr from-primary to-secondary-green flex items-center justify-center text-[#1b1b1b] font-bold text-xs">
             {getInitials(userName)}
@@ -199,6 +199,12 @@ const Sidebar = ({ className = '', onLinkClick }) => {
             <span className="text-xs text-slate-500">{getPlanDisplayName(planType)}</span>
           </div>
         </div>
+        <button
+          onClick={handleLogout}
+          className="hidden lg:flex items-center justify-center gap-3 px-3 py-2 w-full text-slate-600 hover:text-[#1b1b1b] hover:bg-slate-100 rounded-xl transition-all duration-200 text-base font-medium"
+        >
+          Logout
+        </button>
       </div>
     </aside>
   );
