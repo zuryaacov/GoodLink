@@ -252,7 +252,7 @@ export default function AccountSettingsPage() {
           {/* Left Column: Profile & Settings */}
           <div className="lg:col-span-2 space-y-6">
             {/* User Profile Card */}
-            <div className="bg-white border border-slate-200 rounded-2xl p-6">
+            <div className="bg-card-bg border border-card-border rounded-2xl p-6 hover:shadow-card-mint transition-all">
               <h2 className="text-xl font-bold text-[#1b1b1b] mb-6 flex items-center gap-2">
                 <span className="material-symbols-outlined text-[#135bec]">person</span>
                 Personal Information
@@ -351,7 +351,7 @@ export default function AccountSettingsPage() {
 
             {/* Password Change Section (Only for Email Users) */}
             {!isGoogleUser && (
-              <div className="bg-white border border-slate-200 rounded-2xl p-6">
+              <div className="bg-card-bg border border-card-border rounded-2xl p-6 hover:shadow-card-mint transition-all">
                 <h2 className="text-xl font-bold text-[#1b1b1b] mb-6 flex items-center gap-2">
                   <span className="material-symbols-outlined text-[#135bec]">lock</span>
                   Security
@@ -430,7 +430,7 @@ export default function AccountSettingsPage() {
 
           {/* Right Column: Plan Status */}
           <div className="lg:col-span-1 space-y-6">
-            <div className="bg-gradient-to-b from-white to-slate-50 border border-slate-200 rounded-2xl p-6 relative overflow-hidden">
+            <div className="bg-card-bg border border-card-border rounded-2xl p-6 relative overflow-hidden hover:shadow-card-mint transition-all">
               {/* Status Badge */}
               <div className="absolute top-4 right-4">
                 <span

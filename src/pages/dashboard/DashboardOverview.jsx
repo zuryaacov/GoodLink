@@ -1,7 +1,7 @@
 import React from 'react';
 
 const StatCard = ({ title, value, change, icon, trend }) => (
-  <div className="bg-white border border-slate-200 rounded-2xl p-6 relative overflow-hidden group hover:border-slate-300 transition-colors">
+  <div className="bg-card-bg border border-card-border rounded-2xl p-6 relative overflow-hidden group hover:shadow-card-mint transition-all">
     <div className="flex justify-between items-start mb-4">
       <div className="p-3 bg-primary/10 rounded-xl text-primary group-hover:bg-primary group-hover:text-[#1b1b1b] transition-colors">
         <span className="material-symbols-outlined text-[24px]">{icon}</span>
@@ -41,7 +41,7 @@ const DashboardOverview = () => {
       </div>
 
       {/* Top Links Section */}
-      <div className="bg-white border border-slate-200 rounded-2xl p-4 md:p-6">
+      <div className="bg-card-bg border border-card-border rounded-2xl p-4 md:p-6 hover:shadow-card-mint transition-all">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-xl font-bold text-[#1b1b1b]">Top Performing Links</h2>
           <button className="text-primary text-sm font-bold hover:underline">View All</button>

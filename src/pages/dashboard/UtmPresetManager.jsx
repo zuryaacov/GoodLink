@@ -242,7 +242,7 @@ const UtmPresetManager = () => {
   const normalizedPlan = (planType || '').toLowerCase();
   if (normalizedPlan === 'free' || normalizedPlan === 'start' || normalizedPlan === 'starter') {
     return (
-      <div className="relative min-h-[480px] w-full flex items-center justify-center p-6 overflow-hidden bg-white rounded-2xl border border-dashed border-slate-200">
+      <div className="relative min-h-[480px] w-full flex items-center justify-center p-6 overflow-hidden bg-card-bg rounded-2xl border border-dashed border-card-border">
         <div className="absolute inset-0 opacity-[0.18] blur-[3px] pointer-events-none select-none p-6">
           <div className="max-w-5xl mx-auto space-y-6">
             <div className="h-10 bg-[#141b2e] rounded-md w-1/3 mb-8" />
@@ -310,7 +310,7 @@ const UtmPresetManager = () => {
       </div>
 
       {presets.length === 0 ? (
-        <div className="bg-slate-800/50 border border-slate-700 rounded-2xl p-12 text-center">
+        <div className="bg-card-bg border border-card-border rounded-2xl p-12 text-center hover:shadow-card-mint transition-all">
           <span className="material-symbols-outlined text-6xl text-slate-600 mb-4">campaign</span>
           <h3 className="text-xl font-bold text-[#1b1b1b] mb-2">No UTM Presets Yet</h3>
           <p className="text-[#1b1b1b] mb-6">
@@ -336,7 +336,7 @@ const UtmPresetManager = () => {
             return (
               <div
                 key={preset.id}
-                className="bg-slate-800/50 border border-slate-700 rounded-xl p-6 hover:border-slate-600 transition-all"
+                className="bg-card-bg border border-card-border rounded-xl p-6 hover:shadow-card-mint transition-all"
               >
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex-1">

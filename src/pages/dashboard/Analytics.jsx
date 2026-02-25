@@ -53,7 +53,7 @@ const relativeTime = (dateString) => {
 };
 
 const KPICard = ({ title, value, change, trend, icon, iconBgClass, iconColorClass }) => (
-  <div className="bg-white border border-slate-200 rounded-2xl p-5 transition-all hover:border-primary hover:shadow-[0_4px_20px_rgba(11,153,111,0.1)]">
+  <div className="bg-card-bg border border-card-border rounded-2xl p-5 transition-all hover:shadow-card-mint">
     <div className="flex justify-between items-start mb-4">
       <div
         className={`p-2 rounded-lg ${iconBgClass || 'bg-[#135bec]/10'} ${iconColorClass || 'text-[#135bec]'}`}
@@ -84,7 +84,7 @@ const HumanVsBotCard = ({ humanCount, botCount, unknownCount }) => {
   const botPct = total ? (botCount / total) * 100 : 0;
   const unknownPct = total ? (unknownCount / total) * 100 : 0;
   return (
-    <div className="bg-white border border-slate-200 rounded-2xl p-6 flex flex-col items-center transition-all hover:border-primary hover:shadow-[0_4px_20px_rgba(11,153,111,0.1)] lg:col-span-1">
+    <div className="bg-card-bg border border-card-border rounded-2xl p-6 flex flex-col items-center transition-all hover:shadow-card-mint lg:col-span-1">
       <div className="w-full flex justify-between items-center mb-6">
         <h3 className="text-sm font-bold text-gray-200">Human vs. Bot Ratio</h3>
         <button type="button" className="text-slate-600 hover:text-[#1b1b1b] p-1">
@@ -128,7 +128,7 @@ const GeoProgressCard = ({ geographic }) => {
   const total = geographic.reduce((s, i) => s + i.value, 0);
   const colors = ['#135bec', '#FF10F0', '#10b981', '#eab308'];
   return (
-    <div className="bg-white border border-slate-200 rounded-2xl p-6 transition-all hover:border-primary hover:shadow-[0_4px_20px_rgba(11,153,111,0.1)] lg:col-span-2">
+    <div className="bg-card-bg border border-card-border rounded-2xl p-6 transition-all hover:shadow-card-mint lg:col-span-2">
       <div className="w-full flex justify-between items-center mb-6">
         <h3 className="text-sm font-bold text-gray-200">Geographic Distribution (Top 15)</h3>
         <button type="button" className="text-[#135bec] text-xs font-bold hover:underline">
@@ -433,7 +433,7 @@ const Analytics = () => {
       </div>
 
       {/* Traffic Log */}
-      <div className="bg-white border border-slate-200 rounded-2xl flex flex-col transition-all hover:border-primary hover:shadow-[0_4px_20px_rgba(11,153,111,0.1)]">
+      <div className="bg-card-bg border border-card-border rounded-2xl flex flex-col transition-all hover:shadow-card-mint">
         <div className="p-6 border-b border-slate-200 flex justify-between items-center">
           <h3 className="text-sm font-bold text-gray-200">Traffic Log</h3>
           <div className="flex gap-2">

@@ -892,7 +892,7 @@ const LinkManager = () => {
                       goToSpace(space.id);
                     }
                   }}
-                  className="group relative text-left bg-white border border-slate-200 rounded-[1.25rem] p-6 flex flex-col min-h-[240px] transition-all duration-300 hover:border-primary hover:shadow-[0_12px_30px_rgba(255,0,229,0.18)]"
+                  className="group relative text-left bg-card-bg border border-card-border rounded-[1.25rem] p-6 flex flex-col min-h-[240px] transition-all duration-300 hover:shadow-card-mint"
                 >
                   <div className="flex items-start justify-between mb-6">
                     <div>
@@ -943,7 +943,7 @@ const LinkManager = () => {
                     )}
                   </div>
 
-                  <div className="bg-white border border-slate-200 rounded-xl p-4 mb-6">
+                  <div className="bg-card-bg border border-card-border rounded-xl p-4 mb-6">
                     <div className="text-[10px] text-gray-500 font-bold uppercase mb-1 tracking-widest">
                       Total {kindLabel} Clicks
                     </div>
@@ -991,7 +991,7 @@ const LinkManager = () => {
 
       {/* Links List */}
       {directLinks.length === 0 && childSpaces.length === 0 ? (
-        <div className="bg-white border border-slate-200 rounded-2xl p-4 md:p-6 w-full">
+        <div className="bg-card-bg border border-card-border rounded-2xl p-4 md:p-6 w-full hover:shadow-card-mint transition-all">
           <div className="text-center py-12">
             <span className="material-symbols-outlined text-6xl text-slate-600 mb-4">link_off</span>
             <p className="text-[#1b1b1b] text-lg mb-2">No items yet</p>
@@ -1009,7 +1009,7 @@ const LinkManager = () => {
             return (
               <div
                 key={link.id}
-                className={`relative bg-white border border-slate-200 rounded-[1.25rem] p-6 flex flex-col h-full transition-all duration-300 ease-out overflow-visible ${
+                className={`relative bg-card-bg border border-card-border rounded-[1.25rem] p-6 flex flex-col h-full transition-all duration-300 ease-out overflow-visible hover:shadow-card-mint ${
                   !isActive ? 'opacity-70' : ''
                 } ${isActive ? 'hover:border-[#0b996f] hover:shadow-[0_12px_30px_rgba(19,91,236,0.15)]' : ''}`}
               >
@@ -1051,7 +1051,7 @@ const LinkManager = () => {
                 />
 
                 {/* Short Link box */}
-                <div className="bg-white border border-slate-200 rounded-xl p-4 mb-6">
+                <div className="bg-card-bg border border-card-border rounded-xl p-4 mb-6">
                   <div className="flex items-center justify-between gap-2">
                     <div className="flex flex-col min-w-0 flex-1">
                       <span className="text-[10px] text-gray-500 font-bold uppercase mb-1 tracking-widest">

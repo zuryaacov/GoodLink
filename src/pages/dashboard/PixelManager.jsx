@@ -338,7 +338,7 @@ const PixelManager = () => {
   // Show upgrade paywall only if explicitly not PRO
   if (normalizedPlan && normalizedPlan !== 'pro') {
     return (
-      <div className="relative min-h-[480px] w-full flex items-center justify-center p-6 overflow-hidden bg-white rounded-2xl border border-dashed border-slate-200">
+      <div className="relative min-h-[480px] w-full flex items-center justify-center p-6 overflow-hidden bg-card-bg rounded-2xl border border-dashed border-card-border">
         {/* Background mock layout */}
         <div className="absolute inset-0 opacity-[0.18] blur-[3px] pointer-events-none select-none p-6">
           <div className="max-w-5xl mx-auto space-y-6">
@@ -450,7 +450,7 @@ const PixelManager = () => {
 
       {/* Pixels List */}
       {pixels.length === 0 ? (
-        <div className="bg-white border border-slate-200 rounded-2xl p-4 md:p-6 w-full">
+        <div className="bg-card-bg border border-card-border rounded-2xl p-4 md:p-6 w-full hover:shadow-card-mint transition-all">
           <div className="text-center py-12">
             <span className="material-symbols-outlined text-6xl text-slate-600 mb-4">
               ads_click
@@ -464,7 +464,7 @@ const PixelManager = () => {
           {pixels.map((pixel) => (
             <div
               key={pixel.id}
-              className="bg-white border border-slate-200 rounded-xl p-5 transition-all hover:bg-white/5 hover:border-primary/30 flex flex-col gap-4"
+              className="bg-card-bg border border-card-border rounded-xl p-5 transition-all hover:shadow-card-mint flex flex-col gap-4"
             >
               {/* Header with Logo and Name */}
               <div className="flex items-start gap-3">

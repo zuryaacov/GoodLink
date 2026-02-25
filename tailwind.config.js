@@ -21,6 +21,8 @@ export default {
           foreground: "hsl(var(--accent-foreground))",
         },
         "nav-bg": "#f9fff6",
+        "card-bg": "#F8FAFB",
+        "card-border": "#E5E9E8",
         "background-light": "#f6f6f8",
         "background-dark": "#101622",
         background: "hsl(var(--background))",
@@ -60,6 +62,9 @@ export default {
       },
       fontFamily: {
         display: ["Inter", "sans-serif"],
+      },
+      boxShadow: {
+        "card-mint": "0 4px 20px rgba(0, 245, 155, 0.25)",
       },
     },
   },

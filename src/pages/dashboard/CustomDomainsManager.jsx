@@ -336,7 +336,7 @@ const CustomDomainsManager = () => {
   // Show upgrade paywall only if explicitly FREE or STARTER
   if (normalizedPlan === 'free' || normalizedPlan === 'start' || normalizedPlan === 'starter') {
     return (
-      <div className="relative min-h-[480px] w-full flex items-center justify-center p-6 overflow-hidden bg-white rounded-2xl border border-dashed border-slate-200">
+      <div className="relative min-h-[480px] w-full flex items-center justify-center p-6 overflow-hidden bg-card-bg rounded-2xl border border-dashed border-card-border">
         {/* Background mock layout */}
         <div className="absolute inset-0 opacity-[0.18] blur-[3px] pointer-events-none select-none p-6">
           <div className="max-w-5xl mx-auto space-y-6">
@@ -443,7 +443,7 @@ const CustomDomainsManager = () => {
 
       {/* Domains List */}
       {domains.length === 0 ? (
-        <div className="bg-white border border-slate-200 rounded-2xl p-4 md:p-6 w-full">
+        <div className="bg-card-bg border border-card-border rounded-2xl p-4 md:p-6 w-full hover:shadow-card-mint transition-all">
           <div className="text-center py-12">
             <span className="material-symbols-outlined text-6xl text-slate-600 mb-4">public</span>
             <p className="text-[#1b1b1b] text-lg mb-2">No custom domains yet</p>
@@ -455,7 +455,7 @@ const CustomDomainsManager = () => {
           {domains.map((domain) => (
             <div
               key={domain.id}
-              className="bg-white border border-slate-200 rounded-2xl p-6 md:p-8 transition-all hover:bg-white/5 hover:border-primary/40 flex flex-col gap-6 shadow-2xl"
+              className="bg-card-bg border border-card-border rounded-2xl p-6 md:p-8 transition-all hover:shadow-card-mint flex flex-col gap-6"
             >
               {/* Domain Name & Status */}
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b border-slate-200">
@@ -551,7 +551,7 @@ const CustomDomainsManager = () => {
 
                   if (!displayedRecords || displayedRecords.length === 0) {
                     return (
-                      <div className="bg-white border border-slate-200 rounded-xl p-4 text-sm text-[#1b1b1b]">
+                      <div className="bg-card-bg border border-card-border rounded-xl p-4 text-sm text-[#1b1b1b]">
                         {dnsLoadingByDomainId[domain.id]
                           ? 'Loading DNS records...'
                           : 'No DNS records available yet.'}
@@ -564,7 +564,7 @@ const CustomDomainsManager = () => {
                       {displayedRecords.map((record, idx) => (
                         <div
                           key={idx}
-                          className="bg-white border border-slate-200 rounded-xl p-4 md:p-6 space-y-4 hover:border-primary/20 transition-all shadow-inner"
+                          className="bg-card-bg border border-card-border rounded-xl p-4 md:p-6 space-y-4 hover:shadow-card-mint transition-all"
                         >
                           {/* Record Type Header */}
                           <div className="flex items-center gap-3">
