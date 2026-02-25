@@ -899,7 +899,7 @@ const LinkManager = () => {
                       <h3 className="text-2xl font-bold mb-1 group-hover:text-primary transition-colors">
                         {space.name}
                       </h3>
-                      <div className="flex items-center gap-2 text-[#00F0FF] text-xs font-bold uppercase tracking-widest opacity-80">
+                      <div className="flex items-center gap-2 text-[#6358de] text-xs font-bold uppercase tracking-widest opacity-80">
                         <LayoutGrid size={14} />
                         <span>{kindLabel}</span>
                       </div>
@@ -956,9 +956,9 @@ const LinkManager = () => {
                     <div className="text-xs font-bold text-[#1b1b1b]">
                       {new Intl.NumberFormat('en-US').format(stats.linksCount)} Links Inside
                     </div>
-                    <div className="flex items-center gap-2 text-xs font-bold text-[#00F2B5]">
+                    <div className="flex items-center gap-2 text-xs font-bold text-[#1b1b1b]">
                       <div className="w-2 h-2 rounded-full bg-[#00F2B5] animate-pulse shadow-[0_0_8px_#00F2B5]"></div>
-                      ACTIVE
+                      Active
                     </div>
                   </div>
                 </div>
