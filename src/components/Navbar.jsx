@@ -76,7 +76,7 @@ const Navbar = () => {
             {navLinks.map((link) => (
               <a
                 key={link.name}
-                className="text-[#1b1b1b] hover:text-primary transition-colors text-sm font-medium leading-normal"
+                className="text-[#1b1b1b] hover:text-primary transition-colors text-base font-bold leading-normal"
                 href={link.href}
               >
                 {link.name}
@@ -145,7 +145,7 @@ const Navbar = () => {
                   <a
                     key={link.name}
                     onClick={() => setIsOpen(false)}
-                    className="text-[#1b1b1b] hover:text-primary transition-colors text-lg font-bold"
+                    className="text-[#1b1b1b] hover:text-primary transition-colors text-xl font-bold"
                     href={link.href}
                   >
                     {link.name}
