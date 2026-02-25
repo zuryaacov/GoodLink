@@ -978,14 +978,12 @@ const LinkManager = () => {
 
       {/* Individual links divider */}
       {directLinks.length > 0 && (
-        <div className="relative flex items-center gap-6 py-4">
-          <div className="h-[2px] flex-1 bg-gradient-to-r from-transparent via-[#0b996f]/40 to-[#0b996f]"></div>
-          <div className="px-8 py-2 rounded-full border border-[#0b996f]/30 bg-slate-50 shadow-[0_0_30px_rgba(19,91,236,0.2)]">
-            <span className="text-sm font-semibold text-[#1b1b1b] tracking-wider whitespace-nowrap">
-              Links
-            </span>
-          </div>
-          <div className="h-[2px] flex-1 bg-gradient-to-r from-[#0b996f] via-[#0b996f]/40 to-transparent"></div>
+        <div className="relative flex py-5 items-center">
+          <div className="flex-grow border-t border-[#E5E9E8]"></div>
+          <span className="flex-shrink mx-4 text-xs font-bold uppercase px-3 py-1 rounded-full bg-[#F4F7F6]" style={{ color: '#001E22' }}>
+            Links
+          </span>
+          <div className="flex-grow border-t border-[#E5E9E8]"></div>
         </div>
       )}
 
