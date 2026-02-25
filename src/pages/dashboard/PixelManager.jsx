@@ -480,13 +480,13 @@ const PixelManager = () => {
               {/* Pixel ID */}
               <div className="p-3 bg-white rounded-lg border border-slate-200">
                 <p className="text-xs text-slate-500 mb-1">Pixel ID</p>
-                <p className="font-mono text-sm text-slate-300 break-all">{pixel.pixel_id || ''}</p>
+                <p className="font-mono text-sm text-black break-all">{pixel.pixel_id || ''}</p>
               </div>
 
               {/* Event Info */}
               <div className="flex items-center gap-2 text-xs">
                 <span className="text-slate-500">Event:</span>
-                <span className="text-slate-300 font-medium">
+                <span className="text-black font-medium">
                   {pixel.event_type === 'custom' ? pixel.custom_event_name : pixel.event_type}
                 </span>
               </div>
@@ -542,7 +542,7 @@ const PixelManager = () => {
                     />
                   </button>
                   <span className="text-sm text-[#1b1b1b] font-medium">
-                    {pixel.status === 'active' ? 'ACTIVE' : 'PAUSED'}
+                    {pixel.status === 'active' ? 'Active' : 'Paused'}
                   </span>
                 </div>
 
