@@ -121,7 +121,7 @@ const Sidebar = ({ className = '', onLinkClick }) => {
   };
 
   // Base classes with default width if not overridden
-  const baseClasses = `flex flex-col bg-white border-r border-slate-200 pt-6 ${className.includes('w-') ? '' : 'w-64'} ${className.includes('h-') ? '' : 'h-screen'} ${className}`;
+  const baseClasses = `flex flex-col bg-nav-bg border-r border-slate-200 pt-6 ${className.includes('w-') ? '' : 'w-64'} ${className.includes('h-') ? '' : 'h-screen'} ${className}`;
 
   return (
     <aside className={baseClasses}>

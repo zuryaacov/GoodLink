@@ -76,7 +76,7 @@ const DashboardLayout = () => {
                 animate={{ x: 0 }}
                 exit={{ x: '-100%' }}
                 transition={{ duration: 0.3, ease: 'easeInOut' }}
-                className="absolute left-0 top-0 bottom-0 w-64 bg-white shadow-2xl flex flex-col border-r border-slate-200"
+                className="absolute left-0 top-0 bottom-0 w-64 bg-nav-bg shadow-2xl flex flex-col border-r border-slate-200"
               >
                 <div className="flex justify-between items-center p-4 border-b border-slate-200 flex-shrink-0">
                   <span className="text-[#1b1b1b] font-bold ml-2">Menu</span>
