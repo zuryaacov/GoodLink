@@ -97,7 +97,7 @@ const Navbar = () => {
               <>
                 <Link
                   to="/dashboard"
-                  className="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-primary text-[#1b1b1b] hover:bg-primary/90 text-sm font-bold leading-normal tracking-[0.015em] transition-colors"
+                  className="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-[#cdffb7] text-[#1b1b1b] hover:bg-[#b8e99e] text-sm font-bold leading-normal tracking-[0.015em] transition-colors"
                 >
                   <span className="truncate">Dashboard</span>
                 </Link>

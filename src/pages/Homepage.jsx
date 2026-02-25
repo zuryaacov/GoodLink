@@ -1,12 +1,23 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import Navbar from '../components/Navbar';
 import Hero from '../components/Hero';
 import Features from '../components/Features';
 import AnalyticsSection from '../components/AnalyticsSection';
 import CTASection from '../components/CTASection';
 import Footer from '../components/Footer';
+import { supabase } from '../lib/supabase';
 
 const Homepage = () => {
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user: u } }) => setUser(u));
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+    return () => subscription?.unsubscribe();
+  }, []);
+
   useEffect(() => {
     if (window.location.hash === '#pricing') {
       const el = document.getElementById('pricing');
@@ -23,7 +34,7 @@ const Homepage = () => {
     <div className="relative flex min-h-screen w-full flex-col">
       <Navbar />
       <main className="flex-1">
-        <Hero />
+        <Hero user={user} />
         <Features />
         <AnalyticsSection />
         <CTASection />

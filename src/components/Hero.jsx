@@ -1,7 +1,8 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 
-const Hero = () => {
+const Hero = ({ user }) => {
   return (
     <section className="relative px-6 py-12 md:px-20 lg:py-24 overflow-hidden">
       <div className="layout-content-container mx-auto max-w-[1200px] flex flex-col">
@@ -26,12 +27,14 @@ const Hero = () => {
               </h2>
             </div>
             <div className="flex flex-wrap gap-4 justify-center lg:justify-start">
-              <button className="flex h-12 min-w-[140px] cursor-pointer items-center justify-center rounded-lg bg-primary hover:bg-primary/90 px-6 text-[#1b1b1b] text-base font-bold transition-all shadow-lg shadow-primary/25">
-                Get Started for Free
-              </button>
-              <button className="flex h-12 min-w-[140px] cursor-pointer items-center justify-center rounded-lg bg-slate-200 dark:bg-slate-200 hover:bg-slate-300 dark:hover:bg-slate-300 px-6 text-slate-900 dark:text-[#1b1b1b] text-base font-bold transition-all">
-                View Demo
-              </button>
+              {!user && (
+                <Link
+                  to="/login"
+                  className="flex h-12 min-w-[140px] cursor-pointer items-center justify-center rounded-lg bg-[#cdffb7] hover:bg-[#b8e99e] px-6 text-[#1b1b1b] text-base font-bold transition-all"
+                >
+                  Get started
+                </Link>
+              )}
             </div>
             <div className="flex items-center gap-2 justify-center lg:justify-start text-sm text-slate-500 dark:text-[#1b1b1b]">
               <span className="material-symbols-outlined text-lg">check_circle</span>
