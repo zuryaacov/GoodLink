@@ -49,14 +49,18 @@ const AdminOverviewPage = () => {
   const geoRulesList = (geoRules) => {
     if (!Array.isArray(geoRules) || geoRules.length === 0) return null;
     return geoRules.map((rule, i) => (
-      <div key={i} className="text-sm text-slate-600 pl-2 border-l-2 border-slate-200 mt-1">
-        <span className="font-medium text-slate-700">{rule.country || 'Country'}</span>
+      <div
+        key={i}
+        className="text-base text-slate-700 pl-3 border-l-2 border-slate-300 mt-2 break-words"
+      >
+        <span className="font-bold text-slate-800">{rule.country || 'Country'}</span>
         {' → '}
         <a
           href={rule.url}
           target="_blank"
           rel="noopener noreferrer"
           className="text-primary hover:underline break-all"
+          style={{ wordBreak: 'break-word', overflowWrap: 'anywhere' }}
         >
           {rule.url}
         </a>
@@ -64,77 +68,81 @@ const AdminOverviewPage = () => {
     ));
   };
 
+  const urlBlock = (label, url, required = false) => {
+    if (!required && !url) return null;
+    return (
+      <div className="mt-3">
+        <span className="block text-sm font-bold text-slate-700 mb-1">{label}</span>
+        {url ? (
+          <a
+            href={url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-base font-medium text-primary hover:underline break-all block"
+            style={{ wordBreak: 'break-word', overflowWrap: 'anywhere' }}
+          >
+            {url}
+          </a>
+        ) : (
+          <span className="text-base font-medium text-slate-500">—</span>
+        )}
+      </div>
+    );
+  };
+
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-bold text-[#1b1b1b]">Admin Panel</h1>
 
-      <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-        <h2 className="text-lg font-semibold text-[#1b1b1b] mb-2">System Management</h2>
-        <p className="text-slate-600 mb-6">
+      <div className="rounded-2xl border border-slate-200 bg-white p-4 sm:p-6 shadow-sm">
+        <h2 className="text-lg font-bold text-[#1b1b1b] mb-2">System Management</h2>
+        <p className="text-slate-600 mb-6 text-base">
           Welcome to the admin overview. Here you can manage users, view global analytics, and
           monitor system health. Use the section below to approve or reject pending links.
         </p>
 
-        <h3 className="text-base font-semibold text-[#1b1b1b] mb-3">Pending links</h3>
+        <h3 className="text-lg font-bold text-[#1b1b1b] mb-4">Pending links</h3>
         {loading ? (
-          <p className="text-slate-500">Loading...</p>
+          <p className="text-slate-500 text-base font-medium">Loading...</p>
         ) : pendingLinks.length === 0 ? (
-          <p className="text-slate-500">No pending links.</p>
+          <p className="text-slate-500 text-base font-medium">No pending links.</p>
         ) : (
-          <ul className="space-y-4">
+          <ul className="space-y-5">
             {pendingLinks.map((link) => (
               <li
                 key={link.id}
-                className="p-4 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-slate-50"
+                className="p-4 sm:p-5 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-slate-50"
               >
-                <div className="flex flex-wrap items-start justify-between gap-3">
-                  <div className="flex-1 min-w-0">
-                    <p className="font-medium text-[#1b1b1b] truncate" title={link.name}>
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
+                  <div className="min-w-0 flex-1 w-full">
+                    <p
+                      className="text-lg font-bold text-[#1b1b1b] mb-2 break-words"
+                      title={link.name}
+                    >
                       {link.name || 'Unnamed link'}
                     </p>
-                    <p className="text-xs text-slate-500 mt-0.5">
-                      Short:{' '}
+                    <div className="space-y-0">
+                      <span className="block text-sm font-bold text-slate-700 mt-2">Short URL</span>
                       <a
                         href={link.short_url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-primary hover:underline"
+                        className="text-base font-medium text-primary hover:underline break-all block mt-0.5"
+                        style={{ wordBreak: 'break-word', overflowWrap: 'anywhere' }}
                       >
                         {link.short_url}
                       </a>
-                    </p>
-                    <p className="text-sm text-slate-700 mt-2">
-                      <span className="font-medium">Target URL:</span>{' '}
-                      <a
-                        href={link.target_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-primary hover:underline break-all"
-                      >
-                        {link.target_url || '—'}
-                      </a>
-                    </p>
-                    {link.fallback_url && (
-                      <p className="text-sm text-slate-700 mt-1">
-                        <span className="font-medium">Fallback / Redirect URL:</span>{' '}
-                        <a
-                          href={link.fallback_url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-primary hover:underline break-all"
-                        >
-                          {link.fallback_url}
-                        </a>
-                      </p>
-                    )}
+                    </div>
+                    {urlBlock('Target URL', link.target_url, true)}
+                    {urlBlock('Fallback / Redirect URL', link.fallback_url)}
                     {geoRulesList(link.geo_rules)}
                   </div>
-                  <div className="flex items-center gap-2 shrink-0">
+                  <div className="flex items-center gap-2 shrink-0 pt-2 sm:pt-0 sm:pl-4 border-t border-slate-200 sm:border-t-0 sm:border-l sm:border-slate-200">
                     <button
                       type="button"
                       onClick={() => setLinkStatus(link.id, 'active')}
                       disabled={actionLoading === link.id}
-                      className="px-4 py-2 rounded-xl bg-secondary-green text-[#1b1b1b] font-medium hover:opacity-90 disabled:opacity-50 transition-opacity"
+                      className="px-4 py-2.5 rounded-xl bg-secondary-green text-[#1b1b1b] text-base font-bold hover:opacity-90 disabled:opacity-50 transition-opacity"
                     >
                       {actionLoading === link.id ? '…' : 'Approve'}
                     </button>
@@ -142,7 +150,7 @@ const AdminOverviewPage = () => {
                       type="button"
                       onClick={() => setLinkStatus(link.id, 'rejected')}
                       disabled={actionLoading === link.id}
-                      className="px-4 py-2 rounded-xl border border-red-300 text-red-600 font-medium hover:bg-red-50 disabled:opacity-50 transition-colors"
+                      className="px-4 py-2.5 rounded-xl border-2 border-red-400 text-red-600 text-base font-bold hover:bg-red-50 disabled:opacity-50 transition-colors"
                     >
                       {actionLoading === link.id ? '…' : 'Reject'}
                     </button>
