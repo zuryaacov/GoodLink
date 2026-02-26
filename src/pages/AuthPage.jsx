@@ -123,7 +123,7 @@ const AuthPage = () => {
     }
   };
 
-  // Check for pending plan after OAuth redirect; sync Google name to profile
+  // Check for pending plan after OAuth redirect; sync Google name to profile, then go to dashboard
   useEffect(() => {
     const pendingPlan = sessionStorage.getItem('pendingPlan');
     if (supabase) {
@@ -137,8 +137,10 @@ const AuthPage = () => {
             await openCheckout(pendingPlan);
             sessionStorage.removeItem('pendingPlan');
             setTimeout(() => {
-              navigate('/dashboard');
+              navigate('/dashboard/links');
             }, 2000);
+          } else {
+            navigate('/dashboard/links');
           }
         }
       };
