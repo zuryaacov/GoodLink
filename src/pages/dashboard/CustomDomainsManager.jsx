@@ -357,7 +357,7 @@ const CustomDomainsManager = () => {
             <div className="relative">
               <div className="absolute inset-0 bg-[#6358de] blur-2xl opacity-25 animate-pulse" />
               <div className="relative bg-gradient-to-br from-[#6358de] to-[#7c3aed] p-4 rounded-2xl shadow-lg shadow-[#6358de]/40">
-                <Lock className="w-8 h-8 text-[#1b1b1b]" />
+                <Lock className="w-8 h-8 text-[#c0ffa5]" />
               </div>
             </div>
           </div>
