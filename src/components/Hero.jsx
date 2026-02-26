@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 
 const Hero = ({ user }) => {
   return (
-    <section className="relative px-6 py-12 md:px-20 lg:py-24 overflow-hidden bg-[#f9fff6]">
+    <section className="relative px-6 py-12 md:px-20 lg:py-24 overflow-hidden bg-[#d7fec8]">
       <div className="layout-content-container mx-auto max-w-[1200px] flex flex-col">
         <div className="flex flex-col gap-10 lg:flex-row items-center">
           {/* Hero Text */}
