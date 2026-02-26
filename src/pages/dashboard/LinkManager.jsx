@@ -1035,11 +1035,12 @@ const LinkManager = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full">
           {directLinks.map((link) => {
             const isActive = link.status === 'active';
+            const isPending = link.status === 'pending';
             return (
               <div
                 key={link.id}
                 className={`relative bg-card-bg border border-card-border rounded-[1.25rem] p-6 flex flex-col h-full transition-all duration-300 ease-out overflow-visible hover:shadow-card-mint ${
-                  !isActive ? 'opacity-70' : ''
+                  !isActive && !isPending ? 'opacity-70' : ''
                 } ${isActive ? 'hover:border-[#0b996f] hover:shadow-[0_12px_30px_rgba(19,91,236,0.15)]' : ''}`}
               >
                 {/* Header: title, destination, menu */}
@@ -1107,22 +1108,30 @@ const LinkManager = () => {
                 {/* Footer: Active (left), QR (center), Clicks (right) */}
                 <div className="mt-auto flex justify-between items-center pt-4 border-t border-slate-200">
                   <div className="flex items-center gap-3">
-                    <label className="relative inline-block w-11 h-6 cursor-pointer select-none">
-                      <input
-                        type="checkbox"
-                        checked={isActive}
-                        onChange={() => handleToggleStatus(link.id, link.status || 'active')}
-                        className="absolute opacity-0 w-0 h-0 peer"
-                        aria-label="Toggle link status"
-                      />
-                      <span className="absolute inset-0 rounded-full bg-[#374151] transition-colors peer-checked:bg-[#00F59B]" />
-                      <span className="absolute left-[3px] bottom-[3px] w-[18px] h-[18px] bg-white rounded-full transition-transform pointer-events-none peer-checked:translate-x-5" />
-                    </label>
-                    <span
-                      className={`text-sm font-semibold ${isActive ? 'text-slate-700' : 'text-gray-500'}`}
-                    >
-                      {isActive ? 'Active' : 'Paused'}
-                    </span>
+                    {isPending ? (
+                      <span className="text-sm font-semibold text-amber-600">
+                        Awaiting Approval
+                      </span>
+                    ) : (
+                      <>
+                        <label className="relative inline-block w-11 h-6 cursor-pointer select-none">
+                          <input
+                            type="checkbox"
+                            checked={isActive}
+                            onChange={() => handleToggleStatus(link.id, link.status || 'active')}
+                            className="absolute opacity-0 w-0 h-0 peer"
+                            aria-label="Toggle link status"
+                          />
+                          <span className="absolute inset-0 rounded-full bg-[#374151] transition-colors peer-checked:bg-[#00F59B]" />
+                          <span className="absolute left-[3px] bottom-[3px] w-[18px] h-[18px] bg-white rounded-full transition-transform pointer-events-none peer-checked:translate-x-5" />
+                        </label>
+                        <span
+                          className={`text-sm font-semibold ${isActive ? 'text-slate-700' : 'text-gray-500'}`}
+                        >
+                          {isActive ? 'Active' : 'Paused'}
+                        </span>
+                      </>
+                    )}
                   </div>
                   <button
                     onClick={() => setQrModal({ isOpen: true, link })}
