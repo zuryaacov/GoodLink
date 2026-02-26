@@ -137,7 +137,7 @@ const AuthPage = () => {
             await openCheckout(pendingPlan);
             sessionStorage.removeItem('pendingPlan');
             setTimeout(() => {
-              navigate('/dashboard/links');
+              navigate('/dashboard');
             }, 2000);
           }
         }
@@ -299,10 +299,10 @@ const AuthPage = () => {
         if (planParam && data?.user) {
           await openCheckout(planParam);
           setTimeout(() => {
-            navigate('/dashboard/links');
+            navigate('/dashboard');
           }, 2000);
         } else {
-          navigate('/dashboard/links');
+          navigate('/dashboard');
         }
       } else if (view === 'signup') {
         // Full name validation
@@ -427,7 +427,7 @@ const AuthPage = () => {
           );
         } else if (data?.session) {
           // User is already confirmed (if email confirmation is disabled)
-          navigate('/dashboard/links');
+          navigate('/dashboard');
         }
         // Note: For signup, checkout will open after email confirmation when user signs in
       } else if (view === 'forgot-password') {
