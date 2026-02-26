@@ -41,7 +41,7 @@ const Navbar = () => {
   ];
 
   return (
-    <header className="sticky top-0 z-50 flex flex-col border-b border-solid border-[#0b996f]/20 bg-[#c0ffa5] backdrop-blur-md">
+    <header className="sticky top-0 z-50 flex flex-col border-b border-solid border-[#0b996f]/20 bg-[#f9fff6] backdrop-blur-md">
       <div className="flex items-center justify-between px-6 py-4 lg:px-20">
         <Link
           to="/"
