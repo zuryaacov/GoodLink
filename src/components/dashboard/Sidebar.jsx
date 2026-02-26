@@ -11,12 +11,15 @@ const sidebarLinks = [
   { name: 'Account Settings', href: '/dashboard/settings', icon: 'manage_accounts' },
 ];
 
+const adminLink = { name: 'Admin Panel', href: '/dashboard/admin', icon: 'admin_panel_settings' };
+
 const Sidebar = ({ className = '', onLinkClick }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [userName, setUserName] = useState('');
   const [planType, setPlanType] = useState('free');
   const [customerPortalUrl, setCustomerPortalUrl] = useState(null);
+  const [userRole, setUserRole] = useState('user');
 
   useEffect(() => {
     const fetchUserInfo = async () => {
@@ -30,7 +33,7 @@ const Sidebar = ({ className = '', onLinkClick }) => {
         // Get user profile (full_name, plan, customer portal URL)
         const { data: profile, error } = await supabase
           .from('profiles')
-          .select('full_name, plan_type, lemon_squeezy_customer_portal_url')
+          .select('full_name, plan_type, lemon_squeezy_customer_portal_url, role')
           .eq('user_id', user.id)
           .single();
 
@@ -52,14 +55,17 @@ const Sidebar = ({ className = '', onLinkClick }) => {
           } else {
             setCustomerPortalUrl(null);
           }
+          setUserRole(profile?.role === 'admin' ? 'admin' : 'user');
         } else {
           setPlanType('free');
           setCustomerPortalUrl(null);
+          setUserRole('user');
         }
       } catch (error) {
         console.error('Error fetching user info:', error);
         setPlanType('free');
         setCustomerPortalUrl(null);
+        setUserRole('user');
       }
     };
 
@@ -155,7 +161,7 @@ const Sidebar = ({ className = '', onLinkClick }) => {
       </div>
 
       <nav className="flex-1 px-3 flex flex-col gap-1 overflow-y-auto">
-        {sidebarLinks.map((link) => (
+        {[...sidebarLinks, ...(userRole === 'admin' ? [adminLink] : [])].map((link) => (
           <NavLink
             key={link.name}
             to={link.href}

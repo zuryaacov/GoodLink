@@ -14,6 +14,8 @@ import CustomDomainsManager from './pages/dashboard/CustomDomainsManager';
 import AddDomainPage from './pages/dashboard/AddDomainPage';
 import LinkBuilderPage from './pages/dashboard/LinkBuilderPage';
 import AccountSettingsPage from './pages/dashboard/AccountSettingsPage';
+import AdminOverviewPage from './pages/dashboard/AdminOverviewPage';
+import AdminGuard from './components/AdminGuard';
 import { supabase } from './lib/supabase';
 
 const ProtectedRoute = ({ children }) => {
@@ -103,6 +105,14 @@ function App() {
         <Route path="pixels" element={<PixelManager />} />
         <Route path="domains" element={<CustomDomainsManager />} />
         <Route path="settings" element={<AccountSettingsPage />} />
+        <Route
+          path="admin"
+          element={
+            <AdminGuard>
+              <AdminOverviewPage />
+            </AdminGuard>
+          }
+        />
       </Route>
 
       {/* UTM Preset Builder Routes (without DashboardLayout/navbar) */}
