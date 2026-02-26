@@ -281,9 +281,9 @@ const UtmPresetManager = () => {
         <div className="relative z-10 max-w-xl w-full bg-white/90 backdrop-blur-xl border border-slate-200 shadow-2xl rounded-3xl p-8 md:p-10 text-center">
           <div className="mb-6 flex justify-center">
             <div className="relative">
-              <div className="absolute inset-0 bg-[#6358de] blur-2xl opacity-25 animate-pulse" />
-              <div className="relative bg-gradient-to-br from-[#6358de] to-[#7c3aed] p-4 rounded-2xl shadow-lg shadow-[#6358de]/40">
-                <Lock className="w-8 h-8 text-[#c0ffa5]" />
+              <div className="absolute inset-0 bg-[#c0ffa5] blur-2xl opacity-25 animate-pulse" />
+              <div className="relative bg-gradient-to-br from-[#c0ffa5] to-[#c0ffa5] p-4 rounded-2xl shadow-lg shadow-[#c0ffa5]/40">
+                <Lock className="w-8 h-8 text-[#1b1b1b]" />
               </div>
             </div>
           </div>
