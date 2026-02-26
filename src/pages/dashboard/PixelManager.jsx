@@ -368,7 +368,7 @@ const PixelManager = () => {
             Unlock CAPI Manager
           </h2>
 
-          <p className="text-sm md:text-base text-slate-300 mb-8 leading-relaxed">
+          <p className="text-sm md:text-base text-[#1b1b1b] mb-8 leading-relaxed">
             Your current&nbsp;
             <span className="font-semibold text-[#1b1b1b] italic capitalize">
               {normalizedPlan} plan
@@ -414,9 +414,9 @@ const PixelManager = () => {
             <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
           </button>
 
-          <p className="mt-5 text-xs text-slate-500">
+          <p className="mt-5 text-xs text-[#1b1b1b]">
             CAPI Manager is available on the{' '}
-            <span className="font-semibold text-slate-300">PRO</span> plan.
+            <span className="font-semibold text-[#1b1b1b]">PRO</span> plan.
           </p>
         </div>
       </div>

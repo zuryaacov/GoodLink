@@ -366,7 +366,7 @@ const CustomDomainsManager = () => {
             Unlock Custom Domains
           </h2>
 
-          <p className="text-sm md:text-base text-slate-300 mb-8 leading-relaxed">
+          <p className="text-sm md:text-base text-[#1b1b1b] mb-8 leading-relaxed">
             Your current&nbsp;
             <span className="font-semibold text-[#1b1b1b] italic capitalize">
               {normalizedPlan} plan
@@ -413,10 +413,10 @@ const CustomDomainsManager = () => {
             <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
           </button>
 
-          <p className="mt-5 text-xs text-slate-500">
+          <p className="mt-5 text-xs text-[#1b1b1b]">
             Custom Domains are available on the{' '}
-            <span className="font-semibold text-slate-300">ADVANCED</span> and{' '}
-            <span className="font-semibold text-slate-300">PRO</span> plans.
+            <span className="font-semibold text-[#1b1b1b]">ADVANCED</span> and{' '}
+            <span className="font-semibold text-[#1b1b1b]">PRO</span> plans.
           </p>
         </div>
       </div>

@@ -290,7 +290,7 @@ const UtmPresetManager = () => {
           <h2 className="text-2xl md:text-3xl font-bold text-[#1b1b1b] mb-4 tracking-tight">
             Unlock UTM Presets
           </h2>
-          <p className="text-sm md:text-base text-slate-300 mb-8 leading-relaxed">
+          <p className="text-sm md:text-base text-[#1b1b1b] mb-8 leading-relaxed">
             Your current&nbsp;
             <span className="font-semibold text-[#1b1b1b] italic capitalize">
               {normalizedPlan} plan
