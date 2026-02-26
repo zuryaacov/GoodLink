@@ -294,6 +294,7 @@ const LinkBuilderPage = () => {
           fallback_url: finalFallbackUrl,
           geo_rules: Array.isArray(formData.geoRules) ? formData.geoRules : [],
           space_id: formData.spaceId || null,
+          status: 'pending',
           updated_at: new Date().toISOString(),
         };
         const nullPathsRaw = findNullCharsInPayload(updatePayloadRaw);
@@ -420,6 +421,7 @@ const LinkBuilderPage = () => {
           fallback_url: finalFallbackUrl,
           geo_rules: Array.isArray(formData.geoRules) ? formData.geoRules : [],
           space_id: formData.spaceId || null,
+          status: 'pending',
           created_at: new Date().toISOString(),
         };
         const nullPathsRawInsert = findNullCharsInPayload(insertPayloadRaw);
