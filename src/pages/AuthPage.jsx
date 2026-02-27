@@ -608,7 +608,7 @@ const AuthPage = () => {
       <div className="relative z-10 w-full max-w-md flex flex-col items-center">
         <Logo />
 
-        <div className="w-full bg-white backdrop-blur-xl border border-[#d7fec8]/60 p-8 rounded-3xl shadow-2xl relative shadow-lg">
+        <div className="w-full bg-white backdrop-blur-xl border border-[#d7fec8]/60 p-8 rounded-3xl shadow-2xl relative shadow-[0_0_40px_rgba(99,88,222,0.35)]">
           {planParam && (
             <div className="mb-4 p-3 bg-primary/10 border border-primary/30 rounded-lg text-center">
               <p className="text-sm text-primary font-bold">
@@ -693,7 +693,7 @@ const AuthPage = () => {
                   <button
                     type="submit"
                     disabled={loading}
-                    className="h-12 w-full bg-[#d7fec8] hover:bg-[#c9f3b9] text-[#1b1b1b] font-bold rounded-xl border border-[#6358de] transition-all shadow-lg shadow-[#d7fec8]/40 mt-2 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                    className="h-12 w-full bg-[#d7fec8] hover:bg-[#c9f3b9] text-[#1b1b1b] font-bold rounded-xl transition-all shadow-lg shadow-[#d7fec8]/40 mt-2 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                   >
                     {loading && (
                       <div className="size-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
@@ -878,7 +878,7 @@ const AuthPage = () => {
                   <button
                     type="submit"
                     disabled={loading || !turnstileToken}
-                    className="h-12 w-full bg-[#d7fec8] hover:bg-[#c9f3b9] text-[#1b1b1b] font-bold rounded-xl border border-[#6358de] transition-all shadow-lg shadow-[#d7fec8]/40 mt-2 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                    className="h-12 w-full bg-[#d7fec8] hover:bg-[#c9f3b9] text-[#1b1b1b] font-bold rounded-xl transition-all shadow-lg shadow-[#d7fec8]/40 mt-2 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                   >
                     {loading && (
                       <div className="size-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
@@ -981,7 +981,7 @@ const AuthPage = () => {
                   <button
                     type="submit"
                     disabled={loading}
-                    className="h-12 w-full bg-[#d7fec8] hover:bg-[#c9f3b9] text-[#1b1b1b] font-bold rounded-xl border border-[#6358de] transition-all shadow-lg shadow-[#d7fec8]/40 flex items-center justify-center gap-2"
+                    className="h-12 w-full bg-[#d7fec8] hover:bg-[#c9f3b9] text-[#1b1b1b] font-bold rounded-xl transition-all shadow-lg shadow-[#d7fec8]/40 flex items-center justify-center gap-2"
                   >
                     {loading && (
                       <div className="size-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
