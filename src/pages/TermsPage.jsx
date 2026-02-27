@@ -465,11 +465,11 @@ export function TermsContent() {
           THE FOREGOING LIMITATIONS APPLY REGARDLESS OF WHETHER THE PARTY WAS ADVISED OF THE
           POSSIBILITY OF SUCH DAMAGES OR WHETHER THEY WERE OTHERWISE FORESEEABLE.
         </p>
-        <div className="bg-slate-900 text-white p-8 rounded-[32px] my-8 shadow-xl">
-          <p className="text-sm uppercase tracking-widest text-[#00F59B] font-bold mb-4">
+        <div className="bg-slate-900 text-white p-8 rounded-[32px] my-8 shadow-xl [&_p]:!text-white">
+          <p className="text-sm uppercase tracking-widest !text-[#00F59B] font-bold mb-4">
             Liability Cap
           </p>
-          <p className="text-xl font-semibold leading-relaxed text-white">
+          <p className="text-xl font-semibold leading-relaxed !text-white">
             IN NO EVENT SHALL EITHER PARTY&apos;S TOTAL AGGREGATE LIABILITY ARISING OUT OF OR
             RELATING TO THIS AGREEMENT EXCEED THE TOTAL SUBSCRIPTION FEES PAID BY THE CLIENT TO
             GOODLINK DURING THE SIX (6) MONTH PERIOD IMMEDIATELY PRECEDING THE EVENT GIVING
