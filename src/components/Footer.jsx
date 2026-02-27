@@ -112,12 +112,18 @@ const Footer = () => {
             >
               Careers
             </a>
-            <a
+            <Link
+              to="/terms"
               className="text-sm text-slate-500 dark:text-[#1b1b1b] hover:text-primary transition-colors"
-              href="#"
             >
-              Legal
-            </a>
+              Terms of Service
+            </Link>
+            <Link
+              to="/privacy"
+              className="text-sm text-slate-500 dark:text-[#1b1b1b] hover:text-primary transition-colors"
+            >
+              Privacy Policy
+            </Link>
             <a
               className="text-sm text-slate-500 dark:text-[#1b1b1b] hover:text-primary transition-colors"
               href="#"

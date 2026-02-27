@@ -3,6 +3,8 @@ import { Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import Homepage from './pages/Homepage';
 import AuthPage from './pages/AuthPage';
 import AbuseReportPage from './pages/AbuseReportPage';
+import TermsPage from './pages/TermsPage';
+import PrivacyPage from './pages/PrivacyPage';
 import DashboardLayout from './layouts/DashboardLayout';
 import Analytics from './pages/dashboard/Analytics';
 import LinkManager from './pages/dashboard/LinkManager';
@@ -87,6 +89,8 @@ function App() {
       <Route path="/" element={<Homepage />} />
       <Route path="/login" element={<AuthPage />} />
       <Route path="/abuse" element={<AbuseReportPage />} />
+      <Route path="/terms" element={<TermsPage />} />
+      <Route path="/privacy" element={<PrivacyPage />} />
 
       {/* Dashboard Routes */}
       <Route

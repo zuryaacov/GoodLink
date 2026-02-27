@@ -4,6 +4,7 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { Eye, EyeOff } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { isValidEmail } from '../lib/emailValidation';
+import Modal from '../components/common/Modal';
 
 const AuthPage = () => {
   const [searchParams] = useSearchParams();
@@ -23,6 +24,7 @@ const AuthPage = () => {
   const [turnstileWidgetId, setTurnstileWidgetId] = useState(null);
   const turnstileContainerRef = useRef(null);
   const navigate = useNavigate();
+  const [legalModalType, setLegalModalType] = useState(null); // 'terms' | 'privacy' | null
 
   // Plan checkout URLs mapping
   const planCheckoutUrls = {
@@ -1013,16 +1015,31 @@ const AuthPage = () => {
 
         <div className="mt-8 text-xs text-slate-500 text-center max-w-[280px]">
           By continuing, you agree to GoodLink's{' '}
-          <a href="#" className="underline">
+          <button
+            type="button"
+            onClick={() => setLegalModalType('terms')}
+            className="underline text-[#1b1b1b] hover:text-primary"
+          >
             Terms of Service
-          </a>{' '}
+          </button>{' '}
           and{' '}
-          <a href="#" className="underline">
+          <button
+            type="button"
+            onClick={() => setLegalModalType('privacy')}
+            className="underline text-[#1b1b1b] hover:text-primary"
+          >
             Privacy Policy
-          </a>
+          </button>
           .
         </div>
       </div>
+      <Modal
+        isOpen={!!legalModalType}
+        onClose={() => setLegalModalType(null)}
+        title={legalModalType === 'terms' ? 'Terms of Service' : 'Privacy Policy'}
+        message="Full legal text will be added here soon."
+        type="info"
+      />
     </div>
   );
 };
