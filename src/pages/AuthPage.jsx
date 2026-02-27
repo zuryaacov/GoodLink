@@ -297,14 +297,15 @@ const AuthPage = () => {
         });
         if (error) throw error;
 
-        // If plan is present, open checkout
+        // If plan is present, open checkout, then go to Link Manager
         if (planParam && data?.user) {
           await openCheckout(planParam);
           setTimeout(() => {
-            navigate('/dashboard');
+            navigate('/dashboard/links');
           }, 2000);
         } else {
-          navigate('/dashboard');
+          // Regular login → Link Manager
+          navigate('/dashboard/links');
         }
       } else if (view === 'signup') {
         // Full name validation
@@ -429,7 +430,8 @@ const AuthPage = () => {
           );
         } else if (data?.session) {
           // User is already confirmed (if email confirmation is disabled)
-          navigate('/dashboard');
+          // After signup with immediate session, go to Link Manager
+          navigate('/dashboard/links');
         }
         // Note: For signup, checkout will open after email confirmation when user signs in
       } else if (view === 'forgot-password') {
