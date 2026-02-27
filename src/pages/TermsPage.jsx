@@ -469,7 +469,7 @@ export function TermsContent() {
           <p className="text-sm uppercase tracking-widest text-[#00F59B] font-bold mb-4">
             Liability Cap
           </p>
-          <p className="text-xl font-medium leading-relaxed">
+          <p className="text-xl font-semibold leading-relaxed text-[#E4FFF5]">
             IN NO EVENT SHALL EITHER PARTY&apos;S TOTAL AGGREGATE LIABILITY ARISING OUT OF OR
             RELATING TO THIS AGREEMENT EXCEED THE TOTAL SUBSCRIPTION FEES PAID BY THE CLIENT TO
             GOODLINK DURING THE SIX (6) MONTH PERIOD IMMEDIATELY PRECEDING THE EVENT GIVING
