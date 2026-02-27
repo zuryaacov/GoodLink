@@ -61,7 +61,9 @@ const Step1CoreDetails = ({ formData, updateFormData, generateRandomSlug }) => {
 
       {/* Target URL */}
       <div>
-        <label className="block text-sm font-medium text-[#1b1b1b] mb-2">Target / Affiliate URL</label>
+        <label className="block text-sm font-medium text-[#1b1b1b] mb-2">
+          Target / Affiliate URL
+        </label>
         <textarea
           value={formData.targetUrl}
           onChange={(e) => updateFormData('targetUrl', e.target.value.toLowerCase())}

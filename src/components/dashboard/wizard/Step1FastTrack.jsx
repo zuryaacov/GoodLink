@@ -46,7 +46,7 @@ const Step1FastTrack = ({
           data: { user },
         } = await supabase.auth.getUser();
         if (user) {
-          // Fetch active custom domains from custom_domains table
+          // Fetch active custom domains from custom_domains table 1
           const { data: customDomains, error: domainsError } = await supabase
             .from('custom_domains')
             .select('domain')
