@@ -5,6 +5,7 @@ import { Eye, EyeOff } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { isValidEmail } from '../lib/emailValidation';
 import Modal from '../components/common/Modal';
+import { TermsContent } from './TermsPage';
 
 const AuthPage = () => {
   const [searchParams] = useSearchParams();
@@ -1037,7 +1038,17 @@ const AuthPage = () => {
         isOpen={!!legalModalType}
         onClose={() => setLegalModalType(null)}
         title={legalModalType === 'terms' ? 'Terms of Service' : 'Privacy Policy'}
-        message="Full legal text will be added here soon."
+        message={
+          legalModalType === 'terms' ? (
+            <div className="text-left max-h-[70vh] overflow-y-auto pr-2">
+              <TermsContent />
+            </div>
+          ) : legalModalType === 'privacy' ? (
+            'Full legal text will be added here soon.'
+          ) : (
+            ''
+          )
+        }
         type="info"
       />
     </div>
