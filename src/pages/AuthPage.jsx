@@ -608,7 +608,7 @@ const AuthPage = () => {
       <div className="relative z-10 w-full max-w-md flex flex-col items-center">
         <Logo />
 
-        <div className="w-full bg-white backdrop-blur-xl border border-[#0b996f]/20 p-8 rounded-3xl shadow-2xl relative shadow-lg">
+        <div className="w-full bg-white backdrop-blur-xl border border-[#d7fec8]/60 p-8 rounded-3xl shadow-2xl relative shadow-lg">
           {planParam && (
             <div className="mb-4 p-3 bg-primary/10 border border-primary/30 rounded-lg text-center">
               <p className="text-sm text-primary font-bold">
@@ -645,7 +645,7 @@ const AuthPage = () => {
 
                 <form onSubmit={handleSubmit} className="flex flex-col gap-4">
                   <div className="flex flex-col gap-2">
-                    <label className="text-sm font-bold text-slate-300 ml-1">Email Address</label>
+                    <label className="text-sm font-bold text-[#1b1b1b] ml-1">Email Address</label>
                     <input
                       type="text"
                       inputMode="email"
@@ -658,7 +658,7 @@ const AuthPage = () => {
                   </div>
                   <div className="flex flex-col gap-2">
                     <div className="flex justify-between items-center ml-1">
-                      <label className="text-sm font-bold text-slate-300">Password</label>
+                      <label className="text-sm font-bold text-[#1b1b1b]">Password</label>
                       <button
                         type="button"
                         onClick={() => {
@@ -693,7 +693,7 @@ const AuthPage = () => {
                   <button
                     type="submit"
                     disabled={loading}
-                    className="h-12 w-full bg-primary hover:bg-primary/90 text-[#1b1b1b] font-bold rounded-xl transition-all shadow-lg shadow-primary/20 mt-2 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                    className="h-12 w-full bg-[#d7fec8] hover:bg-[#c9f3b9] text-[#1b1b1b] font-bold rounded-xl transition-all shadow-lg shadow-[#d7fec8]/40 mt-2 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                   >
                     {loading && (
                       <div className="size-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
@@ -782,7 +782,7 @@ const AuthPage = () => {
 
                 <form onSubmit={handleSubmit} className="flex flex-col gap-4">
                   <div className="flex flex-col gap-2">
-                    <label className="text-sm font-bold text-slate-300 ml-1">Full Name</label>
+                    <label className="text-sm font-bold text-[#1b1b1b] ml-1">Full Name</label>
                     <input
                       type="text"
                       placeholder="Your full name"
@@ -793,7 +793,7 @@ const AuthPage = () => {
                     />
                   </div>
                   <div className="flex flex-col gap-2">
-                    <label className="text-sm font-bold text-slate-300 ml-1">Email Address</label>
+                    <label className="text-sm font-bold text-[#1b1b1b] ml-1">Email Address</label>
                     <input
                       type="text"
                       inputMode="email"
@@ -805,7 +805,7 @@ const AuthPage = () => {
                     />
                   </div>
                   <div className="flex flex-col gap-2">
-                    <label className="text-sm font-bold text-slate-300 ml-1">Password</label>
+                    <label className="text-sm font-bold text-[#1b1b1b] ml-1">Password</label>
                     <div className="relative">
                       <input
                         type={showPassword ? 'text' : 'password'}
@@ -826,7 +826,7 @@ const AuthPage = () => {
                     {view === 'signup' && <PasswordStrengthMeter password={password} />}
                   </div>
                   <div className="flex flex-col gap-2">
-                    <label className="text-sm font-bold text-slate-300 ml-1">
+                    <label className="text-sm font-bold text-[#1b1b1b] ml-1">
                       Confirm Password
                     </label>
                     <div className="relative">
@@ -878,7 +878,7 @@ const AuthPage = () => {
                   <button
                     type="submit"
                     disabled={loading || !turnstileToken}
-                    className="h-12 w-full bg-primary hover:bg-primary/90 text-[#1b1b1b] font-bold rounded-xl transition-all shadow-lg shadow-primary/20 mt-2 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                    className="h-12 w-full bg-[#d7fec8] hover:bg-[#c9f3b9] text-[#1b1b1b] font-bold rounded-xl transition-all shadow-lg shadow-[#d7fec8]/40 mt-2 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                   >
                     {loading && (
                       <div className="size-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
@@ -967,7 +967,7 @@ const AuthPage = () => {
 
                 <form onSubmit={handleSubmit} className="flex flex-col gap-6">
                   <div className="flex flex-col gap-2">
-                    <label className="text-sm font-bold text-slate-300 ml-1">Email Address</label>
+                    <label className="text-sm font-bold text-[#1b1b1b] ml-1">Email Address</label>
                     <input
                       type="text"
                       inputMode="email"
@@ -981,7 +981,7 @@ const AuthPage = () => {
                   <button
                     type="submit"
                     disabled={loading}
-                    className="h-12 w-full bg-primary hover:bg-primary/90 text-[#1b1b1b] font-bold rounded-xl transition-all shadow-lg shadow-primary/20 flex items-center justify-center gap-2"
+                    className="h-12 w-full bg-[#d7fec8] hover:bg-[#c9f3b9] text-[#1b1b1b] font-bold rounded-xl transition-all shadow-lg shadow-[#d7fec8]/40 flex items-center justify-center gap-2"
                   >
                     {loading && (
                       <div className="size-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
