@@ -124,6 +124,12 @@ const Footer = () => {
             >
               Privacy Policy
             </Link>
+            <Link
+              to="/subprocessors"
+              className="text-sm text-slate-500 dark:text-[#1b1b1b] hover:text-primary transition-colors"
+            >
+              Subprocessors
+            </Link>
             <a
               className="text-sm text-slate-500 dark:text-[#1b1b1b] hover:text-primary transition-colors"
               href="#"
