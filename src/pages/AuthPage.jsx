@@ -6,6 +6,7 @@ import { supabase } from '../lib/supabase';
 import { isValidEmail } from '../lib/emailValidation';
 import Modal from '../components/common/Modal';
 import { TermsContent } from './TermsPage';
+import { PrivacyContent } from './PrivacyPage';
 
 const AuthPage = () => {
   const [searchParams] = useSearchParams();
@@ -1044,7 +1045,9 @@ const AuthPage = () => {
               <TermsContent />
             </div>
           ) : legalModalType === 'privacy' ? (
-            'Full legal text will be added here soon.'
+            <div className="text-left max-h-[70vh] overflow-y-auto pr-2">
+              <PrivacyContent />
+            </div>
           ) : (
             ''
           )
