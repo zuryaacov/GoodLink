@@ -218,3 +218,24 @@ html {
   opacity: 0.5;
   cursor: not-allowed;
 }
+
+/* Hero card: slow rotating rings */
+@keyframes hero-spin-slow {
+  to { transform: rotate(360deg); }
+}
+.hero-ring-slow {
+  animation: hero-spin-slow 20s linear infinite;
+}
+.hero-ring-slow-reverse {
+  animation: hero-spin-slow 15s linear infinite reverse;
+}
+
+/* Hero card: SVG data line draw */
+.hero-data-line {
+  stroke-dasharray: 1000;
+  stroke-dashoffset: 1000;
+  animation: hero-draw-line 3s ease-out forwards;
+}
+@keyframes hero-draw-line {
+  to { stroke-dashoffset: 0; }
+}

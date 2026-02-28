@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { ShieldCheck } from 'lucide-react';
 
 const Hero = ({ user }) => {
   return (
@@ -44,44 +45,64 @@ const Hero = ({ user }) => {
               <span>Setup in 2 minutes</span>
             </div>
           </motion.div>
-          {/* Hero Image */}
+          {/* Hero Card: Technical Blueprint */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            whileInView={{ opacity: 1, scale: 1 }}
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.8, delay: 0.2 }}
-            className="w-full flex-1 max-w-[600px] lg:max-w-none"
+            className="w-full flex-1 max-w-[500px] mx-auto lg:max-w-none flex justify-center"
           >
-            <div
-              className="w-full aspect-video bg-center bg-no-repeat bg-cover rounded-xl shadow-2xl shadow-primary/20 border border-slate-200 dark:border-slate-200 overflow-hidden relative group"
-              style={{
-                backgroundImage: 'url("/hero-dashboard.png")',
-              }}
-            >
-              <div className="absolute inset-0 bg-gradient-to-t from-[#d7fec8]/30 to-transparent pointer-events-none"></div>
-              {/* Floating Card */}
-              <motion.div
-                animate={{ y: [0, -10, 0] }}
-                transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
-                className="absolute top-4 right-4 sm:top-10 sm:right-10 bg-white/10 dark:bg-white/90 backdrop-blur-md p-3 sm:p-4 rounded-lg border border-white/20 dark:border-slate-200 shadow-xl w-32 sm:w-48"
-              >
-                <div className="flex items-center gap-2 sm:gap-3 mb-1 sm:mb-2">
-                  <div className="size-6 sm:size-8 rounded-full bg-green-500/20 flex items-center justify-center text-green-500">
-                    <span className="material-symbols-outlined text-[12px] sm:text-sm">
-                      trending_up
-                    </span>
-                  </div>
-                  <div>
-                    <div className="text-[8px] sm:text-[10px] uppercase text-white font-bold">
-                      Conv. Rate
-                    </div>
-                    <div className="text-xs sm:text-sm font-bold text-white">+12.4%</div>
+            <div className="relative w-full aspect-square max-w-[500px] border border-slate-300/50 rounded-full p-8 sm:p-12 flex items-center justify-center">
+              {/* Rotating Rings */}
+              <div className="absolute inset-0 border border-slate-300/40 rounded-full hero-ring-slow" />
+              <div className="absolute inset-8 border border-slate-400/30 rounded-full hero-ring-slow-reverse" />
+
+              {/* Central Data Node */}
+              <div className="relative z-20 w-56 sm:w-64 h-72 sm:h-80 bg-[#121826] border border-slate-500/30 rounded-2xl p-5 sm:p-6 shadow-xl shadow-slate-900/20">
+                <div className="flex justify-between items-start mb-8">
+                  <ShieldCheck className="text-emerald-500 w-5 h-5 sm:w-6 sm:h-6 shrink-0" />
+                  <div className="text-right">
+                    <p className="text-[8px] text-slate-500 uppercase font-bold tracking-widest">Node Status</p>
+                    <p className="text-[10px] text-emerald-400 font-mono">ENCRYPTED</p>
                   </div>
                 </div>
-                <div className="h-0.5 sm:h-1 w-full bg-slate-700 rounded-full overflow-hidden">
-                  <div className="h-full bg-green-500 w-[70%]"></div>
+
+                {/* Minimalist Chart */}
+                <div className="h-20 sm:h-24 w-full mb-5 sm:mb-6">
+                  <svg viewBox="0 0 200 100" className="w-full h-full">
+                    <defs>
+                      <linearGradient id="hero-grad" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" stopColor="#10b981" stopOpacity="1" />
+                        <stop offset="100%" stopColor="#10b981" stopOpacity="0" />
+                      </linearGradient>
+                    </defs>
+                    <path d="M0,80 Q40,75 70,40 T140,20 T200,10" fill="none" stroke="#10b981" strokeWidth="2" className="hero-data-line" />
+                    <path d="M0,80 Q40,75 70,40 T140,20 T200,10 L200,100 L0,100 Z" fill="url(#hero-grad)" opacity="0.1" />
+                  </svg>
                 </div>
-              </motion.div>
+
+                <div className="space-y-3 sm:space-y-4">
+                  <div className="flex justify-between items-center border-b border-white/5 pb-2">
+                    <span className="text-[10px] text-slate-500 uppercase tracking-tighter">Attribution Accuracy</span>
+                    <span className="text-xs font-mono text-white">99.8%</span>
+                  </div>
+                  <div className="flex justify-between items-center border-b border-white/5 pb-2">
+                    <span className="text-[10px] text-slate-500 uppercase tracking-tighter">Signal Strength</span>
+                    <span className="text-xs font-mono text-white">Optimal</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Orbiting Feature Tags */}
+              <div className="absolute -top-2 right-4 sm:right-10 bg-white/95 backdrop-blur border border-slate-200 px-3 py-2 rounded-lg shadow-lg flex items-center gap-2 sm:gap-3">
+                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
+                <span className="text-[9px] font-bold tracking-widest uppercase text-slate-700">Server-Side API</span>
+              </div>
+              <div className="absolute bottom-16 -left-4 sm:bottom-20 sm:-left-10 bg-white/95 backdrop-blur border border-slate-200 px-3 py-2 rounded-lg shadow-lg flex items-center gap-2 sm:gap-3">
+                <div className="w-1.5 h-1.5 rounded-full bg-[#6358de] shrink-0" />
+                <span className="text-[9px] font-bold tracking-widest uppercase text-slate-700">Global Proxying</span>
+              </div>
             </div>
           </motion.div>
         </div>
