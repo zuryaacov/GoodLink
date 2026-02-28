@@ -130,6 +130,12 @@ const Footer = () => {
             >
               Subprocessors
             </Link>
+            <Link
+              to="/dpa"
+              className="text-sm text-slate-500 dark:text-[#1b1b1b] hover:text-primary transition-colors"
+            >
+              DPA
+            </Link>
             <a
               className="text-sm text-slate-500 dark:text-[#1b1b1b] hover:text-primary transition-colors"
               href="#"
