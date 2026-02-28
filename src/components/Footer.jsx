@@ -122,7 +122,7 @@ const Footer = () => {
         </div>
         <div className="mt-12 border-t border-slate-200 dark:border-slate-200 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
           <p className="text-sm text-slate-500 dark:text-[#1b1b1b]">
-            © 2024 GoodLink.ai. All rights reserved.
+            © 2025 GoodLink.ai. All rights reserved.
           </p>
           <div className="flex gap-4">
             <a className="text-[#1b1b1b] hover:text-primary transition-colors" href="#">
