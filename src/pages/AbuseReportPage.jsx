@@ -79,6 +79,10 @@ const AbuseReportPage = () => {
   const [fieldErrors, setFieldErrors] = useState({});
 
   useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
+  useEffect(() => {
     let timer;
     if (typeof window !== 'undefined' && window.turnstile) {
       const siteKey = import.meta.env.VITE_TURNSTILE_SITE_KEY;

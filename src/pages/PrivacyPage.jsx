@@ -263,6 +263,10 @@ const PrivacyPage = () => {
   ];
 
   useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
+  useEffect(() => {
     const handleScroll = () => {
       const scrollPosition = window.scrollY + 150;
       for (const section of [...sections].reverse()) {
