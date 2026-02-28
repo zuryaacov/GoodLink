@@ -59,6 +59,29 @@ const Hero = ({ user }) => {
               }}
             >
               <div className="absolute inset-0 bg-gradient-to-t from-[#d7fec8]/30 to-transparent pointer-events-none"></div>
+              {/* Floating Card */}
+              <motion.div
+                animate={{ y: [0, -10, 0] }}
+                transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
+                className="absolute top-4 right-4 sm:top-10 sm:right-10 bg-white/10 dark:bg-white/90 backdrop-blur-md p-3 sm:p-4 rounded-lg border border-white/20 dark:border-slate-200 shadow-xl w-32 sm:w-48"
+              >
+                <div className="flex items-center gap-2 sm:gap-3 mb-1 sm:mb-2">
+                  <div className="size-6 sm:size-8 rounded-full bg-green-500/20 flex items-center justify-center text-green-500">
+                    <span className="material-symbols-outlined text-[12px] sm:text-sm">
+                      trending_up
+                    </span>
+                  </div>
+                  <div>
+                    <div className="text-[8px] sm:text-[10px] uppercase text-white font-bold">
+                      Conv. Rate
+                    </div>
+                    <div className="text-xs sm:text-sm font-bold text-white">+12.4%</div>
+                  </div>
+                </div>
+                <div className="h-0.5 sm:h-1 w-full bg-slate-700 rounded-full overflow-hidden">
+                  <div className="h-full bg-green-500 w-[70%]"></div>
+                </div>
+              </motion.div>
             </div>
           </motion.div>
         </div>
