@@ -97,11 +97,11 @@ const Hero = ({ user }) => {
               {/* Orbiting Feature Tags */}
               <div className="absolute -top-2 right-4 sm:right-10 bg-white/95 backdrop-blur border border-slate-200 px-3 py-2 rounded-lg shadow-lg flex items-center gap-2 sm:gap-3">
                 <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
-                <span className="text-[9px] font-bold tracking-widest uppercase text-slate-700">Server-Side API</span>
+                <span className="text-[9px] font-bold tracking-widest uppercase text-slate-700">Server-Side CAPI</span>
               </div>
               <div className="absolute bottom-16 -left-4 sm:bottom-20 sm:-left-10 bg-white/95 backdrop-blur border border-slate-200 px-3 py-2 rounded-lg shadow-lg flex items-center gap-2 sm:gap-3">
                 <div className="w-1.5 h-1.5 rounded-full bg-[#6358de] shrink-0" />
-                <span className="text-[9px] font-bold tracking-widest uppercase text-slate-700">Global Proxying</span>
+                <span className="text-[9px] font-bold tracking-widest uppercase text-slate-700">Custom Domains</span>
               </div>
             </div>
           </motion.div>
