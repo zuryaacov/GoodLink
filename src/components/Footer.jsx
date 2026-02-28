@@ -58,12 +58,6 @@ const Footer = () => {
             >
               Integrations
             </a>
-            <a
-              className="text-sm text-slate-500 dark:text-[#1b1b1b] hover:text-primary transition-colors"
-              href="#"
-            >
-              API
-            </a>
           </div>
           <div className="flex flex-col gap-4">
             <h4 className="font-bold text-slate-900 dark:text-[#1b1b1b]">Resources</h4>
@@ -83,12 +77,6 @@ const Footer = () => {
               className="text-sm text-slate-500 dark:text-[#1b1b1b] hover:text-primary transition-colors"
               href="#"
             >
-              Community
-            </a>
-            <a
-              className="text-sm text-slate-500 dark:text-[#1b1b1b] hover:text-primary transition-colors"
-              href="#"
-            >
               Help Center
             </a>
           </div>
@@ -100,18 +88,6 @@ const Footer = () => {
             >
               Abuse / DMCA
             </Link>
-            <a
-              className="text-sm text-slate-500 dark:text-[#1b1b1b] hover:text-primary transition-colors"
-              href="#"
-            >
-              About
-            </a>
-            <a
-              className="text-sm text-slate-500 dark:text-[#1b1b1b] hover:text-primary transition-colors"
-              href="#"
-            >
-              Careers
-            </a>
             <Link
               to="/terms"
               className="text-sm text-slate-500 dark:text-[#1b1b1b] hover:text-primary transition-colors"
