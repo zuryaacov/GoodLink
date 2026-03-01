@@ -75,22 +75,22 @@ const Features = () => {
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true }}
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
+          className="grid grid-cols-1 lg:grid-cols-2 gap-8"
         >
           {features.map((feature, index) => (
             <motion.div
               key={index}
               variants={itemVariants}
-              className="group flex flex-col gap-4 rounded-xl border border-white/10 dark:border-[#324467] bg-white/5 dark:bg-[#192233]/50 backdrop-blur-md p-6 shadow-sm hover:shadow-xl hover:border-[#6358de]/50 transition-all duration-300"
+              className="group flex flex-col gap-5 rounded-2xl border border-white/10 dark:border-[#324467] bg-white/5 dark:bg-[#192233]/50 backdrop-blur-md p-8 md:p-10 shadow-sm hover:shadow-xl hover:border-[#6358de]/50 transition-all duration-300"
             >
-              <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-[#6358de]/10 text-[#6358de] group-hover:bg-[#6358de] group-hover:text-white transition-colors">
-                <span className="material-symbols-outlined text-3xl">{feature.icon}</span>
+              <div className="flex h-14 w-14 md:h-16 md:w-16 items-center justify-center rounded-xl bg-[#6358de]/10 text-[#6358de] group-hover:bg-[#6358de] group-hover:text-white transition-colors">
+                <span className="material-symbols-outlined text-4xl md:text-5xl">{feature.icon}</span>
               </div>
-              <div className="flex flex-col gap-2">
-                <h3 className="text-slate-900 dark:text-[#1b1b1b] text-lg font-bold leading-tight">
+              <div className="flex flex-col gap-3">
+                <h3 className="text-slate-900 dark:text-[#1b1b1b] text-xl md:text-2xl font-bold leading-tight">
                   {feature.title}
                 </h3>
-                <p className="text-slate-500 dark:text-[#1b1b1b] text-sm leading-normal">
+                <p className="text-slate-600 dark:text-[#1b1b1b] text-base md:text-lg font-semibold leading-relaxed">
                   {feature.description}
                 </p>
               </div>
