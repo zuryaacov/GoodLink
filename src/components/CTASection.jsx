@@ -40,7 +40,8 @@ const CTASection = () => {
   const plans = [
     {
       name: 'STARTER',
-      price: '9.99',
+      price: '4.99',
+      originalPrice: '9.99',
       description: 'Perfect for getting started',
       features: [
         'Unlimited Links',
@@ -178,7 +179,12 @@ const CTASection = () => {
                 </div>
 
                 {/* Price */}
-                <div className="flex items-baseline gap-1">
+                <div className="flex items-baseline gap-2 flex-wrap">
+                  {plan.originalPrice && (
+                    <span className="text-slate-500 dark:text-slate-400 text-2xl font-bold line-through">
+                      ${plan.originalPrice}
+                    </span>
+                  )}
                   <span className="text-slate-900 dark:text-[#1b1b1b] text-5xl font-black">
                     ${plan.price}
                   </span>
