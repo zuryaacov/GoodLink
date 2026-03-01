@@ -55,7 +55,7 @@ const Hero = ({ user }) => {
                   </AnimatePresence>
                 </span>
               </h1>
-              <h2 className="text-slate-600 dark:text-[#1b1b1b] text-lg font-normal leading-relaxed md:text-xl max-w-2xl mx-auto lg:mx-0">
+              <h2 className="text-slate-700 dark:text-[#1b1b1b] text-xl font-bold leading-relaxed md:text-2xl max-w-2xl mx-auto lg:mx-0">
                 One platform to manage your links, block bots, and send conversion signals to Facebook, Google, and TikTok.
               </h2>
             </div>
