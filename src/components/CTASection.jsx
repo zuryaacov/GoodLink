@@ -192,7 +192,7 @@ const CTASection = () => {
                   {plan.features.map((feature, featureIndex) => (
                     <li key={featureIndex} className="flex items-start gap-3">
                       <Check
-                        className="w-5 h-5 mt-0.5 flex-shrink-0 text-[#c0ffa5]"
+                        className="w-5 h-5 mt-0.5 flex-shrink-0 text-[#6358de] font-bold stroke-[2.5]"
                       />
                       <span className="text-slate-700 dark:text-slate-300 text-sm leading-relaxed">
                         {feature}
