@@ -12,7 +12,7 @@ const AdminOverviewPage = () => {
       const { data, error } = await supabase
         .from('links')
         .select('id, name, short_url, target_url, fallback_url, geo_rules, created_at, user_id')
-        .eq('status', 'pending')
+        .eq('review_status', 'pending')
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -29,13 +29,14 @@ const AdminOverviewPage = () => {
     fetchPendingLinks();
   }, []);
 
-  const setLinkStatus = async (linkId, newStatus) => {
+  const setLinkStatus = async (linkId, action) => {
     setActionLoading(linkId);
     try {
-      const { error } = await supabase
-        .from('links')
-        .update({ status: newStatus, updated_at: new Date().toISOString() })
-        .eq('id', linkId);
+      const payload =
+        action === 'active'
+          ? { review_status: 'approved', updated_at: new Date().toISOString() }
+          : { review_status: 'rejected', status: 'rejected', updated_at: new Date().toISOString() };
+      const { error } = await supabase.from('links').update(payload).eq('id', linkId);
 
       if (error) throw error;
       setPendingLinks((prev) => prev.filter((l) => l.id !== linkId));

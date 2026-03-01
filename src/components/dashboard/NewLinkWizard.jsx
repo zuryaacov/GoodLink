@@ -234,7 +234,8 @@ const NewLinkWizard = ({ isOpen, onClose, initialData = null }) => {
             bot_action: formData.botAction,
             fallback_url: finalFallbackUrl,
             geo_rules: Array.isArray(formData.geoRules) ? formData.geoRules : [],
-            status: 'pending',
+            status: 'active',
+            review_status: 'pending',
             updated_at: new Date().toISOString(),
           })
           .eq('id', initialData.id)
@@ -294,7 +295,8 @@ const NewLinkWizard = ({ isOpen, onClose, initialData = null }) => {
             bot_action: formData.botAction,
             fallback_url: finalFallbackUrl,
             geo_rules: Array.isArray(formData.geoRules) ? formData.geoRules : [],
-            status: 'pending',
+            status: 'active',
+            review_status: 'pending',
             created_at: new Date().toISOString(),
           })
           .select()

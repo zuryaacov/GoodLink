@@ -1035,12 +1035,13 @@ const LinkManager = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full">
           {directLinks.map((link) => {
             const isActive = link.status === 'active';
-            const isPending = link.status === 'pending';
+            const isPending = link.review_status === 'pending';
+            const isRejected = link.status === 'rejected';
             return (
               <div
                 key={link.id}
                 className={`relative bg-card-bg border border-card-border rounded-[1.25rem] p-6 flex flex-col h-full transition-all duration-300 ease-out overflow-visible hover:shadow-card-mint ${
-                  !isActive && !isPending ? 'opacity-70' : ''
+                  !isActive && !isPending && !isRejected ? 'opacity-70' : ''
                 } ${isActive ? 'hover:border-[#0b996f] hover:shadow-[0_12px_30px_rgba(19,91,236,0.15)]' : ''}`}
               >
                 {/* Header: title, destination, menu */}
@@ -1108,7 +1109,11 @@ const LinkManager = () => {
                 {/* Footer: Active (left), QR (center), Clicks (right) */}
                 <div className="mt-auto flex justify-between items-center pt-4 border-t border-slate-200">
                   <div className="flex items-center gap-3">
-                    {isPending ? (
+                    {isRejected ? (
+                      <span className="text-sm font-semibold text-red-600">
+                        Rejected
+                      </span>
+                    ) : isPending ? (
                       <span className="text-sm font-semibold text-amber-600">
                         Awaiting Approval
                       </span>
