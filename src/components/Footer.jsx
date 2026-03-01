@@ -50,13 +50,13 @@ const Footer = () => {
               className="text-sm text-slate-500 dark:text-[#1b1b1b] hover:text-primary transition-colors"
               href="#"
             >
-              Pricing
+              Resources
             </a>
             <a
               className="text-sm text-slate-500 dark:text-[#1b1b1b] hover:text-primary transition-colors"
               href="#"
             >
-              Resources
+              Pricing
             </a>
           </div>
           <div className="flex flex-col gap-4">
