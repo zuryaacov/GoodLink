@@ -39,14 +39,15 @@ const CTASection = () => {
 
   const plans = [
     {
-      name: 'START',
+      name: 'STARTER',
       price: '9.99',
       description: 'Perfect for getting started',
       features: [
-        'Basic link management',
-        'Up to 1,000 clicks/month',
-        'Standard analytics',
-        'Email support',
+        'Unlimited Links',
+        'Unlimited QR Code',
+        'Unlimited Clicks',
+        'Standard Analytics',
+        'Email Support',
       ],
       highlighted: false,
       checkoutUrl:
