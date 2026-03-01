@@ -8,6 +8,7 @@ const Features = () => {
       title: 'GoodSync',
       description:
         'Stop losing conversions to ad-blockers and privacy updates. GoodSync establishes a rock-solid, server-to-server connection (CAPI) between your links and major ad platforms like Facebook, Instagram, Google, TikTok, and Snapchat. It bypasses browser limitations (iOS 14+) to ensure 100% tracking accuracy and smarter AI optimization for your pixel.',
+      highlight: 'server-to-server connection (CAPI)',
     },
     {
       icon: 'shield',
@@ -91,7 +92,21 @@ const Features = () => {
                   {feature.title}
                 </h3>
                 <p className="text-slate-600 dark:text-[#1b1b1b] text-base md:text-lg font-semibold leading-relaxed">
-                  {feature.description}
+                  {feature.highlight
+                    ? (() => {
+                        const [before, ...rest] = feature.description.split(feature.highlight);
+                        const after = rest.join(feature.highlight);
+                        return (
+                          <>
+                            {before}
+                            <span className="text-[#6358de] font-bold text-lg md:text-xl">
+                              {feature.highlight}
+                            </span>
+                            {after}
+                          </>
+                        );
+                      })()
+                    : feature.description}
                 </p>
               </div>
             </motion.div>
