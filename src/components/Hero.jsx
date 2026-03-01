@@ -38,7 +38,7 @@ const Hero = ({ user }) => {
             className="flex flex-col gap-8 flex-1 text-center lg:text-left"
           >
             <div className="flex flex-col gap-4">
-              <p className="text-slate-600 dark:text-[#1b1b1b] text-base md:text-lg font-semibold tracking-wide">
+              <p className="text-slate-600 dark:text-[#1b1b1b] text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight">
                 Shorten, Shield, Track
               </p>
               <h1 className="text-slate-900 dark:text-[#1b1b1b] text-4xl font-black leading-tight tracking-tight md:text-5xl lg:text-6xl mb-6 h-[8rem] md:h-[9.5rem] lg:h-[11rem]">
