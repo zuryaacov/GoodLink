@@ -7,6 +7,7 @@ import TermsPage from './pages/TermsPage';
 import PrivacyPage from './pages/PrivacyPage';
 import SubprocessorsPage from './pages/SubprocessorsPage';
 import DpaPage from './pages/DpaPage';
+import ContactPage from './pages/ContactPage';
 import DashboardLayout from './layouts/DashboardLayout';
 import Analytics from './pages/dashboard/Analytics';
 import LinkManager from './pages/dashboard/LinkManager';
@@ -95,6 +96,7 @@ function App() {
       <Route path="/privacy" element={<PrivacyPage />} />
       <Route path="/subprocessors" element={<SubprocessorsPage />} />
       <Route path="/dpa" element={<DpaPage />} />
+      <Route path="/contact" element={<ContactPage />} />
 
       {/* Dashboard Routes */}
       <Route

@@ -5,7 +5,7 @@ const Footer = () => {
   return (
     <footer className="border-t border-slate-200 dark:border-slate-200 bg-white dark:bg-[#111722] py-12 px-6">
       <div className="mx-auto max-w-[1200px]">
-        <div className="grid grid-cols-2 gap-8 md:grid-cols-4 lg:grid-cols-5">
+        <div className="grid grid-cols-2 gap-8 md:grid-cols-3 lg:grid-cols-4">
           <div className="col-span-2 lg:col-span-2 flex flex-col gap-4">
             <Link
               to="/"
@@ -56,28 +56,7 @@ const Footer = () => {
               className="text-sm text-slate-500 dark:text-[#1b1b1b] hover:text-primary transition-colors"
               href="#"
             >
-              Integrations
-            </a>
-          </div>
-          <div className="flex flex-col gap-4">
-            <h4 className="font-bold text-slate-900 dark:text-[#1b1b1b]">Resources</h4>
-            <a
-              className="text-sm text-slate-500 dark:text-[#1b1b1b] hover:text-primary transition-colors"
-              href="#"
-            >
-              Documentation
-            </a>
-            <a
-              className="text-sm text-slate-500 dark:text-[#1b1b1b] hover:text-primary transition-colors"
-              href="#"
-            >
-              Blog
-            </a>
-            <a
-              className="text-sm text-slate-500 dark:text-[#1b1b1b] hover:text-primary transition-colors"
-              href="#"
-            >
-              Help Center
+              Resources
             </a>
           </div>
           <div className="flex flex-col gap-4">
@@ -112,12 +91,12 @@ const Footer = () => {
             >
               DPA
             </Link>
-            <a
+            <Link
+              to="/contact"
               className="text-sm text-slate-500 dark:text-[#1b1b1b] hover:text-primary transition-colors"
-              href="#"
             >
               Contact
-            </a>
+            </Link>
           </div>
         </div>
         <div className="mt-12 border-t border-slate-200 dark:border-slate-200 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
