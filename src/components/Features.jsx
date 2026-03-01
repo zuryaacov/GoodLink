@@ -19,13 +19,13 @@ const Features = () => {
       icon: 'public',
       title: 'Custom Domains',
       description:
-        'Build brand trust with fully branded short links. Connect unlimited domains effortlessly.',
+        'Take full ownership of your online presence with professional Custom Domains. Stop sending your traffic through generic, untrusted links that hurt your reputation. Our platform allows you to seamlessly map your own branded URLs, ensuring that every click reinforces your authority and builds instant trust with your audience. Whether you are scaling a media buying campaign or securing a private offer, custom domains eliminate "link-leakage" and significantly boost your click-through rates. By operating on your own verified infrastructure, you gain better email deliverability and avoid the common pitfalls of shared domains. Stay recognized, stay professional, and keep your brand consistent across every touchpoint in the user journey.',
     },
     {
       icon: 'insights',
-      title: 'Real-Time Analytics',
+      title: 'GoodSight',
       description:
-        'Monitor your traffic with live dashboards. Granular reporting on clicks, geos, and devices.',
+        'Get a clear view of your audience. Track every click, geographic origin, and device type in real-time. GoodSight provides the essential data you need to monitor your link performance and verify your traffic quality at a glance.',
     },
   ];
 
