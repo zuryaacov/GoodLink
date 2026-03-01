@@ -7,8 +7,8 @@ const Features = () => {
       icon: 'dns',
       title: 'GoodSync',
       description:
-        'Stop losing conversions to ad-blockers and privacy updates. GoodSync establishes a rock-solid, server-to-server connection (CAPI) between your links and major ad platforms like Facebook, Instagram, Google, TikTok, and Snapchat. It bypasses browser limitations (iOS 14+) to ensure 100% tracking accuracy and smarter AI optimization for your pixel.',
-      highlight: 'server-to-server connection (CAPI)',
+        'Stop losing conversions to ad-blockers and privacy updates. GoodSync establishes a rock-solid, server-to-server Conversion API (CAPI) between your links and major ad platforms like Facebook, Instagram, Google, TikTok, and Snapchat. It bypasses browser limitations (iOS 14+) to ensure 100% tracking accuracy and smarter AI optimization for your pixel.',
+      highlight: 'server-to-server Conversion API (CAPI)',
     },
     {
       icon: 'shield',
