@@ -3,7 +3,17 @@ import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ShieldCheck } from 'lucide-react';
 
-const ROTATING_WORDS = ['Affiliates', 'Creators', 'Agencies'];
+const ROTATING_WORDS = [
+    'Affiliates',
+    'Creators',
+    'Agencies',
+    'Media Publishers',
+    'E-commerce Brands',
+    'Lead generation specialists',
+    'Dropshippers',
+    'Influencers',
+    'SaaS companies',
+  ];
 
 const Hero = ({ user }) => {
   const [wordIndex, setWordIndex] = useState(0);
@@ -30,7 +40,7 @@ const Hero = ({ user }) => {
             <div className="flex flex-col gap-4">
               <h1 className="text-slate-900 dark:text-[#1b1b1b] text-4xl font-black leading-tight tracking-tight md:text-5xl lg:text-6xl">
                 Smart Links Built for{' '}
-                <span className="inline-block min-w-[200px] md:min-w-[240px] lg:min-w-[280px] align-baseline">
+                <span className="inline-block min-w-[220px] md:min-w-[280px] lg:min-w-[320px] align-baseline">
                   <AnimatePresence mode="wait">
                     <motion.span
                       key={ROTATING_WORDS[wordIndex]}
