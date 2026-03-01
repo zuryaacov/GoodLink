@@ -295,7 +295,7 @@ const LinkBuilderPage = () => {
           geo_rules: Array.isArray(formData.geoRules) ? formData.geoRules : [],
           space_id: formData.spaceId || null,
           status: 'active',
-          review_status: 'pending',
+          review_status: 'approved',
           updated_at: new Date().toISOString(),
         };
         const nullPathsRaw = findNullCharsInPayload(updatePayloadRaw);
@@ -423,7 +423,7 @@ const LinkBuilderPage = () => {
           geo_rules: Array.isArray(formData.geoRules) ? formData.geoRules : [],
           space_id: formData.spaceId || null,
           status: 'active',
-          review_status: 'pending',
+          review_status: 'approved',
           created_at: new Date().toISOString(),
         };
         const nullPathsRawInsert = findNullCharsInPayload(insertPayloadRaw);
