@@ -17,9 +17,9 @@ const Features = () => {
     },
     {
       icon: 'public',
-      title: 'Custom Domains',
+      title: 'GoodLink',
       description:
-        'Take full ownership of your online presence with professional Custom Domains. Stop sending your traffic through generic, untrusted links that hurt your reputation. Our platform allows you to seamlessly map your own branded URLs, ensuring that every click reinforces your authority and builds instant trust with your audience. Whether you are scaling a media buying campaign or securing a private offer, custom domains eliminate "link-leakage" and significantly boost your click-through rates. By operating on your own verified infrastructure, you gain better email deliverability and avoid the common pitfalls of shared domains. Stay recognized, stay professional, and keep your brand consistent across every touchpoint in the user journey.',
+        'Take full ownership of your online presence with professional Custom Domains. Stop sending your traffic through generic, untrusted links that hurt your reputation. Our platform allows you to seamlessly map your own branded URLs, ensuring that every click reinforces your authority and builds instant trust with your audience.',
     },
     {
       icon: 'insights',
