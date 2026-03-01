@@ -45,7 +45,7 @@ const CTASection = () => {
       description: 'Perfect for getting started',
       features: [
         'Unlimited Links',
-        'Unlimited QR Code',
+        'Unlimited QR Codes',
         'Unlimited Clicks',
         'Standard Analytics',
         'Email Support',
@@ -57,15 +57,17 @@ const CTASection = () => {
     },
     {
       name: 'ADVANCED',
-      price: '19.99',
+      price: '9.99',
+      originalPrice: '26',
       description: 'For growing businesses',
       features: [
-        'Advanced link management',
-        'Up to 10,000 clicks/month',
-        'Real-time analytics',
-        'Priority email support',
-        'Custom domains',
-        'Pixel tracking',
+        'Unlimited Links',
+        '10 Custom Domains',
+        'Unlimited QR Codes',
+        'Unlimited Clicks',
+        'UTM Presets',
+        'Standard Analytics',
+        'Email Support',
       ],
       highlighted: true,
       checkoutUrl:
