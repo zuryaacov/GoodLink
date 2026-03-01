@@ -34,7 +34,7 @@ const AdminOverviewPage = () => {
     try {
       const payload =
         action === 'active'
-          ? { review_status: 'approved', updated_at: new Date().toISOString() }
+          ? { review_status: 'active', updated_at: new Date().toISOString() }
           : { review_status: 'rejected', status: 'rejected', updated_at: new Date().toISOString() };
       const { error } = await supabase.from('links').update(payload).eq('id', linkId);
 
