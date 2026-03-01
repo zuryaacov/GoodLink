@@ -70,9 +70,6 @@ const Hero = ({ user }) => {
               )}
             </div>
             <div className="flex items-center gap-2 justify-center lg:justify-start text-sm text-slate-500 dark:text-[#1b1b1b]">
-              <span className="material-symbols-outlined text-lg">check_circle</span>
-              <span>No credit card required</span>
-              <span className="mx-2">•</span>
               <span className="material-symbols-outlined text-lg">bolt</span>
               <span>Setup in 2 minutes</span>
             </div>

@@ -20,7 +20,7 @@ const AnalyticsSection = () => {
             <li className="flex items-center gap-3">
               <span className="material-symbols-outlined text-green-500">check</span>
               <span className="text-slate-700 dark:text-slate-300 font-medium">
-                Click-level fraud detection
+                Click-level bot detection
               </span>
             </li>
             <li className="flex items-center gap-3">

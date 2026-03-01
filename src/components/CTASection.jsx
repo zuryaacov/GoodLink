@@ -134,8 +134,8 @@ const CTASection = () => {
             Choose Your Plan
           </h2>
           <p className="text-slate-600 dark:text-[#1b1b1b] text-lg md:text-xl font-normal leading-relaxed">
-            Flexible pricing designed to scale with your business. Start free, upgrade when you're
-            ready.
+            Flexible pricing designed to scale with your business. Start with a low-cost entry plan,
+            upgrade when you're ready.
           </p>
         </motion.div>
 
