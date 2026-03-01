@@ -1,9 +1,20 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { ShieldCheck } from 'lucide-react';
 
+const ROTATING_WORDS = ['Affiliates', 'Creators', 'Agencies'];
+
 const Hero = ({ user }) => {
+  const [wordIndex, setWordIndex] = useState(0);
+
+  useEffect(() => {
+    const id = setInterval(() => {
+      setWordIndex((i) => (i + 1) % ROTATING_WORDS.length);
+    }, 2500);
+    return () => clearInterval(id);
+  }, []);
+
   return (
     <section className="relative px-6 py-12 md:px-20 lg:py-24 overflow-hidden bg-[#d7fec8]">
       <div className="layout-content-container mx-auto max-w-[1200px] flex flex-col">
@@ -18,9 +29,21 @@ const Hero = ({ user }) => {
           >
             <div className="flex flex-col gap-4">
               <h1 className="text-slate-900 dark:text-[#1b1b1b] text-4xl font-black leading-tight tracking-tight md:text-5xl lg:text-6xl">
-                Own Your Data. <br />
-                <span className="text-[#6358de]">Secure Your Links.</span> <br />
-                Maximize Profits.
+                Smart Links Built for{' '}
+                <span className="inline-block min-w-[200px] md:min-w-[240px] lg:min-w-[280px] align-baseline">
+                  <AnimatePresence mode="wait">
+                    <motion.span
+                      key={ROTATING_WORDS[wordIndex]}
+                      initial={{ opacity: 0, y: 12 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -12 }}
+                      transition={{ duration: 0.35 }}
+                      className="inline-block text-[#6358de]"
+                    >
+                      {ROTATING_WORDS[wordIndex]}.
+                    </motion.span>
+                  </AnimatePresence>
+                </span>
               </h1>
               <h2 className="text-slate-600 dark:text-[#1b1b1b] text-lg font-normal leading-relaxed md:text-xl max-w-2xl mx-auto lg:mx-0">
                 The ultimate link management ecosystem for elite affiliate marketers and media
