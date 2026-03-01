@@ -38,9 +38,9 @@ const Hero = ({ user }) => {
             className="flex flex-col gap-8 flex-1 text-center lg:text-left"
           >
             <div className="flex flex-col gap-4">
-              <h1 className="text-slate-900 dark:text-[#1b1b1b] text-4xl font-black leading-tight tracking-tight md:text-5xl lg:text-6xl">
+              <h1 className="text-slate-900 dark:text-[#1b1b1b] text-4xl font-black leading-tight tracking-tight md:text-5xl lg:text-6xl mb-6">
                 Smart Links Built for{' '}
-                <span className="inline-block min-w-[220px] md:min-w-[280px] lg:min-w-[320px] align-baseline">
+                <span className="inline-block min-w-[220px] md:min-w-[280px] lg:min-w-[320px] min-h-[3.5rem] md:min-h-[4rem] lg:min-h-[5rem] align-top">
                   <AnimatePresence mode="wait">
                     <motion.span
                       key={ROTATING_WORDS[wordIndex]}
