@@ -194,7 +194,7 @@ const CTASection = () => {
                       <Check
                         className="w-5 h-5 mt-0.5 flex-shrink-0 text-[#6358de] font-bold stroke-[2.5]"
                       />
-                      <span className="text-slate-700 dark:text-slate-300 text-sm leading-relaxed">
+                      <span className="text-slate-700 dark:text-slate-300 text-base md:text-lg font-bold leading-relaxed">
                         {feature}
                       </span>
                     </li>
