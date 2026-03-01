@@ -5,15 +5,15 @@ const Features = () => {
   const features = [
     {
       icon: 'dns',
-      title: 'Pixel Vault',
+      title: 'GoodSync',
       description:
-        'Store and fire pixels server-side. Bypass browser restrictions and never lose tracking data again.',
+        'Stop losing conversions to ad-blockers and privacy updates. GoodSync establishes a rock-solid, server-to-server connection (CAPI) between your links and major ad platforms like Facebook, Instagram, Google, TikTok, and Snapchat. It bypasses browser limitations (iOS 14+) to ensure 100% tracking accuracy and smarter AI optimization for your pixel.',
     },
     {
-      icon: 'add_link',
-      title: 'Smart Links',
+      icon: 'shield',
+      title: 'GoodShield',
       description:
-        'Generate deep links with dynamic parameters in seconds. Automatic device & OS routing.',
+        "Your Budget's Best Friend. Stop paying for fake traffic. GoodShield uses real-time edge intelligence to identify and neutralize bots, crawlers, and suspicious activity. Whether you want to block, redirect, or cloak your destination URL, GoodShield ensures that only genuine human visitors reach your offers, keeping your conversion rates high and your accounts safe.",
     },
     {
       icon: 'public',
