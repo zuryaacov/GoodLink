@@ -15,18 +15,21 @@ const Features = () => {
       title: 'GoodShield',
       description:
         "Your Budget's Best Friend. Stop paying for fake traffic. GoodShield uses real-time edge intelligence to identify and neutralize bots, crawlers, and suspicious activity. Whether you want to block, redirect, or cloak your destination URL, GoodShield ensures that only genuine human visitors reach your offers, keeping your conversion rates high and your accounts safe.",
+      highlight: 'real-time edge intelligence to identify and neutralize bots',
     },
     {
       icon: 'public',
       title: 'GoodLink',
       description:
         'Take full ownership of your online presence with professional Custom Domains. Stop sending your traffic through generic, untrusted links that hurt your reputation. Our platform allows you to seamlessly map your own branded URLs, ensuring that every click reinforces your authority and builds instant trust with your audience.',
+      highlight: 'professional Custom Domains',
     },
     {
       icon: 'insights',
       title: 'GoodSight',
       description:
         'Get a clear view of your audience. Track every click, geographic origin, and device type in real-time. GoodSight provides the essential data you need to monitor your link performance and verify your traffic quality at a glance.',
+      highlight: 'Track every click',
     },
   ];
 
