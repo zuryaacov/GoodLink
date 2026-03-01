@@ -104,15 +104,9 @@ const Footer = () => {
             © 2025 GoodLink.ai. All rights reserved.
           </p>
           <div className="flex gap-4">
-            <a className="text-[#1b1b1b] hover:text-primary transition-colors" href="#">
-              <span className="material-symbols-outlined">thumb_up</span>
-            </a>
-            <a className="text-[#1b1b1b] hover:text-primary transition-colors" href="#">
-              <span className="material-symbols-outlined">share</span>
-            </a>
-            <a className="text-[#1b1b1b] hover:text-primary transition-colors" href="#">
+            <Link to="/contact" className="text-[#1b1b1b] hover:text-primary transition-colors">
               <span className="material-symbols-outlined">mail</span>
-            </a>
+            </Link>
           </div>
         </div>
       </div>
