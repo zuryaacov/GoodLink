@@ -56,8 +56,7 @@ const Hero = ({ user }) => {
                 </span>
               </h1>
               <h2 className="text-slate-600 dark:text-[#1b1b1b] text-lg font-normal leading-relaxed md:text-xl max-w-2xl mx-auto lg:mx-0">
-                The ultimate link management ecosystem for elite affiliate marketers and media
-                buyers. Track every click, pixel, and conversion with precision.
+                One platform to manage your links, block bots, and send conversion signals to Facebook, Google, and TikTok.
               </h2>
             </div>
             <div className="flex flex-wrap gap-4 justify-center lg:justify-start">
