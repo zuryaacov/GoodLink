@@ -40,8 +40,8 @@ const CTASection = () => {
   const plans = [
     {
       name: 'STARTER',
-      price: '4.99',
-      originalPrice: '9.99',
+      price: '5',
+      originalPrice: '10',
       description: 'Perfect for getting started',
       features: [
         'Unlimited Links',
@@ -57,7 +57,7 @@ const CTASection = () => {
     },
     {
       name: 'ADVANCED',
-      price: '9.99',
+      price: '10',
       originalPrice: '26',
       description: 'For growing businesses',
       features: [
@@ -65,6 +65,8 @@ const CTASection = () => {
         '10 Custom Domains',
         'Unlimited QR Codes',
         'Unlimited Clicks',
+        'Workspaces, Campaigns and Groups',
+        'Bot Protection',
         'UTM Presets',
         'Standard Analytics',
         'Email Support',
