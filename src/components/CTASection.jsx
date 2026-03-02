@@ -188,7 +188,7 @@ const CTASection = () => {
                 {/* Price */}
                 <div className="flex items-baseline gap-2 flex-wrap">
                   {plan.originalPrice && (
-                    <span className="text-slate-500 dark:text-slate-400 text-2xl font-bold line-through">
+                    <span className="text-slate-500 dark:text-slate-400 text-5xl font-black line-through">
                       ${plan.originalPrice}
                     </span>
                   )}
