@@ -433,18 +433,12 @@ export default function AccountSettingsPage() {
             <div className="bg-card-bg border border-card-border rounded-2xl p-6 relative overflow-hidden hover:shadow-card-mint transition-all">
               {/* Status Badge */}
               <div className="absolute top-4 right-4">
-                <span
-                  className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${
-                    currentPlan === 'pro'
-                      ? 'bg-[#6358de]/10 text-[#6358de] border border-[#6358de]/30'
-                      : 'bg-slate-700/30 text-slate-300 border border-slate-600/30'
-                  }`}
-                >
+                <span className="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-[#6358de]/10 text-[#6358de] border border-[#6358de]/30">
                   {currentPlan} Plan
                 </span>
               </div>
 
-              <h2 className="text-xl font-bold text-[#1b1b1b] mb-1">Subscription</h2>
+              <h2 className="text-xl font-bold text-[#1b1b1b] mb-1 mt-10">Subscription</h2>
               <p className="text-[#1b1b1b] text-sm mb-6">Your current plan status.</p>
 
               <div className="space-y-4 mb-8">
