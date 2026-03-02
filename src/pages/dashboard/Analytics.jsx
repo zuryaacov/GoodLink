@@ -87,9 +87,6 @@ const HumanVsBotCard = ({ humanCount, botCount, unknownCount }) => {
     <div className="bg-card-bg border border-card-border rounded-2xl p-6 flex flex-col items-center transition-all hover:shadow-card-mint lg:col-span-1">
       <div className="w-full flex justify-between items-center mb-6">
         <h3 className="text-sm font-bold text-[#1b1b1b]">Human vs. Bot Ratio</h3>
-        <button type="button" className="text-[#1b1b1b] hover:text-[#1b1b1b] p-1">
-          <span className="material-symbols-outlined text-lg">more_horiz</span>
-        </button>
       </div>
       <div className="relative mb-6">
         <div
@@ -131,9 +128,6 @@ const GeoProgressCard = ({ geographic }) => {
     <div className="bg-card-bg border border-card-border rounded-2xl p-6 transition-all hover:shadow-card-mint lg:col-span-2">
       <div className="w-full flex justify-between items-center mb-6">
         <h3 className="text-sm font-bold text-[#1b1b1b]">Geographic Distribution (Top 15)</h3>
-        <button type="button" className="text-[#135bec] text-xs font-bold hover:underline">
-          View Map
-        </button>
       </div>
       <div className="space-y-5">
         {geographic.length === 0 ? (
@@ -434,24 +428,8 @@ const Analytics = () => {
 
       {/* Traffic Log */}
       <div className="bg-card-bg border border-card-border rounded-2xl flex flex-col transition-all hover:shadow-card-mint">
-        <div className="p-6 border-b border-slate-200 flex justify-between items-center">
+        <div className="p-6 border-b border-slate-200">
           <h3 className="text-sm font-bold text-[#1b1b1b]">Traffic Log</h3>
-          <div className="flex gap-2">
-            <button
-              type="button"
-              className="p-2 text-[#1b1b1b] hover:text-[#1b1b1b] hover:bg-slate-200 rounded-lg transition-colors"
-              title="Filter"
-            >
-              <span className="material-symbols-outlined text-lg">filter_list</span>
-            </button>
-            <button
-              type="button"
-              className="p-2 text-[#1b1b1b] hover:text-[#1b1b1b] hover:bg-slate-200 rounded-lg transition-colors"
-              title="Download"
-            >
-              <span className="material-symbols-outlined text-lg">download</span>
-            </button>
-          </div>
         </div>
 
         <div className="overflow-x-auto">
