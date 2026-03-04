@@ -175,7 +175,7 @@ const CTASection = () => {
               <div className="p-8 flex flex-col gap-6">
                 {/* Top highlight area: header + price + CTA */}
                 <div
-                  className={`rounded-2xl -mx-8 -mt-8 px-8 pt-8 pb-6 ${
+                  className={`-mx-8 -mt-8 px-8 pt-8 pb-6 ${
                     plan.highlighted ? 'bg-[#0b996f]/15' : 'bg-[#0b996f]/15'
                   }`}
                 >
