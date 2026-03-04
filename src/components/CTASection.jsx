@@ -172,36 +172,74 @@ const CTASection = () => {
                 </span>
               )}
 
-              <div
-                className={`p-8 flex flex-col gap-6 ${
-                  plan.highlighted ? 'bg-[#c0ffa5]/10' : ''
-                }`}
-              >
-                {/* Plan Header */}
-                <div className="flex flex-col gap-2">
-                  <h3 className="text-slate-900 dark:text-[#1b1b1b] text-2xl font-black">
-                    {plan.name}
-                  </h3>
-                  <p className="text-slate-500 dark:text-[#1b1b1b] text-sm">{plan.description}</p>
-                </div>
+              <div className="p-8 flex flex-col gap-6">
+                {/* Top highlight area: header + price + CTA */}
+                <div
+                  className={`rounded-2xl -mx-2 -mt-2 px-4 pt-4 pb-6 ${
+                    plan.highlighted ? 'bg-[#c0ffa5]/10' : 'bg-[#c0ffa5]/10'
+                  }`}
+                >
+                  {/* Plan Header */}
+                  <div className="flex flex-col gap-2">
+                    <h3 className="text-slate-900 dark:text-[#1b1b1b] text-2xl font-black">
+                      {plan.name}
+                    </h3>
+                    <p className="text-slate-500 dark:text-[#1b1b1b] text-sm">
+                      {plan.description}
+                    </p>
+                  </div>
 
-                {/* Price */}
-                <div className="flex items-baseline gap-2 flex-wrap">
-                  {plan.originalPrice && (
-                    <span className="text-slate-500 dark:text-slate-400 text-5xl font-black line-through">
-                      ${plan.originalPrice}
+                  {/* Price */}
+                  <div className="flex items-baseline gap-2 flex-wrap mt-4">
+                    {plan.originalPrice && (
+                      <span className="text-slate-500 dark:text-slate-400 text-5xl font-black line-through">
+                        ${plan.originalPrice}
+                      </span>
+                    )}
+                    <span className="text-slate-900 dark:text-[#1b1b1b] text-5xl font-black">
+                      ${plan.price}
                     </span>
-                  )}
-                  <span className="text-slate-900 dark:text-[#1b1b1b] text-5xl font-black">
-                    ${plan.price}
-                  </span>
-                  <span className="text-slate-500 dark:text-[#1b1b1b] text-lg font-medium">
-                    /month
-                  </span>
+                    <span className="text-slate-500 dark:text-[#1b1b1b] text-lg font-medium">
+                      /month
+                    </span>
+                  </div>
+
+                  {/* CTA Button (directly under price) */}
+                  <button
+                    onClick={(e) => {
+                      e.preventDefault();
+
+                      if (!user) {
+                        navigate(`/login?plan=${plan.name.toLowerCase()}`);
+                        return;
+                      }
+
+                      let targetUrl;
+                      if (
+                        userProfile?.plan_type !== 'free' &&
+                        userProfile?.lemon_squeezy_customer_portal_url
+                      ) {
+                        targetUrl = userProfile.lemon_squeezy_customer_portal_url;
+                      } else {
+                        const separator = plan.checkoutUrl.includes('?') ? '&' : '?';
+                        targetUrl = `${plan.checkoutUrl}${separator}checkout[custom][user_id]=${user.id}`;
+                      }
+
+                      window.open(targetUrl, '_blank', 'noopener,noreferrer');
+                    }}
+                    type="button"
+                    className={`mt-6 w-full py-4 px-6 rounded-lg font-bold text-base transition-all text-center inline-block active:scale-95 ${
+                      plan.highlighted
+                        ? 'bg-[#c0ffa5] hover:bg-[#b0ef95] text-[#1b1b1b] shadow-lg shadow-[#c0ffa5]/30'
+                        : 'bg-[#c0ffa5] hover:bg-[#b0ef95] text-[#1b1b1b] shadow-lg shadow-[#c0ffa5]/20'
+                    }`}
+                  >
+                    {plan.buttonText}
+                  </button>
                 </div>
 
                 {/* Features List */}
-                <ul className="flex flex-col gap-4 mt-2">
+                <ul className="flex flex-col gap-4 mt-4">
                   {plan.features.map((feature, featureIndex) => (
                     <li key={featureIndex} className="flex items-start gap-3">
                       <Check
@@ -213,39 +251,6 @@ const CTASection = () => {
                     </li>
                   ))}
                 </ul>
-
-                {/* CTA Button */}
-                <button
-                  onClick={(e) => {
-                    e.preventDefault();
-
-                    if (!user) {
-                      navigate(`/login?plan=${plan.name.toLowerCase()}`);
-                      return;
-                    }
-
-                    let targetUrl;
-                    if (
-                      userProfile?.plan_type !== 'free' &&
-                      userProfile?.lemon_squeezy_customer_portal_url
-                    ) {
-                      targetUrl = userProfile.lemon_squeezy_customer_portal_url;
-                    } else {
-                      const separator = plan.checkoutUrl.includes('?') ? '&' : '?';
-                      targetUrl = `${plan.checkoutUrl}${separator}checkout[custom][user_id]=${user.id}`;
-                    }
-
-                    window.open(targetUrl, '_blank', 'noopener,noreferrer');
-                  }}
-                  type="button"
-                  className={`mt-auto w-full py-4 px-6 rounded-lg font-bold text-base transition-all text-center inline-block active:scale-95 ${
-                    plan.highlighted
-                      ? 'bg-[#c0ffa5] hover:bg-[#b0ef95] text-[#1b1b1b] shadow-lg shadow-[#c0ffa5]/30'
-                      : 'bg-[#c0ffa5] hover:bg-[#b0ef95] text-[#1b1b1b] shadow-lg shadow-[#c0ffa5]/20'
-                  }`}
-                >
-                  {plan.buttonText}
-                </button>
               </div>
             </motion.div>
           ))}
