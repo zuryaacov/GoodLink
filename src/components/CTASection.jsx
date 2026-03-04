@@ -176,7 +176,7 @@ const CTASection = () => {
                 {/* Top highlight area: header + price + CTA */}
                 <div
                   className={`rounded-2xl -mx-8 -mt-8 px-8 pt-8 pb-6 ${
-                    plan.highlighted ? 'bg-[#c0ffa5]/10' : 'bg-[#c0ffa5]/10'
+                    plan.highlighted ? 'bg-[#0b996f]/15' : 'bg-[#0b996f]/15'
                   }`}
                 >
                   {/* Plan Header */}
