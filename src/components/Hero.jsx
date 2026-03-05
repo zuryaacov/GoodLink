@@ -11,7 +11,7 @@ const Hero = ({ user }) => {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6, ease: 'easeOut' }}
-          className="flex flex-col items-center w-full lg:w-3/4 space-y-8 md:space-y-12"
+          className="flex flex-col items-center w-full space-y-8 md:space-y-12"
         >
           {/* Main line */}
           <h1 className="text-slate-900 text-6xl md:text-7xl lg:text-8xl font-black leading-snug md:leading-tight tracking-tight">
