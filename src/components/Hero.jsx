@@ -31,7 +31,7 @@ const Hero = ({ user }) => {
           {!user && (
             <Link
               to="/login"
-              className="inline-flex h-12 min-w-[160px] items-center justify-center rounded-lg bg-[#6358de] hover:bg-[#5348c7] px-8 text-white text-sm md:text-base font-bold tracking-wide uppercase transition-all"
+              className="inline-flex h-14 md:h-16 min-w-[200px] md:min-w-[240px] items-center justify-center rounded-xl bg-[#6358de] hover:bg-[#5348c7] px-10 md:px-12 text-white text-base md:text-lg font-bold tracking-wide uppercase transition-all"
             >
               Get Started
             </Link>
