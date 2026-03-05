@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 const Hero = ({ user }) => {
   return (
     <section className="relative px-6 py-16 md:py-24 bg-[#d7fec8]">
-      <div className="layout-content-container mx-auto flex flex-col items-center text-center">
+      <div className="mx-auto max-w-7xl flex flex-col items-center text-center">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
