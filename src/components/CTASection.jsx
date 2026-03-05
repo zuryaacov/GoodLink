@@ -160,7 +160,7 @@ const CTASection = () => {
             <motion.div
               key={plan.name}
               variants={itemVariants}
-              className={`relative flex flex-col rounded-xl border-2 transition-all duration-300 ${
+              className={`relative flex flex-col rounded-xl border-2 transition-all duration-300 w-full md:max-w-md md:mx-auto lg:max-w-none lg:mx-0 ${
                 plan.highlighted
                   ? 'border-[#c0ffa5] bg-[#c0ffa5]/10 shadow-2xl scale-105 lg:scale-110'
                   : 'border-slate-200 dark:border-slate-200 bg-white dark:bg-white hover:border-[#c0ffa5]/50 hover:shadow-xl'
