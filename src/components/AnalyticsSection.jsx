@@ -9,6 +9,9 @@ const AnalyticsSection = () => {
       <div className="mx-auto max-w-[1200px] flex flex-col lg:flex-row gap-12 items-center">
         {/* Text Side */}
         <div className="flex-1 flex flex-col gap-6">
+          <div className="inline-flex w-fit items-center rounded-full bg-[#6358de]/10 px-3 py-1 text-sm font-medium text-[#6358de] border border-[#6358de]/20">
+            Insights
+          </div>
           <h2
             id="resources-heading"
             className="text-slate-900 dark:text-[#1b1b1b] text-3xl md:text-4xl font-bold leading-tight"
