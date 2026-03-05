@@ -19,10 +19,10 @@ const Homepage = () => {
   }, []);
 
   useEffect(() => {
-    if (window.location.hash === '#pricing') {
-      const el = document.getElementById('pricing');
+    const hash = window.location.hash.slice(1); // e.g. 'features', 'resources', 'pricing'
+    if (hash) {
+      const el = document.getElementById(hash);
       if (el) {
-        // שימוש ב-timeout קטן כדי לוודא שה‑DOM מוכן
         setTimeout(() => {
           el.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }, 100);

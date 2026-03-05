@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../lib/supabase';
 
@@ -7,6 +7,7 @@ const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [user, setUser] = useState(null);
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     // Get initial user
@@ -35,10 +36,29 @@ const Navbar = () => {
   };
 
   const navLinks = [
-    { name: 'Features', href: '#features' },
-    { name: 'Resources', href: '#resources' },
-    { name: 'Pricing', href: '#pricing' },
+    { name: 'Features', href: '#features', id: 'features' },
+    { name: 'Resources', href: '#resources', id: 'resources' },
+    { name: 'Pricing', href: '#pricing', id: 'pricing' },
   ];
+
+  const handleSectionClick = (e, sectionId) => {
+    if (isOpen) setIsOpen(false);
+    const isHome = location.pathname === '/';
+    if (!isHome) {
+      navigate(`/#${sectionId}`);
+      return;
+    }
+    e.preventDefault();
+    const el = document.getElementById(sectionId);
+    if (el) {
+      window.history.replaceState(null, '', `#${sectionId}`);
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+      });
+    }
+  };
 
   return (
     <header className="sticky top-0 z-50 flex flex-col border-b border-solid border-[#0b996f]/20 bg-[#d7fec8] backdrop-blur-md">
@@ -76,8 +96,12 @@ const Navbar = () => {
             {navLinks.map((link) => (
               <a
                 key={link.name}
-                className="text-[#1b1b1b] hover:text-primary transition-colors text-base font-bold leading-normal"
                 href={link.href}
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleSectionClick(e, link.id);
+                }}
+                className="text-[#1b1b1b] hover:text-primary transition-colors text-base font-bold leading-normal cursor-pointer"
               >
                 {link.name}
               </a>
@@ -144,9 +168,12 @@ const Navbar = () => {
                 {navLinks.map((link) => (
                   <a
                     key={link.name}
-                    onClick={() => setIsOpen(false)}
-                    className="text-[#1b1b1b] hover:text-primary transition-colors text-xl font-bold"
                     href={link.href}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handleSectionClick(e, link.id);
+                    }}
+                    className="text-[#1b1b1b] hover:text-primary transition-colors text-xl font-bold cursor-pointer"
                   >
                     {link.name}
                   </a>
