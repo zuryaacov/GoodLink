@@ -11,10 +11,10 @@ const Hero = ({ user }) => {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6, ease: 'easeOut' }}
-          className="flex flex-col items-center w-full space-y-8 md:space-y-12"
+          className="flex flex-col items-center w-full max-w-xl sm:max-w-2xl lg:max-w-5xl space-y-8 md:space-y-12"
         >
           {/* Main line */}
-          <h1 className="text-slate-900 text-6xl md:text-7xl lg:text-8xl font-black leading-snug md:leading-tight tracking-tight">
+          <h1 className="text-slate-900 text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-black leading-snug md:leading-tight tracking-tight">
             Short Links, Bot Protection,
             <br className="hidden sm:block" />
             <span>
@@ -23,7 +23,7 @@ const Hero = ({ user }) => {
           </h1>
 
           {/* Secondary line */}
-          <p className="text-slate-600 text-5xl md:text-6xl font-semibold leading-snug">
+          <p className="text-slate-600 text-xl sm:text-2xl md:text-3xl lg:text-4xl font-semibold leading-snug">
             Smart Links Built For You
           </p>
 
