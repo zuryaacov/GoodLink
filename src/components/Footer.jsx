@@ -1,7 +1,9 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 
 const Footer = () => {
+  const location = useLocation();
+
   return (
     <footer className="border-t border-slate-200 dark:border-slate-200 bg-white dark:bg-[#111722] py-12 px-6">
       <div className="mx-auto max-w-[1200px]">
@@ -9,7 +11,13 @@ const Footer = () => {
           <div className="col-span-2 lg:col-span-2 flex flex-col gap-4">
             <Link
               to="/"
-              className="flex items-center gap-3 text-[#1b1b1b] transition-opacity hover:opacity-80"
+              onClick={(e) => {
+                if (location.pathname === '/') {
+                  e.preventDefault();
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }
+              }}
+              className="flex items-center gap-3 text-[#1b1b1b] transition-opacity hover:opacity-80 cursor-pointer"
             >
               <div className="size-5 sm:size-8 text-primary flex-shrink-0">
                 <svg fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
