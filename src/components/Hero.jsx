@@ -23,7 +23,7 @@ const Hero = ({ user }) => {
           </h1>
 
           {/* Secondary line */}
-          <p className="text-slate-600 text-xl sm:text-2xl md:text-3xl lg:text-4xl font-semibold leading-snug">
+          <p className="text-[#0b996f] text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold leading-snug">
             Smart Links Built For You
           </p>
 
