@@ -14,7 +14,7 @@ const Hero = ({ user }) => {
           className="flex flex-col gap-6 items-center w-full lg:w-3/4"
         >
           {/* Main line */}
-          <h1 className="text-slate-900 text-6xl md:text-7xl lg:text-8xl font-black leading-tight tracking-tight">
+          <h1 className="text-slate-900 text-6xl md:text-7xl lg:text-8xl font-black leading-snug md:leading-tight tracking-tight">
             Short links, Bot Protection,
             <br className="hidden sm:block" />
             <span className="whitespace-nowrap">
@@ -23,7 +23,7 @@ const Hero = ({ user }) => {
           </h1>
 
           {/* Secondary line */}
-          <p className="text-slate-600 text-3xl md:text-4xl font-semibold">
+          <p className="mt-4 text-slate-600 text-5xl md:text-6xl font-semibold leading-snug">
             Smart Links Built for You
           </p>
 
