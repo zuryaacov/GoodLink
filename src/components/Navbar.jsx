@@ -65,7 +65,13 @@ const Navbar = () => {
       <div className="flex items-center justify-between px-6 py-4 lg:px-20">
         <Link
           to="/"
-          className="flex items-center gap-3 text-[#1b1b1b] transition-opacity hover:opacity-80"
+          onClick={(e) => {
+            if (location.pathname === '/') {
+              e.preventDefault();
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+          }}
+          className="flex items-center gap-3 text-[#1b1b1b] transition-opacity hover:opacity-80 cursor-pointer"
         >
           <div className="size-5 sm:size-8 text-primary flex-shrink-0">
             <svg fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">

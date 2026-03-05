@@ -125,7 +125,7 @@ const CTASection = () => {
   return (
     <section
       id="pricing"
-      className="py-20 px-6 md:px-20 bg-background-light dark:bg-background-dark"
+      className="scroll-mt-20 py-20 px-6 md:px-20 bg-background-light dark:bg-background-dark"
     >
       <div className="mx-auto max-w-[1200px] flex flex-col gap-16">
         {/* Headline */}
