@@ -52,6 +52,8 @@ const relativeTime = (dateString) => {
   return date.toLocaleDateString('he-IL', { day: '2-digit', month: '2-digit', year: 'numeric' });
 };
 
+const TRAFFIC_PAGE_SIZE = 30;
+
 const KPICard = ({ title, value, change, trend, icon, iconBgClass, iconColorClass }) => (
   <div className="bg-card-bg border border-card-border rounded-2xl p-5 transition-all hover:shadow-card-mint">
     <div className="flex justify-between items-start mb-4">
@@ -184,6 +186,9 @@ const Analytics = () => {
     geographic: [],
   });
   const [trafficData, setTrafficData] = useState([]);
+  const [trafficPage, setTrafficPage] = useState(1);
+  const [trafficTotalCount, setTrafficTotalCount] = useState(0);
+  const [loadingTrafficPage, setLoadingTrafficPage] = useState(false);
   const [loadingTraffic, setLoadingTraffic] = useState(false);
   const [selectedClick, setSelectedClick] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
@@ -191,6 +196,14 @@ const Analytics = () => {
   useEffect(() => {
     fetchStats();
   }, [linkDomain, linkSlug]);
+
+  useEffect(() => {
+    setTrafficPage(1);
+  }, [linkDomain, linkSlug]);
+
+  useEffect(() => {
+    fetchTrafficPage();
+  }, [linkDomain, linkSlug, trafficPage]);
 
   const fetchStats = async () => {
     try {
@@ -277,11 +290,50 @@ const Analytics = () => {
         .slice(0, 15);
 
       setChartData((prev) => ({ ...prev, geographic }));
-      setTrafficData(clicks);
     } catch (error) {
       console.error('Error fetching stats:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchTrafficPage = async () => {
+    try {
+      setLoadingTrafficPage(true);
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) {
+        setTrafficData([]);
+        setTrafficTotalCount(0);
+        return;
+      }
+
+      const from = (trafficPage - 1) * TRAFFIC_PAGE_SIZE;
+      const to = from + TRAFFIC_PAGE_SIZE - 1;
+
+      let query = supabase
+        .from('clicks')
+        .select('*', { count: 'exact' })
+        .eq('user_id', user.id)
+        .order('clicked_at', { ascending: false })
+        .range(from, to);
+
+      if (isSingleLink) {
+        query = query.eq('domain', linkDomain).eq('slug', linkSlug);
+      }
+
+      const { data, count, error } = await query;
+      if (error) throw error;
+
+      setTrafficData(data || []);
+      setTrafficTotalCount(count || 0);
+    } catch (error) {
+      console.error('Error fetching traffic log:', error);
+      setTrafficData([]);
+      setTrafficTotalCount(0);
+    } finally {
+      setLoadingTrafficPage(false);
     }
   };
 
@@ -343,6 +395,9 @@ const Analytics = () => {
     stats.totalClicks > 0 && stats.uniqueVisitors > 0
       ? `${((stats.uniqueVisitors / stats.totalClicks) * 100).toFixed(1)}%`
       : '—';
+  const totalTrafficPages = Math.max(Math.ceil(trafficTotalCount / TRAFFIC_PAGE_SIZE), 1);
+  const trafficStart = trafficTotalCount === 0 ? 0 : (trafficPage - 1) * TRAFFIC_PAGE_SIZE + 1;
+  const trafficEnd = Math.min(trafficPage * TRAFFIC_PAGE_SIZE, trafficTotalCount);
 
   if (loading) {
     return (
@@ -433,7 +488,11 @@ const Analytics = () => {
         </div>
 
         <div className="overflow-x-auto">
-          {trafficData.length === 0 ? (
+          {loadingTrafficPage ? (
+            <div className="text-center py-12">
+              <p className="text-[#1b1b1b] text-lg mb-2">Loading traffic log...</p>
+            </div>
+          ) : trafficData.length === 0 ? (
             <div className="text-center py-12">
               <span className="material-symbols-outlined text-6xl text-[#1b1b1b] mb-4 block">
                 traffic
@@ -525,13 +584,31 @@ const Analytics = () => {
         </div>
 
         {trafficData.length > 0 && (
-          <div className="p-4 border-t border-slate-200 flex justify-center">
-            <button
-              type="button"
-              className="text-xs text-[#1b1b1b] hover:text-[#1b1b1b] transition-colors font-medium"
-            >
-              View All Logs
-            </button>
+          <div className="p-4 border-t border-slate-200 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+            <p className="text-xs text-[#1b1b1b]">
+              Showing {trafficStart}-{trafficEnd} of {formatNumber(trafficTotalCount)} logs
+            </p>
+            <div className="flex items-center justify-center gap-3">
+              <button
+                type="button"
+                onClick={() => setTrafficPage((page) => Math.max(page - 1, 1))}
+                disabled={trafficPage === 1}
+                className="px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-bold text-[#1b1b1b] transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:border-primary hover:bg-primary/10"
+              >
+                Previous
+              </button>
+              <span className="text-xs font-medium text-[#1b1b1b]">
+                Page {trafficPage} of {totalTrafficPages}
+              </span>
+              <button
+                type="button"
+                onClick={() => setTrafficPage((page) => Math.min(page + 1, totalTrafficPages))}
+                disabled={trafficPage >= totalTrafficPages}
+                className="px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-bold text-[#1b1b1b] transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:border-primary hover:bg-primary/10"
+              >
+                Next
+              </button>
+            </div>
           </div>
         )}
       </div>
