@@ -69,7 +69,8 @@ const AuthPage = () => {
     }
 
     // Otherwise, if user is on FREE plan, open checkout
-    const finalUrl = `${checkoutUrl}&checkout[custom][user_id]=${user.id}`;
+    const emailParam = user.email ? `&checkout[email]=${encodeURIComponent(user.email)}` : '';
+    const finalUrl = `${checkoutUrl}&checkout[custom][user_id]=${user.id}${emailParam}`;
     window.open(finalUrl, '_blank', 'noopener,noreferrer');
   };
 
@@ -771,7 +772,7 @@ const AuthPage = () => {
               >
                 <div className="text-center mb-2">
                   <h1 className="text-2xl font-bold text-[#1b1b1b] mb-2">Join GoodLink.ai</h1>
-                  <p className="text-[#1b1b1b]">Start securing your data today</p>
+                  <p className="text-[#1b1b1b]">Get Your GoodLink's Now</p>
                 </div>
 
                 {error && (

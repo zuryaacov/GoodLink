@@ -222,7 +222,8 @@ const CTASection = () => {
                         targetUrl = userProfile.lemon_squeezy_customer_portal_url;
                       } else {
                         const separator = plan.checkoutUrl.includes('?') ? '&' : '?';
-                        targetUrl = `${plan.checkoutUrl}${separator}checkout[custom][user_id]=${user.id}`;
+                        const emailParam = user.email ? `&checkout[email]=${encodeURIComponent(user.email)}` : '';
+                        targetUrl = `${plan.checkoutUrl}${separator}checkout[custom][user_id]=${user.id}${emailParam}`;
                       }
 
                       window.open(targetUrl, '_blank', 'noopener,noreferrer');
