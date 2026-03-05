@@ -9,6 +9,7 @@ export default {
         try {
             const data = await request.json();
             console.log("📦 Data received:", JSON.stringify(data));
+            console.log(`🔗 Full URL received: ${data.fullUrl || data.full_url || "N/A"}`);
 
             // שליפת מידע מ-IPinfo
             let ipInfo = {};
@@ -30,6 +31,7 @@ export default {
                 city: ipInfo.city || "Unknown",
                 slug: data.slug,
                 domain: data.domain,
+                full_url: data.fullUrl || data.full_url || null,
                 target_url: data.linkData?.target_url || null,
                 query_params: data.queryParams || "",
                 clicked_at: data.timestamp,

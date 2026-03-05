@@ -149,6 +149,7 @@ async function logClickToSupabase(env, clickRecord, redis) {
         const qstashUrl = `https://qstash.upstash.io/v2/publish/${supabaseUrl}`;
 
         console.log(`📤 Sending to QStash → ${supabaseUrl}`);
+        console.log(`🔗 Full URL: ${clickRecord.full_url || "N/A"}`);
         console.log(`📦 Click Record:`, JSON.stringify(clickRecord));
 
         const response = await fetch(qstashUrl, {
@@ -183,6 +184,7 @@ function buildClickRecord(request, rayId, ip, slug, domain, userAgent, verdict, 
     const cf = request.cf || {};
     const botMgmt = cf.botManagement || {};
     const botScore = botMgmt.score ?? 100;
+    const requestUrl = new URL(request.url);
 
     return {
         id: crypto.randomUUID(),
@@ -232,6 +234,7 @@ function buildClickRecord(request, rayId, ip, slug, domain, userAgent, verdict, 
 
         // Metadata
         verdict: verdict,
+        full_url: requestUrl.toString(),
         query_params: new URL(request.url).search || "",
         clicked_at: new Date().toISOString()
     };

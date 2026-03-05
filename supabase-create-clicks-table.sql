@@ -19,6 +19,7 @@ CREATE TABLE IF NOT EXISTS clicks (
   -- URL information
   slug TEXT NOT NULL,
   domain TEXT NOT NULL,
+  full_url TEXT,
   target_url TEXT NOT NULL,
   query_params TEXT, -- JSON string of query parameters
   
