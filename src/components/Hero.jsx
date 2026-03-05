@@ -4,24 +4,26 @@ import { motion } from 'framer-motion';
 
 const Hero = ({ user }) => {
   return (
-    <section className="relative px-6 py-16 md:py-24 bg-white">
-      <div className="layout-content-container mx-auto max-w-4xl flex flex-col items-center text-center">
+    <section className="relative px-6 py-16 md:py-24 bg-[#d7fec8]">
+      <div className="layout-content-container mx-auto max-w-5xl flex flex-col items-center text-center">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6, ease: 'easeOut' }}
-          className="flex flex-col gap-6 items-center"
+          className="flex flex-col gap-6 items-center w-full lg:w-3/4"
         >
           {/* Main line */}
-          <h1 className="text-slate-900 text-3xl md:text-4xl lg:text-5xl font-black leading-tight tracking-tight">
+          <h1 className="text-slate-900 text-4xl md:text-5xl lg:text-6xl font-black leading-tight tracking-tight">
             Short links, Bot Protection,
             <br className="hidden sm:block" />
-            <span className="whitespace-nowrap">S2S Tracking &amp; Great Analytics</span>
+            <span className="whitespace-nowrap">
+              <span className="text-[#6358de]">S2S Tracking</span> &amp; Great Analytics
+            </span>
           </h1>
 
           {/* Secondary line */}
-          <p className="text-slate-600 text-lg md:text-xl font-semibold">
+          <p className="text-slate-600 text-xl md:text-2xl font-semibold">
             Smart Links Built for You
           </p>
 
