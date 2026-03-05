@@ -221,9 +221,12 @@ const CTASection = () => {
                       ) {
                         targetUrl = userProfile.lemon_squeezy_customer_portal_url;
                       } else {
-                        const separator = plan.checkoutUrl.includes('?') ? '&' : '?';
-                        const emailParam = user.email ? `&checkout[email]=${encodeURIComponent(user.email)}` : '';
-                        targetUrl = `${plan.checkoutUrl}${separator}checkout[custom][user_id]=${user.id}${emailParam}`;
+                        const baseUrl = plan.checkoutUrl.split('?')[0];
+                        const q = [];
+                        if (user.email) q.push(`checkout[email]=${encodeURIComponent(user.email)}`);
+                        q.push(`checkout[custom][user_id]=${encodeURIComponent(user.id)}`);
+                        q.push('embed=1');
+                        targetUrl = `${baseUrl}?${q.join('&')}`;
                       }
 
                       window.open(targetUrl, '_blank', 'noopener,noreferrer');

@@ -69,8 +69,12 @@ const AuthPage = () => {
     }
 
     // Otherwise, if user is on FREE plan, open checkout
-    const emailParam = user.email ? `&checkout[email]=${encodeURIComponent(user.email)}` : '';
-    const finalUrl = `${checkoutUrl}&checkout[custom][user_id]=${user.id}${emailParam}`;
+    const baseUrl = checkoutUrl.split('?')[0];
+    const q = [];
+    if (user.email) q.push(`checkout[email]=${encodeURIComponent(user.email)}`);
+    q.push(`checkout[custom][user_id]=${encodeURIComponent(user.id)}`);
+    q.push('embed=1');
+    const finalUrl = `${baseUrl}?${q.join('&')}`;
     window.open(finalUrl, '_blank', 'noopener,noreferrer');
   };
 
