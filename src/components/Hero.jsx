@@ -14,7 +14,7 @@ const Hero = ({ user }) => {
           className="flex flex-col items-center w-full max-w-xl sm:max-w-2xl lg:max-w-5xl space-y-8 md:space-y-12"
         >
           {/* Main line */}
-          <h1 className="text-slate-900 text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-black leading-relaxed md:leading-relaxed tracking-tight">
+          <h1 className="text-slate-900 text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-black leading-loose md:leading-[1.75] tracking-tight">
             Short Links, Bot Protection,
             <br className="hidden sm:block" />
             <span>
