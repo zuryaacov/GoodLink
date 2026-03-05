@@ -8,7 +8,10 @@ const AnalyticsSection = () => {
     >
       <div className="mx-auto max-w-[1200px] flex flex-col gap-10">
         <div className="flex justify-center">
-          <div className="inline-flex items-center rounded-full bg-[#6358de]/10 px-3 py-1 text-sm font-medium text-[#6358de] border border-[#6358de]/20">
+          <div
+            id="insights-heading"
+            className="inline-flex items-center rounded-full bg-[#6358de]/10 px-3 py-1 text-sm font-medium text-[#6358de] border border-[#6358de]/20"
+          >
             Insights
           </div>
         </div>
