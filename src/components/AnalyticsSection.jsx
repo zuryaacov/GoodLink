@@ -9,7 +9,10 @@ const AnalyticsSection = () => {
       <div className="mx-auto max-w-[1200px] flex flex-col lg:flex-row gap-12 items-center">
         {/* Text Side */}
         <div className="flex-1 flex flex-col gap-6">
-          <h2 className="text-slate-900 dark:text-[#1b1b1b] text-3xl md:text-4xl font-bold leading-tight">
+          <h2
+            id="resources-heading"
+            className="text-slate-900 dark:text-[#1b1b1b] text-3xl md:text-4xl font-bold leading-tight"
+          >
             Analytics You Can Trust
           </h2>
           <p className="text-slate-600 dark:text-[#1b1b1b] text-lg">

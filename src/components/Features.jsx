@@ -56,6 +56,7 @@ const Features = () => {
       <div className="mx-auto max-w-[1200px] flex flex-col gap-16">
         {/* Headline for Features */}
         <motion.div
+          id="features-heading"
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}

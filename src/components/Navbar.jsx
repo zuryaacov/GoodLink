@@ -3,6 +3,20 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../lib/supabase';
 
+const scrollToTarget = (targetId) => {
+  const el = document.getElementById(targetId);
+  const header = document.querySelector('header');
+  if (!el) return;
+
+  const headerOffset = header ? header.getBoundingClientRect().height + 12 : 88;
+  const top = el.getBoundingClientRect().top + window.scrollY - headerOffset;
+
+  window.scrollTo({
+    top: Math.max(top, 0),
+    behavior: 'smooth',
+  });
+};
+
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [user, setUser] = useState(null);
@@ -36,9 +50,9 @@ const Navbar = () => {
   };
 
   const navLinks = [
-    { name: 'Features', href: '#features', id: 'features' },
-    { name: 'Resources', href: '#resources', id: 'resources' },
-    { name: 'Pricing', href: '#pricing', id: 'pricing' },
+    { name: 'Features', href: '#features-heading', id: 'features-heading' },
+    { name: 'Resources', href: '#resources-heading', id: 'resources-heading' },
+    { name: 'Pricing', href: '#pricing-heading', id: 'pricing-heading' },
   ];
 
   const handleSectionClick = (e, sectionId) => {
@@ -49,15 +63,12 @@ const Navbar = () => {
       return;
     }
     e.preventDefault();
-    const el = document.getElementById(sectionId);
-    if (el) {
-      window.history.replaceState(null, '', `#${sectionId}`);
+    window.history.replaceState(null, '', `#${sectionId}`);
+    requestAnimationFrame(() => {
       requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        });
+        scrollToTarget(sectionId);
       });
-    }
+    });
   };
 
   return (

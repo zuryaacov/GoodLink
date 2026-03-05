@@ -130,6 +130,7 @@ const CTASection = () => {
       <div className="mx-auto max-w-[1200px] flex flex-col gap-16">
         {/* Headline */}
         <motion.div
+          id="pricing-heading"
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
