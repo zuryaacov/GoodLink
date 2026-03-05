@@ -52,7 +52,7 @@ const relativeTime = (dateString) => {
   return date.toLocaleDateString('he-IL', { day: '2-digit', month: '2-digit', year: 'numeric' });
 };
 
-const TRAFFIC_PAGE_SIZE = 30;
+const TRAFFIC_PAGE_SIZE = 10;
 
 const KPICard = ({ title, value, change, trend, icon, iconBgClass, iconColorClass }) => (
   <div className="bg-card-bg border border-card-border rounded-2xl p-5 transition-all hover:shadow-card-mint">
@@ -511,6 +511,9 @@ const Analytics = () => {
                     Location
                   </th>
                   <th className="px-6 py-3 font-bold uppercase text-[10px] tracking-wider">
+                    Full URL
+                  </th>
+                  <th className="px-6 py-3 font-bold uppercase text-[10px] tracking-wider">
                     Device / OS
                   </th>
                   <th className="px-6 py-3 font-bold uppercase text-[10px] tracking-wider">
@@ -541,6 +544,11 @@ const Analytics = () => {
                         <span className="flex items-center gap-2">
                           <span className="text-lg">{flag}</span>
                           <span className="text-[#1b1b1b] font-medium">{location}</span>
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 max-w-[320px]">
+                        <span className="block text-[#1b1b1b] font-medium break-all">
+                          {click.full_url || '—'}
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
@@ -654,6 +662,12 @@ const Analytics = () => {
                 <span className="text-xs font-medium text-[#1b1b1b]">Referrer</span>
                 <span className="text-sm text-[#1b1b1b] break-all text-right max-w-[70%]">
                   {selectedClick.referer || selectedClick.referrer || '—'}
+                </span>
+              </div>
+              <div className="flex items-start justify-between py-2 border-b border-gray-200">
+                <span className="text-xs font-medium text-[#1b1b1b]">Full URL</span>
+                <span className="text-sm text-[#1b1b1b] break-all text-right max-w-[70%] font-mono">
+                  {selectedClick.full_url || '—'}
                 </span>
               </div>
               <div className="flex items-center justify-between py-2 border-b border-gray-200">
