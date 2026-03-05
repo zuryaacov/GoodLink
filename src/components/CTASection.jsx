@@ -154,7 +154,7 @@ const CTASection = () => {
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true }}
-          className="grid grid-cols-1 md:grid-cols-3 gap-8"
+          className="grid grid-cols-1 lg:grid-cols-3 gap-8"
         >
           {plans.map((plan) => (
             <motion.div
@@ -162,7 +162,7 @@ const CTASection = () => {
               variants={itemVariants}
               className={`relative flex flex-col rounded-xl border-2 transition-all duration-300 ${
                 plan.highlighted
-                  ? 'border-[#c0ffa5] bg-[#c0ffa5]/10 shadow-2xl scale-105 md:scale-110'
+                  ? 'border-[#c0ffa5] bg-[#c0ffa5]/10 shadow-2xl scale-105 lg:scale-110'
                   : 'border-slate-200 dark:border-slate-200 bg-white dark:bg-white hover:border-[#c0ffa5]/50 hover:shadow-xl'
               }`}
             >
