@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
+import { deleteLinkFromRedis } from '../../lib/redisCache';
 
 const AdminOverviewPage = () => {
   const [pendingLinks, setPendingLinks] = useState([]);
@@ -11,7 +12,7 @@ const AdminOverviewPage = () => {
     try {
       const { data, error } = await supabase
         .from('links')
-        .select('id, name, short_url, target_url, fallback_url, geo_rules, created_at, user_id')
+        .select('id, name, short_url, target_url, fallback_url, geo_rules, created_at, user_id, domain, slug')
         .eq('review_status', 'pending')
         .order('created_at', { ascending: false });
 
@@ -29,7 +30,8 @@ const AdminOverviewPage = () => {
     fetchPendingLinks();
   }, []);
 
-  const setLinkStatus = async (linkId, action) => {
+  const setLinkStatus = async (link, action) => {
+    const linkId = link.id;
     setActionLoading(linkId);
     try {
       const payload =
@@ -39,6 +41,15 @@ const AdminOverviewPage = () => {
       const { error } = await supabase.from('links').update(payload).eq('id', linkId);
 
       if (error) throw error;
+
+      if (action === 'rejected' && link.domain && link.slug) {
+        try {
+          await deleteLinkFromRedis(link.domain, link.slug);
+        } catch (redisErr) {
+          console.warn('⚠️ [Admin] Failed to remove link from Upstash after reject:', redisErr);
+        }
+      }
+
       setPendingLinks((prev) => prev.filter((l) => l.id !== linkId));
     } catch (err) {
       console.error('Error updating link status:', err);
@@ -141,7 +152,7 @@ const AdminOverviewPage = () => {
                   <div className="flex items-center gap-2 shrink-0 pt-2 sm:pt-0 sm:pl-4 border-t border-slate-200 sm:border-t-0 sm:border-l sm:border-slate-200">
                     <button
                       type="button"
-                      onClick={() => setLinkStatus(link.id, 'active')}
+                      onClick={() => setLinkStatus(link, 'active')}
                       disabled={actionLoading === link.id}
                       className="px-4 py-2.5 rounded-xl bg-secondary-green text-[#1b1b1b] text-base font-bold hover:opacity-90 disabled:opacity-50 transition-opacity"
                     >
@@ -149,7 +160,7 @@ const AdminOverviewPage = () => {
                     </button>
                     <button
                       type="button"
-                      onClick={() => setLinkStatus(link.id, 'rejected')}
+                      onClick={() => setLinkStatus(link, 'rejected')}
                       disabled={actionLoading === link.id}
                       className="px-4 py-2.5 rounded-xl border-2 border-red-400 text-red-600 text-base font-bold hover:bg-red-50 disabled:opacity-50 transition-colors"
                     >
