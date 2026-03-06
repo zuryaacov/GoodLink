@@ -187,140 +187,33 @@ const Step1FastTrack = ({
     const result = await checkUrlSafety(normalizedUrl);
     console.log('🔵 [performSafetyCheckAndGetResult] Safety check result:', result);
 
-    // Step 2: Check if URL already exists in links table (check always, not just if safe)
-    let urlExists = false;
-    try {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-
-      if (user) {
-        console.log(
-          '🔵 [performSafetyCheckAndGetResult] Checking if URL exists for user:',
-          user.id
-        );
-        // Get all links for this user to check for URL matches (exclude deleted links)
-        const { data: existingLinks, error: linksError } = await supabase
-          .from('links')
-          .select('id, target_url')
-          .eq('user_id', user.id)
-          .neq('status', 'deleted');
-
-        if (linksError) {
-          console.error('❌ [performSafetyCheckAndGetResult] Error fetching links:', linksError);
-        } else {
-          console.log(
-            '🔵 [performSafetyCheckAndGetResult] Found',
-            existingLinks?.length || 0,
-            'existing links'
-          );
-        }
-
-        if (!linksError && existingLinks && existingLinks.length > 0) {
-          // Normalize URLs for comparison (remove trailing slashes, lowercase, etc.)
-          const normalizeForComparison = (url) => {
-            if (!url || typeof url !== 'string') return '';
-
-            try {
-              let urlToNormalize = url.trim().toLowerCase();
-
-              // Add https:// if no protocol
-              if (!urlToNormalize.startsWith('http://') && !urlToNormalize.startsWith('https://')) {
-                urlToNormalize = `https://${urlToNormalize}`;
-              }
-
-              // Parse as URL
-              const urlObj = new URL(urlToNormalize);
-
-              // Build normalized URL: protocol + hostname (without www) + pathname (without trailing slash)
-              let normalized = `${urlObj.protocol}//${urlObj.hostname.replace(/^www\./, '')}`;
-
-              // Add pathname without trailing slash
-              if (urlObj.pathname && urlObj.pathname !== '/') {
-                normalized += urlObj.pathname.replace(/\/$/, '');
-              }
-
-              // Add search params if they exist
-              if (urlObj.search) {
-                normalized += urlObj.search;
-              }
-
-              return normalized;
-            } catch {
-              // Fallback: just lowercase and trim, remove trailing slash
-              return url.toLowerCase().trim().replace(/\/$/, '');
-            }
-          };
-
-          const normalizedInputUrl = normalizeForComparison(normalizedUrl);
-          console.log(
-            '🔵 [performSafetyCheckAndGetResult] Normalized input URL:',
-            normalizedInputUrl
-          );
-
-          // Check if any existing link matches the normalized URL
-          // Exclude the current link if in edit mode (formData.linkId)
-          urlExists = existingLinks.some((link) => {
-            // Skip if this is the link we're editing (compare as strings to handle UUID comparison)
-            if (formData.linkId && String(link.id) === String(formData.linkId)) {
-              return false;
-            }
-            if (!link.target_url) return false;
-            const normalizedExistingUrl = normalizeForComparison(link.target_url);
-            const matches = normalizedExistingUrl === normalizedInputUrl;
-            if (matches) {
-              console.log(
-                '🔵 [performSafetyCheckAndGetResult] Found matching URL:',
-                link.target_url
-              );
-            }
-            return matches;
-          });
-        }
-      }
-    } catch (error) {
-      console.error('❌ [performSafetyCheckAndGetResult] Error checking if URL exists:', error);
-      // Don't block user on error, just log it
-    }
-
     console.log('🔵 [performSafetyCheckAndGetResult] Final checks:', {
       safetyCheckIsSafe: result.isSafe,
-      urlExists: urlExists,
-      finalIsSafe: result.isSafe && !urlExists,
     });
 
     const safetyState = {
       loading: false,
-      isSafe: result.isSafe && !urlExists, // URL is safe only if it's safe AND doesn't exist
+      isSafe: result.isSafe,
       threatType: result.threatType,
-      error: urlExists
-        ? 'This URL already exists in your links. Please use a different URL.'
-        : result.error || null,
-      urlExists: urlExists,
+      error: result.error || null,
+      urlExists: false,
     };
     setSafetyCheck(safetyState);
 
     // Update parent component with safety check result
     if (onSafetyCheckUpdate) {
       onSafetyCheckUpdate({
-        isSafe: result.isSafe && !urlExists,
+        isSafe: result.isSafe,
         threatType: result.threatType,
       });
     }
 
     // Return comprehensive result with all validation info
     const finalResult = {
-      isSafe: result.isSafe && !urlExists,
-      urlExists: urlExists,
-      error: null,
+      isSafe: result.isSafe,
+      urlExists: false,
+      error: !result.isSafe ? (result.error || 'URL safety check failed. This URL may be unsafe.') : null,
     };
-
-    // Determine error message based on validation results
-    if (urlExists) {
-      finalResult.error = 'This URL already exists in your links. Please use a different URL.';
-    } else if (!result.isSafe) {
-      finalResult.error = result.error || 'URL safety check failed. This URL may be unsafe.';
-    }
 
     console.log('🔵 [performSafetyCheckAndGetResult] Returning final result:', finalResult);
     return finalResult;

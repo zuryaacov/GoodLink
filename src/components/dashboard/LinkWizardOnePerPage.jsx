@@ -408,44 +408,6 @@ export default function LinkWizardOnePerPage({
     setUrlError(null);
     try {
       const safetyResult = await checkUrlSafety(normalizedUrl);
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      let urlExists = false;
-      if (user) {
-        const { data: links } = await supabase
-          .from('links')
-          .select('id, target_url')
-          .eq('user_id', user.id)
-          .neq('status', 'deleted');
-        if (links?.length) {
-          const norm = (u) => {
-            if (!u) return '';
-            try {
-              let t = u.trim().toLowerCase();
-              if (!t.startsWith('http')) t = 'https://' + t;
-              const o = new URL(t);
-              let s = o.protocol + '//' + o.hostname.replace(/^www\./, '');
-              if (o.pathname && o.pathname !== '/') s += o.pathname.replace(/\/$/, '');
-              if (o.search) s += o.search;
-              return s;
-            } catch {
-              return u.toLowerCase().trim();
-            }
-          };
-          const inputNorm = norm(normalizedUrl);
-          urlExists = links.some((l) =>
-            formData.linkId && String(l.id) === String(formData.linkId)
-              ? false
-              : norm(l.target_url) === inputNorm
-          );
-        }
-      }
-      if (urlExists) {
-        setUrlError('This URL already exists in your links. Please use a different URL.');
-        setUrlSafety({ loading: false, isSafe: false });
-        return false;
-      }
       if (!safetyResult.isSafe) {
         setUrlError(safetyResult.error || 'URL safety check failed. This URL may be unsafe.');
         setUrlSafety({ loading: false, isSafe: false });
