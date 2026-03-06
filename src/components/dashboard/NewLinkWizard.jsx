@@ -209,6 +209,11 @@ const NewLinkWizard = ({ isOpen, onClose, initialData = null }) => {
       console.log('🔵 [Submit] isEditMode:', isEditMode);
       console.log('🔵 [Submit] finalFallbackUrl to save:', finalFallbackUrl);
 
+      const isPro = (planType || '').toLowerCase() === 'pro';
+      const payloadPixels = isPro ? formData.selectedPixels : [];
+      const payloadServerSideTracking =
+        isPro && !!(formData.selectedPixels && formData.selectedPixels.length > 0);
+
       if (isEditMode && initialData.id) {
         // Update existing link
         console.log('🔵 [Submit] Updating link ID:', initialData.id);
@@ -225,10 +230,9 @@ const NewLinkWizard = ({ isOpen, onClose, initialData = null }) => {
             utm_campaign: formData.utmCampaign || null,
             utm_content: formData.utmContent || null,
             parameter_pass_through: formData.parameterPassThrough,
-            pixels: formData.selectedPixels,
+            pixels: payloadPixels,
             tracking_mode: formData.trackingMode || 'capi',
-            server_side_tracking:
-              formData.trackingMode === 'capi' || formData.trackingMode === 'pixel_and_capi',
+            server_side_tracking: payloadServerSideTracking,
             custom_script: formData.customScript || null,
             fraud_shield: formData.fraudShield,
             bot_action: formData.botAction,
@@ -286,10 +290,9 @@ const NewLinkWizard = ({ isOpen, onClose, initialData = null }) => {
             utm_campaign: formData.utmCampaign || null,
             utm_content: formData.utmContent || null,
             parameter_pass_through: formData.parameterPassThrough,
-            pixels: formData.selectedPixels,
+            pixels: payloadPixels,
             tracking_mode: formData.trackingMode || 'capi',
-            server_side_tracking:
-              formData.trackingMode === 'capi' || formData.trackingMode === 'pixel_and_capi',
+            server_side_tracking: payloadServerSideTracking,
             custom_script: formData.customScript || null,
             fraud_shield: formData.fraudShield,
             bot_action: formData.botAction,

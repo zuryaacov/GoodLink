@@ -268,6 +268,11 @@ const LinkBuilderPage = () => {
       const shortUrl = `https://${baseUrl}/${finalSlug}`;
       const fullUtmString = utmParams.toString() ? `${shortUrl}?${utmParams.toString()}` : shortUrl;
 
+      const isPro = (planType || '').toLowerCase() === 'pro';
+      const payloadPixels = isPro ? formData.selectedPixels : [];
+      const payloadServerSideTracking =
+        isPro && !!(formData.selectedPixels && formData.selectedPixels.length > 0);
+
       if (isEditMode && id && !isDuplicateMode) {
         const updatePayloadRaw = {
           name: finalName,
@@ -284,10 +289,9 @@ const LinkBuilderPage = () => {
             ? formData.selectedUtmPresets
             : [],
           parameter_pass_through: formData.parameterPassThrough,
-          pixels: formData.selectedPixels,
+          pixels: payloadPixels,
           tracking_mode: formData.trackingMode || 'capi',
-          server_side_tracking:
-            formData.trackingMode === 'capi' || formData.trackingMode === 'pixel_and_capi',
+          server_side_tracking: payloadServerSideTracking,
           custom_script: formData.customScript || null,
           fraud_shield: formData.fraudShield,
           bot_action: formData.botAction,
@@ -412,10 +416,9 @@ const LinkBuilderPage = () => {
             ? formData.selectedUtmPresets
             : [],
           parameter_pass_through: formData.parameterPassThrough,
-          pixels: formData.selectedPixels,
+          pixels: payloadPixels,
           tracking_mode: formData.trackingMode || 'capi',
-          server_side_tracking:
-            formData.trackingMode === 'capi' || formData.trackingMode === 'pixel_and_capi',
+          server_side_tracking: payloadServerSideTracking,
           custom_script: formData.customScript || null,
           fraud_shield: formData.fraudShield,
           bot_action: formData.botAction,
