@@ -218,7 +218,12 @@ function buildClickRecord(request, rayId, ip, slug, domain, userAgent, verdict, 
 
         // Bot data - fraud_score is inverse of bot_score (100 = clean, 0 = bot)
         fraud_score: 100 - botScore,
-        is_bot: botScore <= 29 || botMgmt.verifiedBot || false,
+        is_bot:
+            botScore <= 29 ||
+            botMgmt.verifiedBot ||
+            verdict === "blacklisted" ||
+            (typeof verdict === "string" && verdict.startsWith("bot_")) ||
+            false,
         bot_reason: botMgmt.verifiedBot ? "verified_bot" : (botScore <= 29 ? `low_score_${botScore}` : null),
         ja3_hash: botMgmt.ja3Hash || null,
         ja4: botMgmt.ja4 || null,

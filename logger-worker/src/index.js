@@ -18,7 +18,11 @@ export default {
                 if (ipRes.ok) ipInfo = await ipRes.json();
             }
 
-            const isBotFinal = data.verdict === "blocked_bot" || (data.botScore < 30) || ipInfo.privacy?.vpn || ipInfo.privacy?.proxy;
+            const isBotByVerdict =
+                data.verdict === "blocked_bot" ||
+                data.verdict === "blacklisted" ||
+                (typeof data.verdict === "string" && data.verdict.startsWith("bot_"));
+            const isBotFinal = isBotByVerdict || (data.botScore < 30) || ipInfo.privacy?.vpn || ipInfo.privacy?.proxy;
 
             // טיפול במקרים שבהם linkData הוא null (404, blacklist, invalid_slug)
             const clickRecord = {
