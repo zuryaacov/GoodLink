@@ -106,12 +106,21 @@ async function updateUserSubscription(supabaseUrl, supabaseKey, userId, subscrip
     //   planType = variantToPlan[variantId];
     // }
 
-    // Determine subscription status
+    // Determine subscription status (Lemon Squeezy sends 'on_trial' for free-trial / no-payment signups)
     let subscriptionStatus = 'inactive';
     if (eventName === 'subscription_created' || eventName === 'subscription_updated') {
-      subscriptionStatus = attributes.status === 'active' ? 'active' : 'inactive';
-      if (attributes.status === 'cancelled') subscriptionStatus = 'cancelled';
-      if (attributes.status === 'past_due') subscriptionStatus = 'past_due';
+      if (attributes.status === 'on_trial') {
+        subscriptionStatus = 'free_trial';
+        planType = 'pro'; // Give Pro plan during free trial (no-payment signup)
+      } else if (attributes.status === 'active') {
+        subscriptionStatus = 'active';
+      } else if (attributes.status === 'cancelled') {
+        subscriptionStatus = 'cancelled';
+      } else if (attributes.status === 'past_due') {
+        subscriptionStatus = 'past_due';
+      } else {
+        subscriptionStatus = 'inactive';
+      }
     } else if (eventName === 'subscription_cancelled') {
       subscriptionStatus = 'cancelled';
     }
