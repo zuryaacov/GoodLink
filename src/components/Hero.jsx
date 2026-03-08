@@ -39,15 +39,15 @@ const Hero = ({ user }) => {
               </Link>
               <div className="flex flex-wrap justify-center items-center gap-x-6 gap-y-2 mt-6">
                 <div className="flex items-center gap-2 text-base font-bold text-black">
-                  <CheckCircle2 size={20} className="text-green-500 flex-shrink-0" />
+                  <CheckCircle2 size={20} className="text-[#6358de] flex-shrink-0" />
                   No credit card required
                 </div>
                 <div className="flex items-center gap-2 text-base font-bold text-black">
-                  <CheckCircle2 size={20} className="text-green-500 flex-shrink-0" />
+                  <CheckCircle2 size={20} className="text-[#6358de] flex-shrink-0" />
                   Full access included
                 </div>
                 <div className="flex items-center gap-2 text-base font-bold text-black">
-                  <CheckCircle2 size={20} className="text-green-500 flex-shrink-0" />
+                  <CheckCircle2 size={20} className="text-[#6358de] flex-shrink-0" />
                   Cancel anytime
                 </div>
               </div>
