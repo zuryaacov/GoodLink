@@ -233,6 +233,28 @@ export default function AccountSettingsPage() {
   const isGoogleUser = user?.app_metadata?.provider === 'google';
   const currentPlan = profile?.plan_type || 'free'; // default to free
   const planDetails = PLAN_FEATURES[currentPlan] || PLAN_FEATURES.free;
+  const portalUrl = profile?.lemon_squeezy_customer_portal_url;
+  const hasPaidPlan = currentPlan !== 'free' && (currentPlan === 'start' || currentPlan === 'starter' || currentPlan === 'advanced' || currentPlan === 'pro');
+  const currentPlanDisplay = currentPlan === 'start' || currentPlan === 'starter' ? 'Starter' : currentPlan === 'advanced' ? 'Advanced' : currentPlan === 'pro' ? 'Pro' : 'Free';
+
+  const SETTINGS_PLANS = [
+    { name: 'STARTER', price: 5, originalPrice: '10', description: 'Perfect for getting started', features: ['Unlimited Links', 'Unlimited QR Codes', 'Unlimited Clicks', 'Standard Analytics', 'Email Support'], highlighted: false, checkoutUrl: 'https://goodlink.lemonsqueezy.com/checkout/buy/54a3e3e3-3618-4922-bce6-a0617252f1ae?embed=1' },
+    { name: 'ADVANCED', price: 10, originalPrice: '26', description: 'For growing businesses', features: ['Unlimited Links', '10 Custom Domains', 'Unlimited QR Codes', 'Unlimited Clicks', 'Workspaces, Campaigns and Groups', 'Bot Protection', 'UTM Presets', 'Advanced Analytics', 'Email Support'], highlighted: true, checkoutUrl: 'https://goodlink.lemonsqueezy.com/checkout/buy/81876116-924c-44f7-b61c-f4a8a93e83f1?embed=1' },
+    { name: 'PRO', price: 20, originalPrice: '62', description: 'For power users', features: ['Unlimited Links', 'Unlimited Custom Domains', 'Unlimited QR Codes', 'Unlimited Clicks', 'Workspaces, Campaigns and Groups', 'Bot Protection', 'Conversion API & S2S tracking', 'UTM Presets', 'Pro Analytics', 'Expedited Support'], highlighted: false, checkoutUrl: 'https://goodlink.lemonsqueezy.com/checkout/buy/924daf77-b7b3-405d-a94a-2ad2cc476da4?embed=1' },
+  ];
+  const currentPlanKey = currentPlan === 'start' || currentPlan === 'starter' ? 'starter' : currentPlan === 'advanced' ? 'advanced' : currentPlan === 'pro' ? 'pro' : null;
+  const currentPlanPrice = currentPlanKey === 'starter' ? 5 : currentPlanKey === 'advanced' ? 10 : currentPlanKey === 'pro' ? 20 : 0;
+
+  const openCheckout = (plan) => {
+    if (!user) return;
+    const baseUrl = plan.checkoutUrl.split('?')[0];
+    const q = [];
+    if (user.email) q.push(`checkout[email]=${encodeURIComponent(user.email)}`);
+    q.push(`checkout[custom][user_id]=${encodeURIComponent(user.id)}`);
+    q.push('embed=1');
+    const targetUrl = `${baseUrl}?${q.join('&')}`;
+    window.open(targetUrl, '_blank', 'noopener,noreferrer');
+  };
 
   return (
     <div className="p-6 max-w-4xl mx-auto pb-32">
@@ -245,6 +267,25 @@ export default function AccountSettingsPage() {
         <div>
           <h1 className="text-3xl font-bold text-[#1b1b1b] mb-2">Account Settings</h1>
           <p className="text-[#1b1b1b]">Manage your profile, preferences, and subscription.</p>
+        </div>
+
+        {/* Subscription row: plan label + cancel button (button aligned left) */}
+        <div className="flex flex-wrap items-center gap-4">
+          <a
+            href={hasPaidPlan && portalUrl ? portalUrl : undefined}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={`inline-flex items-center justify-center rounded-xl px-4 py-2.5 text-sm font-bold transition-all ${
+              hasPaidPlan && portalUrl
+                ? 'bg-slate-200 hover:bg-slate-300 text-[#1b1b1b]'
+                : 'bg-slate-100 text-slate-400 cursor-not-allowed pointer-events-none'
+            }`}
+          >
+            Cancel subscription
+          </a>
+          <span className="text-[#1b1b1b] font-medium">
+            Current plan: <span className="font-bold capitalize">{currentPlanDisplay}</span>
+          </span>
         </div>
 
         {/* Main Grid */}
@@ -490,6 +531,73 @@ export default function AccountSettingsPage() {
                 </button>
               )}
             </div>
+          </div>
+        </div>
+
+        {/* Pricing cards (same as homepage) */}
+        <div className="mt-12">
+          <h2 className="text-2xl font-bold text-[#1b1b1b] mb-6">Plans</h2>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {SETTINGS_PLANS.map((plan) => {
+              const planKey = plan.name.toLowerCase();
+              const isCurrentPlan = currentPlanKey && planKey === currentPlanKey;
+              const planPrice = plan.price;
+              const isDowngrade = currentPlanKey && planPrice < currentPlanPrice;
+              const isUpgrade = !currentPlanKey || planPrice > currentPlanPrice;
+              let buttonText = 'Upgrade now';
+              if (isCurrentPlan) buttonText = 'Your current plan';
+              else if (isDowngrade) buttonText = 'Switch to this plan';
+
+              return (
+                <div
+                  key={plan.name}
+                  className={`relative flex flex-col rounded-xl border-2 transition-all duration-300 ${
+                    plan.highlighted ? 'border-[#c0ffa5] bg-[#c0ffa5]/10 shadow-xl' : 'border-slate-200 bg-white hover:border-[#c0ffa5]/50 hover:shadow-xl'
+                  }`}
+                >
+                  {plan.highlighted && (
+                    <span className="absolute -top-4 left-1/2 -translate-x-1/2 bg-[#c0ffa5] text-[#1b1b1b] text-xs font-black px-4 py-1.5 rounded-full uppercase tracking-wider z-10">
+                      Most Popular
+                    </span>
+                  )}
+                  <div className="p-8 flex flex-col gap-6">
+                    <div className="-mx-8 -mt-8 px-8 pt-8 pb-6 bg-[#0b996f]/15">
+                      <h3 className="text-slate-900 text-2xl font-black">{plan.name}</h3>
+                      <p className="text-slate-500 text-sm">{plan.description}</p>
+                      <div className="flex items-baseline gap-2 flex-wrap mt-4">
+                        {plan.originalPrice && (
+                          <span className="text-slate-500 text-5xl font-black line-through">${plan.originalPrice}</span>
+                        )}
+                        <span className="text-slate-900 text-5xl font-black">${plan.price}</span>
+                        <span className="text-slate-500 text-lg font-medium">/month</span>
+                      </div>
+                      <button
+                        type="button"
+                        disabled={isCurrentPlan}
+                        onClick={() => !isCurrentPlan && openCheckout(plan)}
+                        className={`mt-6 w-full py-4 px-6 rounded-lg font-bold text-base transition-all text-center ${
+                          isCurrentPlan
+                            ? 'bg-slate-200 text-slate-500 cursor-not-allowed'
+                            : plan.highlighted
+                              ? 'bg-[#c0ffa5] hover:bg-[#b0ef95] text-[#1b1b1b]'
+                              : 'bg-[#c0ffa5] hover:bg-[#b0ef95] text-[#1b1b1b]'
+                        }`}
+                      >
+                        {buttonText}
+                      </button>
+                    </div>
+                    <ul className="flex flex-col gap-4 mt-4">
+                      {plan.features.map((f, i) => (
+                        <li key={i} className="flex items-start gap-3 text-slate-700 font-bold">
+                          <span className="material-symbols-outlined text-[#6358de] text-xl">check</span>
+                          {f}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
       </motion.div>
