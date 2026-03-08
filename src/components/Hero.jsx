@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { CheckCircle2 } from 'lucide-react';
 
 const Hero = ({ user }) => {
   return (
@@ -29,12 +30,28 @@ const Hero = ({ user }) => {
 
           {/* CTA */}
           {!user && (
-            <Link
-              to="/login"
-              className="inline-flex h-14 md:h-16 min-w-[200px] md:min-w-[240px] items-center justify-center rounded-xl bg-[#6358de] hover:bg-[#5348c7] px-10 md:px-12 text-white text-base md:text-lg font-bold tracking-wide uppercase transition-all"
-            >
-              Get Started
-            </Link>
+            <div className="flex flex-col items-center">
+              <Link
+                to="/login"
+                className="inline-flex h-14 md:h-16 min-w-[200px] md:min-w-[240px] items-center justify-center rounded-xl bg-[#6358de] hover:bg-[#5348c7] px-10 md:px-12 text-white text-base md:text-lg font-bold tracking-wide transition-all"
+              >
+                Start your 30-day free trial
+              </Link>
+              <div className="flex flex-wrap justify-center items-center gap-x-6 gap-y-2 mt-2">
+                <div className="flex items-center gap-1.5 text-sm text-slate-500 font-medium">
+                  <CheckCircle2 size={16} className="text-green-500" />
+                  No credit card required
+                </div>
+                <div className="flex items-center gap-1.5 text-sm text-slate-500 font-medium">
+                  <CheckCircle2 size={16} className="text-green-500" />
+                  Full access included
+                </div>
+                <div className="flex items-center gap-1.5 text-sm text-slate-500 font-medium">
+                  <CheckCircle2 size={16} className="text-green-500" />
+                  Cancel anytime
+                </div>
+              </div>
+            </div>
           )}
         </motion.div>
       </div>
