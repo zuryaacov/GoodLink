@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
 import { motion, AnimatePresence } from 'framer-motion';
 import { checkForMaliciousInput, sanitizeInput } from '../../lib/inputSanitization';
+import Modal from '../../components/common/Modal';
 
 const PLAN_FEATURES = {
   free: {
@@ -75,6 +76,9 @@ export default function AccountSettingsPage() {
   const [linksCount, setLinksCount] = useState(0);
   const [monthlyClicksCount, setMonthlyClicksCount] = useState(0);
   const [domainsCount, setDomainsCount] = useState(0);
+
+  // Cancel subscription confirmation modal
+  const [showCancelConfirmModal, setShowCancelConfirmModal] = useState(false);
 
   useEffect(() => {
     fetchUserData();
@@ -228,11 +232,12 @@ export default function AccountSettingsPage() {
       const { error: updateError } = await supabase
         .from('profiles')
         .update({
-          subscription_status: 'Canceled',
+          subscription_status: 'cancelled',
           subscription_cancelled_at: new Date().toISOString(),
         })
         .eq('id', user.id);
       if (updateError) throw updateError;
+      setShowCancelConfirmModal(false);
       setSuccess('Subscription marked as canceled.');
       setTimeout(() => setSuccess(null), 5000);
       fetchUserData();
@@ -508,31 +513,16 @@ export default function AccountSettingsPage() {
                 </div>
               </div>
 
-              {currentPlan !== 'pro' ? (
-                <button
-                  onClick={handleOpenPaywall}
-                  className="w-full group relative overflow-hidden rounded-xl bg-gradient-to-r from-[#6358de] to-[#7c6ee8] p-[1px]"
-                >
-                  <div className="absolute inset-0 bg-gradient-to-r from-[#6358de] to-[#7c6ee8] opacity-20 group-hover:opacity-40 transition-opacity" />
-                  <div className="relative bg-white rounded-[11px] px-6 py-3 flex items-center justify-center gap-2 group-hover:bg-opacity-90 transition-colors">
-                    <span className="material-symbols-outlined text-[#6358de] group-hover:scale-110 transition-transform">
-                      rocket_launch
-                    </span>
-                    <span className="font-bold text-[#1b1b1b]">Upgrade to Pro</span>
-                  </div>
-                </button>
-              ) : (
-                <button
-                  type="button"
-                  onClick={handleCancelSubscription}
-                  className="w-full group relative overflow-hidden rounded-xl bg-gradient-to-r from-[#6358de] to-[#7c6ee8] p-[1px]"
-                >
-                  <div className="absolute inset-0 bg-gradient-to-r from-[#6358de] to-[#7c6ee8] opacity-20 group-hover:opacity-40 transition-opacity" />
-                  <div className="relative w-full bg-white rounded-[11px] px-6 py-3 flex items-center justify-center gap-2 group-hover:bg-opacity-90 transition-colors">
-                    <span className="font-semibold text-[#6358de]">Cancel subscription</span>
-                  </div>
-                </button>
-              )}
+              <button
+                type="button"
+                onClick={() => setShowCancelConfirmModal(true)}
+                className="w-full group relative overflow-hidden rounded-xl bg-gradient-to-r from-[#6358de] to-[#7c6ee8] p-[1px]"
+              >
+                <div className="absolute inset-0 bg-gradient-to-r from-[#6358de] to-[#7c6ee8] opacity-20 group-hover:opacity-40 transition-opacity" />
+                <div className="relative w-full bg-white rounded-[11px] px-6 py-3 flex items-center justify-center gap-2 group-hover:bg-opacity-90 transition-colors">
+                  <span className="font-semibold text-[#6358de]">Cancel subscription</span>
+                </div>
+              </button>
             </div>
           </div>
         </div>
@@ -604,6 +594,18 @@ export default function AccountSettingsPage() {
           </div>
         </div>
       </motion.div>
+
+      <Modal
+        isOpen={showCancelConfirmModal}
+        onClose={() => setShowCancelConfirmModal(false)}
+        title="Cancel subscription?"
+        message="If you cancel your subscription, all your links will stop working."
+        type="confirm"
+        confirmText="Confirm"
+        cancelText="Cancel"
+        onConfirm={handleCancelSubscription}
+        isLoading={saving}
+      />
     </div>
   );
 }
