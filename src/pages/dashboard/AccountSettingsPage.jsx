@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Check } from 'lucide-react';
 import { checkForMaliciousInput, sanitizeInput } from '../../lib/inputSanitization';
 import Modal from '../../components/common/Modal';
 
@@ -267,12 +268,14 @@ export default function AccountSettingsPage() {
   const currentPlanDisplay = currentPlan === 'start' || currentPlan === 'starter' ? 'Starter' : currentPlan === 'advanced' ? 'Advanced' : currentPlan === 'pro' ? 'Pro' : 'Free';
 
   const SETTINGS_PLANS = [
-    { name: 'STARTER', price: 5, originalPrice: '10', description: 'Perfect for getting started', features: ['Unlimited Links', 'Unlimited QR Codes', 'Unlimited Clicks', 'Standard Analytics', 'Email Support'], highlighted: false, checkoutUrl: 'https://goodlink.lemonsqueezy.com/checkout/buy/54a3e3e3-3618-4922-bce6-a0617252f1ae?embed=1' },
-    { name: 'ADVANCED', price: 10, originalPrice: '26', description: 'For growing businesses', features: ['Unlimited Links', '10 Custom Domains', 'Unlimited QR Codes', 'Unlimited Clicks', 'Workspaces, Campaigns and Groups', 'Bot Protection', 'UTM Presets', 'Advanced Analytics', 'Email Support'], highlighted: true, checkoutUrl: 'https://goodlink.lemonsqueezy.com/checkout/buy/81876116-924c-44f7-b61c-f4a8a93e83f1?embed=1' },
-    { name: 'PRO', price: 20, originalPrice: '62', description: 'For power users', features: ['Unlimited Links', 'Unlimited Custom Domains', 'Unlimited QR Codes', 'Unlimited Clicks', 'Workspaces, Campaigns and Groups', 'Bot Protection', 'Conversion API & S2S tracking', 'UTM Presets', 'Pro Analytics', 'Expedited Support'], highlighted: false, checkoutUrl: 'https://goodlink.lemonsqueezy.com/checkout/buy/924daf77-b7b3-405d-a94a-2ad2cc476da4?embed=1' },
+    { name: 'STARTER', price: '5', priceNum: 5, originalPrice: '10', description: 'Perfect for getting started', features: ['Unlimited Links', 'Unlimited QR Codes', 'Unlimited Clicks', 'Standard Analytics', 'Email Support'], highlighted: false, checkoutUrl: 'https://goodlink.lemonsqueezy.com/checkout/buy/54a3e3e3-3618-4922-bce6-a0617252f1ae?embed=1', buttonText: 'Get Started' },
+    { name: 'ADVANCED', price: '10', priceNum: 10, originalPrice: '26', description: 'For growing businesses', features: ['Unlimited Links', '10 Custom Domains', 'Unlimited QR Codes', 'Unlimited Clicks', 'Workspaces, Campaigns and Groups', 'Bot Protection', 'UTM Presets', 'Advanced Analytics', 'Email Support'], highlighted: true, checkoutUrl: 'https://goodlink.lemonsqueezy.com/checkout/buy/81876116-924c-44f7-b61c-f4a8a93e83f1?embed=1', buttonText: 'Go Advanced' },
+    { name: 'PRO', price: '20', priceNum: 20, originalPrice: '62', description: 'For power users', features: ['Unlimited Links', 'Unlimited Custom Domains', 'Unlimited QR Codes', 'Unlimited Clicks', 'Workspaces, Campaigns and Groups', 'Bot Protection', 'Conversion API & S2S tracking', 'UTM Presets', 'Pro Analytics', 'Expedited Support'], highlighted: false, checkoutUrl: 'https://goodlink.lemonsqueezy.com/checkout/buy/924daf77-b7b3-405d-a94a-2ad2cc476da4?embed=1', buttonText: 'Go Pro' },
   ];
-  const currentPlanKey = currentPlan === 'start' || currentPlan === 'starter' ? 'starter' : currentPlan === 'advanced' ? 'advanced' : currentPlan === 'pro' ? 'pro' : null;
+  const isCancelled = profile?.subscription_status === 'cancelled';
+  const currentPlanKey = isCancelled ? null : (currentPlan === 'start' || currentPlan === 'starter' ? 'starter' : currentPlan === 'advanced' ? 'advanced' : currentPlan === 'pro' ? 'pro' : null);
   const currentPlanPrice = currentPlanKey === 'starter' ? 5 : currentPlanKey === 'advanced' ? 10 : currentPlanKey === 'pro' ? 20 : 0;
+  const planKeyFromName = (name) => name === 'STARTER' ? 'starter' : name === 'ADVANCED' ? 'advanced' : 'pro';
 
   const openCheckout = (plan) => {
     if (!user) return;
@@ -484,8 +487,10 @@ export default function AccountSettingsPage() {
             <div className="bg-card-bg border border-card-border rounded-2xl p-6 relative overflow-hidden hover:shadow-card-mint transition-all">
               {/* Status Badge */}
               <div className="absolute top-4 right-4">
-                <span className="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-[#6358de]/10 text-[#6358de] border border-[#6358de]/30">
-                  {currentPlan} Plan
+                <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider border ${
+                  isCancelled ? 'bg-amber-500/10 text-amber-600 border-amber-500/30' : 'bg-[#6358de]/10 text-[#6358de] border-[#6358de]/30'
+                }`}>
+                  {isCancelled ? 'Cancelled' : `${currentPlanDisplay} Plan`}
                 </span>
               </div>
 
@@ -527,25 +532,28 @@ export default function AccountSettingsPage() {
           </div>
         </div>
 
-        {/* Pricing cards (same as homepage) */}
+        {/* Pricing cards (same layout and styling as homepage CTASection) */}
         <div className="mt-12">
-          <h2 className="text-2xl font-bold text-[#1b1b1b] mb-6">Plans</h2>
+          <h2 className="text-2xl font-bold text-[#1b1b1b] dark:text-[#1b1b1b] mb-6">Plans</h2>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {SETTINGS_PLANS.map((plan) => {
-              const planKey = plan.name.toLowerCase();
-              const isCurrentPlan = currentPlanKey && planKey === currentPlanKey;
-              const planPrice = plan.price;
-              const isDowngrade = currentPlanKey && planPrice < currentPlanPrice;
-              const isUpgrade = !currentPlanKey || planPrice > currentPlanPrice;
-              let buttonText = 'Upgrade now';
-              if (isCurrentPlan) buttonText = 'Your current plan';
-              else if (isDowngrade) buttonText = 'Switch to this plan';
+              const planKey = planKeyFromName(plan.name);
+              const isCurrentPlan = currentPlanKey != null && planKey === currentPlanKey;
+              const planPriceNum = plan.priceNum;
+              const isDowngrade = currentPlanKey && planPriceNum < currentPlanPrice;
+              let buttonLabel = plan.buttonText;
+              if (isCurrentPlan) buttonLabel = 'Your current plan';
+              else if (isDowngrade) buttonLabel = 'Switch to this plan';
 
               return (
-                <div
+                <motion.div
                   key={plan.name}
-                  className={`relative flex flex-col rounded-xl border-2 transition-all duration-300 ${
-                    plan.highlighted ? 'border-[#c0ffa5] bg-[#c0ffa5]/10 shadow-xl' : 'border-slate-200 bg-white hover:border-[#c0ffa5]/50 hover:shadow-xl'
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className={`relative flex flex-col rounded-xl border-2 transition-all duration-300 w-full md:max-w-md md:mx-auto lg:max-w-none lg:mx-0 ${
+                    plan.highlighted
+                      ? 'border-[#c0ffa5] bg-[#c0ffa5]/10 shadow-2xl scale-105 lg:scale-110'
+                      : 'border-slate-200 dark:border-slate-200 bg-white dark:bg-white hover:border-[#c0ffa5]/50 hover:shadow-xl'
                   }`}
                 >
                   {plan.highlighted && (
@@ -554,15 +562,15 @@ export default function AccountSettingsPage() {
                     </span>
                   )}
                   <div className="p-8 flex flex-col gap-6">
-                    <div className="-mx-8 -mt-8 px-8 pt-8 pb-6 bg-[#0b996f]/15">
-                      <h3 className="text-slate-900 text-2xl font-black">{plan.name}</h3>
-                      <p className="text-slate-500 text-sm">{plan.description}</p>
+                    <div className={`-mx-8 -mt-8 px-8 pt-8 pb-6 ${plan.highlighted ? 'bg-[#0b996f]/15' : 'bg-[#0b996f]/15'}`}>
+                      <h3 className="text-slate-900 dark:text-[#1b1b1b] text-2xl font-black">{plan.name}</h3>
+                      <p className="text-slate-500 dark:text-[#1b1b1b] text-sm">{plan.description}</p>
                       <div className="flex items-baseline gap-2 flex-wrap mt-4">
                         {plan.originalPrice && (
-                          <span className="text-slate-500 text-5xl font-black line-through">${plan.originalPrice}</span>
+                          <span className="text-slate-500 dark:text-slate-400 text-5xl font-black line-through">${plan.originalPrice}</span>
                         )}
-                        <span className="text-slate-900 text-5xl font-black">${plan.price}</span>
-                        <span className="text-slate-500 text-lg font-medium">/month</span>
+                        <span className="text-slate-900 dark:text-[#1b1b1b] text-5xl font-black">${plan.price}</span>
+                        <span className="text-slate-500 dark:text-[#1b1b1b] text-lg font-medium">/month</span>
                       </div>
                       <button
                         type="button"
@@ -571,24 +579,22 @@ export default function AccountSettingsPage() {
                         className={`mt-6 w-full py-4 px-6 rounded-lg font-bold text-base transition-all text-center ${
                           isCurrentPlan
                             ? 'bg-slate-200 text-slate-500 cursor-not-allowed'
-                            : plan.highlighted
-                              ? 'bg-[#c0ffa5] hover:bg-[#b0ef95] text-[#1b1b1b]'
-                              : 'bg-[#c0ffa5] hover:bg-[#b0ef95] text-[#1b1b1b]'
+                            : 'bg-[#c0ffa5] hover:bg-[#b0ef95] text-[#1b1b1b] shadow-lg shadow-[#c0ffa5]/20'
                         }`}
                       >
-                        {buttonText}
+                        {buttonLabel}
                       </button>
                     </div>
                     <ul className="flex flex-col gap-4 mt-4">
-                      {plan.features.map((f, i) => (
-                        <li key={i} className="flex items-start gap-3 text-slate-700 font-bold">
-                          <span className="material-symbols-outlined text-[#6358de] text-xl">check</span>
-                          {f}
+                      {plan.features.map((feature, i) => (
+                        <li key={i} className="flex items-start gap-3">
+                          <Check className="w-5 h-5 mt-0.5 flex-shrink-0 text-[#6358de] font-bold stroke-[2.5]" />
+                          <span className="text-slate-700 dark:text-slate-300 text-base font-bold leading-relaxed">{feature}</span>
                         </li>
                       ))}
                     </ul>
                   </div>
-                </div>
+                </motion.div>
               );
             })}
           </div>

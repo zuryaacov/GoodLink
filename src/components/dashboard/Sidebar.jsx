@@ -18,6 +18,7 @@ const Sidebar = ({ className = '', onLinkClick }) => {
   const location = useLocation();
   const [userName, setUserName] = useState('');
   const [planType, setPlanType] = useState('free');
+  const [subscriptionStatus, setSubscriptionStatus] = useState(null);
   const [customerPortalUrl, setCustomerPortalUrl] = useState(null);
   const [userRole, setUserRole] = useState('user');
 
@@ -33,7 +34,7 @@ const Sidebar = ({ className = '', onLinkClick }) => {
         // Get user profile (full_name, plan, customer portal URL)
         const { data: profile, error } = await supabase
           .from('profiles')
-          .select('full_name, plan_type, lemon_squeezy_customer_portal_url, role')
+          .select('full_name, plan_type, lemon_squeezy_customer_portal_url, role, subscription_status')
           .eq('user_id', user.id)
           .single();
 
@@ -50,6 +51,7 @@ const Sidebar = ({ className = '', onLinkClick }) => {
           } else {
             setPlanType('free');
           }
+          setSubscriptionStatus(profile?.subscription_status ?? null);
           if (profile?.lemon_squeezy_customer_portal_url) {
             setCustomerPortalUrl(profile.lemon_squeezy_customer_portal_url);
           } else {
@@ -58,12 +60,14 @@ const Sidebar = ({ className = '', onLinkClick }) => {
           setUserRole(profile?.role === 'admin' ? 'admin' : 'user');
         } else {
           setPlanType('free');
+          setSubscriptionStatus(null);
           setCustomerPortalUrl(null);
           setUserRole('user');
         }
       } catch (error) {
         console.error('Error fetching user info:', error);
         setPlanType('free');
+        setSubscriptionStatus(null);
         setCustomerPortalUrl(null);
         setUserRole('user');
       }
@@ -202,7 +206,7 @@ const Sidebar = ({ className = '', onLinkClick }) => {
             <span className="text-base font-bold text-[#1b1b1b] truncate">
               {userName ? `Hello, ${userName}` : 'Hello'}
             </span>
-            <span className="text-xs text-slate-500">{getPlanDisplayName(planType)}</span>
+            <span className="text-xs text-slate-500">{subscriptionStatus === 'cancelled' ? 'Cancelled' : getPlanDisplayName(planType)}</span>
           </div>
         </div>
         <button
