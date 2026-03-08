@@ -37,17 +37,17 @@ const Hero = ({ user }) => {
               >
                 Start your 30-day free trial
               </Link>
-              <div className="flex flex-wrap justify-center items-center gap-x-6 gap-y-2 mt-2">
-                <div className="flex items-center gap-1.5 text-sm text-slate-500 font-medium">
-                  <CheckCircle2 size={16} className="text-green-500" />
+              <div className="flex flex-wrap justify-center items-center gap-x-6 gap-y-2 mt-6">
+                <div className="flex items-center gap-2 text-base font-bold text-black">
+                  <CheckCircle2 size={20} className="text-green-500 flex-shrink-0" />
                   No credit card required
                 </div>
-                <div className="flex items-center gap-1.5 text-sm text-slate-500 font-medium">
-                  <CheckCircle2 size={16} className="text-green-500" />
+                <div className="flex items-center gap-2 text-base font-bold text-black">
+                  <CheckCircle2 size={20} className="text-green-500 flex-shrink-0" />
                   Full access included
                 </div>
-                <div className="flex items-center gap-1.5 text-sm text-slate-500 font-medium">
-                  <CheckCircle2 size={16} className="text-green-500" />
+                <div className="flex items-center gap-2 text-base font-bold text-black">
+                  <CheckCircle2 size={20} className="text-green-500 flex-shrink-0" />
                   Cancel anytime
                 </div>
               </div>
