@@ -289,7 +289,7 @@ export default function AccountSettingsPage() {
   };
 
   return (
-    <div className="p-6 max-w-4xl mx-auto pb-32">
+    <div className="p-6 max-w-7xl mx-auto pb-32">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -402,84 +402,6 @@ export default function AccountSettingsPage() {
                 </div>
               </form>
             </div>
-
-            {/* Password Change Section (Only for Email Users) */}
-            {!isGoogleUser && (
-              <div className="bg-card-bg border border-card-border rounded-2xl p-6 hover:shadow-card-mint transition-all">
-                <h2 className="text-xl font-bold text-[#1b1b1b] mb-6 flex items-center gap-2">
-                  <span className="material-symbols-outlined text-[#135bec]">lock</span>
-                  Security
-                </h2>
-
-                {!showPasswordChange ? (
-                  <button
-                    onClick={() => setShowPasswordChange(true)}
-                    className="flex items-center gap-2 text-slate-300 hover:text-[#1b1b1b] transition-colors border border-slate-200 hover:border-slate-500 rounded-lg px-4 py-2"
-                  >
-                    Change Password
-                  </button>
-                ) : (
-                  <div className="space-y-4 bg-white p-4 rounded-xl border border-slate-200">
-                    <h3 className="text-[#1b1b1b] font-semibold mb-2">Change Password</h3>
-
-                    <div>
-                      <label className="block text-xs font-medium text-[#1b1b1b] mb-1">
-                        New Password
-                      </label>
-                      <input
-                        type="password"
-                        value={newPassword}
-                        onChange={(e) => setNewPassword(e.target.value)}
-                        className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-[#1b1b1b] text-sm focus:outline-none focus:border-primary"
-                        placeholder="Min. 8 characters"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-xs font-medium text-[#1b1b1b] mb-1">
-                        Confirm New Password
-                      </label>
-                      <input
-                        type="password"
-                        value={confirmPassword}
-                        onChange={(e) => setConfirmPassword(e.target.value)}
-                        className={`w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-[#1b1b1b] text-sm focus:outline-none focus:border-primary ${
-                          confirmPassword && newPassword !== confirmPassword ? 'border-red-500' : ''
-                        }`}
-                        placeholder="Retype password"
-                      />
-                      {confirmPassword && newPassword !== confirmPassword && (
-                        <p className="text-red-400 text-xs mt-1">Passwords do not match</p>
-                      )}
-                    </div>
-
-                    <div className="flex justify-end gap-2 pt-2">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setShowPasswordChange(false);
-                          setNewPassword('');
-                          setConfirmPassword('');
-                        }}
-                        className="text-[#1b1b1b] hover:text-[#1b1b1b] text-xs px-3 py-2"
-                      >
-                        Cancel
-                      </button>
-                      <button // Note: Actual save happens in main form submit for simplicity, or could handle separately
-                        type="button"
-                        onClick={handleUpdateProfile} // Re-using main submit logic
-                        disabled={
-                          !newPassword || newPassword !== confirmPassword || newPassword.length < 8
-                        }
-                        className="bg-[#135bec] text-[#1b1b1b] text-xs font-bold px-4 py-2 rounded-lg disabled:opacity-50"
-                      >
-                        Update Password
-                      </button>
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
           </div>
 
           {/* Right Column: Plan Status */}
@@ -518,16 +440,18 @@ export default function AccountSettingsPage() {
                 </div>
               </div>
 
-              <button
-                type="button"
-                onClick={() => setShowCancelConfirmModal(true)}
-                className="w-full group relative overflow-hidden rounded-xl bg-gradient-to-r from-[#6358de] to-[#7c6ee8] p-[1px]"
-              >
-                <div className="absolute inset-0 bg-gradient-to-r from-[#6358de] to-[#7c6ee8] opacity-20 group-hover:opacity-40 transition-opacity" />
-                <div className="relative w-full bg-white rounded-[11px] px-6 py-3 flex items-center justify-center gap-2 group-hover:bg-opacity-90 transition-colors">
-                  <span className="font-semibold text-[#6358de]">Cancel subscription</span>
-                </div>
-              </button>
+              {!isCancelled && (
+                <button
+                  type="button"
+                  onClick={() => setShowCancelConfirmModal(true)}
+                  className="w-full group relative overflow-hidden rounded-xl bg-gradient-to-r from-[#6358de] to-[#7c6ee8] p-[1px]"
+                >
+                  <div className="absolute inset-0 bg-gradient-to-r from-[#6358de] to-[#7c6ee8] opacity-20 group-hover:opacity-40 transition-opacity" />
+                  <div className="relative w-full bg-white rounded-[11px] px-6 py-3 flex items-center justify-center gap-2 group-hover:bg-opacity-90 transition-colors">
+                    <span className="font-semibold text-[#6358de]">Cancel subscription</span>
+                  </div>
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -599,6 +523,84 @@ export default function AccountSettingsPage() {
             })}
           </div>
         </div>
+
+        {/* Security (below Pricing) - Only for Email Users */}
+        {!isGoogleUser && (
+          <div className="mt-12 bg-card-bg border border-card-border rounded-2xl p-6 hover:shadow-card-mint transition-all max-w-2xl">
+            <h2 className="text-xl font-bold text-[#1b1b1b] mb-6 flex items-center gap-2">
+              <span className="material-symbols-outlined text-[#135bec]">lock</span>
+              Security
+            </h2>
+
+            {!showPasswordChange ? (
+              <button
+                onClick={() => setShowPasswordChange(true)}
+                className="flex items-center gap-2 text-slate-300 hover:text-[#1b1b1b] transition-colors border border-slate-200 hover:border-slate-500 rounded-lg px-4 py-2"
+              >
+                Change Password
+              </button>
+            ) : (
+              <div className="space-y-4 bg-white p-4 rounded-xl border border-slate-200">
+                <h3 className="text-[#1b1b1b] font-semibold mb-2">Change Password</h3>
+
+                <div>
+                  <label className="block text-xs font-medium text-[#1b1b1b] mb-1">
+                    New Password
+                  </label>
+                  <input
+                    type="password"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-[#1b1b1b] text-sm focus:outline-none focus:border-primary"
+                    placeholder="Min. 8 characters"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-medium text-[#1b1b1b] mb-1">
+                    Confirm New Password
+                  </label>
+                  <input
+                    type="password"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    className={`w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-[#1b1b1b] text-sm focus:outline-none focus:border-primary ${
+                      confirmPassword && newPassword !== confirmPassword ? 'border-red-500' : ''
+                    }`}
+                    placeholder="Retype password"
+                  />
+                  {confirmPassword && newPassword !== confirmPassword && (
+                    <p className="text-red-400 text-xs mt-1">Passwords do not match</p>
+                  )}
+                </div>
+
+                <div className="flex justify-end gap-2 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowPasswordChange(false);
+                      setNewPassword('');
+                      setConfirmPassword('');
+                    }}
+                    className="text-[#1b1b1b] hover:text-[#1b1b1b] text-xs px-3 py-2"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleUpdateProfile}
+                    disabled={
+                      !newPassword || newPassword !== confirmPassword || newPassword.length < 8
+                    }
+                    className="bg-[#135bec] text-[#1b1b1b] text-xs font-bold px-4 py-2 rounded-lg disabled:opacity-50"
+                  >
+                    Update Password
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
       </motion.div>
 
       <Modal
