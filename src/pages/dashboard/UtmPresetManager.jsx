@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Lock } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
+import SubscriptionCancelledScreen from '../../components/dashboard/SubscriptionCancelledScreen';
 import Modal from '../../components/common/Modal';
 import { Copy, Trash2, Edit2 } from 'lucide-react';
 
@@ -21,6 +22,7 @@ const UtmPresetManager = () => {
   const [loading, setLoading] = useState(true);
   const [copiedId, setCopiedId] = useState(null);
   const [planType, setPlanType] = useState(null);
+  const [subscriptionStatus, setSubscriptionStatus] = useState(null);
 
   const [modalState, setModalState] = useState({
     isOpen: false,
@@ -48,13 +50,13 @@ const UtmPresetManager = () => {
       try {
         let { data: profile, error: profileError } = await supabase
           .from('profiles')
-          .select('plan_type')
+          .select('plan_type, subscription_status')
           .eq('user_id', user.id)
           .maybeSingle();
         if (profileError || !profile) {
           const res = await supabase
             .from('profiles')
-            .select('plan_type')
+            .select('plan_type, subscription_status')
             .eq('id', user.id)
             .maybeSingle();
           profile = res.data;
@@ -64,6 +66,7 @@ const UtmPresetManager = () => {
           currentPlanType = profile.plan_type;
           setPlanType(profile.plan_type);
         }
+        setSubscriptionStatus(profile?.subscription_status ?? null);
       } catch (_) {}
 
       const normalized = (currentPlanType || '').toLowerCase();
@@ -261,6 +264,10 @@ const UtmPresetManager = () => {
         </div>
       </div>
     );
+  }
+
+  if (subscriptionStatus === 'cancelled') {
+    return <SubscriptionCancelledScreen />;
   }
 
   const normalizedPlan = (planType || '').toLowerCase();

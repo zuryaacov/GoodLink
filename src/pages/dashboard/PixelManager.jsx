@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Lock, Zap, ArrowRight, Globe, BarChart3 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import Modal from '../../components/common/Modal';
+import SubscriptionCancelledScreen from '../../components/dashboard/SubscriptionCancelledScreen';
 import outbrainLogo from '../../assets/id-bNajMAc_1769618145922.svg';
 import taboolaLogo from '../../assets/idRS-vCmxj_1769618141092.svg';
 
@@ -11,6 +12,7 @@ const PixelManager = () => {
   const [pixels, setPixels] = useState([]);
   const [loading, setLoading] = useState(true);
   const [planType, setPlanType] = useState(null); // null = still loading, don't show paywall yet
+  const [subscriptionStatus, setSubscriptionStatus] = useState(null);
 
   // Modal states for delete confirmation
   const [deleteModalState, setDeleteModalState] = useState({
@@ -50,7 +52,7 @@ const PixelManager = () => {
       try {
         const { data: profile, error: profileError } = await supabase
           .from('profiles')
-          .select('plan_type')
+          .select('plan_type, subscription_status')
           .eq('user_id', user.id)
           .single();
 
@@ -75,6 +77,7 @@ const PixelManager = () => {
           currentPlanType = null;
           console.log('PixelManager - No plan_type found, allowing access');
         }
+        setSubscriptionStatus(profile?.subscription_status ?? null);
       } catch (planError) {
         console.error('Error fetching plan type for pixels:', planError);
         // On error, allow access (fail open) - don't block data
@@ -333,6 +336,10 @@ const PixelManager = () => {
         </div>
       </div>
     );
+  }
+
+  if (subscriptionStatus === 'cancelled') {
+    return <SubscriptionCancelledScreen />;
   }
 
   // Show upgrade paywall only if explicitly not PRO

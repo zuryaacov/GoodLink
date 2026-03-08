@@ -3,12 +3,14 @@ import { useNavigate } from 'react-router-dom';
 import { Lock, Zap, ArrowRight, Globe, BarChart3 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import Modal from '../../components/common/Modal';
+import SubscriptionCancelledScreen from '../../components/dashboard/SubscriptionCancelledScreen';
 
 const CustomDomainsManager = () => {
   const navigate = useNavigate();
   const [domains, setDomains] = useState([]);
   const [loading, setLoading] = useState(true);
   const [planType, setPlanType] = useState(null); // null = still loading, don't show paywall yet
+  const [subscriptionStatus, setSubscriptionStatus] = useState(null);
   const [dnsRecordsByDomainId, setDnsRecordsByDomainId] = useState({});
   const [dnsLoadingByDomainId, setDnsLoadingByDomainId] = useState({});
 
@@ -86,7 +88,7 @@ const CustomDomainsManager = () => {
       try {
         const { data: profile, error: profileError } = await supabase
           .from('profiles')
-          .select('plan_type')
+          .select('plan_type, subscription_status')
           .eq('user_id', user.id)
           .single();
 
@@ -110,6 +112,7 @@ const CustomDomainsManager = () => {
           currentPlanType = null;
           console.log('CustomDomains - No plan_type found, allowing access');
         }
+        setSubscriptionStatus(profile?.subscription_status ?? null);
       } catch (planError) {
         console.error('Error fetching plan type for domains:', planError);
         // On error, allow access (fail open) - don't block data
@@ -332,6 +335,10 @@ const CustomDomainsManager = () => {
   }
 
   const normalizedPlan = planType?.toLowerCase() || null;
+
+  if (subscriptionStatus === 'cancelled') {
+    return <SubscriptionCancelledScreen />;
+  }
 
   // Show upgrade paywall only if explicitly FREE or STARTER
   if (normalizedPlan === 'free' || normalizedPlan === 'start' || normalizedPlan === 'starter') {

@@ -4,6 +4,7 @@ import { supabase } from '../../lib/supabase';
 import Modal from '../../components/common/Modal';
 import { updateLinkInRedis, deleteLinkFromRedis } from '../../lib/redisCache';
 import { LayoutGrid, Folder, ChevronRight, Home, LinkIcon } from 'lucide-react';
+import SubscriptionCancelledScreen from '../../components/dashboard/SubscriptionCancelledScreen';
 import QRCode from 'qrcode-svg';
 import qrCodeIcon from '../../assets/qr-code-icon.svg';
 
@@ -42,6 +43,7 @@ const LinkManager = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [userId, setUserId] = useState(null);
   const [planType, setPlanType] = useState(null);
+  const [subscriptionStatus, setSubscriptionStatus] = useState(null);
   const [links, setLinks] = useState([]);
   const [spaces, setSpaces] = useState([]);
   const [currentSpaceId, setCurrentSpaceId] = useState(null);
@@ -155,7 +157,7 @@ const LinkManager = () => {
       let currentPlanType = null;
       const { data: profile } = await supabase
         .from('profiles')
-        .select('plan_type')
+        .select('plan_type, subscription_status')
         .eq('user_id', user.id)
         .single();
       if (profile?.plan_type) {
@@ -164,6 +166,7 @@ const LinkManager = () => {
       } else {
         setPlanType(null);
       }
+      setSubscriptionStatus(profile?.subscription_status ?? null);
 
       // Fetch links
       const { data: linksData, error: linksError } = await supabase
@@ -792,6 +795,10 @@ const LinkManager = () => {
         </div>
       </div>
     );
+  }
+
+  if (subscriptionStatus === 'cancelled') {
+    return <SubscriptionCancelledScreen />;
   }
 
   const pageTitle = isFoldersEnabled
