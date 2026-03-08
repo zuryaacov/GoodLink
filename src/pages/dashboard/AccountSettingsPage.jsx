@@ -220,6 +220,30 @@ export default function AccountSettingsPage() {
     alert('Upgrade flow coming soon! (Paywall Modal)');
   };
 
+  const handleCancelSubscription = async () => {
+    if (!user) return;
+    setSaving(true);
+    setError(null);
+    try {
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({
+          subscription_status: 'Canceled',
+          subscription_cancelled_at: new Date().toISOString(),
+        })
+        .eq('id', user.id);
+      if (updateError) throw updateError;
+      setSuccess('Subscription marked as canceled.');
+      setTimeout(() => setSuccess(null), 5000);
+      fetchUserData();
+    } catch (err) {
+      console.error(err);
+      setError(err.message || 'Failed to update subscription.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-full text-[#1b1b1b]">
@@ -267,25 +291,6 @@ export default function AccountSettingsPage() {
         <div>
           <h1 className="text-3xl font-bold text-[#1b1b1b] mb-2">Account Settings</h1>
           <p className="text-[#1b1b1b]">Manage your profile, preferences, and subscription.</p>
-        </div>
-
-        {/* Subscription row: plan label + cancel button (button aligned left) */}
-        <div className="flex flex-wrap items-center gap-4">
-          <a
-            href={hasPaidPlan && portalUrl ? portalUrl : undefined}
-            target="_blank"
-            rel="noopener noreferrer"
-            className={`inline-flex items-center justify-center rounded-xl px-4 py-2.5 text-sm font-bold transition-all ${
-              hasPaidPlan && portalUrl
-                ? 'bg-slate-200 hover:bg-slate-300 text-[#1b1b1b]'
-                : 'bg-slate-100 text-slate-400 cursor-not-allowed pointer-events-none'
-            }`}
-          >
-            Cancel subscription
-          </a>
-          <span className="text-[#1b1b1b] font-medium">
-            Current plan: <span className="font-bold capitalize">{currentPlanDisplay}</span>
-          </span>
         </div>
 
         {/* Main Grid */}
@@ -519,14 +524,12 @@ export default function AccountSettingsPage() {
               ) : (
                 <button
                   type="button"
-                  onClick={() => {
-                    window.location.href = '/#pricing';
-                  }}
+                  onClick={handleCancelSubscription}
                   className="w-full group relative overflow-hidden rounded-xl bg-gradient-to-r from-[#6358de] to-[#7c6ee8] p-[1px]"
                 >
                   <div className="absolute inset-0 bg-gradient-to-r from-[#6358de] to-[#7c6ee8] opacity-20 group-hover:opacity-40 transition-opacity" />
                   <div className="relative w-full bg-white rounded-[11px] px-6 py-3 flex items-center justify-center gap-2 group-hover:bg-opacity-90 transition-colors">
-                    <span className="font-semibold text-[#6358de]">Manage Subscription</span>
+                    <span className="font-semibold text-[#6358de]">Cancel subscription</span>
                   </div>
                 </button>
               )}
