@@ -11,7 +11,8 @@ import { PrivacyContent } from './PrivacyPage';
 const AuthPage = () => {
   const [searchParams] = useSearchParams();
   const planParam = searchParams.get('plan');
-  const [view, setView] = useState('login'); // Always start with login view
+  const modeParam = searchParams.get('mode');
+  const [view, setView] = useState(modeParam === 'signup' ? 'signup' : 'login');
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
