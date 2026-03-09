@@ -293,12 +293,14 @@ export default function AccountSettingsPage() {
     const baseUrl = plan.checkoutUrl.split('?')[0];
     const q = [];
     const emailToUse = (profile?.email || user.email || '').trim();
+    console.log('[LS Checkout][Settings] emailToUse=', emailToUse, 'user.email=', user?.email, 'profile.email=', profile?.email);
     if (emailToUse) {
       q.push(`checkout[email]=${encodeURIComponent(emailToUse)}`);
     }
     q.push(`checkout[custom][user_id]=${encodeURIComponent(user.id)}`);
     q.push('embed=1');
     const targetUrl = `${baseUrl}?${q.join('&')}`;
+    console.log('[LS Checkout][Settings] targetUrl=', targetUrl);
     window.open(targetUrl, '_blank', 'noopener,noreferrer');
   };
 

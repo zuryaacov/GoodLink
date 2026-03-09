@@ -225,12 +225,14 @@ const CTASection = () => {
                         const baseUrl = plan.checkoutUrl.split('?')[0];
                         const q = [];
                         const emailToUse = (userProfile?.email || user.email || '').trim();
+                        console.log('[LS Checkout][CTA] emailToUse=', emailToUse, 'user.email=', user?.email, 'profile.email=', userProfile?.email);
                         if (emailToUse) {
                           q.push(`checkout[email]=${encodeURIComponent(emailToUse)}`);
                         }
                         q.push(`checkout[custom][user_id]=${encodeURIComponent(user.id)}`);
                         q.push('embed=1');
                         targetUrl = `${baseUrl}?${q.join('&')}`;
+                        console.log('[LS Checkout][CTA] targetUrl=', targetUrl);
                       }
 
                       window.open(targetUrl, '_blank', 'noopener,noreferrer');

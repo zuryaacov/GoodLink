@@ -78,12 +78,14 @@ const AuthPage = () => {
     const baseUrl = checkoutUrl.split('?')[0];
     const q = [];
     const emailToUse = (profileEmail || user.email || '').trim();
+    console.log('[LS Checkout][Auth] plan=', planName, 'emailToUse=', emailToUse, 'user.email=', user?.email, 'profileEmail=', profileEmail);
     if (emailToUse) {
       q.push(`checkout[email]=${encodeURIComponent(emailToUse)}`);
     }
     q.push(`checkout[custom][user_id]=${encodeURIComponent(user.id)}`);
     q.push('embed=1');
     const finalUrl = `${baseUrl}?${q.join('&')}`;
+    console.log('[LS Checkout][Auth] finalUrl=', finalUrl);
     window.open(finalUrl, '_blank', 'noopener,noreferrer');
   };
 
