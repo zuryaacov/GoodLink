@@ -176,11 +176,12 @@ export default function AccountSettingsPage() {
       const { error: authError } = await supabase.auth.updateUser(updates);
       if (authError) throw authError;
 
-      // 3. Update Profile Table (full_name, timezone) – use UPDATE only; RLS allows UPDATE, not INSERT
+      // 3. Update Profile Table (full_name, email, timezone) – keep profiles in sync with auth
       const { error: profileError } = await supabase
         .from('profiles')
         .update({
           full_name: nameCheck.sanitized || fullName.trim(),
+          email: email.trim(),
           timezone: timezone,
           updated_at: new Date().toISOString(),
         })
@@ -274,7 +275,16 @@ export default function AccountSettingsPage() {
   ];
   const isCancelled = profile?.subscription_status === 'cancelled';
   const isFreeTrial = profile?.subscription_status === 'free_trial';
-  const currentPlanKey = isCancelled ? null : (currentPlan === 'start' || currentPlan === 'starter' ? 'starter' : currentPlan === 'advanced' ? 'advanced' : currentPlan === 'pro' ? 'pro' : null);
+  const currentPlanKey =
+    isCancelled || isFreeTrial
+      ? null
+      : currentPlan === 'start' || currentPlan === 'starter'
+        ? 'starter'
+        : currentPlan === 'advanced'
+          ? 'advanced'
+          : currentPlan === 'pro'
+            ? 'pro'
+            : null;
   const currentPlanPrice = currentPlanKey === 'starter' ? 5 : currentPlanKey === 'advanced' ? 10 : currentPlanKey === 'pro' ? 20 : 0;
   const planKeyFromName = (name) => name === 'STARTER' ? 'starter' : name === 'ADVANCED' ? 'advanced' : 'pro';
 
