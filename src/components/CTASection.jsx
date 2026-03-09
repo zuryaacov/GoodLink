@@ -23,7 +23,7 @@ const CTASection = () => {
       if (user) {
         const { data: profile } = await supabase
           .from('profiles')
-          .select('plan_type, lemon_squeezy_customer_portal_url')
+          .select('plan_type, lemon_squeezy_customer_portal_url, email')
           .eq('user_id', user.id)
           .single();
         setUserProfile(profile || null);
@@ -224,7 +224,10 @@ const CTASection = () => {
                       } else {
                         const baseUrl = plan.checkoutUrl.split('?')[0];
                         const q = [];
-                        if (user.email) q.push(`checkout[email]=${encodeURIComponent(user.email)}`);
+                        const emailToUse = (userProfile?.email || user.email || '').trim();
+                        if (emailToUse) {
+                          q.push(`checkout[email]=${encodeURIComponent(emailToUse)}`);
+                        }
                         q.push(`checkout[custom][user_id]=${encodeURIComponent(user.id)}`);
                         q.push('embed=1');
                         targetUrl = `${baseUrl}?${q.join('&')}`;

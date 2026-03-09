@@ -273,6 +273,7 @@ export default function AccountSettingsPage() {
     { name: 'PRO', price: '20', priceNum: 20, originalPrice: '62', description: 'For power users', features: ['Unlimited Links', 'Unlimited Custom Domains', 'Unlimited QR Codes', 'Unlimited Clicks', 'Workspaces, Campaigns and Groups', 'Bot Protection', 'Conversion API & S2S tracking', 'UTM Presets', 'Pro Analytics', 'Expedited Support'], highlighted: false, checkoutUrl: 'https://goodlink.lemonsqueezy.com/checkout/buy/924daf77-b7b3-405d-a94a-2ad2cc476da4?embed=1', buttonText: 'Go Pro' },
   ];
   const isCancelled = profile?.subscription_status === 'cancelled';
+  const isFreeTrial = profile?.subscription_status === 'free_trial';
   const currentPlanKey = isCancelled ? null : (currentPlan === 'start' || currentPlan === 'starter' ? 'starter' : currentPlan === 'advanced' ? 'advanced' : currentPlan === 'pro' ? 'pro' : null);
   const currentPlanPrice = currentPlanKey === 'starter' ? 5 : currentPlanKey === 'advanced' ? 10 : currentPlanKey === 'pro' ? 20 : 0;
   const planKeyFromName = (name) => name === 'STARTER' ? 'starter' : name === 'ADVANCED' ? 'advanced' : 'pro';
@@ -281,7 +282,10 @@ export default function AccountSettingsPage() {
     if (!user) return;
     const baseUrl = plan.checkoutUrl.split('?')[0];
     const q = [];
-    if (user.email) q.push(`checkout[email]=${encodeURIComponent(user.email)}`);
+    const emailToUse = (profile?.email || user.email || '').trim();
+    if (emailToUse) {
+      q.push(`checkout[email]=${encodeURIComponent(emailToUse)}`);
+    }
     q.push(`checkout[custom][user_id]=${encodeURIComponent(user.id)}`);
     q.push('embed=1');
     const targetUrl = `${baseUrl}?${q.join('&')}`;
@@ -409,10 +413,14 @@ export default function AccountSettingsPage() {
             <div className="bg-card-bg border border-card-border rounded-2xl p-6 relative overflow-hidden hover:shadow-card-mint transition-all">
               {/* Status Badge */}
               <div className="absolute top-4 right-4">
-                <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider border ${
-                  isCancelled ? 'bg-amber-500/10 text-amber-600 border-amber-500/30' : 'bg-[#6358de]/10 text-[#6358de] border-[#6358de]/30'
-                }`}>
-                  {isCancelled ? 'Cancelled' : `${currentPlanDisplay} Plan`}
+                <span
+                  className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider border ${
+                    isCancelled
+                      ? 'bg-amber-500/10 text-amber-600 border-amber-500/30'
+                      : 'bg-[#6358de]/10 text-[#6358de] border-[#6358de]/30'
+                  }`}
+                >
+                  {isCancelled ? 'Cancelled' : isFreeTrial ? 'Free Trial' : `${currentPlanDisplay} Plan`}
                 </span>
               </div>
 

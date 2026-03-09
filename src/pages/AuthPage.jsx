@@ -49,11 +49,13 @@ const AuthPage = () => {
     } = await supabase.auth.getUser();
     if (!user) return;
 
-    // Check user profile to see if they have a paid plan
+    let profileEmail = null;
+
+    // Check user profile to see if they have a paid plan (and get email from profiles)
     try {
       const { data: profile } = await supabase
         .from('profiles')
-        .select('plan_type, lemon_squeezy_customer_portal_url')
+        .select('plan_type, lemon_squeezy_customer_portal_url, email')
         .eq('user_id', user.id)
         .single();
 
@@ -65,6 +67,9 @@ const AuthPage = () => {
           return;
         }
       }
+      if (profile?.email) {
+        profileEmail = String(profile.email).trim();
+      }
     } catch (err) {
       console.error('Error fetching profile:', err);
     }
@@ -72,7 +77,10 @@ const AuthPage = () => {
     // Otherwise, if user is on FREE plan, open checkout
     const baseUrl = checkoutUrl.split('?')[0];
     const q = [];
-    if (user.email) q.push(`checkout[email]=${encodeURIComponent(user.email)}`);
+    const emailToUse = (profileEmail || user.email || '').trim();
+    if (emailToUse) {
+      q.push(`checkout[email]=${encodeURIComponent(emailToUse)}`);
+    }
     q.push(`checkout[custom][user_id]=${encodeURIComponent(user.id)}`);
     q.push('embed=1');
     const finalUrl = `${baseUrl}?${q.join('&')}`;
