@@ -14,6 +14,12 @@ const Hero = ({ user }) => {
           transition={{ duration: 0.6, ease: 'easeOut' }}
           className="flex flex-col items-center w-full max-w-xl sm:max-w-2xl lg:max-w-5xl space-y-8 md:space-y-12"
         >
+          {/* Trial badge */}
+          <div className="inline-flex items-center rounded-full bg-gradient-to-r from-[#6358de] to-[#7c6ee8] px-4 py-2 text-sm md:text-base font-semibold text-white shadow-lg shadow-[#6358de]/40 animate-pulse">
+            <span className="mr-2">🚀</span>
+            <span>30-Day Free Trial · No credit card required</span>
+          </div>
+
           {/* Main line */}
           <h1 className="text-slate-900 text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-black leading-loose md:leading-[1.75] lg:leading-[2] xl:leading-[1.75] tracking-tight">
             Short Links, Bot Protection,
