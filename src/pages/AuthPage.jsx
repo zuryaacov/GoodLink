@@ -605,9 +605,7 @@ const AuthPage = () => {
           ></path>
         </svg>
       </div>
-      <h2 className="text-3xl font-black leading-tight tracking-tight text-[#6358de]">
-        GoodLink
-      </h2>
+      <h2 className="text-3xl font-black leading-tight tracking-tight text-[#6358de]">GoodLink</h2>
     </Link>
   );
 
