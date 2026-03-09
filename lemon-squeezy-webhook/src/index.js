@@ -132,6 +132,7 @@ async function updateUserSubscription(supabaseUrl, supabaseKey, userId, subscrip
       lemon_squeezy_subscription_id: subscription.id?.toString() || null,
       lemon_squeezy_customer_id: attributes.customer_id?.toString() || null,
       lemon_squeezy_order_id: attributes.order_id?.toString() || null,
+      lemon_squeezy_subscription_data: subscription, // full subscription object (id + attributes + urls etc.)
       subscription_updated_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
     };
