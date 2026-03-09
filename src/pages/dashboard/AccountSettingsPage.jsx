@@ -243,6 +243,12 @@ export default function AccountSettingsPage() {
       setSuccess('Subscription marked as canceled.');
       setTimeout(() => setSuccess(null), 5000);
       fetchUserData();
+
+      // If user is on a paid plan (not free trial / free), also open Lemon Squeezy customer portal
+      const isFreePlan = currentPlan === 'free';
+      if (!isFreeTrial && !isFreePlan && portalUrl) {
+        window.open(portalUrl, '_blank', 'noopener,noreferrer');
+      }
     } catch (err) {
       console.error(err);
       setError(err.message || 'Failed to update subscription.');
