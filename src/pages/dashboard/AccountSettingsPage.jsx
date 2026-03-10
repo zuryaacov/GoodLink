@@ -75,7 +75,7 @@ export default function AccountSettingsPage() {
 
   // Usage counts (from DB, not profiles table)
   const [linksCount, setLinksCount] = useState(0);
-  const [monthlyClicksCount, setMonthlyClicksCount] = useState(0);
+  const [capiCount, setCapiCount] = useState(0);
   const [domainsCount, setDomainsCount] = useState(0);
 
   // Cancel subscription confirmation modal
@@ -106,31 +106,17 @@ export default function AccountSettingsPage() {
       setTimezone(profileData?.timezone || 'UTC');
 
       // Fetch usage counts from actual tables
-      const [linksRes, clicksRes, domainsRes] = await Promise.all([
+      const [linksRes, capiRes, domainsRes] = await Promise.all([
         supabase
           .from('links')
           .select('id', { count: 'exact', head: true })
           .eq('user_id', user.id)
           .neq('status', 'deleted'),
-        (() => {
-          const now = new Date();
-          const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
-          const endOfMonth = new Date(
-            now.getFullYear(),
-            now.getMonth() + 1,
-            0,
-            23,
-            59,
-            59,
-            999
-          ).toISOString();
-          return supabase
-            .from('clicks')
-            .select('id', { count: 'exact', head: true })
-            .eq('user_id', user.id)
-            .gte('clicked_at', startOfMonth)
-            .lte('clicked_at', endOfMonth);
-        })(),
+        supabase
+          .from('pixels')
+          .select('id', { count: 'exact', head: true })
+          .eq('user_id', user.id)
+          .neq('status', 'deleted'),
         supabase
           .from('custom_domains')
           .select('id', { count: 'exact', head: true })
@@ -139,7 +125,7 @@ export default function AccountSettingsPage() {
       ]);
 
       setLinksCount(linksRes?.count ?? 0);
-      setMonthlyClicksCount(clicksRes?.count ?? 0);
+      setCapiCount(capiRes?.count ?? 0);
       setDomainsCount(domainsRes?.count ?? 0);
     } catch (err) {
       console.error('Error fetching user data:', err);
@@ -163,25 +149,19 @@ export default function AccountSettingsPage() {
       const nameCheck = sanitizeInput(fullName);
       if (!nameCheck.safe) throw new Error(nameCheck.error);
 
-      // 2. Update Auth Metadata (Name, Email)
+      // 2. Update Auth Metadata (Name only – email is not editable)
       const updates = {
         data: { full_name: nameCheck.sanitized || fullName },
       };
 
-      // Only if email changed (requires email verification usually)
-      if (email !== user.email) {
-        updates.email = email;
-      }
-
       const { error: authError } = await supabase.auth.updateUser(updates);
       if (authError) throw authError;
 
-      // 3. Update Profile Table (full_name, email, timezone) – keep profiles in sync with auth
+      // 3. Update Profile Table (full_name, timezone) – keep profiles in sync with auth
       const { error: profileError } = await supabase
         .from('profiles')
         .update({
           full_name: nameCheck.sanitized || fullName.trim(),
-          email: email.trim(),
           timezone: timezone,
           updated_at: new Date().toISOString(),
         })
@@ -267,7 +247,8 @@ export default function AccountSettingsPage() {
     );
   }
 
-  const isGoogleUser = user?.app_metadata?.provider === 'google';
+  const authProvider = user?.app_metadata?.provider;
+  const isEmailUser = !authProvider || authProvider === 'email';
   const currentPlan = profile?.plan_type || 'free'; // default to free
   const planDetails = PLAN_FEATURES[currentPlan] || PLAN_FEATURES.free;
   const portalUrl = profile?.lemon_squeezy_customer_portal_url;
@@ -347,7 +328,7 @@ export default function AccountSettingsPage() {
                   />
                 </div>
 
-                {/* Email Address */}
+                {/* Email Address (read-only) */}
                 <div>
                   <label className="block text-sm font-medium text-[#1b1b1b] mb-2">
                     Email Address
@@ -357,17 +338,10 @@ export default function AccountSettingsPage() {
                     inputMode="email"
                     autoComplete="email"
                     value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    disabled={isGoogleUser} // Locked for Google users
-                    className={`w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-[#1b1b1b] focus:outline-none focus:border-primary transition-all ${isGoogleUser ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    disabled
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-[#1b1b1b] opacity-60 cursor-not-allowed"
                     placeholder="name@example.com"
                   />
-                  {isGoogleUser && (
-                    <p className="text-xs text-slate-500 mt-2 flex items-center gap-1">
-                      <span className="material-symbols-outlined text-sm">info</span>
-                      Managed by Google Sign-In
-                    </p>
-                  )}
                 </div>
 
                 {/* Timezone Selector */}
@@ -449,19 +423,19 @@ export default function AccountSettingsPage() {
                 <div className="flex justify-between items-center text-sm border-b border-slate-200 pb-3">
                   <span className="text-[#1b1b1b]">Links Created</span>
                   <span className="text-[#1b1b1b] font-mono">
-                    {linksCount} / {planDetails.maxLinks}
+                    {linksCount}
                   </span>
                 </div>
                 <div className="flex justify-between items-center text-sm border-b border-slate-200 pb-3">
-                  <span className="text-[#1b1b1b]">Monthly Clicks</span>
+                  <span className="text-[#1b1b1b]">CAPI&apos;s</span>
                   <span className="text-[#1b1b1b] font-mono">
-                    {monthlyClicksCount.toLocaleString()} / {planDetails.maxClicks}
+                    {capiCount}
                   </span>
                 </div>
                 <div className="flex justify-between items-center text-sm border-b border-slate-200 pb-3">
                   <span className="text-[#1b1b1b]">Custom Domains</span>
                   <span className="text-[#1b1b1b] font-mono">
-                    {domainsCount} / {planDetails.domains}
+                    {domainsCount}
                   </span>
                 </div>
               </div>
@@ -550,8 +524,8 @@ export default function AccountSettingsPage() {
           </div>
         </div>
 
-        {/* Security (below Pricing) - Only for Email Users */}
-        {!isGoogleUser && (
+        {/* Security (below Pricing) - Only for Email+Password Users */}
+        {isEmailUser && (
           <div className="mt-12 bg-card-bg border border-card-border rounded-2xl p-6 hover:shadow-card-mint transition-all max-w-2xl">
             <h2 className="text-xl font-bold text-[#1b1b1b] mb-6 flex items-center gap-2">
               <span className="material-symbols-outlined text-[#135bec]">lock</span>
