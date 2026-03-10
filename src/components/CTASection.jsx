@@ -151,11 +151,11 @@ const CTASection = () => {
 
         {/* Pricing sub-heading: 30-day trial message */}
         <div className="flex justify-center">
-          <div className="inline-flex items-center gap-2 text-[#6358de] font-extrabold tracking-wide text-xs sm:text-sm md:text-base uppercase">
-            <span className="text-lg sm:text-xl">🎁</span>
+          <div className="inline-flex items-center gap-2 text-[#6358de] font-extrabold tracking-wide text-xs sm:text-sm md:text-base lg:text-[1.8rem] uppercase">
+            <span className="text-base sm:text-lg md:text-xl lg:text-[2rem]">🎁</span>
             <span>
               Get 30-Day Free Trial · Everything in{' '}
-              <span className="text-base sm:text-lg md:text-xl">PRO</span> · No credit card required
+              <span className="text-sm sm:text-base md:text-lg lg:text-[2rem]">PRO</span> · No credit card required
             </span>
           </div>
         </div>
@@ -218,11 +218,14 @@ const CTASection = () => {
 
                   {/* CTA Button (directly under price) */}
                   <button
+                    type="button"
+                    disabled={plan.name !== 'PRO'}
                     onClick={(e) => {
                       e.preventDefault();
+                      if (plan.name !== 'PRO') return;
 
                       if (!user) {
-                        navigate(`/login?plan=${plan.name.toLowerCase()}`);
+                        navigate('/login?mode=signup');
                         return;
                       }
 
@@ -236,7 +239,14 @@ const CTASection = () => {
                         const baseUrl = plan.checkoutUrl.split('?')[0];
                         const q = [];
                         const emailToUse = (userProfile?.email || user.email || '').trim();
-                        console.log('[LS Checkout][CTA] emailToUse=', emailToUse, 'user.email=', user?.email, 'profile.email=', userProfile?.email);
+                        console.log(
+                          '[LS Checkout][CTA] emailToUse=',
+                          emailToUse,
+                          'user.email=',
+                          user?.email,
+                          'profile.email=',
+                          userProfile?.email
+                        );
                         if (emailToUse) {
                           q.push(`checkout[email]=${encodeURIComponent(emailToUse)}`);
                         }
@@ -248,14 +258,13 @@ const CTASection = () => {
 
                       window.open(targetUrl, '_blank', 'noopener,noreferrer');
                     }}
-                    type="button"
                     className={`mt-6 w-full py-4 px-6 rounded-lg font-bold text-base transition-all text-center inline-block active:scale-95 ${
-                      plan.highlighted
-                        ? 'bg-[#c0ffa5] hover:bg-[#b0ef95] text-[#1b1b1b] shadow-lg shadow-[#c0ffa5]/30'
-                        : 'bg-[#c0ffa5] hover:bg-[#b0ef95] text-[#1b1b1b] shadow-lg shadow-[#c0ffa5]/20'
+                      plan.name === 'PRO'
+                        ? 'bg-[#6358de] hover:bg-[#5348c7] text-white shadow-lg shadow-[#6358de]/30'
+                        : 'bg-slate-200 text-slate-500 cursor-not-allowed'
                     }`}
                   >
-                    {plan.buttonText}
+                    {plan.name === 'PRO' ? '30-Day Free Trial' : plan.buttonText}
                   </button>
                 </div>
 
