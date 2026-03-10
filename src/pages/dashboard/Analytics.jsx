@@ -632,6 +632,12 @@ const Analytics = () => {
         message={
           selectedClick ? (
             <div className="space-y-3 text-left">
+              <div className="flex items-start justify-between py-2 border-b border-gray-200">
+                <span className="text-xs font-medium text-[#1b1b1b]">Full URL</span>
+                <span className="text-sm text-[#1b1b1b] break-all text-right max-w-[70%] font-mono">
+                  {selectedClick.full_url || '—'}
+                </span>
+              </div>
               <div className="flex items-center justify-between py-2 border-b border-gray-200">
                 <span className="text-xs font-medium text-[#1b1b1b]">Date & Time</span>
                 <span className="text-sm text-[#1b1b1b] font-mono">
@@ -662,12 +668,6 @@ const Analytics = () => {
                 <span className="text-xs font-medium text-[#1b1b1b]">Referrer</span>
                 <span className="text-sm text-[#1b1b1b] break-all text-right max-w-[70%]">
                   {selectedClick.referer || selectedClick.referrer || '—'}
-                </span>
-              </div>
-              <div className="flex items-start justify-between py-2 border-b border-gray-200">
-                <span className="text-xs font-medium text-[#1b1b1b]">Full URL</span>
-                <span className="text-sm text-[#1b1b1b] break-all text-right max-w-[70%] font-mono">
-                  {selectedClick.full_url || '—'}
                 </span>
               </div>
               <div className="flex items-center justify-between py-2 border-b border-gray-200">
