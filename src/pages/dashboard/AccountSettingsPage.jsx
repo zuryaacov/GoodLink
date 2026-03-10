@@ -306,15 +306,10 @@ export default function AccountSettingsPage() {
     );
   }
 
-  const authProvider = user?.app_metadata?.provider;
-  const identityProviders = Array.isArray(user?.identities)
-    ? user.identities.map((id) => id.provider).filter(Boolean)
-    : [];
-
-  // Email+password user = has 'email' provider and no social providers
-  const hasEmailProvider = authProvider === 'email' || identityProviders.includes('email');
-  const hasSocialProvider = identityProviders.some((p) => p !== 'email') || authProvider === 'google';
-  const isEmailUser = hasEmailProvider && !hasSocialProvider;
+  // Detect auth provider as stored in Supabase
+  const primaryProvider =
+    user?.app_metadata?.provider || (Array.isArray(user?.identities) ? user.identities[0]?.provider : undefined);
+  const isEmailUser = primaryProvider === 'email';
   const currentPlan = profile?.plan_type || 'free'; // default to free
   const planDetails = PLAN_FEATURES[currentPlan] || PLAN_FEATURES.free;
   const portalUrl = profile?.lemon_squeezy_customer_portal_url;
