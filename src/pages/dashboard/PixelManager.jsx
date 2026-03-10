@@ -32,6 +32,9 @@ const PixelManager = () => {
     isLoading: false,
   });
 
+  // 3-dots menu open for pixel id
+  const [openMenuPixelId, setOpenMenuPixelId] = useState(null);
+
   useEffect(() => {
     fetchPixels();
   }, []);
@@ -473,14 +476,70 @@ const PixelManager = () => {
               key={pixel.id}
               className="bg-card-bg border border-card-border rounded-xl p-5 transition-all hover:shadow-card-mint flex flex-col gap-4"
             >
-              {/* Header with Logo and Name */}
-              <div className="flex items-start gap-3">
-                {getPlatformLogo(pixel.platform)}
-                <div className="flex-1 min-w-0">
-                  <h3 className="text-4xl font-bold text-[#1b1b1b] break-words line-clamp-2">
-                    {pixel.name}
-                  </h3>
-                  <p className="text-slate-500 text-sm mt-1">{getPlatformName(pixel.platform)}</p>
+              {/* Header with Logo, Name & Actions menu */}
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex items-start gap-3 min-w-0 flex-1">
+                  {getPlatformLogo(pixel.platform)}
+                  <div className="flex-1 min-w-0">
+                    <h3 className="text-4xl font-bold text-[#1b1b1b] break-words line-clamp-2">
+                      {pixel.name}
+                    </h3>
+                    <p className="text-slate-500 text-sm mt-1">
+                      {getPlatformName(pixel.platform)}
+                    </p>
+                  </div>
+                </div>
+                {/* 3-dots actions menu */}
+                <div className="relative flex-shrink-0">
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setOpenMenuPixelId(openMenuPixelId === pixel.id ? null : pixel.id);
+                    }}
+                    className="p-2 rounded-lg bg-white border border-slate-200 text-slate-700 hover:text-[#1b1b1b] transition-colors"
+                    aria-label="Actions menu"
+                  >
+                    <span className="material-symbols-outlined text-base">more_vert</span>
+                  </button>
+                  {openMenuPixelId === pixel.id && (
+                    <>
+                      <div
+                        className="fixed inset-0 z-10"
+                        onClick={() => setOpenMenuPixelId(null)}
+                        aria-hidden
+                      />
+                      <div className="absolute right-0 mt-2 w-40 bg-white border border-slate-200 rounded-xl shadow-2xl z-20 overflow-hidden min-w-max">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setOpenMenuPixelId(null);
+                            navigate(`/dashboard/pixels/edit/${pixel.id}`);
+                          }}
+                          className="w-full px-4 py-3 text-left text-[#1b1b1b] hover:bg-white/5 transition-colors flex items-center gap-3 text-sm"
+                        >
+                          <span className="material-symbols-outlined text-base">edit</span>
+                          Edit
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setOpenMenuPixelId(null);
+                            setDeleteModalState({
+                              isOpen: true,
+                              pixelId: pixel.id,
+                              pixelName: pixel.name,
+                              isLoading: false,
+                            });
+                          }}
+                          className="w-full px-4 py-3 text-left text-red-400 hover:bg-red-400/10 transition-colors flex items-center gap-3 text-sm"
+                        >
+                          <span className="material-symbols-outlined text-base">delete</span>
+                          Delete
+                        </button>
+                      </div>
+                    </>
+                  )}
                 </div>
               </div>
 
@@ -526,59 +585,29 @@ const PixelManager = () => {
                 </div>
               )}
 
-              {/* Status & Actions */}
-              <div className="flex items-center justify-between gap-3 pt-2 border-t border-slate-200">
-                {/* Status */}
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => handleToggleStatus(pixel.id, pixel.status || 'active')}
-                    className={`relative w-12 h-6 rounded-full transition-colors flex-shrink-0 ${
-                      pixel.status === 'active' ? 'bg-[#00F59B]' : 'bg-slate-200'
+              {/* Status (toggle only – actions moved to 3-dots menu) */}
+              <div className="flex items-center gap-2 pt-2 border-t border-slate-200">
+                <button
+                  onClick={() => handleToggleStatus(pixel.id, pixel.status || 'active')}
+                  className={`relative w-12 h-6 rounded-full transition-colors flex-shrink-0 ${
+                    pixel.status === 'active' ? 'bg-[#00F59B]' : 'bg-slate-200'
+                  }`}
+                  aria-label="Toggle CAPI status"
+                  title={
+                    pixel.status === 'active'
+                      ? 'Active - Click to pause'
+                      : 'Paused - Click to activate'
+                  }
+                >
+                  <span
+                    className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform ${
+                      pixel.status === 'active' ? 'translate-x-6' : 'translate-x-0'
                     }`}
-                    aria-label="Toggle CAPI status"
-                    title={
-                      pixel.status === 'active'
-                        ? 'Active - Click to pause'
-                        : 'Paused - Click to activate'
-                    }
-                  >
-                    <span
-                      className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform ${
-                        pixel.status === 'active' ? 'translate-x-6' : 'translate-x-0'
-                      }`}
-                    />
-                  </button>
-                  <span className="text-sm text-[#1b1b1b] font-medium">
-                    {pixel.status === 'active' ? 'Active' : 'Paused'}
-                  </span>
-                </div>
-
-                {/* Actions */}
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => {
-                      navigate(`/dashboard/pixels/edit/${pixel.id}`);
-                    }}
-                    className="text-[#1b1b1b] hover:text-primary transition-colors p-2"
-                    title="Edit CAPI"
-                  >
-                    <span className="material-symbols-outlined text-base">edit</span>
-                  </button>
-                  <button
-                    onClick={() => {
-                      setDeleteModalState({
-                        isOpen: true,
-                        pixelId: pixel.id,
-                        pixelName: pixel.name,
-                        isLoading: false,
-                      });
-                    }}
-                    className="text-[#1b1b1b] hover:text-red-400 transition-colors p-2"
-                    title="Delete CAPI"
-                  >
-                    <span className="material-symbols-outlined text-base">delete</span>
-                  </button>
-                </div>
+                  />
+                </button>
+                <span className="text-sm text-[#1b1b1b] font-medium">
+                  {pixel.status === 'active' ? 'Active' : 'Paused'}
+                </span>
               </div>
             </div>
           ))}
