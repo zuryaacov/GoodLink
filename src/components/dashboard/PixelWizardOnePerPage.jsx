@@ -77,32 +77,32 @@ const getPlatformLogo = (platform) => {
           </svg>
         </div>
       );
-    case 'taboola':
-      return (
-        <div className={`${w} overflow-hidden border border-slate-200`}>
-          <img src={taboolaLogo} alt="Taboola" className="w-full h-full object-cover" />
-        </div>
-      );
-    case 'outbrain':
-      return (
-        <div className={`${w} overflow-hidden border border-slate-200`}>
-          <img src={outbrainLogo} alt="Outbrain" className="w-full h-full object-cover" />
-        </div>
-      );
-    case 'snapchat':
-      return (
-        <div className={`${w} bg-[#FFFC00]`}>
-          <svg
-            viewBox="0 0 24 24"
-            width="24"
-            height="24"
-            fill="black"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path d="M12 2.979c-2.32 0-4.085 1.705-4.085 4.084 0 .393.048.775.14 1.144-.816.143-1.632.39-2.222.95-.29.274-.467.575-.544.896-.062.257-.04.516.066.764.123.284.348.513.626.657.34.175.71.258 1.05.28l.19.012c.07.004.143.007.222.01l.013.25c.012.247.025.513.04.79v.117c0 .633.435.986.974 1.15.54.164 1.25.164 1.83.164.083 0 .167 0 .252-.002l.144 1.15c.08.647.284.974.606 1.15.32.176.716.216 1.08.216h1.22c.365 0 .76-.04 1.08-.216.32-.176.526-.503.606-1.15l.144-1.15c.085.002.169.002.252.002.58 0 1.29 0 1.83-.164.54-.164.975-.517.975-1.15v-.117c.015-.277.026-.543.04-.79l.012-.25c.08-.003.153-.006.223-.01l.19-.012c.34-.022.71-.105 1.05-.28.278-.144.503-.373.626-.657.106-.248.128-.507.066-.764-.077-.321-.254-.622-.544-.896-.59-.56-1.406-.807-2.222-.95.093-.369.14-.75.14-1.144 0-2.379-1.765-4.084-4.085-4.084z" />
-          </svg>
-        </div>
-      );
+    // case 'taboola':
+    //   return (
+    //     <div className={`${w} overflow-hidden border border-slate-200`}>
+    //       <img src={taboolaLogo} alt="Taboola" className="w-full h-full object-cover" />
+    //     </div>
+    //   );
+    // case 'outbrain':
+    //   return (
+    //     <div className={`${w} overflow-hidden border border-slate-200`}>
+    //       <img src={outbrainLogo} alt="Outbrain" className="w-full h-full object-cover" />
+    //     </div>
+    //   );
+    // case 'snapchat':
+    //   return (
+    //     <div className={`${w} bg-[#FFFC00]`}>
+    //       <svg
+    //         viewBox="0 0 24 24"
+    //         width="24"
+    //         height="24"
+    //         fill="black"
+    //         xmlns="http://www.w3.org/2000/svg"
+    //       >
+    //         <path d="M12 2.979c-2.32 0-4.085 1.705-4.085 4.084 0 .393.048.775.14 1.144-.816.143-1.632.39-2.222.95-.29.274-.467.575-.544.896-.062.257-.04.516.066.764.123.284.348.513.626.657.34.175.71.258 1.05.28l.19.012c.07.004.143.007.222.01l.013.25c.012.247.025.513.04.79v.117c0 .633.435.986.974 1.15.54.164 1.25.164 1.83.164.083 0 .167 0 .252-.002l.144 1.15c.08.647.284.974.606 1.15.32.176.716.216 1.08.216h1.22c.365 0 .76-.04 1.08-.216.32-.176.526-.503.606-1.15l.144-1.15c.085.002.169.002.252.002.58 0 1.29 0 1.83-.164.54-.164.975-.517.975-1.15v-.117c.015-.277.026-.543.04-.79l.012-.25c.08-.003.153-.006.223-.01l.19-.012c.34-.022.71-.105 1.05-.28.278-.144.503-.373.626-.657.106-.248.128-.507.066-.764-.077-.321-.254-.622-.544-.896-.59-.56-1.406-.807-2.222-.95.093-.369.14-.75.14-1.144 0-2.379-1.765-4.084-4.085-4.084z" />
+    //       </svg>
+    //     </div>
+    //   );
     default:
       return (
         <div className={`${w} bg-slate-200`}>
@@ -117,9 +117,9 @@ const PLATFORMS = [
   { value: 'instagram', label: 'Instagram', placeholder: 'Pixel ID (numbers only)' },
   { value: 'tiktok', label: 'TikTok', placeholder: 'Pixel ID (A-Z, 0-9)' },
   { value: 'google', label: 'Google Ads', placeholder: 'Measurement_Id (e.g. G-77Y4B2X5Z1)' },
-  { value: 'snapchat', label: 'Snapchat', placeholder: 'UUID Pixel ID' },
-  { value: 'outbrain', label: 'Outbrain', placeholder: 'Marketer ID (0-9, a-f)' },
-  { value: 'taboola', label: 'Taboola', placeholder: 'Account ID (numbers only)' },
+  // { value: 'snapchat', label: 'Snapchat', placeholder: 'UUID Pixel ID' },
+  // { value: 'outbrain', label: 'Outbrain', placeholder: 'Marketer ID (0-9, a-f)' },
+  // { value: 'taboola', label: 'Taboola', placeholder: 'Account ID (numbers only)' },
 ];
 
 // getPixelIdLabel imported from ../../lib/pixelValidation
@@ -133,12 +133,12 @@ const getCapiTokenLabel = (platform) => {
       return 'Access Token';
     case 'google':
       return 'Api_Secret';
-    case 'snapchat':
-      return 'Access Token';
-    case 'outbrain':
-      return 'Access Token';
-    case 'taboola':
-      return 'Client Secret';
+    // case 'snapchat':
+    //   return 'Access Token';
+    // case 'outbrain':
+    //   return 'Access Token';
+    // case 'taboola':
+    //   return 'Client Secret';
     default:
       return 'CAPI Access Token';
   }
@@ -153,12 +153,12 @@ const getCapiTokenPlaceholder = (platform) => {
       return 'Access Token';
     case 'google':
       return 'Api_Secret';
-    case 'snapchat':
-      return 'Access Token';
-    case 'outbrain':
-      return 'Access Token';
-    case 'taboola':
-      return 'Client Secret';
+    // case 'snapchat':
+    //   return 'Access Token';
+    // case 'outbrain':
+    //   return 'Access Token';
+    // case 'taboola':
+    //   return 'Client Secret';
     default:
       return 'CAPI Access Token';
   }
@@ -204,32 +204,33 @@ const STANDARD_EVENTS = {
     { value: 'affiliate_click', label: 'affiliate_click' },
     { value: 'generate_lead', label: 'generate_lead' },
   ],
-  snapchat: [
-    { value: 'PAGE_VIEW', label: 'PAGE_VIEW (Default)' },
-    { value: 'VIEW_CONTENT', label: 'VIEW_CONTENT' },
-    { value: 'SIGN_UP', label: 'SIGN_UP' },
-    { value: 'AD_CLICK', label: 'AD_CLICK' },
-    { value: 'SAVE', label: 'SAVE' },
-    { value: 'SEARCH', label: 'SEARCH' },
-    { value: 'LIST_VIEW', label: 'LIST_VIEW' },
-  ],
-  outbrain: [
-    { value: 'PAGE_VIEW', label: 'PAGE_VIEW (Default)' },
-    { value: 'LEAD', label: 'LEAD' },
-    { value: 'PURCHASE', label: 'PURCHASE' },
-  ],
-  taboola: [
-    { value: 'page_view', label: 'page_view (Default)' },
-    { value: 'lead', label: 'lead' },
-    { value: 'purchase', label: 'purchase' },
-  ],
+  // snapchat: [
+  //   { value: 'PAGE_VIEW', label: 'PAGE_VIEW (Default)' },
+  //   { value: 'VIEW_CONTENT', label: 'VIEW_CONTENT' },
+  //   { value: 'SIGN_UP', label: 'SIGN_UP' },
+  //   { value: 'AD_CLICK', label: 'AD_CLICK' },
+  //   { value: 'SAVE', label: 'SAVE' },
+  //   { value: 'SEARCH', label: 'SEARCH' },
+  //   { value: 'LIST_VIEW', label: 'LIST_VIEW' },
+  // ],
+  // outbrain: [
+  //   { value: 'PAGE_VIEW', label: 'PAGE_VIEW (Default)' },
+  //   { value: 'LEAD', label: 'LEAD' },
+  //   { value: 'PURCHASE', label: 'PURCHASE' },
+  // ],
+  // taboola: [
+  //   { value: 'page_view', label: 'page_view (Default)' },
+  //   { value: 'lead', label: 'lead' },
+  //   { value: 'purchase', label: 'purchase' },
+  // ],
 };
 
 const defaultEventForPlatform = (platform) => {
   if (platform === 'meta' || platform === 'tiktok') return 'PageView';
-  if (platform === 'google' || platform === 'taboola') return 'page_view';
-  if (platform === 'outbrain') return 'PAGE_VIEW';
-  if (platform === 'snapchat') return 'PAGE_VIEW';
+  if (platform === 'google') return 'page_view';
+  // if (platform === 'taboola') return 'page_view';
+  // if (platform === 'outbrain') return 'PAGE_VIEW';
+  // if (platform === 'snapchat') return 'PAGE_VIEW';
   return 'PageView';
 };
 
