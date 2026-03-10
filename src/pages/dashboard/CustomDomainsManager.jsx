@@ -34,6 +34,11 @@ const CustomDomainsManager = () => {
     isLoading: false,
   });
 
+  // Details modal: domain object or null
+  const [detailsModalDomain, setDetailsModalDomain] = useState(null);
+  // 3-dots menu open for domain id
+  const [openMenuDomainId, setOpenMenuDomainId] = useState(null);
+
   useEffect(() => {
     fetchDomains();
   }, []);
@@ -462,11 +467,11 @@ const CustomDomainsManager = () => {
           {domains.map((domain) => (
             <div
               key={domain.id}
-              className="bg-card-bg border border-card-border rounded-2xl p-6 md:p-8 transition-all hover:shadow-card-mint flex flex-col gap-6"
+              className="bg-card-bg border border-card-border rounded-2xl p-6 md:p-8 transition-all hover:shadow-card-mint flex flex-col gap-4"
             >
-              {/* Domain Name & Status */}
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b border-slate-200">
-                <div className="flex flex-col gap-2">
+              {/* Domain Name, Status, Root only */}
+              <div className="flex items-start justify-between gap-4">
+                <div className="flex flex-col gap-2 min-w-0 flex-1">
                   <h3
                     className="text-4xl font-bold text-[#1b1b1b] tracking-tight break-all"
                     title={domain.domain}
@@ -499,35 +504,96 @@ const CustomDomainsManager = () => {
                     </div>
                   )}
                 </div>
-                <div className="flex items-center gap-3 self-end sm:self-center">
-                  {/* Verify Button - Show if pending or error */}
-                  {(domain.status === 'pending' || domain.status === 'error') && (
-                    <button
-                      onClick={() => handleVerifyDNS(domain)}
-                      className="px-4 py-2 bg-[#6358de] hover:bg-[#5348c7] text-white font-bold rounded-xl transition-all shadow-lg shadow-[#6358de]/20 flex items-center justify-center gap-2 text-sm"
-                    >
-                      <span className="material-symbols-outlined text-lg">verified</span>
-                      Verify DNS
-                    </button>
+                {/* 3-dots menu */}
+                <div className="relative flex-shrink-0">
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setOpenMenuDomainId(openMenuDomainId === domain.id ? null : domain.id);
+                    }}
+                    className="p-2 rounded-lg bg-white border border-slate-200 text-slate-700 hover:text-[#1b1b1b] transition-colors"
+                    aria-label="Actions menu"
+                  >
+                    <span className="material-symbols-outlined text-base">more_vert</span>
+                  </button>
+                  {openMenuDomainId === domain.id && (
+                    <>
+                      <div
+                        className="fixed inset-0 z-10"
+                        onClick={() => setOpenMenuDomainId(null)}
+                        aria-hidden
+                      />
+                      <div className="absolute right-0 mt-2 w-48 bg-white border border-slate-200 rounded-xl shadow-2xl z-20 overflow-hidden min-w-max">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setOpenMenuDomainId(null);
+                            navigate(`/dashboard/domains/edit/${domain.id}`);
+                          }}
+                          className="w-full px-4 py-3 text-left text-[#1b1b1b] hover:bg-white/5 transition-colors flex items-center gap-3 text-sm"
+                        >
+                          <span className="material-symbols-outlined text-base">edit</span>
+                          Edit Root
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setOpenMenuDomainId(null);
+                            setDetailsModalDomain(domain);
+                          }}
+                          className="w-full px-4 py-3 text-left text-[#1b1b1b] hover:bg-white/5 transition-colors flex items-center gap-3 text-sm"
+                        >
+                          <span className="material-symbols-outlined text-base">info</span>
+                          Details
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setOpenMenuDomainId(null);
+                            handleDeleteClick(domain.id, domain.domain);
+                          }}
+                          className="w-full px-4 py-3 text-left text-red-400 hover:bg-red-400/10 transition-colors flex items-center gap-3 text-sm"
+                        >
+                          <span className="material-symbols-outlined text-base">delete</span>
+                          Delete
+                        </button>
+                      </div>
+                    </>
                   )}
-                  <button
-                    onClick={() => navigate(`/dashboard/domains/edit/${domain.id}`)}
-                    className="text-[#1b1b1b] hover:bg-slate-100 transition-colors p-2 bg-white rounded-lg border border-slate-200"
-                    title="Update root redirect"
-                  >
-                    <span className="material-symbols-outlined text-xl md:text-2xl">edit</span>
-                  </button>
-                  <button
-                    onClick={() => handleDeleteClick(domain.id, domain.domain)}
-                    className="text-slate-500 hover:text-red-400 transition-colors p-2 bg-red-500/10 rounded-lg border border-red-500/20"
-                    title="Delete domain"
-                  >
-                    <span className="material-symbols-outlined text-xl md:text-2xl">delete</span>
-                  </button>
                 </div>
               </div>
+            </div>
+          ))}
+        </div>
+      )}
 
-              {/* DNS Records Detail Display */}
+      {/* Details Modal – full domain info (DNS, verified date, etc.) */}
+      {detailsModalDomain && (
+        <Modal
+          isOpen={!!detailsModalDomain}
+          onClose={() => setDetailsModalDomain(null)}
+          title={detailsModalDomain.domain}
+          type="alert"
+          message={
+            <div className="space-y-4 text-left">
+              {/* Verify DNS – when pending/error */}
+              {(detailsModalDomain.status === 'pending' || detailsModalDomain.status === 'error') && (
+                <div className="flex justify-end">
+                  <button
+                    onClick={() => {
+                      handleVerifyDNS(detailsModalDomain);
+                      setDetailsModalDomain(null);
+                    }}
+                    className="px-4 py-2 bg-[#6358de] hover:bg-[#5348c7] text-white font-bold rounded-xl transition-all shadow-lg shadow-[#6358de]/20 flex items-center justify-center gap-2 text-sm"
+                  >
+                    <span className="material-symbols-outlined text-lg">verified</span>
+                    Verify DNS
+                  </button>
+                </div>
+              )}
+
+              {/* DNS Records */}
               <div className="space-y-4">
                 <div className="flex items-center justify-between gap-2 text-slate-500">
                   <div className="flex items-center gap-2">
@@ -538,12 +604,12 @@ const CustomDomainsManager = () => {
                   </div>
                   <button
                     type="button"
-                    onClick={() => fetchDomainRecords(domain)}
-                    disabled={!!dnsLoadingByDomainId[domain.id]}
+                    onClick={() => fetchDomainRecords(detailsModalDomain)}
+                    disabled={!!dnsLoadingByDomainId[detailsModalDomain.id]}
                     className="flex items-center gap-1 text-xs px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-[#1a2438] disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
                   >
                     <span
-                      className={`material-symbols-outlined text-sm ${dnsLoadingByDomainId[domain.id] ? 'animate-spin' : ''}`}
+                      className={`material-symbols-outlined text-sm ${dnsLoadingByDomainId[detailsModalDomain.id] ? 'animate-spin' : ''}`}
                     >
                       refresh
                     </span>
@@ -553,88 +619,73 @@ const CustomDomainsManager = () => {
 
                 {(() => {
                   const displayedRecords = getDnsRecordsArray(
-                    dnsRecordsByDomainId[domain.id] ?? domain.dns_records
+                    dnsRecordsByDomainId[detailsModalDomain.id] ?? detailsModalDomain.dns_records
                   );
-
                   if (!displayedRecords || displayedRecords.length === 0) {
                     return (
                       <div className="bg-card-bg border border-card-border rounded-xl p-4 text-sm text-[#1b1b1b]">
-                        {dnsLoadingByDomainId[domain.id]
+                        {dnsLoadingByDomainId[detailsModalDomain.id]
                           ? 'Loading DNS records...'
                           : 'No DNS records available yet.'}
                       </div>
                     );
                   }
-
                   return (
-                    <div className="grid grid-cols-1 gap-4">
+                    <div className="grid grid-cols-1 gap-4 max-h-[60vh] overflow-y-auto">
                       {displayedRecords.map((record, idx) => (
                         <div
                           key={idx}
                           className="bg-card-bg border border-card-border rounded-xl p-4 md:p-6 space-y-4 hover:shadow-card-mint transition-all"
                         >
-                          {/* Record Type Header */}
                           <div className="flex items-center gap-3">
                             <div className="px-3 py-1 bg-primary/20 text-primary border border-primary/30 rounded-lg font-bold text-xs uppercase tracking-wider">
                               Record {idx + 1}
                             </div>
-                            <div className="h-px flex-1 bg-slate-200"></div>
+                            <div className="h-px flex-1 bg-slate-200" />
                             <span className="text-xl text-primary font-black font-mono uppercase">
                               {record.type}
                             </span>
                           </div>
-
                           <div className="grid grid-cols-1 gap-4">
-                            {/* Host / Name Section */}
                             <div className="space-y-2">
                               <div className="flex items-center gap-2">
-                                <span className="material-symbols-outlined text-slate-500 text-sm">
-                                  label
-                                </span>
+                                <span className="material-symbols-outlined text-slate-500 text-sm">label</span>
                                 <span className="text-[10px] uppercase font-black text-slate-600 tracking-[0.2em]">
                                   Host / Name
                                 </span>
                               </div>
-                              <div className="flex items-center gap-3 bg-white p-3 rounded-xl border border-slate-200 group hover:border-primary/20 transition-all">
+                              <div className="flex items-center gap-3 bg-white p-3 rounded-xl border border-slate-200">
                                 <code className="text-sm md:text-base text-black font-mono font-bold flex-1 truncate selection:bg-primary/40">
                                   {record.host || record.name}
                                 </code>
                                 <button
-                                  onClick={() =>
-                                    navigator.clipboard.writeText(record.host || record.name)
-                                  }
-                                  className="w-10 h-10 flex items-center justify-center bg-white hover:bg-slate-100 text-[#1b1b1b] rounded-lg border border-slate-200 transition-all active:scale-90"
+                                  type="button"
+                                  onClick={() => navigator.clipboard.writeText(record.host || record.name)}
+                                  className="w-10 h-10 flex items-center justify-center bg-white hover:bg-slate-100 text-[#1b1b1b] rounded-lg border border-slate-200 transition-all"
                                   title="Copy Host"
                                 >
-                                  <span className="material-symbols-outlined text-xl">
-                                    content_copy
-                                  </span>
+                                  <span className="material-symbols-outlined text-xl">content_copy</span>
                                 </button>
                               </div>
                             </div>
-
-                            {/* Target Value Section */}
                             <div className="space-y-2">
                               <div className="flex items-center gap-2">
-                                <span className="material-symbols-outlined text-slate-500 text-sm">
-                                  shortcut
-                                </span>
+                                <span className="material-symbols-outlined text-slate-500 text-sm">shortcut</span>
                                 <span className="text-[10px] uppercase font-black text-slate-600 tracking-[0.2em]">
                                   Target Value
                                 </span>
                               </div>
-                              <div className="flex items-center gap-3 bg-white p-3 rounded-xl border border-slate-200 group hover:border-primary/20 transition-all">
+                              <div className="flex items-center gap-3 bg-white p-3 rounded-xl border border-slate-200">
                                 <code className="text-sm md:text-lg text-black font-mono font-bold flex-1 break-all leading-tight selection:bg-primary/30">
                                   {record.value}
                                 </code>
                                 <button
+                                  type="button"
                                   onClick={() => navigator.clipboard.writeText(record.value)}
-                                  className="w-10 h-10 flex items-center justify-center bg-white hover:bg-slate-100 text-[#1b1b1b] rounded-lg border border-slate-200 transition-all active:scale-90 flex-shrink-0"
+                                  className="w-10 h-10 flex items-center justify-center bg-white hover:bg-slate-100 text-[#1b1b1b] rounded-lg border border-slate-200 transition-all flex-shrink-0"
                                   title="Copy Value"
                                 >
-                                  <span className="material-symbols-outlined text-xl">
-                                    content_copy
-                                  </span>
+                                  <span className="material-symbols-outlined text-xl">content_copy</span>
                                 </button>
                               </div>
                             </div>
@@ -646,19 +697,19 @@ const CustomDomainsManager = () => {
                 })()}
               </div>
 
-              {/* Verified Date */}
-              {domain.verified_at && (
+              {/* Last Verified */}
+              {detailsModalDomain.verified_at && (
                 <div className="pt-4 border-t border-slate-200 text-[11px] md:text-sm text-slate-500 flex items-center gap-2">
                   <span className="material-symbols-outlined text-lg">calendar_today</span>
                   <span className="font-semibold uppercase tracking-wide">Last Verified:</span>
                   <span className="text-slate-300">
-                    {new Date(domain.verified_at).toLocaleString()}
+                    {new Date(detailsModalDomain.verified_at).toLocaleString()}
                   </span>
                 </div>
               )}
             </div>
-          ))}
-        </div>
+          }
+        />
       )}
 
       {/* Delete Confirmation Modal */}
