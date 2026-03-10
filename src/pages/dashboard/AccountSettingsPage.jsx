@@ -69,6 +69,7 @@ export default function AccountSettingsPage() {
 
   // Password Change State
   const [showPasswordChange, setShowPasswordChange] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [passwordError, setPasswordError] = useState(null);
@@ -171,22 +172,80 @@ export default function AccountSettingsPage() {
 
       // 4. Update Password (if requested)
       if (showPasswordChange && newPassword) {
-        if (newPassword !== confirmPassword) {
-          throw new Error('New passwords do not match.');
+        setPasswordError(null);
+
+        // Require current password
+        if (!currentPassword || currentPassword.length < 1) {
+          const msg = 'Please enter your current password.';
+          setPasswordError(msg);
+          throw new Error(msg);
         }
+
+        // Password validation – same rules as signup
         if (newPassword.length < 8) {
-          throw new Error('Password must be at least 8 characters long.');
+          const msg = 'Password must be at least 8 characters long';
+          setPasswordError(msg);
+          throw new Error(msg);
         }
+
+        if (newPassword.length > 15) {
+          const msg = 'Password cannot exceed 15 characters';
+          setPasswordError(msg);
+          throw new Error(msg);
+        }
+
+        const hasUpper = /[A-Z]/.test(newPassword);
+        const hasLower = /[a-z]/.test(newPassword);
+        const hasNumber = /[0-9]/.test(newPassword);
+
+        if (!hasUpper) {
+          const msg = 'Password must contain at least one uppercase letter (A-Z)';
+          setPasswordError(msg);
+          throw new Error(msg);
+        }
+        if (!hasLower) {
+          const msg = 'Password must contain at least one lowercase letter (a-z)';
+          setPasswordError(msg);
+          throw new Error(msg);
+        }
+        if (!hasNumber) {
+          const msg = 'Password must contain at least one number';
+          setPasswordError(msg);
+          throw new Error(msg);
+        }
+        if (newPassword !== confirmPassword) {
+          const msg = 'New passwords do not match.';
+          setPasswordError(msg);
+          throw new Error(msg);
+        }
+
+        // Verify current password with Supabase (re-auth)
+        const { error: reauthError } = await supabase.auth.signInWithPassword({
+          email: user.email,
+          password: currentPassword,
+        });
+        if (reauthError) {
+          const msg = 'Current password is incorrect.';
+          setPasswordError(msg);
+          throw new Error(msg);
+        }
+
         const { error: passError } = await supabase.auth.updateUser({ password: newPassword });
-        if (passError) throw passError;
+        if (passError) {
+          setPasswordError(passError.message || 'Failed to update password.');
+          throw passError;
+        }
 
         // Clear password fields on success
+        setCurrentPassword('');
         setNewPassword('');
         setConfirmPassword('');
         setShowPasswordChange(false);
+        setPasswordError(null);
+        setSuccess('Password updated successfully!');
+      } else {
+        setSuccess('Profile updated successfully!');
       }
-
-      setSuccess('Profile updated successfully!');
       setTimeout(() => setSuccess(null), 3000);
 
       // Refresh user data
@@ -552,6 +611,19 @@ export default function AccountSettingsPage() {
 
                 <div>
                   <label className="block text-xs font-medium text-[#1b1b1b] mb-1">
+                    Current Password
+                  </label>
+                  <input
+                    type="password"
+                    value={currentPassword}
+                    onChange={(e) => setCurrentPassword(e.target.value)}
+                    className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-[#1b1b1b] text-sm focus:outline-none focus:border-primary"
+                    placeholder="Enter your current password"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-medium text-[#1b1b1b] mb-1">
                     New Password
                   </label>
                   <input
@@ -579,6 +651,9 @@ export default function AccountSettingsPage() {
                   {confirmPassword && newPassword !== confirmPassword && (
                     <p className="text-red-400 text-xs mt-1">Passwords do not match</p>
                   )}
+                  {passwordError && (
+                    <p className="text-red-400 text-xs mt-1">{passwordError}</p>
+                  )}
                 </div>
 
                 <div className="flex justify-end gap-2 pt-2">
@@ -586,8 +661,10 @@ export default function AccountSettingsPage() {
                     type="button"
                     onClick={() => {
                       setShowPasswordChange(false);
+                      setCurrentPassword('');
                       setNewPassword('');
                       setConfirmPassword('');
+                      setPasswordError(null);
                     }}
                     className="text-[#1b1b1b] hover:text-[#1b1b1b] text-xs px-3 py-2"
                   >
@@ -597,7 +674,10 @@ export default function AccountSettingsPage() {
                     type="button"
                     onClick={handleUpdateProfile}
                     disabled={
-                      !newPassword || newPassword !== confirmPassword || newPassword.length < 8
+                      !currentPassword ||
+                      !newPassword ||
+                      newPassword !== confirmPassword ||
+                      newPassword.length < 8
                     }
                     className="bg-[#135bec] text-[#1b1b1b] text-xs font-bold px-4 py-2 rounded-lg disabled:opacity-50"
                   >
