@@ -506,12 +506,12 @@ const Analytics = () => {
             <table className="w-full text-left text-sm">
               <thead>
                 <tr className="text-[#1b1b1b] border-b border-slate-200 bg-slate-50">
+                  <th className="px-6 py-3 font-bold uppercase text-[10px] tracking-wider">
+                    Full URL
+                  </th>
                   <th className="px-6 py-3 font-bold uppercase text-[10px] tracking-wider">Time</th>
                   <th className="px-6 py-3 font-bold uppercase text-[10px] tracking-wider">
                     Location
-                  </th>
-                  <th className="px-6 py-3 font-bold uppercase text-[10px] tracking-wider">
-                    Full URL
                   </th>
                   <th className="px-6 py-3 font-bold uppercase text-[10px] tracking-wider">
                     Device / OS
@@ -537,6 +537,11 @@ const Analytics = () => {
                       key={click.id}
                       className="border-b border-slate-200 transition-colors hover:bg-slate-50 last:border-b-0"
                     >
+                      <td className="px-6 py-4 max-w-[320px]">
+                        <span className="block text-[#1b1b1b] font-medium break-all">
+                          {click.full_url || '—'}
+                        </span>
+                      </td>
                       <td className="px-6 py-4 whitespace-nowrap text-[#1b1b1b]">
                         {relativeTime(click.clicked_at || click.created_at)}
                       </td>
@@ -544,11 +549,6 @@ const Analytics = () => {
                         <span className="flex items-center gap-2">
                           <span className="text-lg">{flag}</span>
                           <span className="text-[#1b1b1b] font-medium">{location}</span>
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 max-w-[320px]">
-                        <span className="block text-[#1b1b1b] font-medium break-all">
-                          {click.full_url || '—'}
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
