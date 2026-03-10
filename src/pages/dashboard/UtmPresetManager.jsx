@@ -4,7 +4,7 @@ import { Lock } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import SubscriptionCancelledScreen from '../../components/dashboard/SubscriptionCancelledScreen';
 import Modal from '../../components/common/Modal';
-import { Copy, Trash2, Edit2 } from 'lucide-react';
+import { Copy } from 'lucide-react';
 
 const PLATFORMS = {
   meta: { name: 'Meta (FB/IG)', colorClass: 'text-blue-400 bg-blue-400/10' },
@@ -32,6 +32,8 @@ const UtmPresetManager = () => {
     onConfirm: null,
     isLoading: false,
   });
+
+  const [openMenuPresetId, setOpenMenuPresetId] = useState(null);
 
   useEffect(() => {
     fetchPlanAndPresets();
@@ -369,8 +371,8 @@ const UtmPresetManager = () => {
                 key={preset.id}
                 className="bg-[#fcfdfd] border border-card-border rounded-xl p-6 hover:shadow-card-mint transition-all"
               >
-                <div className="flex items-start justify-between mb-4">
-                  <div className="flex-1">
+                <div className="flex items-start justify-between gap-3 mb-4">
+                  <div className="flex-1 min-w-0">
                     <h3 className="text-4xl font-bold text-black mb-1">{preset.name}</h3>
                     <div className="flex flex-wrap items-center gap-2">
                       <span
@@ -385,21 +387,51 @@ const UtmPresetManager = () => {
                       )}
                     </div>
                   </div>
-                  <div className="flex gap-2">
+                  <div className="relative flex-shrink-0">
                     <button
-                      onClick={() => handleEdit(preset)}
-                      className="p-2 text-black hover:text-black hover:bg-slate-100 rounded-lg transition-colors"
-                      title="Edit"
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setOpenMenuPresetId(openMenuPresetId === preset.id ? null : preset.id);
+                      }}
+                      className="p-2 rounded-lg bg-white border border-slate-200 text-slate-700 hover:text-[#1b1b1b] transition-colors"
+                      aria-label="Actions menu"
                     >
-                      <Edit2 size={16} />
+                      <span className="material-symbols-outlined text-base">more_vert</span>
                     </button>
-                    <button
-                      onClick={() => handleDelete(preset)}
-                      className="p-2 text-black hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-colors"
-                      title="Delete"
-                    >
-                      <Trash2 size={16} />
-                    </button>
+                    {openMenuPresetId === preset.id && (
+                      <>
+                        <div
+                          className="fixed inset-0 z-10"
+                          onClick={() => setOpenMenuPresetId(null)}
+                          aria-hidden
+                        />
+                        <div className="absolute right-0 mt-2 w-40 bg-white border border-slate-200 rounded-xl shadow-2xl z-20 overflow-hidden min-w-max">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setOpenMenuPresetId(null);
+                              handleEdit(preset);
+                            }}
+                            className="w-full px-4 py-3 text-left text-[#1b1b1b] hover:bg-white/5 transition-colors flex items-center gap-3 text-sm"
+                          >
+                            <span className="material-symbols-outlined text-base">edit</span>
+                            Edit
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setOpenMenuPresetId(null);
+                              handleDelete(preset);
+                            }}
+                            className="w-full px-4 py-3 text-left text-red-400 hover:bg-red-400/10 transition-colors flex items-center gap-3 text-sm"
+                          >
+                            <span className="material-symbols-outlined text-base">delete</span>
+                            Delete
+                          </button>
+                        </div>
+                      </>
+                    )}
                   </div>
                 </div>
 
