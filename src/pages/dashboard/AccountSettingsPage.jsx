@@ -73,6 +73,9 @@ export default function AccountSettingsPage() {
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [passwordError, setPasswordError] = useState(null);
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   // Usage counts (from DB, not profiles table)
   const [linksCount, setLinksCount] = useState(0);
@@ -242,6 +245,9 @@ export default function AccountSettingsPage() {
         setConfirmPassword('');
         setShowPasswordChange(false);
         setPasswordError(null);
+        setShowCurrentPassword(false);
+        setShowNewPassword(false);
+        setShowConfirmPassword(false);
         setSuccess('Password updated successfully!');
       } else {
         setSuccess('Profile updated successfully!');
@@ -608,41 +614,77 @@ export default function AccountSettingsPage() {
                   <label className="block text-xs font-medium text-[#1b1b1b] mb-1">
                     Current Password
                   </label>
-                  <input
-                    type="password"
-                    value={currentPassword}
-                    onChange={(e) => setCurrentPassword(e.target.value)}
-                    className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-[#1b1b1b] text-sm focus:outline-none focus:border-primary"
-                    placeholder="Enter your current password"
-                  />
+                  <div className="relative flex items-center">
+                    <input
+                      type={showCurrentPassword ? 'text' : 'password'}
+                      value={currentPassword}
+                      onChange={(e) => setCurrentPassword(e.target.value)}
+                      className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 pr-10 text-[#1b1b1b] text-sm focus:outline-none focus:border-primary"
+                      placeholder="Enter your current password"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowCurrentPassword((v) => !v)}
+                      className="absolute right-2 p-1.5 text-slate-500 hover:text-[#1b1b1b] rounded transition-colors"
+                      aria-label={showCurrentPassword ? 'Hide password' : 'Show password'}
+                    >
+                      <span className="material-symbols-outlined text-lg">
+                        {showCurrentPassword ? 'visibility_off' : 'visibility'}
+                      </span>
+                    </button>
+                  </div>
                 </div>
 
                 <div>
                   <label className="block text-xs font-medium text-[#1b1b1b] mb-1">
                     New Password
                   </label>
-                  <input
-                    type="password"
-                    value={newPassword}
-                    onChange={(e) => setNewPassword(e.target.value)}
-                    className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-[#1b1b1b] text-sm focus:outline-none focus:border-primary"
-                    placeholder="Min. 8 characters"
-                  />
+                  <div className="relative flex items-center">
+                    <input
+                      type={showNewPassword ? 'text' : 'password'}
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                      className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 pr-10 text-[#1b1b1b] text-sm focus:outline-none focus:border-primary"
+                      placeholder="Min. 8 characters"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowNewPassword((v) => !v)}
+                      className="absolute right-2 p-1.5 text-slate-500 hover:text-[#1b1b1b] rounded transition-colors"
+                      aria-label={showNewPassword ? 'Hide password' : 'Show password'}
+                    >
+                      <span className="material-symbols-outlined text-lg">
+                        {showNewPassword ? 'visibility_off' : 'visibility'}
+                      </span>
+                    </button>
+                  </div>
                 </div>
 
                 <div>
                   <label className="block text-xs font-medium text-[#1b1b1b] mb-1">
                     Confirm New Password
                   </label>
-                  <input
-                    type="password"
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    className={`w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-[#1b1b1b] text-sm focus:outline-none focus:border-primary ${
-                      confirmPassword && newPassword !== confirmPassword ? 'border-red-500' : ''
-                    }`}
-                    placeholder="Retype password"
-                  />
+                  <div className="relative flex items-center">
+                    <input
+                      type={showConfirmPassword ? 'text' : 'password'}
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      className={`w-full bg-white border border-slate-200 rounded-lg px-3 py-2 pr-10 text-[#1b1b1b] text-sm focus:outline-none focus:border-primary ${
+                        confirmPassword && newPassword !== confirmPassword ? 'border-red-500' : ''
+                      }`}
+                      placeholder="Retype password"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowConfirmPassword((v) => !v)}
+                      className="absolute right-2 p-1.5 text-slate-500 hover:text-[#1b1b1b] rounded transition-colors"
+                      aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
+                    >
+                      <span className="material-symbols-outlined text-lg">
+                        {showConfirmPassword ? 'visibility_off' : 'visibility'}
+                      </span>
+                    </button>
+                  </div>
                   {confirmPassword && newPassword !== confirmPassword && (
                     <p className="text-red-400 text-xs mt-1">Passwords do not match</p>
                   )}
@@ -660,6 +702,9 @@ export default function AccountSettingsPage() {
                       setNewPassword('');
                       setConfirmPassword('');
                       setPasswordError(null);
+                      setShowCurrentPassword(false);
+                      setShowNewPassword(false);
+                      setShowConfirmPassword(false);
                     }}
                     className="text-[#1b1b1b] hover:text-[#1b1b1b] text-xs px-3 py-2"
                   >
