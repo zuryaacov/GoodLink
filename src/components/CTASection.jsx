@@ -149,6 +149,17 @@ const CTASection = () => {
           </p>
         </motion.div>
 
+        {/* Pricing sub-heading: 30-day trial message */}
+        <div className="flex justify-center">
+          <div className="inline-flex items-center gap-2 text-[#6358de] font-extrabold tracking-wide text-xs sm:text-sm md:text-base uppercase">
+            <span className="text-lg sm:text-xl">🎁</span>
+            <span>
+              Get 30-Day Free Trial · Everything in{' '}
+              <span className="text-base sm:text-lg md:text-xl">PRO</span> · No credit card required
+            </span>
+          </div>
+        </div>
+
         {/* Pricing Cards */}
         <motion.div
           variants={containerVariants}
