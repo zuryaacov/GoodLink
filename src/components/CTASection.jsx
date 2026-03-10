@@ -155,7 +155,7 @@ const CTASection = () => {
             <span className="text-base sm:text-lg md:text-xl lg:text-[2rem]">🎁</span>
             <span>
               Get 30-Day Free Trial · Everything in{' '}
-              <span className="text-sm sm:text-base md:text-lg lg:text-[2rem]">PRO</span> · No credit card required
+              <span className="text-sm sm:text-base md:text-lg lg:text-[2.4rem]">PRO</span> · No credit card required
             </span>
           </div>
         </div>
