@@ -219,13 +219,20 @@ const CTASection = () => {
                   {/* CTA Button (directly under price) */}
                   <button
                     type="button"
-                    disabled={plan.name !== 'PRO'}
+                    disabled={plan.name !== 'PRO' || !!user}
                     onClick={(e) => {
                       e.preventDefault();
-                      if (plan.name !== 'PRO') return;
+                      // Only allow click on PRO when user is not logged in
+                      if (plan.name !== 'PRO' || user) return;
 
+                      // For 30-day free trial we send users to signup
+                      navigate('/login?mode=signup');
+
+                      // 🔒 Future: when 30-day free trial is removed,
+                      // uncomment this block to send logged-in users directly to Lemon Squeezy:
+                      /*
                       if (!user) {
-                        navigate('/login?mode=signup');
+                        navigate(`/login?plan=${plan.name.toLowerCase()}`);
                         return;
                       }
 
@@ -257,9 +264,10 @@ const CTASection = () => {
                       }
 
                       window.open(targetUrl, '_blank', 'noopener,noreferrer');
+                      */
                     }}
                     className={`mt-6 w-full py-4 px-6 rounded-lg font-bold text-base transition-all text-center inline-block active:scale-95 ${
-                      plan.name === 'PRO'
+                      plan.name === 'PRO' && !user
                         ? 'bg-[#6358de] hover:bg-[#5348c7] text-white shadow-lg shadow-[#6358de]/30'
                         : 'bg-slate-200 text-slate-500 cursor-not-allowed'
                     }`}
