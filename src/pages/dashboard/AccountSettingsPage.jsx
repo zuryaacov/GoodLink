@@ -248,7 +248,14 @@ export default function AccountSettingsPage() {
   }
 
   const authProvider = user?.app_metadata?.provider;
-  const isEmailUser = !authProvider || authProvider === 'email';
+  const identityProviders = Array.isArray(user?.identities)
+    ? user.identities.map((id) => id.provider).filter(Boolean)
+    : [];
+
+  // Email+password user = has 'email' provider and no social providers
+  const hasEmailProvider = authProvider === 'email' || identityProviders.includes('email');
+  const hasSocialProvider = identityProviders.some((p) => p !== 'email') || authProvider === 'google';
+  const isEmailUser = hasEmailProvider && !hasSocialProvider;
   const currentPlan = profile?.plan_type || 'free'; // default to free
   const planDetails = PLAN_FEATURES[currentPlan] || PLAN_FEATURES.free;
   const portalUrl = profile?.lemon_squeezy_customer_portal_url;
