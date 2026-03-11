@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../../lib/supabase';
 import { validateUrl, validateBotRedirectUrl } from '../../lib/urlValidation';
@@ -154,6 +154,29 @@ export default function LinkWizardOnePerPage({
   const [slugError, setSlugError] = useState(null);
   const [fallbackUrlError, setFallbackUrlError] = useState(null);
   const [validating, setValidating] = useState(false);
+
+  // Track initial values for edit mode to skip re-validation when unchanged
+  const initialNameRef = useRef(null);
+  const initialTargetUrlRef = useRef(null);
+  const initialSlugRef = useRef(null);
+  const initialFallbackUrlRef = useRef(null);
+
+  useEffect(() => {
+    if (isEditMode) {
+      if (initialNameRef.current === null && formData.name != null) {
+        initialNameRef.current = (formData.name || '').trim();
+      }
+      if (initialTargetUrlRef.current === null && formData.targetUrl != null) {
+        initialTargetUrlRef.current = (formData.targetUrl || '').trim().toLowerCase();
+      }
+      if (initialSlugRef.current === null && formData.slug != null) {
+        initialSlugRef.current = (formData.slug || '').trim().toLowerCase();
+      }
+      if (initialFallbackUrlRef.current === null && formData.fallbackUrl != null) {
+        initialFallbackUrlRef.current = (formData.fallbackUrl || '').trim().toLowerCase();
+      }
+    }
+  }, [isEditMode, formData.name, formData.targetUrl, formData.slug, formData.fallbackUrl]);
 
   const uniqueDomains = (list) => {
     const seen = new Set();
@@ -349,6 +372,11 @@ export default function LinkWizardOnePerPage({
   // Name validation (duplicate check)
   const checkName = async () => {
     const name = formData.name?.trim();
+    // In edit mode, if name didn't change from initial, skip duplicate check
+    if (isEditMode && initialNameRef.current && name === initialNameRef.current) {
+      setNameError(null);
+      return true;
+    }
     if (!name) {
       setNameError('Please enter a name for your link.');
       return false;
@@ -393,6 +421,17 @@ export default function LinkWizardOnePerPage({
   // URL validation (format + safety + glynk.to + url exists)
   const performUrlCheck = async () => {
     const raw = formData.targetUrl?.trim();
+    // In edit mode, if URL didn't change from initial, skip full validation
+    if (
+      isEditMode &&
+      initialTargetUrlRef.current &&
+      raw &&
+      raw.toLowerCase() === initialTargetUrlRef.current
+    ) {
+      setUrlError(null);
+      setUrlSafety({ loading: false, isSafe: true });
+      return true;
+    }
     if (!raw) {
       setUrlError('Please enter a destination URL.');
       return false;
@@ -428,6 +467,11 @@ export default function LinkWizardOnePerPage({
   // Slug validation
   const validateSlugStep = async () => {
     const slug = formData.slug?.trim().toLowerCase();
+    // In edit mode, if slug didn't change from initial, skip uniqueness check
+    if (isEditMode && initialSlugRef.current && slug === initialSlugRef.current) {
+      setSlugError(null);
+      return true;
+    }
     if (!slug) {
       setSlugError('Please enter a slug.');
       return false;
@@ -472,6 +516,16 @@ export default function LinkWizardOnePerPage({
   const validateBotStep = () => {
     if (formData.botAction !== 'redirect') return true;
     const url = formData.fallbackUrl?.trim();
+    // In edit mode, if fallback URL didn't change from initial, skip re-validation
+    if (
+      isEditMode &&
+      initialFallbackUrlRef.current &&
+      url &&
+      url.toLowerCase() === initialFallbackUrlRef.current
+    ) {
+      setFallbackUrlError(null);
+      return true;
+    }
     if (!url) {
       setFallbackUrlError('Please enter a redirect URL for bots.');
       return false;

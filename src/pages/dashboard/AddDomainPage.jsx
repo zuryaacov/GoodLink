@@ -242,6 +242,11 @@ const AddDomainPage = () => {
   };
 
   const handleUpdateRootRedirectOnly = async (name, redirect) => {
+    // If we're editing an existing domain and the root redirect wasn't changed, skip validation/update
+    if (savedDomainId && (redirect || '').trim() === (rootRedirect || '').trim()) {
+      return;
+    }
+
     const validation = validateDomain(name, {
       allowSubdomains: true,
       allowPunycode: true,
