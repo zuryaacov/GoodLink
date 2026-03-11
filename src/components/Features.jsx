@@ -51,7 +51,7 @@ const Features = () => {
   return (
     <section
       id="features"
-      className="scroll-mt-20 py-20 px-6 md:px-20 bg-background-light dark:bg-background-dark relative"
+      className="scroll-mt-20 py-20 px-6 md:px-20 bg-white relative"
     >
       <div className="mx-auto max-w-[1200px] flex flex-col gap-16">
         {/* Headline for Features */}

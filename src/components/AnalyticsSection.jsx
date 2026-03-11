@@ -4,7 +4,7 @@ const AnalyticsSection = () => {
   return (
     <section
       id="resources"
-      className="scroll-mt-20 py-16 px-6 bg-slate-100 dark:bg-white border-y border-slate-200 dark:border-slate-200"
+      className="scroll-mt-20 py-16 px-6 bg-white border-y border-slate-200"
     >
       <div className="mx-auto max-w-[1200px] flex flex-col gap-10">
         <div className="flex justify-center">
