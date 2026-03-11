@@ -457,6 +457,17 @@ const AddDomainPage = () => {
               } else {
                 await handleRegister(name, redirect);
               }
+              navigate('/dashboard/domains', {
+                state: {
+                  toast: {
+                    type: 'success',
+                    title: savedDomainId ? 'Domain updated' : 'Domain added',
+                    message: savedDomainId
+                      ? 'Your custom domain was updated successfully.'
+                      : 'Your new custom domain was added successfully.',
+                  },
+                },
+              });
             } catch (e) {
               setSaveError(e.message);
               throw e;
