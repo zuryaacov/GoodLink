@@ -111,9 +111,7 @@ export default function DomainWizardOnePerPage({
       setLocalError(null);
       try {
         await onRegister(domainName, rootRedirect);
-        if (isEdit) {
-          onBack?.();
-        } else {
+        if (!isEdit) {
           setStepIndex(2);
           window.scrollTo({ top: 0, behavior: 'smooth' });
         }
@@ -128,7 +126,8 @@ export default function DomainWizardOnePerPage({
       return;
     }
     if (currentStep.id === 'verify') {
-      onBack?.();
+      // Navigation after verify is handled by onVerify (in parent) when verification succeeds.
+      return;
     }
   };
 
