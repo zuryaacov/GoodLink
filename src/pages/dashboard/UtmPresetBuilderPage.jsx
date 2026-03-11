@@ -106,13 +106,30 @@ const UtmPresetBuilderPage = () => {
     if (id) {
       const { error } = await supabase.from('utm_presets').update(payload).eq('id', id);
       if (error) throw error;
+      navigate('/dashboard/utm-presets', {
+        state: {
+          toast: {
+            type: 'success',
+            title: 'UTM preset updated',
+            message: 'Your UTM preset was updated successfully.',
+          },
+        },
+      });
     } else {
       const { error } = await supabase
         .from('utm_presets')
         .insert([{ ...payload, user_id: user.id }]);
       if (error) throw error;
+      navigate('/dashboard/utm-presets', {
+        state: {
+          toast: {
+            type: 'success',
+            title: 'UTM preset created',
+            message: 'Your new UTM preset was created successfully.',
+          },
+        },
+      });
     }
-    navigate('/dashboard/utm-presets');
   };
 
   if (initialLoading || (id && !initialData)) {

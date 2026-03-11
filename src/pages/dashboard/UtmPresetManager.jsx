@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Lock } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import SubscriptionCancelledScreen from '../../components/dashboard/SubscriptionCancelledScreen';
 import Modal from '../../components/common/Modal';
 import { Copy } from 'lucide-react';
+import { useToast } from '../../components/common/ToastProvider.jsx';
 
 const PLATFORMS = {
   meta: { name: 'Meta (FB/IG)', colorClass: 'text-blue-400 bg-blue-400/10' },
@@ -17,6 +18,7 @@ const PLATFORMS = {
 
 const UtmPresetManager = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [presets, setPresets] = useState([]);
   const [links, setLinks] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -34,11 +36,21 @@ const UtmPresetManager = () => {
   });
 
   const [openMenuPresetId, setOpenMenuPresetId] = useState(null);
+  const { showToast } = useToast();
 
   useEffect(() => {
     fetchPlanAndPresets();
     fetchLinks();
   }, []);
+
+  // Show toast after returning from builder (create/update)
+  useEffect(() => {
+    if (location.state && location.state.toast) {
+      showToast(location.state.toast);
+      // Clear state so it doesn't show again on refresh/back
+      navigate(location.pathname, { replace: true });
+    }
+  }, [location.state, location.pathname, navigate, showToast]);
 
   const fetchPlanAndPresets = async () => {
     try {
