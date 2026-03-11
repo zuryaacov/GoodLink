@@ -384,7 +384,15 @@ const AddDomainPage = () => {
         setDnsRecords(result.dns_records);
       }
       if (result.is_active) {
-        navigate('/dashboard/domains');
+        navigate('/dashboard/domains', {
+          state: {
+            toast: {
+              type: 'success',
+              title: id ? 'Domain updated' : 'Domain added',
+              message: 'Your custom domain is active and verified.',
+            },
+          },
+        });
       } else {
         const statusMessage = result.ssl_status
           ? `Status: ${result.ssl_status}`

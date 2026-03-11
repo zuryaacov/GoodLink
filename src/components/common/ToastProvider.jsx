@@ -9,7 +9,7 @@ export const ToastProvider = ({ children }) => {
 
   const showToast = useCallback((toast) => {
     const id = ++idCounter;
-    const duration = toast.duration ?? 4000;
+    const duration = toast.duration ?? 9000;
 
     setToasts((prev) => [
       ...prev,

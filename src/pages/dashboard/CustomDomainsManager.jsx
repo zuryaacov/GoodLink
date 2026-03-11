@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Lock, Zap, ArrowRight, Globe, BarChart3 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import Modal from '../../components/common/Modal';
 import SubscriptionCancelledScreen from '../../components/dashboard/SubscriptionCancelledScreen';
+import { useToast } from '../../components/common/ToastProvider.jsx';
 
 const CustomDomainsManager = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [domains, setDomains] = useState([]);
   const [loading, setLoading] = useState(true);
   const [planType, setPlanType] = useState(null); // null = still loading, don't show paywall yet
@@ -15,6 +17,7 @@ const CustomDomainsManager = () => {
   const [dnsLoadingByDomainId, setDnsLoadingByDomainId] = useState({});
 
   const workerUrl = import.meta.env.VITE_WORKER_URL || 'https://glynk.to';
+  const { showToast } = useToast();
 
   // Modal states for errors/alerts
   const [modalState, setModalState] = useState({
@@ -42,6 +45,14 @@ const CustomDomainsManager = () => {
   useEffect(() => {
     fetchDomains();
   }, []);
+
+  // Show toast after returning from AddDomainPage (create/update/verify)
+  useEffect(() => {
+    if (location.state && location.state.toast) {
+      showToast(location.state.toast);
+      navigate(location.pathname, { replace: true });
+    }
+  }, [location.state, location.pathname, navigate, showToast]);
 
   const fetchDomainRecords = async (domain) => {
     if (!domain?.cloudflare_hostname_id) return;
@@ -195,6 +206,11 @@ const CustomDomainsManager = () => {
 
       setDeleteModalState({ isOpen: false, domainId: null, domainName: '', isLoading: false });
       fetchDomains();
+      showToast({
+        type: 'success',
+        title: 'Domain deleted',
+        message: 'The custom domain was removed successfully.',
+      });
     } catch (error) {
       console.error('Error deleting domain:', error);
       setDeleteModalState((prev) => ({ ...prev, isLoading: false }));

@@ -5,6 +5,7 @@ import Modal from '../../components/common/Modal';
 import { updateLinkInRedis, deleteLinkFromRedis } from '../../lib/redisCache';
 import { LayoutGrid, Folder, ChevronRight, Home, LinkIcon } from 'lucide-react';
 import SubscriptionCancelledScreen from '../../components/dashboard/SubscriptionCancelledScreen';
+import { useToast } from '../../components/common/ToastProvider.jsx';
 import QRCode from 'qrcode-svg';
 import qrCodeIcon from '../../assets/qr-code-icon.svg';
 
@@ -41,6 +42,7 @@ const SPACE_NAME_REGEX = /^[A-Za-z0-9 !@#$%^&*()\-\+=}{\[\]]+$/;
 const LinkManager = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
+  const { showToast } = useToast();
   const [userId, setUserId] = useState(null);
   const [planType, setPlanType] = useState(null);
   const [subscriptionStatus, setSubscriptionStatus] = useState(null);
@@ -587,6 +589,11 @@ const LinkManager = () => {
       }
       setDeleteLinkModal({ isOpen: false, link: null, isLoading: false });
       fetchData();
+      showToast({
+        type: 'success',
+        title: 'Link deleted',
+        message: 'The link was removed successfully.',
+      });
     } catch (err) {
       console.error('Error deleting link:', err);
       setDeleteLinkModal((prev) => ({ ...prev, isLoading: false }));

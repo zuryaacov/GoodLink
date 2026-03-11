@@ -114,6 +114,15 @@ const PixelBuilderPage = () => {
         original_url: window.location.href,
         capi_json: { id, ...pixelData },
       });
+      navigate('/dashboard/pixels', {
+        state: {
+          toast: {
+            type: 'success',
+            title: 'CAPI updated',
+            message: 'Your CAPI profile was updated successfully.',
+          },
+        },
+      });
     } else {
       const { data: inserted, error } = await supabase
         .from('pixels')
@@ -137,6 +146,15 @@ const PixelBuilderPage = () => {
         original_url: window.location.href,
         capi_json: { id: savedPixelId, ...pixelData },
       });
+      navigate('/dashboard/pixels', {
+        state: {
+          toast: {
+            type: 'success',
+            title: 'CAPI created',
+            message: 'Your new CAPI profile was created successfully.',
+          },
+        },
+      });
     }
 
     try {
@@ -144,7 +162,6 @@ const PixelBuilderPage = () => {
     } catch (redisErr) {
       console.warn('⚠️ [PixelBuilder] Redis refresh:', redisErr);
     }
-    navigate('/dashboard/pixels');
   };
 
   if (initialLoading || (id && !initialData)) {

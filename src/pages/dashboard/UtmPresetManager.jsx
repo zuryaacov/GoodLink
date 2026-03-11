@@ -231,6 +231,11 @@ const UtmPresetManager = () => {
             return;
           }
           await fetchPlanAndPresets();
+          showToast({
+            type: 'success',
+            title: 'UTM preset deleted',
+            message: 'The preset was removed successfully.',
+          });
           setModalState({
             isOpen: false,
             type: 'alert',

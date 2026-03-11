@@ -1,14 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Lock, Zap, ArrowRight, Globe, BarChart3 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import Modal from '../../components/common/Modal';
 import SubscriptionCancelledScreen from '../../components/dashboard/SubscriptionCancelledScreen';
 import outbrainLogo from '../../assets/id-bNajMAc_1769618145922.svg';
 import taboolaLogo from '../../assets/idRS-vCmxj_1769618141092.svg';
+import { useToast } from '../../components/common/ToastProvider.jsx';
 
 const PixelManager = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [pixels, setPixels] = useState([]);
   const [loading, setLoading] = useState(true);
   const [planType, setPlanType] = useState(null); // null = still loading, don't show paywall yet
@@ -34,10 +36,19 @@ const PixelManager = () => {
 
   // 3-dots menu open for pixel id
   const [openMenuPixelId, setOpenMenuPixelId] = useState(null);
+  const { showToast } = useToast();
 
   useEffect(() => {
     fetchPixels();
   }, []);
+
+  // Show toast after returning from CAPI builder (create/update)
+  useEffect(() => {
+    if (location.state && location.state.toast) {
+      showToast(location.state.toast);
+      navigate(location.pathname, { replace: true });
+    }
+  }, [location.state, location.pathname, navigate, showToast]);
 
   const fetchPixels = async () => {
     try {
@@ -147,6 +158,11 @@ const PixelManager = () => {
 
       setDeleteModalState({ isOpen: false, pixelId: null, pixelName: '', isLoading: false });
       fetchPixels();
+      showToast({
+        type: 'success',
+        title: 'CAPI deleted',
+        message: 'The CAPI profile was removed successfully.',
+      });
     } catch (error) {
       console.error('Error deleting CAPI profile:', error);
       setDeleteModalState((prev) => ({ ...prev, isLoading: false }));
