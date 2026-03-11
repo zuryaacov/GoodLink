@@ -389,6 +389,13 @@ const LinkBuilderPage = () => {
           });
         }
 
+        // Toast notification for successful link update
+        showToast({
+          type: 'success',
+          title: 'Link updated successfully',
+          message: 'Your changes have been saved.',
+        });
+
         setModalState({
           isOpen: true,
           type: 'success',
