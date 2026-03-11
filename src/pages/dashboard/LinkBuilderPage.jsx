@@ -12,6 +12,7 @@ import {
 import { ArrowLeft } from 'lucide-react';
 import LinkWizardOnePerPage from '../../components/dashboard/LinkWizardOnePerPage';
 import Modal from '../../components/common/Modal';
+import { useToast } from '../../components/common/ToastProvider.jsx';
 import { logBackofficeEvent } from '../../lib/backofficeLogger';
 
 const LinkBuilderPage = () => {
@@ -27,6 +28,7 @@ const LinkBuilderPage = () => {
   const [planType, setPlanType] = useState('free');
   const wizardRef = useRef(null);
   const [initialLoading, setInitialLoading] = useState(!!linkIdToLoad);
+  const { showToast } = useToast();
 
   const getLinksReturnPath = (spaceIdOverride = null) => {
     const effectiveSpaceId = spaceIdOverride || formData.spaceId || spaceIdFromQuery || null;
@@ -525,6 +527,14 @@ const LinkBuilderPage = () => {
           console.error('Failed to copy to clipboard:', err);
         }
 
+        // Toast notification for successful link creation
+        showToast({
+          type: 'success',
+          title: 'Link created successfully',
+          message: 'Your short link was created and copied to the clipboard.',
+        });
+
+        // Existing success modal (kept for now)
         setModalState({
           isOpen: true,
           type: 'success',

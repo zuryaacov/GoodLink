@@ -4,6 +4,7 @@ import { BrowserRouter } from 'react-router-dom'
 import * as Sentry from '@sentry/react'
 import './index.css'
 import App from './App.jsx'
+import { ToastProvider } from './components/common/ToastProvider.jsx'
 
 // Initialize Sentry
 Sentry.init({
@@ -22,7 +23,9 @@ Sentry.init({
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <BrowserRouter>
-      <App />
+      <ToastProvider>
+        <App />
+      </ToastProvider>
     </BrowserRouter>
   </StrictMode>,
 )
