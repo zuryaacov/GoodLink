@@ -537,8 +537,8 @@ const Analytics = () => {
                       key={click.id}
                       className="border-b border-slate-200 transition-colors hover:bg-slate-50 last:border-b-0"
                     >
-                      <td className="px-6 py-4 max-w-[320px]">
-                        <span className="block text-[#1b1b1b] font-medium break-all">
+                      <td className="px-6 py-4 max-w-0 md:max-w-[320px]">
+                        <span className="block text-[#1b1b1b] font-medium break-words">
                           {click.full_url || '—'}
                         </span>
                       </td>

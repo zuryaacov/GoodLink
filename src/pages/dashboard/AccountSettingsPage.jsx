@@ -623,7 +623,7 @@ export default function AccountSettingsPage() {
             {!showPasswordChange ? (
               <button
                 onClick={() => setShowPasswordChange(true)}
-                className="flex items-center gap-2 text-slate-300 hover:text-[#1b1b1b] transition-colors border border-slate-200 hover:border-slate-500 rounded-lg px-4 py-2"
+                className="flex items-center gap-2 bg-[#6358de] hover:bg-[#5348c7] text-white transition-colors border border-transparent rounded-lg px-4 py-2 font-semibold shadow-md shadow-[#6358de]/30"
               >
                 Change Password
               </button>
