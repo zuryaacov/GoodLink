@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Check } from 'lucide-react';
 import { checkForMaliciousInput, sanitizeInput } from '../../lib/inputSanitization';
 import Modal from '../../components/common/Modal';
+import { useToast } from '../../components/common/ToastProvider.jsx';
 
 const PLAN_FEATURES = {
   free: {
@@ -84,6 +85,8 @@ export default function AccountSettingsPage() {
 
   // Cancel subscription confirmation modal
   const [showCancelConfirmModal, setShowCancelConfirmModal] = useState(false);
+
+  const { showToast } = useToast();
 
   useEffect(() => {
     fetchUserData();
@@ -173,6 +176,8 @@ export default function AccountSettingsPage() {
 
       if (profileError) throw profileError;
 
+      let didChangePassword = false;
+
       // 4. Update Password (if requested)
       if (showPasswordChange && newPassword) {
         setPasswordError(null);
@@ -248,9 +253,20 @@ export default function AccountSettingsPage() {
         setShowCurrentPassword(false);
         setShowNewPassword(false);
         setShowConfirmPassword(false);
+        didChangePassword = true;
         setSuccess('Password updated successfully!');
+        showToast({
+          type: 'success',
+          title: 'Password changed',
+          message: 'Your password was updated successfully.',
+        });
       } else {
         setSuccess('Profile updated successfully!');
+        showToast({
+          type: 'success',
+          title: 'Profile updated',
+          message: 'Your personal details were saved.',
+        });
       }
       setTimeout(() => setSuccess(null), 3000);
 
@@ -287,6 +303,11 @@ export default function AccountSettingsPage() {
       setShowCancelConfirmModal(false);
       setSuccess('Subscription marked as canceled.');
       setTimeout(() => setSuccess(null), 5000);
+      showToast({
+        type: 'success',
+        title: 'Subscription cancelled',
+        message: 'Your subscription has been marked as cancelled.',
+      });
       fetchUserData();
 
       // If user is on a paid plan (not free trial / free), also open Lemon Squeezy customer portal
