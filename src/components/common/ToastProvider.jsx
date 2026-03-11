@@ -47,7 +47,15 @@ export const ToastProvider = ({ children }) => {
                   : 'border-emerald-200'
             }`}
             >
-            <span className="material-symbols-outlined text-2xl mt-0.5">
+            <span
+              className={`material-symbols-outlined text-2xl mt-0.5 ${
+                toast.type === 'error'
+                  ? 'text-red-500'
+                  : toast.type === 'warning'
+                    ? 'text-amber-500'
+                    : 'text-emerald-500'
+              }`}
+            >
               {toast.type === 'error'
                 ? 'error'
                 : toast.type === 'warning'
