@@ -36,6 +36,13 @@ const AuthPage = () => {
     }
   }, []);
 
+  // Also scroll to top when toggling between login/signup views
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
+    }
+  }, [view]);
+
   // Plan checkout URLs mapping
   const planCheckoutUrls = {
     start:
