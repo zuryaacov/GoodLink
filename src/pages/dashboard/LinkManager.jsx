@@ -816,6 +816,7 @@ const LinkManager = () => {
         : 'Groups'
     : 'Link Manager';
   const showBackArrow = isFoldersEnabled && !!currentSpaceId;
+  const showHomeButton = isFoldersEnabled && !currentSpaceId;
 
   return (
     <div className="flex flex-col gap-6 md:gap-8 w-full max-w-7xl mx-auto">
@@ -842,14 +843,22 @@ const LinkManager = () => {
                 <button
                   type="button"
                   onClick={
-                    showBackArrow ? () => goToSpace(currentSpace?.parent_id || null) : undefined
+                    showBackArrow
+                      ? () => goToSpace(currentSpace?.parent_id || null)
+                      : showHomeButton
+                        ? () => goToSpace(null)
+                        : undefined
                   }
                   className={`flex items-center justify-center p-2.5 rounded-2xl border border-slate-200 text-gray-400 hover:bg-slate-200 hover:text-[#1b1b1b] transition-all active:scale-90 flex-shrink-0 ${
-                    showBackArrow ? '' : 'opacity-0 pointer-events-none'
+                    showBackArrow || showHomeButton ? '' : 'opacity-0 pointer-events-none'
                   }`}
-                  aria-label="Back"
+                  aria-label={showBackArrow ? 'Back' : 'Home'}
                 >
-                  <span className="material-symbols-outlined text-2xl">chevron_left</span>
+                  {showBackArrow ? (
+                    <span className="material-symbols-outlined text-2xl">chevron_left</span>
+                  ) : (
+                    <Home className="w-6 h-6" strokeWidth={2} />
+                  )}
                 </button>
               )}
               <h1 className="text-2xl md:text-3xl font-bold text-[#1b1b1b] truncate">{pageTitle}</h1>
