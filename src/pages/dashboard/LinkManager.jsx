@@ -838,11 +838,15 @@ const LinkManager = () => {
         >
           <div className="flex flex-col gap-2 flex-1 min-w-0">
             <div className="flex items-center gap-3">
-              {showBackArrow && (
+              {isFoldersEnabled && (
                 <button
                   type="button"
-                  onClick={() => goToSpace(currentSpace?.parent_id || null)}
-                  className="flex items-center justify-center p-2.5 rounded-2xl border border-slate-200 text-gray-400 hover:bg-slate-200 hover:text-[#1b1b1b] transition-all active:scale-90 flex-shrink-0"
+                  onClick={
+                    showBackArrow ? () => goToSpace(currentSpace?.parent_id || null) : undefined
+                  }
+                  className={`flex items-center justify-center p-2.5 rounded-2xl border border-slate-200 text-gray-400 hover:bg-slate-200 hover:text-[#1b1b1b] transition-all active:scale-90 flex-shrink-0 ${
+                    showBackArrow ? '' : 'opacity-0 pointer-events-none'
+                  }`}
                   aria-label="Back"
                 >
                   <span className="material-symbols-outlined text-2xl">chevron_left</span>
