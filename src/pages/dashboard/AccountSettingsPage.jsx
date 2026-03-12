@@ -528,7 +528,7 @@ export default function AccountSettingsPage() {
                 </div>
               </div>
 
-              {!isCancelled && (
+              {!isCancelled && !isFreeTrial && (
                 <button
                   type="button"
                   onClick={() => setShowCancelConfirmModal(true)}
