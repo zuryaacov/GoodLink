@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import Modal from '../../components/common/Modal';
 import { updateLinkInRedis, deleteLinkFromRedis } from '../../lib/redisCache';
-import { LayoutGrid, Folder, ChevronRight, Home, LinkIcon } from 'lucide-react';
+import { LayoutGrid, Folder, ChevronRight, LinkIcon } from 'lucide-react';
 import SubscriptionCancelledScreen from '../../components/dashboard/SubscriptionCancelledScreen';
 import { useToast } from '../../components/common/ToastProvider.jsx';
 import QRCode from 'qrcode-svg';
@@ -849,16 +849,14 @@ const LinkManager = () => {
                         ? () => goToSpace(null)
                         : undefined
                   }
-                  className={`flex items-center justify-center p-2.5 rounded-2xl border border-slate-200 text-gray-400 hover:bg-slate-200 hover:text-[#1b1b1b] transition-all active:scale-90 flex-shrink-0 ${
+                  className={`flex items-center justify-center w-11 h-11 rounded-2xl border border-slate-200 text-gray-400 hover:bg-slate-200 hover:text-[#1b1b1b] transition-all active:scale-90 flex-shrink-0 ${
                     showBackArrow || showHomeButton ? '' : 'opacity-0 pointer-events-none'
                   }`}
                   aria-label={showBackArrow ? 'Back' : 'Home'}
                 >
-                  {showBackArrow ? (
-                    <span className="material-symbols-outlined text-2xl">chevron_left</span>
-                  ) : (
-                    <Home className="w-6 h-6" strokeWidth={2} />
-                  )}
+                  <span className="material-symbols-outlined text-2xl">
+                    {showBackArrow ? 'chevron_left' : 'home'}
+                  </span>
                 </button>
               )}
               <h1 className="text-2xl md:text-3xl font-bold text-[#1b1b1b] truncate">{pageTitle}</h1>
