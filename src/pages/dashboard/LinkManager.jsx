@@ -949,7 +949,7 @@ const LinkManager = () => {
                         <span>{kindLabel}</span>
                       </div>
                     </div>
-                    <div className="mr-12 bg-white p-3 rounded-2xl text-[#6358de] shadow-[0_0_15px_rgba(99,88,222,0.1)] border border-slate-200 transition-all">
+                    <div className="mr-12 bg-card-bg p-3 rounded-2xl text-[#6358de] shadow-[0_0_15px_rgba(99,88,222,0.1)] border border-card-border transition-all">
                       <Folder size={24} fill="currentColor" fillOpacity={0.2} />
                     </div>
                   </div>
@@ -1070,7 +1070,7 @@ const LinkManager = () => {
                       {truncateText(link.target_url, 60)}
                     </p>
                   </div>
-                  <div className="mr-12 bg-[#0b996f]/10 p-4 rounded-3xl text-[#0b996f] shadow-[0_0_20px_rgba(11,153,111,0.15)] -rotate-3">
+                  <div className="mr-12 bg-card-bg p-4 rounded-3xl text-[#0b996f] shadow-[0_0_20px_rgba(11,153,111,0.15)] -rotate-3 border border-card-border">
                     <LinkIcon size={24} />
                   </div>
                 </div>
