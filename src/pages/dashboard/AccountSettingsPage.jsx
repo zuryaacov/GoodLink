@@ -740,7 +740,7 @@ export default function AccountSettingsPage() {
                       newPassword !== confirmPassword ||
                       newPassword.length < 8
                     }
-                    className="bg-[#135bec] text-[#1b1b1b] text-xs font-bold px-4 py-2 rounded-lg disabled:opacity-50"
+                    className="bg-[#6358de] hover:bg-[#5348c7] text-white text-xs font-bold px-4 py-2 rounded-lg disabled:opacity-50 transition-colors"
                   >
                     Update Password
                   </button>
