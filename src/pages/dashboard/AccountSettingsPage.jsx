@@ -544,11 +544,13 @@ export default function AccountSettingsPage() {
           </div>
         </div>
 
-        {/* Pricing cards (same layout and styling as homepage CTASection) */}
-        <div className="mt-12">
-          <h2 className="text-2xl font-bold text-[#1b1b1b] dark:text-[#1b1b1b] mb-6">Plans</h2>
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {SETTINGS_PLANS.map((plan) => {
+        {/* Pricing cards (same layout and styling as homepage CTASection).
+            Temporarily hidden for users on a 30-day free trial. */}
+        {!isFreeTrial && (
+          <div className="mt-12">
+            <h2 className="text-2xl font-bold text-[#1b1b1b] dark:text-[#1b1b1b] mb-6">Plans</h2>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              {SETTINGS_PLANS.map((plan) => {
               const planKey = planKeyFromName(plan.name);
               const isCurrentPlan = currentPlanKey != null && planKey === currentPlanKey;
               const planPriceNum = plan.priceNum;
@@ -557,60 +559,61 @@ export default function AccountSettingsPage() {
               if (isCurrentPlan) buttonLabel = 'Your current plan';
               else if (isDowngrade) buttonLabel = 'Switch to this plan';
 
-              return (
-                <motion.div
-                  key={plan.name}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className={`relative flex flex-col rounded-xl border-2 transition-all duration-300 w-full md:max-w-md md:mx-auto lg:max-w-none lg:mx-0 ${
-                    plan.highlighted
-                      ? 'border-[#c0ffa5] bg-[#c0ffa5]/10 shadow-2xl scale-105 lg:scale-110'
-                      : 'border-slate-200 dark:border-slate-200 bg-white dark:bg-white hover:border-[#c0ffa5]/50 hover:shadow-xl'
-                  }`}
-                >
-                  {plan.highlighted && (
-                    <span className="absolute -top-4 left-1/2 -translate-x-1/2 bg-[#c0ffa5] text-[#1b1b1b] text-xs font-black px-4 py-1.5 rounded-full uppercase tracking-wider z-10">
-                      Most Popular
-                    </span>
-                  )}
-                  <div className="p-8 flex flex-col gap-6">
-                    <div className={`-mx-8 -mt-8 px-8 pt-8 pb-6 ${plan.highlighted ? 'bg-[#0b996f]/15' : 'bg-[#0b996f]/15'}`}>
-                      <h3 className="text-slate-900 dark:text-[#1b1b1b] text-2xl font-black">{plan.name}</h3>
-                      <p className="text-slate-500 dark:text-[#1b1b1b] text-sm">{plan.description}</p>
-                      <div className="flex items-baseline gap-2 flex-wrap mt-4">
-                        {plan.originalPrice && (
-                          <span className="text-slate-500 dark:text-slate-400 text-5xl font-black line-through">${plan.originalPrice}</span>
-                        )}
-                        <span className="text-slate-900 dark:text-[#1b1b1b] text-5xl font-black">${plan.price}</span>
-                        <span className="text-slate-500 dark:text-[#1b1b1b] text-lg font-medium">/month</span>
+                return (
+                  <motion.div
+                    key={plan.name}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className={`relative flex flex-col rounded-xl border-2 transition-all duration-300 w-full md:max-w-md md:mx-auto lg:max-w-none lg:mx-0 ${
+                      plan.highlighted
+                        ? 'border-[#c0ffa5] bg-[#c0ffa5]/10 shadow-2xl scale-105 lg:scale-110'
+                        : 'border-slate-200 dark:border-slate-200 bg-white dark:bg-white hover:border-[#c0ffa5]/50 hover:shadow-xl'
+                    }`}
+                  >
+                    {plan.highlighted && (
+                      <span className="absolute -top-4 left-1/2 -translate-x-1/2 bg-[#c0ffa5] text-[#1b1b1b] text-xs font-black px-4 py-1.5 rounded-full uppercase tracking-wider z-10">
+                        Most Popular
+                      </span>
+                    )}
+                    <div className="p-8 flex flex-col gap-6">
+                      <div className={`-mx-8 -mt-8 px-8 pt-8 pb-6 ${plan.highlighted ? 'bg-[#0b996f]/15' : 'bg-[#0b996f]/15'}`}>
+                        <h3 className="text-slate-900 dark:text-[#1b1b1b] text-2xl font-black">{plan.name}</h3>
+                        <p className="text-slate-500 dark:text-[#1b1b1b] text-sm">{plan.description}</p>
+                        <div className="flex items-baseline gap-2 flex-wrap mt-4">
+                          {plan.originalPrice && (
+                            <span className="text-slate-500 dark:text-slate-400 text-5xl font-black line-through">${plan.originalPrice}</span>
+                          )}
+                          <span className="text-slate-900 dark:text-[#1b1b1b] text-5xl font-black">${plan.price}</span>
+                          <span className="text-slate-500 dark:text-[#1b1b1b] text-lg font-medium">/month</span>
+                        </div>
+                        <button
+                          type="button"
+                          disabled={isCurrentPlan}
+                          onClick={() => !isCurrentPlan && openCheckout(plan)}
+                          className={`mt-6 w-full py-4 px-6 rounded-lg font-bold text-base transition-all text-center ${
+                            isCurrentPlan
+                              ? 'bg-slate-200 text-slate-500 cursor-not-allowed'
+                              : 'bg-[#c0ffa5] hover:bg-[#b0ef95] text-[#1b1b1b] shadow-lg shadow-[#c0ffa5]/20'
+                          }`}
+                        >
+                          {buttonLabel}
+                        </button>
                       </div>
-                      <button
-                        type="button"
-                        disabled={isCurrentPlan}
-                        onClick={() => !isCurrentPlan && openCheckout(plan)}
-                        className={`mt-6 w-full py-4 px-6 rounded-lg font-bold text-base transition-all text-center ${
-                          isCurrentPlan
-                            ? 'bg-slate-200 text-slate-500 cursor-not-allowed'
-                            : 'bg-[#c0ffa5] hover:bg-[#b0ef95] text-[#1b1b1b] shadow-lg shadow-[#c0ffa5]/20'
-                        }`}
-                      >
-                        {buttonLabel}
-                      </button>
+                      <ul className="flex flex-col gap-4 mt-4">
+                        {plan.features.map((feature, i) => (
+                          <li key={i} className="flex items-start gap-3">
+                            <Check className="w-5 h-5 mt-0.5 flex-shrink-0 text-[#6358de] font-bold stroke-[2.5]" />
+                            <span className="text-slate-700 dark:text-slate-300 text-base font-bold leading-relaxed">{feature}</span>
+                          </li>
+                        ))}
+                      </ul>
                     </div>
-                    <ul className="flex flex-col gap-4 mt-4">
-                      {plan.features.map((feature, i) => (
-                        <li key={i} className="flex items-start gap-3">
-                          <Check className="w-5 h-5 mt-0.5 flex-shrink-0 text-[#6358de] font-bold stroke-[2.5]" />
-                          <span className="text-slate-700 dark:text-slate-300 text-base font-bold leading-relaxed">{feature}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                </motion.div>
-              );
-            })}
+                  </motion.div>
+                );
+              })}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Security (below Pricing) - Only for Email+Password Users */}
         {isEmailUser && (
