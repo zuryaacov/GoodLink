@@ -20,8 +20,79 @@
 
 import isFQDN from 'validator/lib/isFQDN';
 
-/** Hosts that cannot be used (glynk.to, goodlink.ai in any form including www) */
-const BLOCKED_REDIRECT_HOSTS = ['glynk.to', 'goodlink.ai'];
+/**
+ * Hosts that cannot be used as redirect/target URLs.
+ * This includes GoodLink's own infrastructure plus common public URL shorteners.
+ * All subdomains of these hosts are also blocked.
+ */
+const BLOCKED_REDIRECT_HOSTS = [
+  // GoodLink / internal
+  'glynk.to',
+  'goodlink.ai',
+
+  // Bitly
+  'bit.ly',
+  'bitly.com',
+  'j.mp',
+  'bitly.is',
+  'buff.ly',
+
+  // Dub.co
+  'dub.co',
+  'dub.sh',
+  'd.to',
+
+  // Kutt.it
+  'kutt.it',
+
+  // Shlink
+  'shlink.io',
+
+  // YOURLS
+  'yourls.org',
+
+  // BL.INK
+  'bl.ink',
+  'blink.pro',
+
+  // Sniply
+  'snip.ly',
+  'snpli.com',
+
+  // Cleanuri
+  'cleanuri.com',
+
+  // Linktree
+  'linktr.ee',
+  'atlo.link',
+
+  // TinyURL
+  'tinyurl.com',
+  'tiny.one',
+
+  // T.ly
+  't.ly',
+  'link.t.ly',
+  'weather.t.ly',
+
+  // Rebrandly
+  'rebrandly.com',
+  'rebrand.ly',
+  'rb.gy',
+  'brand.link',
+
+  // Is.gd
+  'is.gd',
+  'v.gd',
+
+  // Cuttly
+  'cutt.ly',
+  'cutt.us',
+
+  // ShortURL.at
+  'shorturl.at',
+  'tiny-url.at',
+];
 
 /**
  * Validate URL structure and format
@@ -144,7 +215,7 @@ export function validateUrl(urlString) {
     };
   }
 
-  // Check 7b: Block glynk.to and goodlink.ai (any form: www, subdomain)
+  // Check 7b: Block GoodLink infra + known URL shorteners (any form: www, subdomain)
   const normalizedHost = hostname.toLowerCase().replace(/^www\./, '');
   if (
     BLOCKED_REDIRECT_HOSTS.some(
@@ -153,7 +224,8 @@ export function validateUrl(urlString) {
   ) {
     return {
       isValid: false,
-      error: 'This URL cannot point to glynk.to or goodlink.ai. Please use a different URL.',
+      error:
+        'This URL points to a blocked URL shortener. Please use a direct destination URL instead.',
     };
   }
 
@@ -468,7 +540,7 @@ function normalizeHostForRedirectComparison(urlOrHost) {
 }
 
 /**
- * Check if host is a blocked redirect destination (glynk.to, goodlink.ai or their subdomains).
+ * Check if host is a blocked redirect destination (GoodLink infra or known URL shorteners).
  * @param {string} host - Normalized host (e.g. from normalizeHostForRedirectComparison)
  * @returns {boolean}
  */
@@ -494,7 +566,8 @@ export function validateBotRedirectUrl(redirectUrl, targetUrl) {
   if (isBlockedRedirectHost(redirectHost)) {
     return {
       isValid: false,
-      error: 'Redirect cannot point to glynk.to or goodlink.ai. Please use a different URL.',
+      error:
+        'Redirect cannot point to a blocked URL shortener. Please use a direct destination URL.',
     };
   }
 
