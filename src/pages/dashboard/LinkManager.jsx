@@ -903,7 +903,7 @@ const LinkManager = () => {
               onClick={() => goToSpace(null)}
               className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 transition-colors"
             >
-              <Home size={13} />
+              <span className="material-symbols-outlined text-sm">home</span>
               Root
             </button>
             {breadcrumbs.map((b) => (
