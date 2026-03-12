@@ -193,17 +193,244 @@ export function TermsContent() {
         </p>
       </section>
 
+      {/* 2–6: Prohibited content, review rights, disclosures, GDPR, liability */}
       <section id="section-2">
         <h2 className="text-3xl font-black mb-8 mt-16 border-b pb-4 border-slate-100">
-          2. Data Ownership
+          2. Prohibited Content and Unlawful Use
         </h2>
-        <h3 className="text-xl font-bold mt-8 mb-4">2.1 Privacy Policy</h3>
+
+        <h3 className="text-xl font-bold mt-8 mb-4">2.1 General Prohibition</h3>
+        <p>
+          Subscribers are strictly prohibited from creating, distributing, or using shortened links
+          that redirect to any content, service, or destination that is unlawful, harmful,
+          deceptive, or otherwise objectionable, including but not limited to the categories set
+          forth in Sections 2.1(a)–(d) below.
+        </p>
+
+        <h4 className="text-lg font-bold mt-6 mb-2">2.1(a) Illegal &amp; Fraudulent Activity</h4>
+        <ul className="list-disc pl-6 space-y-1 text-sm">
+          <li>Phishing, spoofing, or any form of identity theft or credential harvesting;</li>
+          <li>Malware, spyware, ransomware, viruses, or any malicious code;</li>
+          <li>Fraud, scams, Ponzi schemes, pyramid schemes, or deceptive financial instruments;</li>
+          <li>Unauthorized access to computer systems or networks (hacking);</li>
+          <li>Money laundering or financing of terrorism;</li>
+          <li>Sale of counterfeit goods or intellectual property infringement;</li>
+          <li>Unlicensed pharmaceutical sales or prescription drug distribution.</li>
+        </ul>
+
+        <h4 className="text-lg font-bold mt-6 mb-2">2.1(b) Harmful &amp; Exploitative Content</h4>
+        <ul className="list-disc pl-6 space-y-1 text-sm">
+          <li>Child sexual abuse material (CSAM) or any sexual content involving minors;</li>
+          <li>Non-consensual intimate imagery (&quot;revenge porn&quot;);</li>
+          <li>
+            Content that promotes, glorifies, or facilitates human trafficking or exploitation;
+          </li>
+          <li>
+            Content that incites violence, hatred, or discrimination based on race, ethnicity,
+            religion, gender, sexual orientation, disability, or national origin.
+          </li>
+        </ul>
+
+        <h4 className="text-lg font-bold mt-6 mb-2">2.1(c) Regulated &amp; Unlicensed Industries</h4>
+        <ul className="list-disc pl-6 space-y-1 text-sm">
+          <li>
+            Online gambling or sports betting platforms operating without a valid license in the
+            applicable jurisdiction;
+          </li>
+          <li>
+            Pornographic or adult content of any kind, unless the Subscriber holds all required
+            legal certifications and has received prior written approval from GoodLink.ai;
+          </li>
+          <li>Unlicensed firearms, weapons, ammunition, or explosives;</li>
+          <li>Controlled substances, narcotics, or illegal drugs;</li>
+          <li>Tobacco and e-cigarette products directed at minors.</li>
+        </ul>
+
+        <h4 className="text-lg font-bold mt-6 mb-2">2.1(d) Misleading &amp; Manipulative Practices</h4>
+        <ul className="list-disc pl-6 space-y-1 text-sm">
+          <li>
+            Clickbait or deceptive advertising that materially misrepresents the destination URL;
+          </li>
+          <li>Fake news, deliberate disinformation, or coordinated inauthentic behavior;</li>
+          <li>
+            Spam or unsolicited commercial communications in violation of applicable anti-spam
+            laws (including CAN-SPAM, CASL, and the EU ePrivacy Directive);
+          </li>
+          <li>
+            Cloaking, link hijacking, or any technique designed to conceal the true destination of a
+            link from advertising platforms or end users.
+          </li>
+        </ul>
+      </section>
+
+      <section id="section-3">
+        <h2 className="text-3xl font-black mb-8 mt-16 border-b pb-4 border-slate-100">
+          3. Right to Review, Reject, and Terminate
+        </h2>
+        <h3 className="text-xl font-bold mt-8 mb-4">3.1 Enforcement Rights</h3>
+        <p>
+          GoodLink.ai reserves the sole and absolute right, at its discretion and without prior
+          notice, to:
+        </p>
+        <ul className="list-disc pl-6 space-y-1 text-sm my-2">
+          <li>
+            Decline to activate, approve, or process any link that GoodLink.ai reasonably
+            determines, in its sole judgment, to be in violation of these Terms, applicable law, or
+            contrary to the standards of any third-party advertising platform integrated within the
+            Service;
+          </li>
+          <li>
+            Immediately suspend, disable, or permanently delete any shortened link that is found, at
+            any time, to be in violation of these Terms; and
+          </li>
+          <li>
+            Terminate, without refund, the Subscriber&apos;s account and all associated links upon
+            discovery that the account has been used — directly or indirectly — to create,
+            distribute, or facilitate links to unlawful, prohibited, or otherwise non-compliant
+            content as described in Section 2.
+          </li>
+        </ul>
+        <h3 className="text-xl font-bold mt-8 mb-4">3.2 No Duty to Monitor</h3>
+        <p>
+          GoodLink.ai&apos;s exercise of the rights described in this Section shall not be
+          construed as an obligation to monitor all links, and GoodLink.ai expressly disclaims any
+          liability arising from prohibited links that were not identified prior to causing harm.
+        </p>
+      </section>
+
+      <section id="section-4">
+        <h2 className="text-3xl font-black mb-8 mt-16 border-b pb-4 border-slate-100">
+          4. Subscriber&apos;s Disclosure Obligations to End Users
+        </h2>
+        <h3 className="text-xl font-bold mt-8 mb-4">4.1 Mandatory Disclosure</h3>
+        <p>
+          Each Subscriber assumes full, sole, and non-transferable responsibility for ensuring that
+          every end user to whom the Subscriber distributes a GoodLink.ai-shortened URL is clearly,
+          conspicuously, and unambiguously informed of all of the following prior to or at the
+          moment of engagement with such link:
+        </p>
+        <ul className="list-disc pl-6 space-y-1 text-sm my-2">
+          <li>
+            That clicking the link will cause the end user&apos;s browser request — including, but
+            not limited to, IP address, device information, browser type and version, operating
+            system, referral source, timestamp, and any URL parameters (including UTM parameters) —
+            to be processed through GoodLink.ai&apos;s infrastructure before being forwarded to the
+            final destination URL;
+          </li>
+          <li>
+            That GoodLink.ai collects and retains the aforementioned technical data for the purpose
+            of analytics, fraud detection, bot filtering, and, where applicable, conversion tracking
+            via third-party advertising platforms (including Meta CAPI, Google Ads, TikTok Events
+            API, Snapchat CAPI, Outbrain, and Taboola);
+          </li>
+          <li>
+            That the Subscriber is an affiliate or advertiser and that the link constitutes a
+            commercial or promotional communication, in compliance with all applicable advertising
+            disclosure regulations, including the U.S. Federal Trade Commission (FTC) guidelines and
+            equivalent regulations in other jurisdictions.
+          </li>
+        </ul>
+        <h3 className="text-xl font-bold mt-8 mb-4">4.2 Breach</h3>
+        <p>
+          Failure by the Subscriber to provide the disclosures required under this Section 4 shall
+          constitute a material breach of these Terms and may result in immediate account
+          termination pursuant to Section 3.
+        </p>
+      </section>
+
+      <section id="section-5">
+        <h2 className="text-3xl font-black mb-8 mt-16 border-b pb-4 border-slate-100">
+          5. GDPR and European Data Protection Compliance
+        </h2>
+        <h3 className="text-xl font-bold mt-8 mb-4">5.1 Applicability</h3>
+        <p>
+          Where end users are located in the European Economic Area (EEA), the United Kingdom, or
+          Switzerland, the processing of personal data through the Service is subject to Regulation
+          (EU) 2016/679 (&quot;GDPR&quot;) and applicable national implementing legislation.
+        </p>
+        <h3 className="text-xl font-bold mt-8 mb-4">5.2 Controller Responsibilities</h3>
+        <p>
+          For the purposes of the GDPR, the Subscriber acts as the data controller in respect of end
+          users to whom the Subscriber directs traffic. GoodLink.ai acts as a data processor on
+          behalf of the Subscriber with respect to personal data processed solely for the purpose of
+          providing the Service. GoodLink.ai&apos;s processing activities are governed by a Data
+          Processing Agreement (&quot;DPA&quot;), which is incorporated into these Terms by
+          reference and is available upon request.
+        </p>
+        <h3 className="text-xl font-bold mt-8 mb-4">5.3 Lawful Basis</h3>
+        <p>
+          Subscribers are solely responsible for ensuring that a valid lawful basis exists under
+          Article 6 of the GDPR for the collection and processing of end user data, including where
+          required, obtaining freely given, specific, informed, and unambiguous consent from end
+          users prior to the use of tracking technologies (including pixels, conversion APIs, and
+          UTM parameters).
+        </p>
+        <h3 className="text-xl font-bold mt-8 mb-4">5.4 Required Disclosures</h3>
+        <p>
+          In addition to the obligations set forth in Section 4, Subscribers directing traffic from
+          EEA-based end users must ensure that their applicable privacy notice or cookie policy:
+        </p>
+        <ul className="list-disc pl-6 space-y-1 text-sm my-2">
+          <li>Identifies GoodLink.ai as a sub-processor or third-party data processor;</li>
+          <li>
+            Describes the categories of personal data collected via the redirect process and the
+            purposes for which such data is processed;
+          </li>
+          <li>
+            Specifies any international transfers of data, including transfers to the United
+            States, and the applicable transfer mechanism relied upon (e.g., Standard Contractual
+            Clauses under Article 46 GDPR);
+          </li>
+          <li>
+            Informs end users of their rights under Articles 15–22 of the GDPR, including the right
+            to access, rectification, erasure, restriction of processing, data portability, and the
+            right to object.
+          </li>
+        </ul>
+        <h3 className="text-xl font-bold mt-8 mb-4">5.5 Data Retention</h3>
+        <p>
+          GoodLink.ai retains analytics data for no longer than is necessary for the purposes for
+          which it was collected. Subscribers may request information regarding specific retention
+          periods by contacting GoodLink.ai&apos;s Data Protection Officer at dpo@goodlink.ai.
+        </p>
+      </section>
+
+      <section id="section-6">
+        <h2 className="text-3xl font-black mb-8 mt-16 border-b pb-4 border-slate-100">
+          6. Subscriber Liability and Indemnification
+        </h2>
+        <h3 className="text-xl font-bold mt-8 mb-4">6.1 Indemnity</h3>
+        <p>
+          The Subscriber agrees to indemnify, defend, and hold harmless GoodLink.ai, its officers,
+          directors, employees, agents, and successors from and against any and all claims, damages,
+          losses, penalties, fines, costs, and expenses (including reasonable legal fees) arising
+          out of or relating to:
+        </p>
+        <ul className="list-disc pl-6 space-y-1 text-sm my-2">
+          <li>The Subscriber&apos;s violation of any provision of these Terms;</li>
+          <li>
+            The Subscriber&apos;s failure to provide adequate disclosures to end users as required
+            by Sections 4 and 5; and
+          </li>
+          <li>
+            Any claim by an end user, regulatory authority, or third party resulting from the
+            content, nature, or destination of any link created by the Subscriber through the
+            Service.
+          </li>
+        </ul>
+      </section>
+
+      <section id="section-7">
+        <h2 className="text-3xl font-black mb-8 mt-16 border-b pb-4 border-slate-100">
+          7. Data Ownership
+        </h2>
+        <h3 className="text-xl font-bold mt-8 mb-4">7.1 Privacy Policy</h3>
         <p>
           By accessing or using GoodLink.ai, you acknowledge and agree to the terms of
           GoodLink&apos;s Privacy Policy, which is hereby incorporated by reference and forms
           an integral part of this Agreement.
         </p>
-        <h3 className="text-xl font-bold mt-8 mb-4">2.2 Shortlink Ownership</h3>
+        <h3 className="text-xl font-bold mt-8 mb-4">7.2 Shortlink Ownership</h3>
         <p>
           When using a default GoodLink.ai–owned domain (for example, glynk.to), GoodLink
           reserves the right, at its sole discretion, to reclaim any shortlink if necessary to
@@ -213,7 +440,7 @@ export function TermsContent() {
           discretion, reclaim any username it reasonably determines is being used in bad
           faith.
         </p>
-        <h3 className="text-xl font-bold mt-8 mb-4">2.3 Intellectual Property Rights</h3>
+        <h3 className="text-xl font-bold mt-8 mb-4">7.3 Intellectual Property Rights</h3>
         <p>
           You acknowledge and agree that the Services, including all content, features, and
           functionality—such as software, code, text, graphics, images, videos, audio,
@@ -246,9 +473,9 @@ export function TermsContent() {
 
       <section id="section-3">
         <h2 className="text-3xl font-black mb-8 mt-16 border-b pb-4 border-slate-100">
-          3. Invoices
+          8. Invoices
         </h2>
-        <h3 className="text-xl font-bold mt-8 mb-4">3.1 Fees for Services</h3>
+        <h3 className="text-xl font-bold mt-8 mb-4">8.1 Fees for Services</h3>
         <p>
           Clients utilizing GoodLink Links are required to pay the applicable subscription
           fees on a monthly or annual basis, as specified in their chosen plan.
@@ -273,7 +500,7 @@ export function TermsContent() {
 
       <section id="section-4">
         <h2 className="text-3xl font-black mb-8 mt-16 border-b pb-4 border-slate-100">
-          4. Service Termination
+          9. Service Termination
         </h2>
         <p>
           Either party may terminate this Agreement if the other party becomes insolvent, is
@@ -298,7 +525,7 @@ export function TermsContent() {
 
       <section id="section-5">
         <h2 className="text-3xl font-black mb-8 mt-16 border-b pb-4 border-slate-100">
-          5. Changes to These Terms
+          10. Changes to These Terms
         </h2>
         <p>
           GoodLink reserves the right, at its sole discretion, to amend, modify, or update
@@ -311,7 +538,7 @@ export function TermsContent() {
 
       <section id="section-6">
         <h2 className="text-3xl font-black mb-8 mt-16 border-b pb-4 border-slate-100">
-          6. Warranties
+          11. Warranties
         </h2>
         <p>Each party represents and warrants that:</p>
         <ul className="list-disc pl-6 space-y-2 my-4">
@@ -343,9 +570,9 @@ export function TermsContent() {
         </p>
       </section>
 
-      <section id="section-7">
+      <section id="section-7-disclaimer">
         <h2 className="text-3xl font-black mb-8 mt-16 border-b pb-4 border-slate-100">
-          7. Disclaimer
+          12. Disclaimer
         </h2>
         <p className="uppercase text-slate-700 font-medium">
           THE GOODLINK PLATFORM, INCLUDING GOODLINK LINKS AND ALL RELATED SERVICES, IS
@@ -364,9 +591,9 @@ export function TermsContent() {
         </p>
       </section>
 
-      <section id="section-8">
+      <section id="section-8-confidentiality">
         <h2 className="text-3xl font-black mb-8 mt-16 border-b pb-4 border-slate-100">
-          8. Confidentiality
+          13. Confidentiality
         </h2>
         <p>
           For purposes of this Agreement, &quot;Confidential Information&quot; means any
@@ -412,9 +639,9 @@ export function TermsContent() {
         </p>
       </section>
 
-      <section id="section-9">
+      <section id="section-9-indemnification">
         <h2 className="text-3xl font-black mb-8 mt-16 border-b pb-4 border-slate-100">
-          9. Indemnification
+          14. Indemnification
         </h2>
         <p>
           You agree to defend, indemnify, and hold harmless GoodLink, together with its
@@ -442,9 +669,9 @@ export function TermsContent() {
         </p>
       </section>
 
-      <section id="section-10">
+      <section id="section-10-liability">
         <h2 className="text-3xl font-black mb-8 mt-16 border-b pb-4 border-slate-100">
-          10. Limitation of Liability
+          15. Limitation of Liability
         </h2>
         <p className="uppercase text-slate-700 font-medium">
           TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, NEITHER PARTY SHALL BE LIABLE TO
@@ -484,17 +711,17 @@ export function TermsContent() {
         </ul>
       </section>
 
-      <section id="section-12">
+      <section id="section-12-general">
         <h2 className="text-3xl font-black mb-8 mt-16 border-b pb-4 border-slate-100">
-          12. General
+          16. General
         </h2>
-        <h3 className="text-xl font-bold mt-8 mb-4">12.1 Governing Law</h3>
+        <h3 className="text-xl font-bold mt-8 mb-4">16.1 Governing Law</h3>
         <p>
           This Agreement, including any disputes arising out of or relating to it, shall be
           governed by and construed in accordance with the laws of the State of Israel,
           without regard to its conflict of laws principles.
         </p>
-        <h3 className="text-xl font-bold mt-8 mb-4">12.2 Dispute Resolution and Jurisdiction</h3>
+        <h3 className="text-xl font-bold mt-8 mb-4">16.2 Dispute Resolution and Jurisdiction</h3>
         <p>
           Any dispute, claim, or controversy arising out of or relating to this Agreement,
           including its formation, interpretation, breach, or termination, shall be exclusively
@@ -502,24 +729,24 @@ export function TermsContent() {
           the exclusive jurisdiction and venue of such courts and waive any objection based on
           forum or venue.
         </p>
-        <h3 className="text-xl font-bold mt-8 mb-4">12.3 No Class Actions</h3>
+        <h3 className="text-xl font-bold mt-8 mb-4">16.3 No Class Actions</h3>
         <p>
           All disputes arising under or related to this Agreement must be brought solely on an
           individual basis. You shall not initiate any class, consolidated, or representative
           action. This waiver constitutes an independent covenant.
         </p>
-        <h3 className="text-xl font-bold mt-8 mb-4">12.4 Notices</h3>
+        <h3 className="text-xl font-bold mt-8 mb-4">16.4 Notices</h3>
         <p>
           All notices under this Agreement shall be provided by email. Notices to GoodLink
           must be sent to hello@goodlink.ai. Notices shall be deemed received when delivered.
         </p>
-        <h3 className="text-xl font-bold mt-8 mb-4">12.5 Publicity</h3>
+        <h3 className="text-xl font-bold mt-8 mb-4">16.5 Publicity</h3>
         <p>
           GoodLink may include your name in user lists and may use your company name, logo, or
           trademarks for marketing and publicity purposes on its website, in promotional
           materials, and in press releases.
         </p>
-        <h3 className="text-xl font-bold mt-8 mb-4">12.6 Force Majeure</h3>
+        <h3 className="text-xl font-bold mt-8 mb-4">16.6 Force Majeure</h3>
         <p>
           Except for payment obligations, neither party shall be liable for any failure or
           delay in performing its obligations under this Agreement caused by circumstances
@@ -530,14 +757,14 @@ export function TermsContent() {
           a delay exceeding ninety (90) days without resolution, either party may terminate
           this Agreement without penalty.
         </p>
-        <h3 className="text-xl font-bold mt-8 mb-4">12.7 No Assignment</h3>
+        <h3 className="text-xl font-bold mt-8 mb-4">16.7 No Assignment</h3>
         <p>
           You may not assign or transfer this Agreement, by operation of law or otherwise,
           without GoodLink&apos;s prior written consent. Subject to this restriction, this
           Agreement shall be binding upon and inure to the benefit of the parties and their
           respective successors and permitted assigns.
         </p>
-        <h3 className="text-xl font-bold mt-8 mb-4">12.8 Entire Agreement</h3>
+        <h3 className="text-xl font-bold mt-8 mb-4">16.8 Entire Agreement</h3>
         <p>
           This Agreement constitutes the entire agreement between the parties with respect to
           its subject matter and supersedes all prior agreements, understandings, or
@@ -547,14 +774,14 @@ export function TermsContent() {
           remain in full force and effect. No waiver of any default shall constitute a waiver
           of any subsequent default. There are no third-party beneficiaries to this Agreement.
         </p>
-        <h3 className="text-xl font-bold mt-8 mb-4">12.9 Waiver</h3>
+        <h3 className="text-xl font-bold mt-8 mb-4">16.9 Waiver</h3>
         <p>
           Any waiver under this Agreement must be in writing and shall apply only to the
           specific instance and occurrence described therein. Failure by either party to insist
           on strict performance of this Agreement or to enforce any rights shall not
           constitute a waiver of such rights, which shall remain in full force and effect.
         </p>
-        <h3 className="text-xl font-bold mt-8 mb-4">12.10 Survival</h3>
+        <h3 className="text-xl font-bold mt-8 mb-4">16.10 Survival</h3>
         <p>
           All provisions of this Agreement that are expressly stated to survive, or which by
           their nature are intended to survive termination or expiration, shall continue in
@@ -585,16 +812,21 @@ const TermsPage = () => {
   const sections = [
     { id: 'intro', title: 'Introduction', icon: <Info className="w-4 h-4" /> },
     { id: 'section-1', title: '1. GoodLink Services', icon: <Server className="w-4 h-4" /> },
-    { id: 'section-2', title: '2. Data Ownership', icon: <Lock className="w-4 h-4" /> },
-    { id: 'section-3', title: '3. Invoices', icon: <CreditCard className="w-4 h-4" /> },
-    { id: 'section-4', title: '4. Service Termination', icon: <Power className="w-4 h-4" /> },
-    { id: 'section-5', title: '5. Changes to Terms', icon: <CheckCircle2 className="w-4 h-4" /> },
-    { id: 'section-6', title: '6. Warranties', icon: <Shield className="w-4 h-4" /> },
-    { id: 'section-7', title: '7. Disclaimer', icon: <AlertCircle className="w-4 h-4" /> },
-    { id: 'section-8', title: '8. Confidentiality', icon: <Lock className="w-4 h-4" /> },
-    { id: 'section-9', title: '9. Indemnification', icon: <Scale className="w-4 h-4" /> },
-    { id: 'section-10', title: '10. Liability', icon: <AlertCircle className="w-4 h-4" /> },
-    { id: 'section-12', title: '12. General', icon: <ExternalLink className="w-4 h-4" /> },
+    { id: 'section-2', title: '2. Prohibited Content & Use', icon: <AlertCircle className="w-4 h-4" /> },
+    { id: 'section-3', title: '3. Review & Termination Rights', icon: <Power className="w-4 h-4" /> },
+    { id: 'section-4', title: '4. Subscriber Disclosures', icon: <UserCheck className="w-4 h-4" /> },
+    { id: 'section-5', title: '5. GDPR & EU Data', icon: <Lock className="w-4 h-4" /> },
+    { id: 'section-6', title: '6. Subscriber Liability', icon: <Scale className="w-4 h-4" /> },
+    { id: 'section-7', title: '7. Data Ownership', icon: <Lock className="w-4 h-4" /> },
+    { id: 'section-3', title: '8. Invoices', icon: <CreditCard className="w-4 h-4" /> },
+    { id: 'section-4', title: '9. Service Termination', icon: <Power className="w-4 h-4" /> },
+    { id: 'section-5', title: '10. Changes to Terms', icon: <CheckCircle2 className="w-4 h-4" /> },
+    { id: 'section-6', title: '11. Warranties', icon: <Shield className="w-4 h-4" /> },
+    { id: 'section-7-disclaimer', title: '12. Disclaimer', icon: <AlertCircle className="w-4 h-4" /> },
+    { id: 'section-8-confidentiality', title: '13. Confidentiality', icon: <Lock className="w-4 h-4" /> },
+    { id: 'section-9-indemnification', title: '14. Indemnification', icon: <Scale className="w-4 h-4" /> },
+    { id: 'section-10-liability', title: '15. Liability', icon: <AlertCircle className="w-4 h-4" /> },
+    { id: 'section-12-general', title: '16. General', icon: <ExternalLink className="w-4 h-4" /> },
   ];
 
   useEffect(() => {
