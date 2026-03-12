@@ -949,8 +949,8 @@ const LinkManager = () => {
                         <span>{kindLabel}</span>
                       </div>
                     </div>
-                    <div className="mr-12 bg-card-bg p-3 rounded-2xl text-[#6358de] shadow-[0_0_15px_rgba(99,88,222,0.1)] border border-card-border transition-all">
-                      <Folder size={24} fill="currentColor" fillOpacity={0.2} />
+                    <div className="mr-12 text-[#6358de] transition-all">
+                      <Folder size={24} />
                     </div>
                   </div>
                   <div className="absolute top-4 right-4">
@@ -1070,7 +1070,7 @@ const LinkManager = () => {
                       {truncateText(link.target_url, 60)}
                     </p>
                   </div>
-                  <div className="mr-12 bg-card-bg p-4 rounded-3xl text-[#0b996f] shadow-[0_0_20px_rgba(11,153,111,0.15)] -rotate-3 border border-card-border">
+                  <div className="mr-12 text-[#0b996f] -rotate-3 transition-all">
                     <LinkIcon size={24} />
                   </div>
                 </div>
