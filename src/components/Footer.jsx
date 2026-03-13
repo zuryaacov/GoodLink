@@ -105,6 +105,12 @@ const Footer = () => {
             >
               Contact
             </Link>
+            <Link
+              to="/docs"
+              className="text-sm text-slate-500 dark:text-[#1b1b1b] hover:text-primary transition-colors"
+            >
+              Docs
+            </Link>
           </div>
         </div>
         <div className="mt-12 border-t border-slate-200 dark:border-slate-200 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
