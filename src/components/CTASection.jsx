@@ -154,10 +154,10 @@ const CTASection = () => {
           <div className="inline-flex flex-col items-center gap-0 text-center text-[#6358de] font-extrabold tracking-wide text-3xl md:text-5xl">
             <span className="flex items-center gap-2">
               <span>🎁</span>
-              <span>Get 30-day free trial</span>
+              <span>Get 30-Day Free Trial</span>
             </span>
             <span>
-              Everything in <span className="text-4xl md:text-6xl uppercase">PRO</span>
+              Everything in <span className="text-4xl md:text-6xl">PRO</span>
             </span>
             <span>No credit card required</span>
           </div>
