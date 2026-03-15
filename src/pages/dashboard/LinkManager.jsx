@@ -962,7 +962,7 @@ const LinkManager = () => {
                     aria-hidden
                   >
                     <path
-                      d="M 0.5,0.5 H 50 L 65,14.5 H 299.5 V 223.5 H 0.5 Z"
+                      d="M 0.5,0.5 H 50 L 72,14.5 H 299.5 V 223.5 H 0.5 Z"
                       fill="#FCFDFD"
                       stroke="#6358de"
                       strokeWidth="1"
