@@ -19,7 +19,7 @@ vi.mock('../../lib/supabase', () => {
     }),
     neq: vi.fn(() => Promise.resolve({ count: 0 })),
   };
-
+  // yes
   return {
     supabase: {
       auth: {
@@ -82,17 +82,13 @@ describe('AccountSettingsPage basic rendering', () => {
   it('renders the Account Settings header and profile form once loading finishes', async () => {
     renderAccountSettings();
 
-    expect(
-      await screen.findByText(/Account Settings/i)
-    ).toBeInTheDocument();
+    expect(await screen.findByText(/Account Settings/i)).toBeInTheDocument();
 
     expect(screen.getByText(/Full Name/i)).toBeInTheDocument();
     expect(screen.getByText(/Email Address/i)).toBeInTheDocument();
 
     await waitFor(() => {
-      expect(
-        screen.getByRole('heading', { name: /Subscription/i })
-      ).toBeInTheDocument();
+      expect(screen.getByRole('heading', { name: /Subscription/i })).toBeInTheDocument();
     });
   });
 });
@@ -125,4 +121,3 @@ describe('AccountSettingsPage – subscription states (free_trial, cancelled)', 
     expect(screen.queryByText(/Cancel subscription/i)).not.toBeInTheDocument();
   });
 });
-
