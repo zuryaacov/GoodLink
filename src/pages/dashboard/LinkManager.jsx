@@ -950,8 +950,13 @@ const LinkManager = () => {
                       goToSpace(space.id);
                     }
                   }}
-                  className="group relative text-left bg-card-bg border border-card-border rounded-[1.25rem] p-6 flex flex-col min-h-[240px] transition-all duration-300 hover:shadow-card-mint"
+                  className="group relative text-left bg-card-bg border border-card-border rounded-[1.25rem] rounded-tl-md flex flex-col min-h-[240px] transition-all duration-300 hover:shadow-card-mint overflow-visible pt-7 px-6 pb-6"
                 >
+                  {/* Folder tab */}
+                  <div
+                    className="absolute -top-px left-6 w-10 h-5 bg-card-bg border border-card-border border-b-0 rounded-t-lg rounded-b-none z-10"
+                    aria-hidden
+                  />
                   <div className="flex items-start justify-between mb-6">
                     <div>
                       <h3 className="text-2xl font-bold mb-1 group-hover:text-primary transition-colors">
