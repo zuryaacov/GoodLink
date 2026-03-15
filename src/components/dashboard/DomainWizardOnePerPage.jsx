@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import DNSRecordsDisplay from './DNSRecordsDisplay';
 import { validateDomain } from '../../lib/domainValidation';
+import { supabase } from '../../lib/supabase';
 
 const STEPS = [
   {
@@ -87,6 +88,31 @@ export default function DomainWizardOnePerPage({
       if (!validation.isValid) {
         setFieldErrors((prev) => ({ ...prev, domain: validation.error || 'Please enter a valid domain.' }));
         return;
+      }
+
+      const finalDomain = (validation.sanitized || '').trim().toLowerCase();
+      if (!finalDomain) {
+        setFieldErrors((prev) => ({ ...prev, domain: 'Please enter a valid domain.' }));
+        return;
+      }
+
+      // Check if this domain is already added for this user (first page only; Root Redirect is not checked)
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (user) {
+        const { data: existing } = await supabase
+          .from('custom_domains')
+          .select('id')
+          .eq('user_id', user.id)
+          .ilike('domain', finalDomain);
+        if (existing?.length > 0) {
+          setFieldErrors((prev) => ({
+            ...prev,
+            domain: 'This domain is already added. Use a different domain or edit the existing one.',
+          }));
+          return;
+        }
       }
 
       // Normalize domain display early so user sees the exact validated value.
