@@ -700,8 +700,14 @@ const LinkManager = () => {
     return (
       <div className="space-y-4">
         {link.utm_presets.map((presetId) => {
-          const preset = presetsMap[presetId];
-          if (!preset) return null;
+          const preset = presetsMap[presetId] ?? presetsMap[String(presetId)];
+          if (!preset) {
+            return (
+              <div key={presetId} className="p-3 bg-slate-50 rounded-lg border border-slate-200 text-sm text-slate-500">
+                Preset not loaded
+              </div>
+            );
+          }
 
           const presetUrl = buildPresetUrl(link, preset);
           const copyBtnId = `copy-btn-${link.id}-${presetId}`;
@@ -1133,6 +1139,11 @@ const LinkManager = () => {
                   }
                   onMove={isFoldersEnabled ? openMoveModal : null}
                   onShowModal={(modalConfig) => setModalState(modalConfig)}
+                  onUtmPresetsClick={
+                    link.utm_presets?.length > 0
+                      ? () => setUtmPresetsModal({ isOpen: true, link })
+                      : null
+                  }
                   onDeleteClick={(linkToDelete) => setDeleteLinkModal({ isOpen: true, link: linkToDelete, isLoading: false })}
                 />
 
@@ -1163,9 +1174,16 @@ const LinkManager = () => {
                 {/* UTM Presets on card: chips (param name purple, value black) + full UTM in black */}
                 {link.utm_presets?.length > 0 && (
                   <div className="mb-6 space-y-3">
+                    <span className="text-[10px] text-gray-500 font-bold uppercase tracking-widest block mb-2">UTM Presets</span>
                     {link.utm_presets.map((presetId) => {
-                      const preset = presetsMap[presetId];
-                      if (!preset) return null;
+                      const preset = presetsMap[presetId] ?? presetsMap[String(presetId)];
+                      if (!preset) {
+                        return (
+                          <div key={presetId} className="p-3 bg-slate-50 rounded-xl border border-slate-200 text-sm text-slate-500">
+                            Preset loading…
+                          </div>
+                        );
+                      }
                       const presetUrl = buildPresetUrl(link, preset);
                       const copyBtnId = `card-copy-${link.id}-${presetId}`;
                       const chips = UTM_PARAM_LABELS.filter(({ key }) => preset[key]).map(({ key, label }) => ({ label, value: preset[key] }));
@@ -1520,6 +1538,7 @@ const LinkActionsMenu = ({
   onAnalytics,
   onMove,
   onShowModal,
+  onUtmPresetsClick,
   onDeleteClick,
   className = '',
   hoverBorderClass = 'hover:border-primary/40',
@@ -1578,6 +1597,18 @@ const LinkActionsMenu = ({
               <span className="material-symbols-outlined text-base">content_copy</span>
               Duplicate
             </button>
+            {onUtmPresetsClick && (
+              <button
+                onClick={() => {
+                  setIsOpen(false);
+                  onUtmPresetsClick();
+                }}
+                className="w-full px-4 py-3 text-left text-[#1b1b1b] hover:bg-white/5 transition-colors flex items-center gap-3 text-sm"
+              >
+                <span className="material-symbols-outlined text-base">campaign</span>
+                UTM Preset Links
+              </button>
+            )}
             {onMove && (
               <button
                 onClick={() => {
