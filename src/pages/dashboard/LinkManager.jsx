@@ -950,17 +950,30 @@ const LinkManager = () => {
                       goToSpace(space.id);
                     }
                   }}
-                  className="group relative text-left bg-card-bg border border-card-border rounded-[1.25rem] rounded-tl-[0.5rem] flex flex-col min-h-[240px] transition-all duration-300 hover:shadow-card-mint overflow-visible pt-8 px-6 pb-6 border-l-4 border-l-[#6358de]/30"
+                  className="group relative w-full min-h-[240px] transition-all duration-300 hover:shadow-card-mint overflow-visible"
                 >
-                  {/* Folder tab - visible folded tab at top */}
-                  <div
-                    className="absolute -top-0.5 left-5 w-14 h-7 bg-[#E8ECEB] border border-card-border border-b-0 rounded-t-xl rounded-b-none z-10 shadow-[0_-1px_2px_rgba(0,0,0,0.06)]"
+                  {/* Real folder shape: one continuous outline (tab + step + body) */}
+                  <svg
+                    className="absolute inset-0 w-full h-full pointer-events-none"
+                    viewBox="0 0 100 100"
+                    preserveAspectRatio="none"
                     aria-hidden
-                  />
+                  >
+                    <path
+                      d="M 0,100 L 0,14 L 14,14 L 14,0 L 100,0 L 100,100 Z"
+                      fill="none"
+                      stroke="#E5E9E8"
+                      strokeWidth="0.4"
+                      vectorEffect="non-scaling-stroke"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
                   <div
-                    className="absolute top-[1.65rem] left-5 w-14 border-t-2 border-[#d0d5d4] z-[9]"
-                    aria-hidden
-                  />
+                    className="relative text-left bg-card-bg flex flex-col min-h-[240px] p-6 pt-8"
+                    style={{
+                      clipPath: 'polygon(0% 100%, 0% 14%, 14% 14%, 14% 0%, 100% 0%, 100% 100%, 0% 100%)',
+                    }}
+                  >
                   <div className="flex items-start justify-between mb-6">
                     <div>
                       <h3 className="text-2xl font-bold mb-1 group-hover:text-primary transition-colors">
@@ -1027,6 +1040,7 @@ const LinkManager = () => {
                       <div className="w-2 h-2 rounded-full bg-[#00F2B5] animate-pulse shadow-[0_0_8px_#00F2B5]"></div>
                       Active
                     </div>
+                  </div>
                   </div>
                 </div>
               );
