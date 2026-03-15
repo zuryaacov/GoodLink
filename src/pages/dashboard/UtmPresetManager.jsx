@@ -345,7 +345,7 @@ const UtmPresetManager = () => {
       </div>
 
       {presets.length === 0 ? (
-        <div className="bg-[#fcfdfd] border border-card-border rounded-2xl p-12 text-center hover:shadow-card-mint transition-all">
+        <div className="bg-[#fcfdfd] border rounded-2xl p-12 text-center hover:shadow-card-mint transition-all border-[#6358de]/40 md:border-card-border md:hover:border-[#6358de]/40">
           <span className="material-symbols-outlined text-6xl text-black mb-4">campaign</span>
           <h3 className="text-xl font-bold text-black mb-2">No UTM Presets Yet</h3>
           <p className="text-black mb-6">
@@ -371,7 +371,7 @@ const UtmPresetManager = () => {
             return (
               <div
                 key={preset.id}
-                className="bg-[#fcfdfd] border border-card-border rounded-xl p-6 hover:shadow-card-mint transition-all"
+                className="bg-[#fcfdfd] border rounded-xl p-6 hover:shadow-card-mint transition-all border-[#6358de]/40 md:border-card-border md:hover:border-[#6358de]/40"
               >
                 <div className="flex items-start justify-between gap-3 mb-4">
                   <div className="flex-1 min-w-0">

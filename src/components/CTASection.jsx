@@ -151,11 +151,11 @@ const CTASection = () => {
 
         {/* Pricing sub-heading: 30-day trial message */}
         <div className="flex justify-center">
-          <div className="inline-flex items-center gap-2 text-[#6358de] font-extrabold tracking-wide text-xs sm:text-sm md:text-base lg:text-[1.8rem] uppercase">
-            <span className="text-base sm:text-lg md:text-xl lg:text-[2rem]">🎁</span>
+          <div className="inline-flex items-center gap-2 text-[#6358de] font-extrabold tracking-wide text-3xl md:text-5xl uppercase">
+            <span className="text-3xl md:text-5xl">🎁</span>
             <span>
               Get 30-Day Free Trial · Everything in{' '}
-              <span className="text-sm sm:text-base md:text-lg lg:text-[2.4rem]">PRO</span> · No credit card required
+              <span className="text-3xl md:text-5xl">PRO</span> · No credit card required
             </span>
           </div>
         </div>
@@ -204,7 +204,7 @@ const CTASection = () => {
                   {/* Price */}
                   <div className="flex items-baseline gap-2 flex-wrap mt-4">
                     {plan.originalPrice && (
-                      <span className="text-slate-500 dark:text-slate-400 text-5xl font-black line-through">
+                      <span className="hidden text-slate-500 dark:text-slate-400 text-5xl font-black line-through">
                         ${plan.originalPrice}
                       </span>
                     )}

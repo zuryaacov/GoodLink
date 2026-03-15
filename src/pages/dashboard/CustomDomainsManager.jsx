@@ -471,7 +471,7 @@ const CustomDomainsManager = () => {
 
       {/* Domains List */}
       {domains.length === 0 ? (
-        <div className="bg-card-bg border border-card-border rounded-2xl p-4 md:p-6 w-full hover:shadow-card-mint transition-all">
+        <div className="bg-card-bg border rounded-2xl p-4 md:p-6 w-full hover:shadow-card-mint transition-all border-[#6358de]/40 md:border-card-border md:hover:border-[#6358de]/40">
           <div className="text-center py-12">
             <span className="material-symbols-outlined text-6xl text-slate-600 mb-4">public</span>
             <p className="text-[#1b1b1b] text-lg mb-2">No custom domains yet</p>
@@ -483,7 +483,7 @@ const CustomDomainsManager = () => {
           {domains.map((domain) => (
             <div
               key={domain.id}
-              className="bg-card-bg border border-card-border rounded-2xl p-6 md:p-8 transition-all hover:shadow-card-mint flex flex-col gap-4"
+              className="bg-card-bg border rounded-2xl p-6 md:p-8 transition-all hover:shadow-card-mint flex flex-col gap-4 border-[#6358de]/40 md:border-card-border md:hover:border-[#6358de]/40"
             >
               {/* Domain Name, Status, Root only */}
               <div className="flex items-start justify-between gap-4">

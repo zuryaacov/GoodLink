@@ -581,7 +581,7 @@ export default function AccountSettingsPage() {
                         <p className="text-slate-500 dark:text-[#1b1b1b] text-sm">{plan.description}</p>
                         <div className="flex items-baseline gap-2 flex-wrap mt-4">
                           {plan.originalPrice && (
-                            <span className="text-slate-500 dark:text-slate-400 text-5xl font-black line-through">${plan.originalPrice}</span>
+                            <span className="hidden text-slate-500 dark:text-slate-400 text-5xl font-black line-through">${plan.originalPrice}</span>
                           )}
                           <span className="text-slate-900 dark:text-[#1b1b1b] text-5xl font-black">${plan.price}</span>
                           <span className="text-slate-500 dark:text-[#1b1b1b] text-lg font-medium">/month</span>
