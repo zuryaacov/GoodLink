@@ -934,7 +934,7 @@ const LinkManager = () => {
             </span>
             <div className="flex-grow border-t border-[#E5E9E8]"></div>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full overflow-visible pt-1">
             {childSpaces.map((space) => {
               const stats = getSpaceStats(space.id);
               const kindLabel = KIND_LABEL[space.kind] || 'Campaign';
@@ -950,11 +950,15 @@ const LinkManager = () => {
                       goToSpace(space.id);
                     }
                   }}
-                  className="group relative text-left bg-card-bg border border-card-border rounded-[1.25rem] rounded-tl-md flex flex-col min-h-[240px] transition-all duration-300 hover:shadow-card-mint overflow-visible pt-7 px-6 pb-6"
+                  className="group relative text-left bg-card-bg border border-card-border rounded-[1.25rem] rounded-tl-[0.5rem] flex flex-col min-h-[240px] transition-all duration-300 hover:shadow-card-mint overflow-visible pt-8 px-6 pb-6 border-l-4 border-l-[#6358de]/30"
                 >
-                  {/* Folder tab */}
+                  {/* Folder tab - visible folded tab at top */}
                   <div
-                    className="absolute -top-px left-6 w-10 h-5 bg-card-bg border border-card-border border-b-0 rounded-t-lg rounded-b-none z-10"
+                    className="absolute -top-0.5 left-5 w-14 h-7 bg-[#E8ECEB] border border-card-border border-b-0 rounded-t-xl rounded-b-none z-10 shadow-[0_-1px_2px_rgba(0,0,0,0.06)]"
+                    aria-hidden
+                  />
+                  <div
+                    className="absolute top-[1.65rem] left-5 w-14 border-t-2 border-[#d0d5d4] z-[9]"
                     aria-hidden
                   />
                   <div className="flex items-start justify-between mb-6">
