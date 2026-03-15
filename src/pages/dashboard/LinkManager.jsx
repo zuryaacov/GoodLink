@@ -953,20 +953,21 @@ const LinkManager = () => {
                   className="group relative w-full min-h-[224px] transition-all duration-300 overflow-visible"
                   dir="ltr"
                 >
-                  {/* Folder shape: LTR (English) – tab on left, same as Clean Folder Structure UI LTR example */}
+                  {/* Folder shape: LTR – path and line settings from Clean Folder Structure UI LTR example */}
                   <svg
                     className="absolute inset-0 w-full h-full pointer-events-none"
                     viewBox="0 0 300 224"
                     preserveAspectRatio="none"
                     fill="none"
                     aria-hidden
+                    style={{ shapeRendering: 'geometricPrecision' }}
                   >
                     <path
-                      d="M 0.5,0.5 H 50 L 72,14.5 H 299.5 V 223.5 H 0.5 Z"
+                      d="M 1,1 H 60 L 75,16 H 299 V 223 H 1 Z"
                       fill="#FCFDFD"
                       stroke="#6358de"
-                      strokeWidth="1"
-                      style={{ vectorEffect: 'non-scaling-stroke', shapeRendering: 'crispEdges' }}
+                      strokeWidth="1.5"
+                      style={{ vectorEffect: 'non-scaling-stroke', shapeRendering: 'geometricPrecision' }}
                       className="transition-all duration-300 group-hover:stroke-[#5348c7] group-hover:fill-[#F4F7F6]"
                     />
                   </svg>
