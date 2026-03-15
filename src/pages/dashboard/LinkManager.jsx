@@ -1087,9 +1087,13 @@ const LinkManager = () => {
             return (
               <div
                 key={link.id}
-                className={`relative bg-card-bg border border-card-border rounded-[1.25rem] p-6 flex flex-col h-full transition-all duration-300 ease-out overflow-visible hover:shadow-card-mint ${
+                className={`relative bg-card-bg border rounded-[1.25rem] p-6 flex flex-col h-full transition-all duration-300 ease-out overflow-visible hover:shadow-card-mint ${
                   !isActive && !isRejected ? 'opacity-70' : ''
-                } ${isActive ? 'hover:border-[#0b996f] hover:shadow-[0_12px_30px_rgba(19,91,236,0.15)]' : ''}`}
+                } ${
+                  isActive
+                    ? 'border-[#0b996f] md:border-card-border md:hover:border-[#0b996f] md:hover:shadow-[0_12px_30px_rgba(19,91,236,0.15)]'
+                    : 'border-card-border'
+                }`}
               >
                 {/* Header: title, destination, menu */}
                 <div className="flex justify-between items-start mb-6">
