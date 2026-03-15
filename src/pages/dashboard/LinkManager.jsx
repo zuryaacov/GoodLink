@@ -837,7 +837,9 @@ const LinkManager = () => {
               : 'flex items-center justify-between gap-4 w-full'
           }
         >
-          <div className="flex flex-col gap-2 flex-1 min-w-0">
+          <div
+            className={`flex flex-col gap-2 flex-1 min-w-0 ${isFoldersEnabled ? 'hidden md:flex' : 'flex'}`}
+          >
             <div className="flex items-center gap-3">
               {isFoldersEnabled && (
                 <button
