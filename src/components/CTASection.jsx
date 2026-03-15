@@ -83,13 +83,14 @@ const CTASection = () => {
       description: 'For power users',
       features: [
         'Unlimited Links',
-        'Unlimited Custom Domains',
         'Unlimited QR Codes',
         'Unlimited Clicks',
         'Workspaces, Campaigns and Groups',
         'Bot Protection',
-        'Conversion API & S2S tracking',
         'UTM Presets',
+        'Unlimited Custom Domains',
+        'Geo Redirect',
+        'Conversion API & S2S tracking',
         'Pro Analytics',
         'Expedited Support',
       ],
@@ -292,7 +293,7 @@ const CTASection = () => {
                 {/* Features List */}
                 <ul className="flex flex-col gap-4 mt-4">
                   {plan.features.map((feature, featureIndex) => {
-                    const purpleFeatures = ['10 Custom Domains', 'Workspaces, Campaigns and Groups', 'Bot Protection', 'UTM Presets', 'Advanced Analytics'];
+                    const purpleFeatures = ['10 Custom Domains', 'Workspaces, Campaigns and Groups', 'Bot Protection', 'UTM Presets', 'Advanced Analytics', 'Unlimited Custom Domains', 'Geo Redirect', 'Conversion API & S2S tracking', 'Pro Analytics', 'Expedited Support'];
                     const isPurple = purpleFeatures.includes(feature);
                     return (
                       <li key={featureIndex} className="flex items-start gap-3">
