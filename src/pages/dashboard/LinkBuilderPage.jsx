@@ -269,9 +269,10 @@ const LinkBuilderPage = () => {
       const fullUtmString = utmParams.toString() ? `${shortUrl}?${utmParams.toString()}` : shortUrl;
 
       const isPro = (planType || '').toLowerCase() === 'pro';
-      const payloadPixels = isPro ? formData.selectedPixels : [];
+      const allowCapi = isPro && baseUrl !== 'glynk.to';
+      const payloadPixels = allowCapi ? (formData.selectedPixels || []) : [];
       const payloadServerSideTracking =
-        isPro && !!(formData.selectedPixels && formData.selectedPixels.length > 0);
+        allowCapi && !!(formData.selectedPixels && formData.selectedPixels.length > 0);
 
       if (isEditMode && id && !isDuplicateMode) {
         const updatePayloadRaw = {

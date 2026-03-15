@@ -766,7 +766,10 @@ export default function LinkWizardOnePerPage({
                       <button
                         key={d}
                         type="button"
-                        onClick={() => updateFormData('domain', d)}
+                        onClick={() => {
+                          updateFormData('domain', d);
+                          if (d === 'glynk.to') updateFormData('selectedPixels', []);
+                        }}
                         className={`p-6 rounded-2xl border-2 text-left transition-all ${
                           isSelected
                             ? 'border-[#6358de] bg-[#6358de]/5 shadow-[0_0_20px_rgba(255,16,240,0.2)]'
@@ -960,10 +963,14 @@ export default function LinkWizardOnePerPage({
                 </div>
               )}
 
-              {/* Step: CAPI - list height fits screen up to the footer button */}
+              {/* Step: CAPI - list only when custom domain; otherwise show notice */}
               {currentStep.id === 'capi' && (
                 <div className="flex flex-col min-h-0 flex-1">
-                  {loadingPixels ? (
+                  {(formData.domain || 'glynk.to') === 'glynk.to' ? (
+                    <p className="text-slate-600 text-base leading-relaxed">
+                      CAPI is only available when using a custom domain. Go back to the Domain step and choose a custom domain to attach Conversion API profiles to this link.
+                    </p>
+                  ) : loadingPixels ? (
                     <p className="text-[#1b1b1b]">Loading CAPI...</p>
                   ) : availablePixels.length === 0 ? (
                     <p className="text-slate-500 text-sm">
