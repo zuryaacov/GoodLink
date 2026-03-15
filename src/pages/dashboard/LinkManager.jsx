@@ -950,14 +950,27 @@ const LinkManager = () => {
                       goToSpace(space.id);
                     }
                   }}
-                  className="group relative w-full min-h-[240px] transition-all duration-300 hover:shadow-card-mint overflow-visible"
+                  className="group relative w-full min-h-[224px] transition-all duration-300 hover:shadow-card-mint overflow-visible"
+                  dir="ltr"
                 >
-                  <div
-                    className="relative text-left bg-card-bg flex flex-col min-h-[240px] p-6 pt-8"
-                    style={{
-                      clipPath: 'polygon(0% 100%, 0% 14%, 14% 14%, 14% 0%, 100% 0%, 100% 100%, 0% 100%)',
-                    }}
+                  {/* Folder shape: LTR (English) – tab on left, same as Clean Folder Structure UI LTR example */}
+                  <svg
+                    className="absolute inset-0 w-full h-full pointer-events-none"
+                    viewBox="0 0 300 224"
+                    preserveAspectRatio="none"
+                    fill="none"
+                    aria-hidden
                   >
+                    <path
+                      d="M 0.5,0.5 H 50 L 65,14.5 H 299.5 V 223.5 H 0.5 Z"
+                      fill="#FCFDFD"
+                      stroke="#6358de"
+                      strokeWidth="1"
+                      style={{ vectorEffect: 'non-scaling-stroke', shapeRendering: 'crispEdges' }}
+                      className="transition-all duration-300 group-hover:stroke-[#5348c7] group-hover:fill-[#F4F7F6]"
+                    />
+                  </svg>
+                  <div className="relative z-10 flex flex-col min-h-[224px] p-6 pt-10">
                   <div className="flex items-start justify-between mb-6">
                     <div>
                       <h3 className="text-2xl font-bold mb-1 group-hover:text-primary transition-colors">
@@ -1026,22 +1039,6 @@ const LinkManager = () => {
                     </div>
                   </div>
                   </div>
-                  {/* Folder outline on top - purple so it's visible */}
-                  <svg
-                    className="absolute inset-0 w-full h-full pointer-events-none z-10"
-                    viewBox="0 0 100 100"
-                    preserveAspectRatio="none"
-                    aria-hidden
-                  >
-                    <path
-                      d="M 0,100 L 0,14 L 14,14 L 14,0 L 100,0 L 100,100 Z"
-                      fill="none"
-                      stroke="#6358de"
-                      strokeWidth="1.2"
-                      vectorEffect="non-scaling-stroke"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
                 </div>
               );
             })}
