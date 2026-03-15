@@ -437,45 +437,36 @@ const UtmPresetManager = () => {
                   </div>
                 </div>
 
-                <div className="space-y-2 mb-4">
+                <div className="space-y-3 mb-4">
+                  {/* Chips: one per UTM param */}
+                  <div className="flex flex-wrap gap-2">
+                    {[
+                      { key: 'utm_source', label: 'Source', value: preset.utm_source },
+                      { key: 'utm_medium', label: 'Medium', value: preset.utm_medium },
+                      { key: 'utm_campaign', label: 'Campaign', value: preset.utm_campaign },
+                      { key: 'utm_content', label: 'Content', value: preset.utm_content },
+                      { key: 'utm_term', label: 'Term', value: preset.utm_term },
+                    ]
+                      .filter(({ value }) => value)
+                      .map(({ key, label, value }) => (
+                        <span
+                          key={key}
+                          className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 text-sm font-medium"
+                        >
+                          <span className="font-semibold text-[#6358de]">{label}:</span>
+                          <span className="text-[#1b1b1b]">{value}</span>
+                        </span>
+                      ))}
+                  </div>
+
+                  {/* Full UTM string below */}
                   {queryString ? (
                     <div className="text-base font-mono font-bold break-all bg-white border border-slate-200 p-3 rounded-lg text-[#1b1b1b]">
                       {renderQueryString(queryString)}
                     </div>
                   ) : (
-                    <div className="text-xs text-black font-bold italic p-3 rounded-lg bg-white border border-slate-200">
+                    <div className="text-xs text-[#1b1b1b] font-bold italic p-3 rounded-lg bg-white border border-slate-200">
                       No UTM parameters set
-                    </div>
-                  )}
-
-                  {preset.utm_source && (
-                    <div className="flex items-center gap-2 text-sm font-bold">
-                      <span className="text-[#1b1b1b] font-mono text-sm w-20">source:</span>
-                      <span className="text-[#1b1b1b] font-bold">{preset.utm_source}</span>
-                    </div>
-                  )}
-                  {preset.utm_medium && (
-                    <div className="flex items-center gap-2 text-sm font-bold">
-                      <span className="text-[#1b1b1b] font-mono text-sm w-20">medium:</span>
-                      <span className="text-[#1b1b1b] font-bold">{preset.utm_medium}</span>
-                    </div>
-                  )}
-                  {preset.utm_campaign && (
-                    <div className="flex items-center gap-2 text-sm font-bold">
-                      <span className="text-[#1b1b1b] font-mono text-sm w-20">campaign:</span>
-                      <span className="text-[#1b1b1b] font-bold">{preset.utm_campaign}</span>
-                    </div>
-                  )}
-                  {preset.utm_content && (
-                    <div className="flex items-center gap-2 text-sm font-bold">
-                      <span className="text-[#1b1b1b] font-mono text-sm w-20">content:</span>
-                      <span className="text-[#1b1b1b] font-bold">{preset.utm_content}</span>
-                    </div>
-                  )}
-                  {preset.utm_term && (
-                    <div className="flex items-center gap-2 text-sm font-bold">
-                      <span className="text-[#1b1b1b] font-mono text-sm w-20">term:</span>
-                      <span className="text-[#1b1b1b] font-bold">{preset.utm_term}</span>
                     </div>
                   )}
                 </div>
