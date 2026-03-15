@@ -967,8 +967,8 @@ export default function LinkWizardOnePerPage({
               {currentStep.id === 'capi' && (
                 <div className="flex flex-col min-h-0 flex-1">
                   {(formData.domain || 'glynk.to') === 'glynk.to' ? (
-                    <p className="text-slate-600 text-base leading-relaxed">
-                      CAPI is only available when using a custom domain. Go back to the Domain step and choose a custom domain to attach Conversion API profiles to this link.
+                    <p className="text-slate-600 text-[2rem] leading-relaxed">
+                      CAPI is only available when using a custom domain.
                     </p>
                   ) : loadingPixels ? (
                     <p className="text-[#1b1b1b]">Loading CAPI...</p>
