@@ -193,6 +193,7 @@ const PixelBuilderPage = () => {
       <div className="flex-1 min-h-0 flex flex-col">
         <PixelWizardOnePerPage
           initialData={id ? initialData : null}
+          editingPixelId={id || null}
           onSave={handleSave}
           onBack={() => navigate('/dashboard/pixels')}
           isEdit={!!id}

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getPixelIdLabel, validateCapiToken, validatePixelId } from '../../lib/pixelValidation';
 import { checkForMaliciousInput } from '../../lib/inputSanitization';
+import { supabase } from '../../lib/supabase';
 import taboolaLogo from '../../assets/idRS-vCmxj_1769618141092.svg';
 import outbrainLogo from '../../assets/id-bNajMAc_1769618145922.svg';
 
@@ -282,7 +283,7 @@ const STEPS = [
   },
 ];
 
-export default function PixelWizardOnePerPage({ initialData, onSave, onBack, isEdit }) {
+export default function PixelWizardOnePerPage({ initialData, editingPixelId, onSave, onBack, isEdit }) {
   const [stepIndex, setStepIndex] = useState(0);
   const [formData, setFormData] = useState({
     name: '',
@@ -317,7 +318,7 @@ export default function PixelWizardOnePerPage({ initialData, onSave, onBack, isE
   const currentPlatform = PLATFORMS.find((p) => p.value === formData.platform);
   const availableEvents = STANDARD_EVENTS[formData.platform] || [];
   const goNext = async () => {
-    const validateCurrentStep = () => {
+    const validateCurrentStep = async () => {
       const nextErrors = {};
       if (currentStep?.id === 'name') {
         const name = formData.name?.trim() || '';
@@ -326,6 +327,25 @@ export default function PixelWizardOnePerPage({ initialData, onSave, onBack, isE
         else {
           const check = checkForMaliciousInput(name);
           if (!check.safe) nextErrors.name = check.error;
+          else {
+            const {
+              data: { user },
+            } = await supabase.auth.getUser();
+            if (user) {
+              const { data: existing } = await supabase
+                .from('pixels')
+                .select('id')
+                .eq('user_id', user.id)
+                .ilike('name', name)
+                .neq('status', 'deleted');
+              const isDuplicate =
+                existing?.length > 0 &&
+                (isEdit && editingPixelId ? existing.some((p) => p.id !== editingPixelId) : true);
+              if (isDuplicate) {
+                nextErrors.name = 'A CAPI profile with this name already exists. Please choose a different name.';
+              }
+            }
+          }
         }
       }
       if (currentStep?.id === 'pixelId') {
@@ -370,7 +390,7 @@ export default function PixelWizardOnePerPage({ initialData, onSave, onBack, isE
       return Object.keys(nextErrors).length === 0;
     };
 
-    if (!validateCurrentStep()) return;
+    if (!(await validateCurrentStep())) return;
 
     if (isLast) {
       setError(null);

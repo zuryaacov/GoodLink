@@ -163,6 +163,7 @@ const UtmPresetBuilderPage = () => {
       <div className="flex-1 min-h-0 flex flex-col">
         <UtmPresetWizardOnePerPage
           initialData={id ? initialData : null}
+          editingPresetId={id || null}
           onSave={handleSave}
           onBack={() => navigate('/dashboard/utm-presets')}
           isEdit={!!id}

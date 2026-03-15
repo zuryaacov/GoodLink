@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import taboolaLogo from '../../assets/idRS-vCmxj_1769618141092.svg';
 import outbrainLogo from '../../assets/id-bNajMAc_1769618145922.svg';
 import { sanitizeInput } from '../../lib/inputSanitization';
+import { supabase } from '../../lib/supabase';
 
 const getPlatformLogo = (platform) => {
   const w = 'w-12 h-12 rounded-xl';
@@ -280,7 +281,7 @@ function buildPreviewFromParams(params) {
   return entries.map(([k, v]) => `${k}=${v}`).join('&');
 }
 
-export default function UtmPresetWizardOnePerPage({ initialData, onSave, onBack, isEdit }) {
+export default function UtmPresetWizardOnePerPage({ initialData, editingPresetId, onSave, onBack, isEdit }) {
   const [stepIndex, setStepIndex] = useState(0);
   const [presetName, setPresetName] = useState('');
   const [platform, setPlatform] = useState('meta');
@@ -324,7 +325,7 @@ export default function UtmPresetWizardOnePerPage({ initialData, onSave, onBack,
   };
 
   const goNext = async () => {
-    const validateCurrentStep = () => {
+    const validateCurrentStep = async () => {
       const nextErrors = {};
       if (currentStep?.id === 'name') {
         const name = (presetName || '').trim();
@@ -335,6 +336,24 @@ export default function UtmPresetWizardOnePerPage({ initialData, onSave, onBack,
         } else {
           const check = sanitizeInput(name);
           if (!check.safe) nextErrors.name = check.error || 'Please enter a valid preset name.';
+          else {
+            const {
+              data: { user },
+            } = await supabase.auth.getUser();
+            if (user) {
+              const { data: existing } = await supabase
+                .from('utm_presets')
+                .select('id')
+                .eq('user_id', user.id)
+                .ilike('name', name);
+              const isDuplicate =
+                existing?.length > 0 &&
+                (isEdit && editingPresetId ? existing.some((p) => p.id !== editingPresetId) : true);
+              if (isDuplicate) {
+                nextErrors.name = 'A UTM preset with this name already exists. Please choose a different name.';
+              }
+            }
+          }
         }
       }
       if (currentStep?.id && UTM_STEPS.some((s) => s.id === currentStep.id)) {
@@ -353,7 +372,7 @@ export default function UtmPresetWizardOnePerPage({ initialData, onSave, onBack,
       return Object.keys(nextErrors).length === 0;
     };
 
-    if (!validateCurrentStep()) return;
+    if (!(await validateCurrentStep())) return;
 
     if (isLast) {
       const hasAnyUtmValue = Object.values(params).some((value) => String(value || '').trim() !== '');
