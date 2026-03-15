@@ -294,13 +294,15 @@ const CTASection = () => {
                 <ul className="flex flex-col gap-4 mt-4">
                   {plan.features.map((feature, featureIndex) => {
                     const purpleFeatures = ['10 Custom Domains', 'Workspaces, Campaigns and Groups', 'Bot Protection', 'UTM Presets', 'Advanced Analytics', 'Unlimited Custom Domains', 'Geo Redirect', 'Conversion API & S2S tracking', 'Pro Analytics', 'Expedited Support'];
-                    const isPurple = purpleFeatures.includes(feature);
+                    const proBlackFeatures = ['Workspaces, Campaigns and Groups', 'Bot Protection', 'UTM Presets'];
+                    const isBlack = plan.name === 'PRO' && proBlackFeatures.includes(feature);
+                    const isPurple = !isBlack && purpleFeatures.includes(feature);
                     return (
                       <li key={featureIndex} className="flex items-start gap-3">
                         <Check
                           className="w-5 h-5 mt-0.5 flex-shrink-0 text-[#6358de] font-bold stroke-[2.5]"
                         />
-                        <span className={`text-base md:text-lg font-bold leading-relaxed ${isPurple ? 'text-[#6358de]' : 'text-slate-700 dark:text-slate-300'}`}>
+                        <span className={`text-base md:text-lg font-bold leading-relaxed ${isBlack ? 'text-black dark:text-white' : isPurple ? 'text-[#6358de]' : 'text-slate-700 dark:text-slate-300'}`}>
                           {feature}
                         </span>
                       </li>
