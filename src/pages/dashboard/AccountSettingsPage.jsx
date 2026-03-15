@@ -600,12 +600,16 @@ export default function AccountSettingsPage() {
                         </button>
                       </div>
                       <ul className="flex flex-col gap-4 mt-4">
-                        {plan.features.map((feature, i) => (
-                          <li key={i} className="flex items-start gap-3">
-                            <Check className="w-5 h-5 mt-0.5 flex-shrink-0 text-[#6358de] font-bold stroke-[2.5]" />
-                            <span className="text-slate-700 dark:text-slate-300 text-base font-bold leading-relaxed">{feature}</span>
-                          </li>
-                        ))}
+                        {plan.features.map((feature, i) => {
+                          const purpleFeatures = ['10 Custom Domains', 'Workspaces, Campaigns and Groups', 'Bot Protection', 'UTM Presets', 'Advanced Analytics'];
+                          const isPurple = purpleFeatures.includes(feature);
+                          return (
+                            <li key={i} className="flex items-start gap-3">
+                              <Check className="w-5 h-5 mt-0.5 flex-shrink-0 text-[#6358de] font-bold stroke-[2.5]" />
+                              <span className={`text-base font-bold leading-relaxed ${isPurple ? 'text-[#6358de]' : 'text-slate-700 dark:text-slate-300'}`}>{feature}</span>
+                            </li>
+                          );
+                        })}
                       </ul>
                     </div>
                   </motion.div>
