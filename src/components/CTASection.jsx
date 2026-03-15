@@ -62,14 +62,14 @@ const CTASection = () => {
       description: 'For growing businesses',
       features: [
         'Unlimited Links',
-        '10 Custom Domains',
         'Unlimited QR Codes',
         'Unlimited Clicks',
+        'Email Support',
+        '10 Custom Domains',
         'Workspaces, Campaigns and Groups',
         'Bot Protection',
         'UTM Presets',
         'Advanced Analytics',
-        'Email Support',
       ],
       highlighted: true,
       checkoutUrl:
