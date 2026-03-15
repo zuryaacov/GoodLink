@@ -952,22 +952,6 @@ const LinkManager = () => {
                   }}
                   className="group relative w-full min-h-[240px] transition-all duration-300 hover:shadow-card-mint overflow-visible"
                 >
-                  {/* Real folder shape: one continuous outline (tab + step + body) */}
-                  <svg
-                    className="absolute inset-0 w-full h-full pointer-events-none"
-                    viewBox="0 0 100 100"
-                    preserveAspectRatio="none"
-                    aria-hidden
-                  >
-                    <path
-                      d="M 0,100 L 0,14 L 14,14 L 14,0 L 100,0 L 100,100 Z"
-                      fill="none"
-                      stroke="#E5E9E8"
-                      strokeWidth="0.4"
-                      vectorEffect="non-scaling-stroke"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
                   <div
                     className="relative text-left bg-card-bg flex flex-col min-h-[240px] p-6 pt-8"
                     style={{
@@ -1042,6 +1026,22 @@ const LinkManager = () => {
                     </div>
                   </div>
                   </div>
+                  {/* Folder outline on top - purple so it's visible */}
+                  <svg
+                    className="absolute inset-0 w-full h-full pointer-events-none z-10"
+                    viewBox="0 0 100 100"
+                    preserveAspectRatio="none"
+                    aria-hidden
+                  >
+                    <path
+                      d="M 0,100 L 0,14 L 14,14 L 14,0 L 100,0 L 100,100 Z"
+                      fill="none"
+                      stroke="#6358de"
+                      strokeWidth="1.2"
+                      vectorEffect="non-scaling-stroke"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
                 </div>
               );
             })}
