@@ -684,58 +684,61 @@ const LinkManager = () => {
     return params.length > 0 ? `${baseUrl}?${params.join('&')}` : baseUrl;
   };
 
+  const UTM_PARAM_LABELS = [
+    { key: 'utm_source', label: 'Source' },
+    { key: 'utm_medium', label: 'Medium' },
+    { key: 'utm_campaign', label: 'Campaign' },
+    { key: 'utm_content', label: 'Content' },
+    { key: 'utm_term', label: 'Term' },
+  ];
+
   const renderUtmPresetsList = (link) => {
     if (!link?.utm_presets || !Array.isArray(link.utm_presets) || link.utm_presets.length === 0) {
       return null;
     }
 
     return (
-      <div className="space-y-2">
+      <div className="space-y-4">
         {link.utm_presets.map((presetId) => {
           const preset = presetsMap[presetId];
           if (!preset) return null;
 
-          const platformInfo = PLATFORMS[preset.platform] || {
-            name: preset.platform,
-            colorClass: 'text-[#1b1b1b] bg-[#1b1b1b]/10',
-          };
-
           const presetUrl = buildPresetUrl(link, preset);
           const copyBtnId = `copy-btn-${link.id}-${presetId}`;
+
+          const chips = UTM_PARAM_LABELS.filter(({ key }) => preset[key])
+            .map(({ key, label }) => ({ label, value: preset[key] }));
 
           return (
             <div
               key={presetId}
-              className="p-3 bg-white rounded-lg border border-slate-200 space-y-2"
+              className="p-3 bg-white rounded-lg border border-slate-200 space-y-3"
             >
-              {/* Preset Header */}
-              <div className="flex items-center gap-2">
-                <div className={`px-2 py-1 rounded text-xs font-bold ${platformInfo.colorClass}`}>
-                  {platformInfo.name}
-                </div>
-                <span className="text-xs text-slate-500">•</span>
-                <span
-                  className="text-xs text-slate-700 font-medium truncate flex-1"
-                  title={preset.name}
-                >
-                  {preset.name}
-                </span>
-                <span className="text-xs text-slate-500">({link.domain})</span>
+              {/* Chips: one per UTM param – label in purple, value in black */}
+              <div className="flex flex-wrap gap-2">
+                {chips.map(({ label, value }) => (
+                  <span
+                    key={label}
+                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-100 border border-slate-200 text-sm"
+                  >
+                    <span className="font-semibold text-[#6358de]">{label}:</span>
+                    <span className="text-[#1b1b1b] font-medium">{value}</span>
+                  </span>
+                ))}
               </div>
 
-              {/* Preset URL */}
+              {/* Full UTM URL below – black, with copy */}
               <div className="flex items-start gap-2 min-w-0">
                 <span
-                  className="font-mono text-base font-bold text-emerald-400 flex-1 min-w-0 break-all whitespace-normal"
+                  className="font-mono text-sm text-[#1b1b1b] flex-1 min-w-0 break-all whitespace-normal"
                   title={presetUrl}
-                  style={{ fontWeight: '700' }}
                 >
                   {presetUrl}
                 </span>
                 <button
                   id={copyBtnId}
                   onClick={() => handleCopy(presetUrl, copyBtnId)}
-                  className="text-[#1b1b1b] hover:text-primary transition-colors p-1.5 rounded flex-shrink-0 mt-0.5"
+                  className="text-[#1b1b1b] hover:text-[#6358de] transition-colors p-1.5 rounded flex-shrink-0"
                   title="Copy Preset URL"
                 >
                   <span className="material-symbols-outlined text-base">content_copy</span>
