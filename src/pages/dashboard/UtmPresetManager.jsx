@@ -151,28 +151,13 @@ const UtmPresetManager = () => {
     return params.length > 0 ? params.join('&') : '';
   };
 
-  const UTM_PARAM_COLORS = {
-    utm_source: 'text-blue-400',
-    utm_medium: 'text-purple-400',
-    utm_campaign: 'text-yellow-400',
-    utm_content: 'text-emerald-400',
-    utm_term: 'text-orange-400',
-  };
-
-  const renderColoredQueryString = (str) => {
-    return str.split('&').map((segment, i) => {
-      const match = segment.match(/^(utm_\w+)=(.+)$/);
-      if (!match) return <span key={i} className="text-black">{segment}</span>;
-      const [, param, value] = match;
-      const colorClass = UTM_PARAM_COLORS[param] || 'text-black';
-      return (
-        <span key={i}>
-          {i > 0 && <span className="text-black font-bold">&</span>}
-          <span className={`font-bold ${colorClass}`}>{param}=</span>
-          <span className={`font-bold ${colorClass}`}>{value}</span>
-        </span>
-      );
-    });
+  const renderQueryString = (str) => {
+    return str.split('&').map((segment, i) => (
+      <span key={i}>
+        {i > 0 && <span className="text-black font-bold">&</span>}
+        <span className="font-bold text-[#1b1b1b]">{segment}</span>
+      </span>
+    ));
   };
 
   const handleCopy = async (preset) => {
@@ -454,8 +439,8 @@ const UtmPresetManager = () => {
 
                 <div className="space-y-2 mb-4">
                   {queryString ? (
-                    <div className="text-base font-mono font-bold break-all bg-white border border-slate-200 p-3 rounded-lg">
-                      {renderColoredQueryString(queryString)}
+                    <div className="text-base font-mono font-bold break-all bg-white border border-slate-200 p-3 rounded-lg text-[#1b1b1b]">
+                      {renderQueryString(queryString)}
                     </div>
                   ) : (
                     <div className="text-xs text-black font-bold italic p-3 rounded-lg bg-white border border-slate-200">
@@ -465,32 +450,32 @@ const UtmPresetManager = () => {
 
                   {preset.utm_source && (
                     <div className="flex items-center gap-2 text-sm font-bold">
-                      <span className="text-blue-400 font-mono text-sm w-20">source:</span>
-                      <span className="text-black font-bold">{preset.utm_source}</span>
+                      <span className="text-[#1b1b1b] font-mono text-sm w-20">source:</span>
+                      <span className="text-[#1b1b1b] font-bold">{preset.utm_source}</span>
                     </div>
                   )}
                   {preset.utm_medium && (
                     <div className="flex items-center gap-2 text-sm font-bold">
-                      <span className="text-purple-400 font-mono text-sm w-20">medium:</span>
-                      <span className="text-black font-bold">{preset.utm_medium}</span>
+                      <span className="text-[#1b1b1b] font-mono text-sm w-20">medium:</span>
+                      <span className="text-[#1b1b1b] font-bold">{preset.utm_medium}</span>
                     </div>
                   )}
                   {preset.utm_campaign && (
                     <div className="flex items-center gap-2 text-sm font-bold">
-                      <span className="text-yellow-400 font-mono text-sm w-20">campaign:</span>
-                      <span className="text-black font-bold">{preset.utm_campaign}</span>
+                      <span className="text-[#1b1b1b] font-mono text-sm w-20">campaign:</span>
+                      <span className="text-[#1b1b1b] font-bold">{preset.utm_campaign}</span>
                     </div>
                   )}
                   {preset.utm_content && (
                     <div className="flex items-center gap-2 text-sm font-bold">
-                      <span className="text-emerald-400 font-mono text-sm w-20">content:</span>
-                      <span className="text-black font-bold">{preset.utm_content}</span>
+                      <span className="text-[#1b1b1b] font-mono text-sm w-20">content:</span>
+                      <span className="text-[#1b1b1b] font-bold">{preset.utm_content}</span>
                     </div>
                   )}
                   {preset.utm_term && (
                     <div className="flex items-center gap-2 text-sm font-bold">
-                      <span className="text-orange-400 font-mono text-sm w-20">term:</span>
-                      <span className="text-black font-bold">{preset.utm_term}</span>
+                      <span className="text-[#1b1b1b] font-mono text-sm w-20">term:</span>
+                      <span className="text-[#1b1b1b] font-bold">{preset.utm_term}</span>
                     </div>
                   )}
                 </div>

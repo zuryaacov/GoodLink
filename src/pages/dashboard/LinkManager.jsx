@@ -98,33 +98,39 @@ const LinkManager = () => {
     }
   }, []);
 
-  const handleDownloadQrSvg = useCallback((shortUrl) => {
-    try {
-      const svgString = getQrSvgString(shortUrl);
-      const blob = new Blob([svgString], { type: 'image/svg+xml' });
-      const u = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = u;
-      a.download = 'qrcode.svg';
-      a.click();
-      URL.revokeObjectURL(u);
-    } catch (e) {
-      console.error('QR SVG download failed', e);
-    }
-  }, [getQrSvgString]);
+  const handleDownloadQrSvg = useCallback(
+    (shortUrl) => {
+      try {
+        const svgString = getQrSvgString(shortUrl);
+        const blob = new Blob([svgString], { type: 'image/svg+xml' });
+        const u = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = u;
+        a.download = 'qrcode.svg';
+        a.click();
+        URL.revokeObjectURL(u);
+      } catch (e) {
+        console.error('QR SVG download failed', e);
+      }
+    },
+    [getQrSvgString]
+  );
 
-  const handleCopyQrSvg = useCallback(async (shortUrl) => {
-    try {
-      const svgString = getQrSvgString(shortUrl);
-      await navigator.clipboard.writeText(svgString);
-      setQrCopyStatus('Copied!');
-      setTimeout(() => setQrCopyStatus(''), 2000);
-    } catch (e) {
-      console.error('Copy SVG failed', e);
-      setQrCopyStatus('Failed');
-      setTimeout(() => setQrCopyStatus(''), 2000);
-    }
-  }, [getQrSvgString]);
+  const handleCopyQrSvg = useCallback(
+    async (shortUrl) => {
+      try {
+        const svgString = getQrSvgString(shortUrl);
+        await navigator.clipboard.writeText(svgString);
+        setQrCopyStatus('Copied!');
+        setTimeout(() => setQrCopyStatus(''), 2000);
+      } catch (e) {
+        console.error('Copy SVG failed', e);
+        setQrCopyStatus('Failed');
+        setTimeout(() => setQrCopyStatus(''), 2000);
+      }
+    },
+    [getQrSvgString]
+  );
 
   // Modal states
   const [modalState, setModalState] = useState({
@@ -135,7 +141,11 @@ const LinkManager = () => {
     onConfirm: null,
     isLoading: false,
   });
-  const [deleteLinkModal, setDeleteLinkModal] = useState({ isOpen: false, link: null, isLoading: false });
+  const [deleteLinkModal, setDeleteLinkModal] = useState({
+    isOpen: false,
+    link: null,
+    isLoading: false,
+  });
 
   useEffect(() => {
     fetchData();
@@ -684,67 +694,58 @@ const LinkManager = () => {
     return params.length > 0 ? `${baseUrl}?${params.join('&')}` : baseUrl;
   };
 
-  const UTM_PARAM_LABELS = [
-    { key: 'utm_source', label: 'Source' },
-    { key: 'utm_medium', label: 'Medium' },
-    { key: 'utm_campaign', label: 'Campaign' },
-    { key: 'utm_content', label: 'Content' },
-    { key: 'utm_term', label: 'Term' },
-  ];
-
   const renderUtmPresetsList = (link) => {
     if (!link?.utm_presets || !Array.isArray(link.utm_presets) || link.utm_presets.length === 0) {
       return null;
     }
 
     return (
-      <div className="space-y-4">
+      <div className="space-y-2">
         {link.utm_presets.map((presetId) => {
-          const preset = presetsMap[presetId] ?? presetsMap[String(presetId)];
-          if (!preset) {
-            return (
-              <div key={presetId} className="p-3 bg-slate-50 rounded-lg border border-slate-200 text-sm text-slate-500">
-                Preset not loaded
-              </div>
-            );
-          }
+          const preset = presetsMap[presetId];
+          if (!preset) return null;
+
+          const platformInfo = PLATFORMS[preset.platform] || {
+            name: preset.platform,
+            colorClass: 'text-[#1b1b1b] bg-[#1b1b1b]/10',
+          };
 
           const presetUrl = buildPresetUrl(link, preset);
           const copyBtnId = `copy-btn-${link.id}-${presetId}`;
 
-          const chips = UTM_PARAM_LABELS.filter(({ key }) => preset[key])
-            .map(({ key, label }) => ({ label, value: preset[key] }));
-
           return (
             <div
               key={presetId}
-              className="p-3 bg-white rounded-lg border border-slate-200 space-y-3"
+              className="p-3 bg-white rounded-lg border border-slate-200 space-y-2"
             >
-              {/* Chips: one per UTM param – label in purple, value in black */}
-              <div className="flex flex-wrap gap-2">
-                {chips.map(({ label, value }) => (
-                  <span
-                    key={label}
-                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-100 border border-slate-200 text-sm"
-                  >
-                    <span className="font-semibold text-[#6358de]">{label}:</span>
-                    <span className="text-[#1b1b1b] font-medium">{value}</span>
-                  </span>
-                ))}
+              {/* Preset Header */}
+              <div className="flex items-center gap-2">
+                <div className={`px-2 py-1 rounded text-xs font-bold ${platformInfo.colorClass}`}>
+                  {platformInfo.name}
+                </div>
+                <span className="text-xs text-slate-500">•</span>
+                <span
+                  className="text-xs text-slate-700 font-medium truncate flex-1"
+                  title={preset.name}
+                >
+                  {preset.name}
+                </span>
+                <span className="text-xs text-slate-500">({link.domain})</span>
               </div>
 
-              {/* Full UTM URL below – black, with copy */}
+              {/* Preset URL */}
               <div className="flex items-start gap-2 min-w-0">
                 <span
-                  className="font-mono text-sm text-[#1b1b1b] flex-1 min-w-0 break-all whitespace-normal"
+                  className="font-mono text-base font-bold text-emerald-400 flex-1 min-w-0 break-all whitespace-normal"
                   title={presetUrl}
+                  style={{ fontWeight: '700' }}
                 >
                   {presetUrl}
                 </span>
                 <button
                   id={copyBtnId}
                   onClick={() => handleCopy(presetUrl, copyBtnId)}
-                  className="text-[#1b1b1b] hover:text-[#6358de] transition-colors p-1.5 rounded flex-shrink-0"
+                  className="text-[#1b1b1b] hover:text-primary transition-colors p-1.5 rounded flex-shrink-0 mt-0.5"
                   title="Copy Preset URL"
                 >
                   <span className="material-symbols-outlined text-base">content_copy</span>
@@ -870,7 +871,9 @@ const LinkManager = () => {
                   </span>
                 </button>
               )}
-              <h1 className="text-2xl md:text-3xl font-bold text-[#1b1b1b] truncate">{pageTitle}</h1>
+              <h1 className="text-2xl md:text-3xl font-bold text-[#1b1b1b] truncate">
+                {pageTitle}
+              </h1>
             </div>
           </div>
           <div className={isFoldersEnabled ? 'relative w-full sm:w-auto' : 'relative ml-auto'}>
@@ -938,7 +941,10 @@ const LinkManager = () => {
         <div className="flex flex-col gap-6 w-full">
           <div className="relative flex py-5 items-center">
             <div className="flex-grow border-t border-[#E5E9E8]"></div>
-            <span className="flex-shrink mx-4 text-xs font-bold uppercase px-3 py-1 rounded-full bg-[#F4F7F6]" style={{ color: '#001E22' }}>
+            <span
+              className="flex-shrink mx-4 text-xs font-bold uppercase px-3 py-1 rounded-full bg-[#F4F7F6]"
+              style={{ color: '#001E22' }}
+            >
               {KIND_LABEL_PLURAL[nextKind] || 'SPACES'}
             </span>
             <div className="flex-grow border-t border-[#E5E9E8]"></div>
@@ -976,78 +982,81 @@ const LinkManager = () => {
                       fill="#FCFDFD"
                       stroke="#6358de"
                       strokeWidth="1.5"
-                      style={{ vectorEffect: 'non-scaling-stroke', shapeRendering: 'geometricPrecision' }}
+                      style={{
+                        vectorEffect: 'non-scaling-stroke',
+                        shapeRendering: 'geometricPrecision',
+                      }}
                       className="transition-all duration-300 group-hover:stroke-[#5348c7] group-hover:fill-[#F4F7F6]"
                     />
                   </svg>
                   <div className="relative z-10 flex flex-col min-h-[224px] p-6 pt-10">
-                  <div className="flex items-start justify-between mb-6">
-                    <div>
-                      <h3 className="text-2xl font-bold mb-1 group-hover:text-primary transition-colors">
-                        {space.name}
-                      </h3>
-                      <div className="flex items-center gap-2 text-[#6358de] text-xs font-bold uppercase tracking-widest opacity-80">
-                        <LayoutGrid size={14} />
-                        <span>{kindLabel}</span>
+                    <div className="flex items-start justify-between mb-6">
+                      <div>
+                        <h3 className="text-2xl font-bold mb-1 group-hover:text-primary transition-colors">
+                          {space.name}
+                        </h3>
+                        <div className="flex items-center gap-2 text-[#6358de] text-xs font-bold uppercase tracking-widest opacity-80">
+                          <LayoutGrid size={14} />
+                          <span>{kindLabel}</span>
+                        </div>
+                      </div>
+                      <div className="mr-12 text-[#6358de] transition-all">
+                        <Folder size={24} />
                       </div>
                     </div>
-                    <div className="mr-12 text-[#6358de] transition-all">
-                      <Folder size={24} />
-                    </div>
-                  </div>
-                  <div className="absolute top-8 right-4">
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setOpenSpaceMenuId((prev) => (prev === space.id ? null : space.id));
-                      }}
-                      className="p-2 rounded-lg bg-white border border-slate-200 text-slate-700 hover:text-[#1b1b1b] hover:border-primary/40 transition-colors"
-                      aria-label="Space actions"
-                    >
-                      <span className="material-symbols-outlined text-base">more_vert</span>
-                    </button>
-                    {openSpaceMenuId === space.id && (
-                      <div
-                        className="absolute right-0 mt-2 w-40 rounded-xl border border-slate-200 bg-white shadow-2xl overflow-hidden z-20"
-                        onClick={(e) => e.stopPropagation()}
+                    <div className="absolute top-8 right-4">
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setOpenSpaceMenuId((prev) => (prev === space.id ? null : space.id));
+                        }}
+                        className="p-2 rounded-lg bg-white border border-slate-200 text-slate-700 hover:text-[#1b1b1b] hover:border-primary/40 transition-colors"
+                        aria-label="Space actions"
                       >
-                        <button
-                          type="button"
-                          onClick={() => openEditSpaceModal(space)}
-                          className="w-full px-4 py-2.5 text-left text-[#1b1b1b] hover:bg-white/5 transition-colors text-sm"
+                        <span className="material-symbols-outlined text-base">more_vert</span>
+                      </button>
+                      {openSpaceMenuId === space.id && (
+                        <div
+                          className="absolute right-0 mt-2 w-40 rounded-xl border border-slate-200 bg-white shadow-2xl overflow-hidden z-20"
+                          onClick={(e) => e.stopPropagation()}
                         >
-                          Update
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => handleCancelSpace(space)}
-                          className="w-full px-4 py-2.5 text-left text-red-400 hover:bg-red-400/10 transition-colors text-sm"
-                        >
-                          Delete
-                        </button>
+                          <button
+                            type="button"
+                            onClick={() => openEditSpaceModal(space)}
+                            className="w-full px-4 py-2.5 text-left text-[#1b1b1b] hover:bg-white/5 transition-colors text-sm"
+                          >
+                            Update
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleCancelSpace(space)}
+                            className="w-full px-4 py-2.5 text-left text-red-400 hover:bg-red-400/10 transition-colors text-sm"
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="bg-card-bg border border-card-border rounded-xl p-4 mb-6">
+                      <div className="text-[10px] text-gray-500 font-bold uppercase mb-1 tracking-widest">
+                        Total {kindLabel} Clicks
                       </div>
-                    )}
-                  </div>
+                      <div className="text-2xl font-extrabold text-[#1b1b1b]">
+                        {new Intl.NumberFormat('en-US').format(stats.clicks)}
+                      </div>
+                    </div>
 
-                  <div className="bg-card-bg border border-card-border rounded-xl p-4 mb-6">
-                    <div className="text-[10px] text-gray-500 font-bold uppercase mb-1 tracking-widest">
-                      Total {kindLabel} Clicks
+                    <div className="mt-auto flex items-center justify-between pt-4 border-t border-slate-200">
+                      <div className="text-xs font-bold text-[#1b1b1b]">
+                        {new Intl.NumberFormat('en-US').format(stats.linksCount)} Links Inside
+                      </div>
+                      <div className="flex items-center gap-2 text-xs font-bold text-[#1b1b1b]">
+                        <div className="w-2 h-2 rounded-full bg-[#00F2B5] animate-pulse shadow-[0_0_8px_#00F2B5]"></div>
+                        Active
+                      </div>
                     </div>
-                    <div className="text-2xl font-extrabold text-[#1b1b1b]">
-                      {new Intl.NumberFormat('en-US').format(stats.clicks)}
-                    </div>
-                  </div>
-
-                  <div className="mt-auto flex items-center justify-between pt-4 border-t border-slate-200">
-                    <div className="text-xs font-bold text-[#1b1b1b]">
-                      {new Intl.NumberFormat('en-US').format(stats.linksCount)} Links Inside
-                    </div>
-                    <div className="flex items-center gap-2 text-xs font-bold text-[#1b1b1b]">
-                      <div className="w-2 h-2 rounded-full bg-[#00F2B5] animate-pulse shadow-[0_0_8px_#00F2B5]"></div>
-                      Active
-                    </div>
-                  </div>
                   </div>
                 </div>
               );
@@ -1068,7 +1077,10 @@ const LinkManager = () => {
       {directLinks.length > 0 && (
         <div className="relative flex py-5 items-center">
           <div className="flex-grow border-t border-[#E5E9E8]"></div>
-          <span className="flex-shrink mx-4 text-xs font-bold uppercase px-3 py-1 rounded-full bg-[#F4F7F6]" style={{ color: '#001E22' }}>
+          <span
+            className="flex-shrink mx-4 text-xs font-bold uppercase px-3 py-1 rounded-full bg-[#F4F7F6]"
+            style={{ color: '#001E22' }}
+          >
             Links
           </span>
           <div className="flex-grow border-t border-[#E5E9E8]"></div>
@@ -1139,12 +1151,9 @@ const LinkManager = () => {
                   }
                   onMove={isFoldersEnabled ? openMoveModal : null}
                   onShowModal={(modalConfig) => setModalState(modalConfig)}
-                  onUtmPresetsClick={
-                    link.utm_presets?.length > 0
-                      ? () => setUtmPresetsModal({ isOpen: true, link })
-                      : null
+                  onDeleteClick={(linkToDelete) =>
+                    setDeleteLinkModal({ isOpen: true, link: linkToDelete, isLoading: false })
                   }
-                  onDeleteClick={(linkToDelete) => setDeleteLinkModal({ isOpen: true, link: linkToDelete, isLoading: false })}
                 />
 
                 {/* Short Link box */}
@@ -1171,58 +1180,11 @@ const LinkManager = () => {
                   </div>
                 </div>
 
-                {/* UTM Presets on card: chips (param name purple, value black) + full UTM in black */}
-                {link.utm_presets?.length > 0 && (
-                  <div className="mb-6 space-y-3">
-                    <span className="text-[10px] text-gray-500 font-bold uppercase tracking-widest block mb-2">UTM Presets</span>
-                    {link.utm_presets.map((presetId) => {
-                      const preset = presetsMap[presetId] ?? presetsMap[String(presetId)];
-                      if (!preset) {
-                        return (
-                          <div key={presetId} className="p-3 bg-slate-50 rounded-xl border border-slate-200 text-sm text-slate-500">
-                            Preset loading…
-                          </div>
-                        );
-                      }
-                      const presetUrl = buildPresetUrl(link, preset);
-                      const copyBtnId = `card-copy-${link.id}-${presetId}`;
-                      const chips = UTM_PARAM_LABELS.filter(({ key }) => preset[key]).map(({ key, label }) => ({ label, value: preset[key] }));
-                      return (
-                        <div key={presetId} className="p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-2">
-                          <div className="flex flex-wrap gap-2">
-                            {chips.map(({ label, value }) => (
-                              <span key={label} className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white border border-slate-200 text-sm">
-                                <span className="font-semibold text-[#6358de]">{label}:</span>
-                                <span className="text-[#1b1b1b] font-medium">{value}</span>
-                              </span>
-                            ))}
-                          </div>
-                          <div className="flex items-start gap-2 min-w-0">
-                            <span className="font-mono text-xs text-[#1b1b1b] flex-1 min-w-0 break-all whitespace-normal" title={presetUrl}>
-                              {presetUrl}
-                            </span>
-                            <button
-                              id={copyBtnId}
-                              onClick={(e) => { e.stopPropagation(); handleCopy(presetUrl, copyBtnId); }}
-                              className="text-[#1b1b1b] hover:text-[#6358de] transition-colors p-1.5 rounded flex-shrink-0"
-                              title="Copy Preset URL"
-                            >
-                              <span className="material-symbols-outlined text-base">content_copy</span>
-                            </button>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-
                 {/* Footer: Active (left), QR (center), Clicks (right) */}
                 <div className="mt-auto flex justify-between items-center pt-4 border-t border-slate-200">
                   <div className="flex items-center gap-3">
                     {isRejected ? (
-                      <span className="text-sm font-semibold text-red-600">
-                        Rejected
-                      </span>
+                      <span className="text-sm font-semibold text-red-600">Rejected</span>
                     ) : (
                       <>
                         <label className="relative inline-block w-11 h-6 cursor-pointer select-none">
@@ -1255,7 +1217,17 @@ const LinkManager = () => {
                         className="flex items-center justify-center w-[18px] h-[18px] rounded-full bg-white text-[#1b1b1b] shadow-[0_2px_6px_rgba(0,0,0,0.15)]"
                         aria-hidden
                       >
-                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-[#1b1b1b]">
+                        <svg
+                          width="10"
+                          height="10"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2.5"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          className="text-[#1b1b1b]"
+                        >
                           <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
                           <polyline points="15 3 21 3 21 9" />
                           <line x1="10" y1="14" x2="21" y2="3" />
@@ -1454,13 +1426,16 @@ const LinkManager = () => {
       {/* Delete Link Modal - rendered here so overlay covers full screen like Delete Workspace */}
       <Modal
         isOpen={deleteLinkModal.isOpen}
-        onClose={() => !deleteLinkModal.isLoading && setDeleteLinkModal({ isOpen: false, link: null, isLoading: false })}
+        onClose={() =>
+          !deleteLinkModal.isLoading &&
+          setDeleteLinkModal({ isOpen: false, link: null, isLoading: false })
+        }
         title="Delete this link?"
         message={
           deleteLinkModal.link ? (
             <>
-              Are you sure you want to delete <strong>{deleteLinkModal.link.short_url}</strong>? This will stop all
-              traffic to this destination.
+              Are you sure you want to delete <strong>{deleteLinkModal.link.short_url}</strong>?
+              This will stop all traffic to this destination.
             </>
           ) : null
         }
@@ -1538,7 +1513,6 @@ const LinkActionsMenu = ({
   onAnalytics,
   onMove,
   onShowModal,
-  onUtmPresetsClick,
   onDeleteClick,
   className = '',
   hoverBorderClass = 'hover:border-primary/40',
@@ -1597,18 +1571,6 @@ const LinkActionsMenu = ({
               <span className="material-symbols-outlined text-base">content_copy</span>
               Duplicate
             </button>
-            {onUtmPresetsClick && (
-              <button
-                onClick={() => {
-                  setIsOpen(false);
-                  onUtmPresetsClick();
-                }}
-                className="w-full px-4 py-3 text-left text-[#1b1b1b] hover:bg-white/5 transition-colors flex items-center gap-3 text-sm"
-              >
-                <span className="material-symbols-outlined text-base">campaign</span>
-                UTM Preset Links
-              </button>
-            )}
             {onMove && (
               <button
                 onClick={() => {
