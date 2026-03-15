@@ -950,7 +950,7 @@ const LinkManager = () => {
                       goToSpace(space.id);
                     }
                   }}
-                  className="group relative w-full min-h-[224px] transition-all duration-300 hover:shadow-card-mint overflow-visible"
+                  className="group relative w-full min-h-[224px] transition-all duration-300 overflow-visible"
                   dir="ltr"
                 >
                   {/* Folder shape: LTR (English) – tab on left, same as Clean Folder Structure UI LTR example */}
@@ -985,7 +985,7 @@ const LinkManager = () => {
                       <Folder size={24} />
                     </div>
                   </div>
-                  <div className="absolute top-4 right-4">
+                  <div className="absolute top-8 right-4">
                     <button
                       type="button"
                       onClick={(e) => {
