@@ -154,8 +154,8 @@ const UtmPresetManager = () => {
   const renderQueryString = (str) => {
     return str.split('&').map((segment, i) => (
       <span key={i}>
-        {i > 0 && <span className="font-bold text-[#475569]">&</span>}
-        <span className="font-bold text-[#475569]">{segment}</span>
+        {i > 0 && <span className="font-bold text-[#7e8896]">&</span>}
+        <span className="font-bold text-[#7e8896]">{segment}</span>
       </span>
     ));
   };
@@ -461,11 +461,11 @@ const UtmPresetManager = () => {
 
                   {/* Full UTM string below */}
                   {queryString ? (
-                    <div className="text-base font-mono font-bold break-all bg-white border border-slate-200 p-3 rounded-lg text-[#475569]">
+                    <div className="text-base font-mono font-bold break-all bg-white border border-slate-200 p-3 rounded-lg text-[#7e8896]">
                       {renderQueryString(queryString)}
                     </div>
                   ) : (
-                    <div className="text-xs text-[#475569] font-bold italic p-3 rounded-lg bg-white border border-slate-200">
+                    <div className="text-xs text-[#7e8896] font-bold italic p-3 rounded-lg bg-white border border-slate-200">
                       No UTM parameters set
                     </div>
                   )}
