@@ -149,14 +149,17 @@ const CTASection = () => {
           </p>
         </motion.div>
 
-        {/* Pricing sub-heading: 30-day trial message */}
+        {/* Pricing sub-heading: 30-day trial message – 3 lines, sentence case, PRO larger */}
         <div className="flex justify-center">
-          <div className="inline-flex items-center gap-2 text-[#6358de] font-extrabold tracking-wide text-3xl md:text-5xl uppercase">
-            <span className="text-3xl md:text-5xl">🎁</span>
-            <span>
-              Get 30-Day Free Trial · Everything in{' '}
-              <span className="text-3xl md:text-5xl">PRO</span> · No credit card required
+          <div className="inline-flex flex-col items-center gap-0 text-center text-[#6358de] font-extrabold tracking-wide text-3xl md:text-5xl">
+            <span className="flex items-center gap-2">
+              <span>🎁</span>
+              <span>Get 30-day free trial</span>
             </span>
+            <span>
+              Everything in <span className="text-4xl md:text-6xl uppercase">PRO</span>
+            </span>
+            <span>No credit card required</span>
           </div>
         </div>
 
