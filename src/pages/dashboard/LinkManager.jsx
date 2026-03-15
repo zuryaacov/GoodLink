@@ -965,7 +965,7 @@ const LinkManager = () => {
                       goToSpace(space.id);
                     }
                   }}
-                  className="group relative w-full min-h-[224px] transition-all duration-300 overflow-visible"
+                  className={`group relative w-full min-h-[224px] transition-all duration-300 overflow-visible ${openSpaceMenuId === space.id ? 'z-20' : ''}`}
                   dir="ltr"
                 >
                   {/* Folder shape: LTR – path and line settings from Clean Folder Structure UI LTR example */}
@@ -1068,7 +1068,7 @@ const LinkManager = () => {
         <button
           type="button"
           aria-label="Close space menu"
-          className="fixed inset-0 z-10"
+          className="fixed inset-0 z-[15]"
           onClick={() => setOpenSpaceMenuId(null)}
         />
       )}
