@@ -1160,6 +1160,44 @@ const LinkManager = () => {
                   </div>
                 </div>
 
+                {/* UTM Presets on card: chips (param name purple, value black) + full UTM in black */}
+                {link.utm_presets?.length > 0 && (
+                  <div className="mb-6 space-y-3">
+                    {link.utm_presets.map((presetId) => {
+                      const preset = presetsMap[presetId];
+                      if (!preset) return null;
+                      const presetUrl = buildPresetUrl(link, preset);
+                      const copyBtnId = `card-copy-${link.id}-${presetId}`;
+                      const chips = UTM_PARAM_LABELS.filter(({ key }) => preset[key]).map(({ key, label }) => ({ label, value: preset[key] }));
+                      return (
+                        <div key={presetId} className="p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-2">
+                          <div className="flex flex-wrap gap-2">
+                            {chips.map(({ label, value }) => (
+                              <span key={label} className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white border border-slate-200 text-sm">
+                                <span className="font-semibold text-[#6358de]">{label}:</span>
+                                <span className="text-[#1b1b1b] font-medium">{value}</span>
+                              </span>
+                            ))}
+                          </div>
+                          <div className="flex items-start gap-2 min-w-0">
+                            <span className="font-mono text-xs text-[#1b1b1b] flex-1 min-w-0 break-all whitespace-normal" title={presetUrl}>
+                              {presetUrl}
+                            </span>
+                            <button
+                              id={copyBtnId}
+                              onClick={(e) => { e.stopPropagation(); handleCopy(presetUrl, copyBtnId); }}
+                              className="text-[#1b1b1b] hover:text-[#6358de] transition-colors p-1.5 rounded flex-shrink-0"
+                              title="Copy Preset URL"
+                            >
+                              <span className="material-symbols-outlined text-base">content_copy</span>
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+
                 {/* Footer: Active (left), QR (center), Clicks (right) */}
                 <div className="mt-auto flex justify-between items-center pt-4 border-t border-slate-200">
                   <div className="flex items-center gap-3">
