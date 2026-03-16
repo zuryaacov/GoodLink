@@ -37,7 +37,7 @@ const KIND_LABEL_PLURAL = {
   group: 'Groups',
 };
 
-const SPACE_NAME_REGEX = /^[A-Za-z0-9 !@#$%^&*()\-\+=}{\[\]]+$/;
+const SPACE_NAME_REGEX = /^[A-Za-z0-9 !@#$%&-]+$/;
 
 const LinkManager = () => {
   const navigate = useNavigate();
@@ -415,7 +415,7 @@ const LinkManager = () => {
     if (trimmed.length < 2) return 'Name must be at least 2 characters.';
     if (trimmed.length > 80) return 'Name cannot exceed 80 characters.';
     if (!SPACE_NAME_REGEX.test(trimmed)) {
-      return 'Allowed: English letters, numbers, spaces, and !@#$%^&*)(-+=}{][';
+      return 'Allowed: English letters, numbers, spaces, and !@#$%&-';
     }
     return null;
   };
@@ -1510,7 +1510,11 @@ const LinkManager = () => {
               className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm"
               placeholder={`Enter ${spaceModal.kind ? KIND_LABEL[spaceModal.kind] : 'item'} name`}
             />
-            {spaceModal.error ? <p className="text-sm text-red-500">{spaceModal.error}</p> : null}
+            <div className="min-h-[20px]">
+              {spaceModal.error ? (
+                <p className="text-sm text-red-500">{spaceModal.error}</p>
+              ) : null}
+            </div>
           </div>
         }
       />
