@@ -362,6 +362,7 @@ const AuthPage = () => {
         }
 
         // Only proceed with signup if Turnstile verification passed
+        const trimmedName = (fullName || '').trim();
         const { error, data } = await supabase.auth.signUp({
           email,
           password,
