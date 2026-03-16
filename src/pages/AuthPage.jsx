@@ -559,6 +559,11 @@ const AuthPage = () => {
       hasNumber: /[0-9]/.test(password),
     };
 
+    // If password already meets all requirements, hide the helper UI
+    if (checks.length && checks.hasUpper && checks.hasLower && checks.hasNumber) {
+      return null;
+    }
+
     // Calculate score (0 to 4)
     const strengthScore = Object.values(checks).filter(Boolean).length;
 
