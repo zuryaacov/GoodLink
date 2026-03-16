@@ -384,6 +384,12 @@ const AuthPage = () => {
           throw error;
         }
 
+        // If Supabase returns a user with empty identities, it usually means the email already exists
+        // (Supabase may do this to prevent user enumeration).
+        if (data?.user && Array.isArray(data.user.identities) && data.user.identities.length === 0) {
+          throw new Error('This email already exists in our system. Please log in instead.');
+        }
+
         if (data?.user && !data?.session) {
           setShowSignupSuccessModal(true);
           setMessage(null);
@@ -398,10 +404,11 @@ const AuthPage = () => {
         if (
           err instanceof Error &&
           typeof err.message === 'string' &&
-          /already.*(registered|exists|used)/i.test(err.message)
+          /(already.*(registered|exists|used))|(user already registered)|(duplicate)|(email.*(exists|registered))/i.test(
+            err.message
+          )
         ) {
-          message =
-            'This email is already registered. Please log in or use a different email address.';
+          message = 'This email already exists in our system. Please log in instead.';
         }
 
         setError(message);
