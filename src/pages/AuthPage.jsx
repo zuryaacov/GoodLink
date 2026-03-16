@@ -417,7 +417,7 @@ const AuthPage = () => {
 
         // Verify Turnstile token before signup
         if (!turnstileToken) {
-          throw new Error('Please complete the security verification.');
+          throw new Error('Security verification is required.');
         }
 
         const turnstileWorkerUrl =
