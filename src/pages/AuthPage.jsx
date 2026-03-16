@@ -412,7 +412,6 @@ const AuthPage = () => {
         if (!shouldRenderTurnstile) {
           setShouldRenderTurnstile(true);
           setLoading(false);
-          setError('Please complete the security verification.');
           return;
         }
 
