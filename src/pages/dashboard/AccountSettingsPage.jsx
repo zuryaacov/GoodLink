@@ -454,23 +454,24 @@ export default function AccountSettingsPage() {
                   <p className="text-xs text-slate-500 mt-2">
                     Used for analytics reports and scheduled events.
                   </p>
+                  <div className="mt-6 min-h-[2.5rem]">
+                    {success && (
+                      <div className="text-green-400 text-sm flex items-center gap-2">
+                        <span className="material-symbols-outlined">check_circle</span>
+                        {success}
+                      </div>
+                    )}
+                    {error && (
+                      <div className="text-red-400 text-sm flex items-center gap-2">
+                        <span className="material-symbols-outlined">error</span>
+                        {error}
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 {/* Save Button */}
-                <div className="pt-4 flex items-center justify-between">
-                  {success && (
-                    <div className="text-green-400 text-sm flex items-center gap-2">
-                      <span className="material-symbols-outlined">check_circle</span>
-                      {success}
-                    </div>
-                  )}
-                  {error && (
-                    <div className="text-red-400 text-sm flex items-center gap-2">
-                      <span className="material-symbols-outlined">error</span>
-                      {error}
-                    </div>
-                  )}
-                  <div className="flex-1"></div> {/* Spacer */}
+                <div className="pt-8 flex justify-end">
                   <button
                     type="submit"
                     disabled={saving}
