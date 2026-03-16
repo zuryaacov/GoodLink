@@ -818,15 +818,17 @@ export default function LinkWizardOnePerPage({
                       className="flex-1 bg-transparent py-5 px-3 text-xl outline-none font-semibold border-none text-[#1b1b1b] placeholder-slate-500"
                     />
                   </div>
-                  {slugError && <p className="text-red-400 text-xs">{slugError}</p>}
-                  {validating && (
-                    <p className="text-[#1b1b1b] text-xs flex items-center gap-2">
-                      <span className="material-symbols-outlined animate-spin text-sm">
-                        refresh
-                      </span>
-                      Checking availability...
-                    </p>
-                  )}
+                  <div className="min-h-[32px] mt-1 space-y-1">
+                    {slugError && <p className="text-red-400 text-xs">{slugError}</p>}
+                    {!slugError && validating && (
+                      <p className="text-[#1b1b1b] text-xs flex items-center gap-2">
+                        <span className="material-symbols-outlined animate-spin text-sm">
+                          refresh
+                        </span>
+                        Checking availability...
+                      </p>
+                    )}
+                  </div>
                 </div>
               )}
 
