@@ -366,7 +366,8 @@ const AuthPage = () => {
           email,
           password,
           options: {
-            data: { full_name: (nameCheck.sanitized || trimmedName) || undefined },
+            // Full name was already validated above (length + allowed characters)
+            data: { full_name: trimmedName || undefined },
             emailRedirectTo: `${window.location.origin}/login${
               planParam ? `?plan=${planParam}` : ''
             }`,
@@ -389,8 +390,19 @@ const AuthPage = () => {
           navigate('/dashboard/links');
         }
       } catch (err) {
-        const message =
+        let message =
           err instanceof Error ? err.message : 'Something went wrong. Please try again.';
+
+        // Friendly message when trying to sign up with an email that already exists
+        if (
+          err instanceof Error &&
+          typeof err.message === 'string' &&
+          /already.*(registered|exists|used)/i.test(err.message)
+        ) {
+          message =
+            'This email is already registered. Please log in or use a different email address.';
+        }
+
         setError(message);
       } finally {
         setLoading(false);
