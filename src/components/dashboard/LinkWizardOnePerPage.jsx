@@ -937,9 +937,11 @@ export default function LinkWizardOnePerPage({
                             </option>
                           ))}
                         </select>
-                        {geoRuleErrors.country && (
-                          <p className="text-red-400 text-xs mt-1">{geoRuleErrors.country}</p>
-                        )}
+                        <div className="min-h-[20px] mt-1">
+                          {geoRuleErrors.country && (
+                            <p className="text-red-400 text-xs">{geoRuleErrors.country}</p>
+                          )}
+                        </div>
                       </div>
                       <div>
                         <label className="text-xs font-bold text-gray-500 uppercase block mb-2">
@@ -952,9 +954,11 @@ export default function LinkWizardOnePerPage({
                           placeholder="https://..."
                           className="w-full bg-white border border-slate-200 rounded-xl p-4 text-[#1b1b1b] outline-none focus:border-[#135bec]"
                         />
-                        {geoRuleErrors.url && (
-                          <p className="text-red-400 text-xs mt-1">{geoRuleErrors.url}</p>
-                        )}
+                        <div className="min-h-[20px] mt-1">
+                          {geoRuleErrors.url && (
+                            <p className="text-red-400 text-xs">{geoRuleErrors.url}</p>
+                          )}
+                        </div>
                       </div>
                       <div className="flex gap-3">
                         <button
