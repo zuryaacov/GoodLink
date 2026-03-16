@@ -366,7 +366,7 @@ const AuthPage = () => {
           email,
           password,
           options: {
-            data: { full_name: fullName.trim() || undefined },
+            data: { full_name: (nameCheck.sanitized || trimmedName) || undefined },
             emailRedirectTo: `${window.location.origin}/login${
               planParam ? `?plan=${planParam}` : ''
             }`,
@@ -440,15 +440,17 @@ const AuthPage = () => {
         // Full name validation
         const trimmedName = fullName.trim();
         if (!trimmedName || trimmedName.length < 2) {
-          throw new Error('Your full name is required so we can personalize your Goodlink experience.');
+          throw new Error(
+            'Your full name is required so we can personalize your Goodlink experience.'
+          );
         }
         if (trimmedName.length > 20) {
           throw new Error('Full name cannot exceed 20 characters');
         }
 
-        // XSS / injection check on full name
-        const { checkForMaliciousInput } = await import('../lib/inputSanitization');
-        const nameCheck = checkForMaliciousInput(trimmedName);
+        // Structured validation on full name (allowed chars + no multiple hyphens)
+        const { sanitizeInput } = await import('../lib/inputSanitization');
+        const nameCheck = sanitizeInput(trimmedName);
         if (!nameCheck.safe) {
           throw new Error(nameCheck.error);
         }
