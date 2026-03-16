@@ -476,14 +476,18 @@ const PixelManager = () => {
 
       {/* Pixels List */}
       {pixels.length === 0 ? (
-        <div className="bg-card-bg border rounded-2xl p-4 md:p-6 w-full hover:shadow-card-mint transition-all border-[#6358de]/40 md:border-card-border md:hover:border-[#6358de]/40">
-          <div className="text-center py-12">
-            <span className="material-symbols-outlined text-6xl text-slate-600 mb-4">
-              ads_click
-            </span>
-            <p className="text-[#1b1b1b] text-lg mb-2">No CAPI profiles yet</p>
-            <p className="text-slate-500 text-sm">Create your first CAPI profile to get started</p>
-          </div>
+        <div className="bg-[#fcfdfd] border rounded-2xl p-12 text-center hover:shadow-card-mint transition-all border-[#6358de]/40 md:border-card-border md:hover:border-[#6358de]/40">
+          <span className="material-symbols-outlined text-6xl text-black mb-4">ads_click</span>
+          <h3 className="text-xl font-bold text-black mb-2">No CAPI Profiles Yet</h3>
+          <p className="text-black mb-6">
+            Create your first CAPI profile to start tracking your conversions
+          </p>
+          <button
+            onClick={() => navigate('/dashboard/pixels/new')}
+            className="px-6 py-3 bg-[#6358de] hover:bg-[#5348c7] text-white font-bold rounded-xl transition-all"
+          >
+            Create First CAPI
+          </button>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 w-full">

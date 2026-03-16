@@ -471,12 +471,18 @@ const CustomDomainsManager = () => {
 
       {/* Domains List */}
       {domains.length === 0 ? (
-        <div className="bg-card-bg border rounded-2xl p-4 md:p-6 w-full hover:shadow-card-mint transition-all border-[#6358de]/40 md:border-card-border md:hover:border-[#6358de]/40">
-          <div className="text-center py-12">
-            <span className="material-symbols-outlined text-6xl text-slate-600 mb-4">public</span>
-            <p className="text-[#1b1b1b] text-lg mb-2">No custom domains yet</p>
-            <p className="text-slate-500 text-sm">Create your first custom domain to get started</p>
-          </div>
+        <div className="bg-[#fcfdfd] border rounded-2xl p-12 text-center hover:shadow-card-mint transition-all border-[#6358de]/40 md:border-card-border md:hover:border-[#6358de]/40">
+          <span className="material-symbols-outlined text-6xl text-black mb-4">public</span>
+          <h3 className="text-xl font-bold text-black mb-2">No Custom Domains Yet</h3>
+          <p className="text-black mb-6">
+            Create your first custom domain to brand your links
+          </p>
+          <button
+            onClick={() => navigate('/dashboard/domains/new')}
+            className="px-6 py-3 bg-[#6358de] hover:bg-[#5348c7] text-white font-bold rounded-xl transition-all"
+          >
+            Create First Domain
+          </button>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
