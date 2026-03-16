@@ -712,17 +712,20 @@ export default function LinkWizardOnePerPage({
                       className="w-full bg-transparent py-5 px-6 text-xl outline-none border-none text-[#1b1b1b] placeholder-slate-500"
                     />
                   </div>
-                  {nameError && (
-                    <p className="text-red-400 text-xs px-1 pt-2">{nameError}</p>
-                  )}
-                  {validating && (
-                    <p className="text-[#1b1b1b] text-xs px-1 pt-1 flex items-center gap-2">
-                      <span className="material-symbols-outlined animate-spin text-sm">
-                        refresh
-                      </span>
-                      Checking...
-                    </p>
-                  )}
+                  {/* Reserve space for error / helper text so layout doesn't jump */}
+                  <div className="min-h-[32px] mt-1 space-y-1">
+                    {nameError && (
+                      <p className="text-red-400 text-xs px-1">{nameError}</p>
+                    )}
+                    {!nameError && validating && (
+                      <p className="text-[#1b1b1b] text-xs px-1 flex items-center gap-2">
+                        <span className="material-symbols-outlined animate-spin text-sm">
+                          refresh
+                        </span>
+                        Checking...
+                      </p>
+                    )}
+                  </div>
                 </>
               )}
 
