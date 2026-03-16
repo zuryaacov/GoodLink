@@ -512,7 +512,7 @@ export default function PixelWizardOnePerPage({ initialData, editingPixelId, onS
                 </div>
                 <div className="min-h-[24px] mt-1">
                   {fieldErrors.name && (
-                    <p className="text-red-400 text-xs">{fieldErrors.name}</p>
+                    <p className="text-red-400 text-sm">{fieldErrors.name}</p>
                   )}
                 </div>
               </>
@@ -560,7 +560,7 @@ export default function PixelWizardOnePerPage({ initialData, editingPixelId, onS
                 </div>
                 <div className="min-h-[20px] mt-1">
                   {fieldErrors.pixelId && (
-                    <p className="text-red-400 text-xs">{fieldErrors.pixelId}</p>
+                    <p className="text-red-400 text-sm">{fieldErrors.pixelId}</p>
                   )}
                 </div>
                 <p className="text-slate-500 text-xs">{currentPlatform?.placeholder}</p>
@@ -583,7 +583,7 @@ export default function PixelWizardOnePerPage({ initialData, editingPixelId, onS
                 </div>
                 <div className="min-h-[20px] mt-1">
                   {fieldErrors.capiToken && (
-                    <p className="text-red-400 text-xs">{fieldErrors.capiToken}</p>
+                    <p className="text-red-400 text-sm">{fieldErrors.capiToken}</p>
                   )}
                 </div>
               </div>
@@ -611,7 +611,7 @@ export default function PixelWizardOnePerPage({ initialData, editingPixelId, onS
                     </div>
                     <div className="min-h-[20px] mt-1">
                       {fieldErrors.eventType && (
-                        <p className="text-red-400 text-xs">{fieldErrors.eventType}</p>
+                        <p className="text-red-400 text-sm">{fieldErrors.eventType}</p>
                       )}
                     </div>
                   </>
@@ -659,7 +659,7 @@ export default function PixelWizardOnePerPage({ initialData, editingPixelId, onS
                     )}
                     <div className="min-h-[20px] mt-1">
                       {fieldErrors.customEventName && (
-                        <p className="text-red-400 text-xs">
+                        <p className="text-red-400 text-sm">
                           {fieldErrors.customEventName}
                         </p>
                       )}

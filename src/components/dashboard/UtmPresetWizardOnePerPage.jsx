@@ -513,7 +513,7 @@ export default function UtmPresetWizardOnePerPage({ initialData, editingPresetId
                 </div>
                 <div className="min-h-[24px] mt-1">
                   {fieldErrors.name && (
-                    <p className="text-red-400 text-xs">{fieldErrors.name}</p>
+                    <p className="text-red-400 text-sm">{fieldErrors.name}</p>
                   )}
                 </div>
               </>
@@ -569,7 +569,7 @@ export default function UtmPresetWizardOnePerPage({ initialData, editingPresetId
                       <PreviewBlock />
                         <div className="min-h-[20px] mt-1">
                           {fieldErrors[utmStep.key] && (
-                            <p className="text-red-400 text-xs">
+                            <p className="text-red-400 text-sm">
                               {fieldErrors[utmStep.key]}
                             </p>
                           )}

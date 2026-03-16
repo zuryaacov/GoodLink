@@ -715,7 +715,7 @@ export default function LinkWizardOnePerPage({
                   {/* Reserve space for error / helper text so layout doesn't jump */}
                   <div className="min-h-[32px] mt-1 space-y-1">
                     {nameError && (
-                      <p className="text-red-400 text-xs px-1">{nameError}</p>
+                      <p className="text-red-400 text-sm px-1">{nameError}</p>
                     )}
                     {!nameError && validating && (
                       <p className="text-[#1b1b1b] text-xs px-1 flex items-center gap-2">
@@ -746,7 +746,7 @@ export default function LinkWizardOnePerPage({
                   </div>
                   {/* Reserve space for URL error / safety text to avoid layout jumps */}
                   <div className="min-h-[32px] mt-1 space-y-1">
-                    {urlError && <p className="text-red-400 text-xs">{urlError}</p>}
+                    {urlError && <p className="text-red-400 text-sm">{urlError}</p>}
                     {!urlError && urlSafety.loading && (
                       <p className="text-[#1b1b1b] text-xs flex items-center gap-2">
                         <span className="material-symbols-outlined animate-spin text-sm">
@@ -819,7 +819,7 @@ export default function LinkWizardOnePerPage({
                     />
                   </div>
                   <div className="min-h-[32px] mt-1 space-y-1">
-                    {slugError && <p className="text-red-400 text-xs">{slugError}</p>}
+                    {slugError && <p className="text-red-400 text-sm">{slugError}</p>}
                     {!slugError && validating && (
                       <p className="text-[#1b1b1b] text-xs flex items-center gap-2">
                         <span className="material-symbols-outlined animate-spin text-sm">
@@ -873,7 +873,7 @@ export default function LinkWizardOnePerPage({
                       </div>
                       <div className="min-h-[24px] mt-1">
                         {fallbackUrlError && (
-                          <p className="text-red-400 text-xs">{fallbackUrlError}</p>
+                          <p className="text-red-400 text-sm">{fallbackUrlError}</p>
                         )}
                       </div>
                     </div>
@@ -939,7 +939,7 @@ export default function LinkWizardOnePerPage({
                         </select>
                         <div className="min-h-[20px] mt-1">
                           {geoRuleErrors.country && (
-                            <p className="text-red-400 text-xs">{geoRuleErrors.country}</p>
+                            <p className="text-red-400 text-sm">{geoRuleErrors.country}</p>
                           )}
                         </div>
                       </div>
@@ -956,7 +956,7 @@ export default function LinkWizardOnePerPage({
                         />
                         <div className="min-h-[20px] mt-1">
                           {geoRuleErrors.url && (
-                            <p className="text-red-400 text-xs">{geoRuleErrors.url}</p>
+                            <p className="text-red-400 text-sm">{geoRuleErrors.url}</p>
                           )}
                         </div>
                       </div>

@@ -241,7 +241,7 @@ export default function DomainWizardOnePerPage({
                 </div>
                 <div className="min-h-[20px] mt-1">
                   {fieldErrors.domain && (
-                    <p className="text-red-400 text-xs">{fieldErrors.domain}</p>
+                    <p className="text-red-400 text-sm">{fieldErrors.domain}</p>
                   )}
                 </div>
                 <p className="text-slate-500 text-xs">
@@ -266,7 +266,7 @@ export default function DomainWizardOnePerPage({
                 </div>
                 <div className="min-h-[20px] mt-1">
                   {(fieldErrors.rootRedirect || rootRedirectError) && (
-                    <p className="text-red-400 text-xs">
+                    <p className="text-red-400 text-sm">
                       {fieldErrors.rootRedirect || rootRedirectError}
                     </p>
                   )}
