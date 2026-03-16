@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getPixelIdLabel, validateCapiToken, validatePixelId } from '../../lib/pixelValidation';
-import { checkForMaliciousInput } from '../../lib/inputSanitization';
+import { checkForMaliciousInput, sanitizeInput } from '../../lib/inputSanitization';
 import { supabase } from '../../lib/supabase';
 import taboolaLogo from '../../assets/idRS-vCmxj_1769618141092.svg';
 import outbrainLogo from '../../assets/id-bNajMAc_1769618145922.svg';
@@ -325,7 +325,7 @@ export default function PixelWizardOnePerPage({ initialData, editingPixelId, onS
         if (!name) nextErrors.name = 'Please enter a friendly name.';
         else if (name.length > 100) nextErrors.name = 'Friendly name cannot exceed 100 characters.';
         else {
-          const check = checkForMaliciousInput(name);
+          const check = sanitizeInput(name);
           if (!check.safe) nextErrors.name = check.error;
           else {
             const {

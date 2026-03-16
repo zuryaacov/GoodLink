@@ -3,7 +3,7 @@
  * Shared across PixelBuilderPage, PixelModal, and PixelWizardOnePerPage.
  */
 
-import { checkForMaliciousInput } from './inputSanitization';
+import { checkForMaliciousInput, sanitizeInput } from './inputSanitization';
 
 /**
  * Validate Pixel ID format per platform.
@@ -92,10 +92,11 @@ export const PLATFORMS = [
  */
 export function validatePixelPayload(data) {
   if (!data.name?.trim()) return { valid: false, message: 'Friendly name is required' };
-  if (data.name.trim().length > 100) return { valid: false, message: 'Friendly name cannot exceed 100 characters' };
-  // XSS / injection check on name
-  const nameXss = checkForMaliciousInput(data.name);
-  if (!nameXss.safe) return { valid: false, message: nameXss.error };
+  if (data.name.trim().length > 100)
+    return { valid: false, message: 'Friendly name cannot exceed 100 characters' };
+  // Structured validation on name (allowed chars + no multiple hyphens)
+  const nameCheck = sanitizeInput(data.name);
+  if (!nameCheck.safe) return { valid: false, message: nameCheck.error };
   if (!data.pixelId?.trim())
     return { valid: false, message: `${getPixelIdLabel(data.platform)} is required` };
   const pixelIdXss = checkForMaliciousInput(data.pixelId);

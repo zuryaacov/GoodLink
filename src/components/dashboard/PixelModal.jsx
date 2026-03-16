@@ -8,7 +8,7 @@ import {
   getPixelIdLabel,
   PLATFORMS,
 } from '../../lib/pixelValidation';
-import { checkForMaliciousInput } from '../../lib/inputSanitization';
+import { checkForMaliciousInput, sanitizeInput } from '../../lib/inputSanitization';
 import { logBackofficeEvent } from '../../lib/backofficeLogger';
 import Modal from '../common/Modal';
 
@@ -205,6 +205,11 @@ const PixelModal = ({ isOpen, onClose, initialData = null }) => {
 
     if (!formData.name.trim()) {
       newErrors.name = 'Friendly name is required';
+    } else {
+      const nameCheck = sanitizeInput(formData.name);
+      if (!nameCheck.safe) {
+        newErrors.name = nameCheck.error;
+      }
     }
 
     if (!formData.pixelId.trim()) {
