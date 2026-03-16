@@ -239,7 +239,11 @@ export default function DomainWizardOnePerPage({
                     className="w-full bg-transparent py-5 px-6 text-xl outline-none border-none text-[#1b1b1b] placeholder-slate-500 disabled:opacity-60"
                   />
                 </div>
-                {fieldErrors.domain && <p className="text-red-400 text-xs">{fieldErrors.domain}</p>}
+                <div className="min-h-[20px] mt-1">
+                  {fieldErrors.domain && (
+                    <p className="text-red-400 text-xs">{fieldErrors.domain}</p>
+                  )}
+                </div>
                 <p className="text-slate-500 text-xs">
                   Use the exact hostname you want (e.g. tipul.com or www.tipul.com).
                 </p>
@@ -260,11 +264,13 @@ export default function DomainWizardOnePerPage({
                     className="w-full bg-transparent py-5 px-6 text-xl outline-none border-none text-[#1b1b1b] placeholder-slate-500"
                   />
                 </div>
-                {(fieldErrors.rootRedirect || rootRedirectError) && (
-                  <p className="text-red-400 text-xs">
-                    {fieldErrors.rootRedirect || rootRedirectError}
-                  </p>
-                )}
+                <div className="min-h-[20px] mt-1">
+                  {(fieldErrors.rootRedirect || rootRedirectError) && (
+                    <p className="text-red-400 text-xs">
+                      {fieldErrors.rootRedirect || rootRedirectError}
+                    </p>
+                  )}
+                </div>
                 <p className="text-slate-500 text-xs">
                   Leave empty if you don’t need a redirect for the root URL.
                 </p>

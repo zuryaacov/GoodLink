@@ -511,7 +511,11 @@ export default function UtmPresetWizardOnePerPage({ initialData, editingPresetId
                     className="w-full bg-transparent py-5 px-6 text-xl outline-none border-none text-[#1b1b1b] placeholder-slate-500"
                   />
                 </div>
-                {fieldErrors.name && <p className="text-red-400 text-xs">{fieldErrors.name}</p>}
+                <div className="min-h-[24px] mt-1">
+                  {fieldErrors.name && (
+                    <p className="text-red-400 text-xs">{fieldErrors.name}</p>
+                  )}
+                </div>
               </>
             )}
 
@@ -563,9 +567,13 @@ export default function UtmPresetWizardOnePerPage({ initialData, editingPresetId
                         })}
                       </div>
                       <PreviewBlock />
-                      {fieldErrors[utmStep.key] && (
-                        <p className="text-red-400 text-xs mt-2">{fieldErrors[utmStep.key]}</p>
-                      )}
+                        <div className="min-h-[20px] mt-1">
+                          {fieldErrors[utmStep.key] && (
+                            <p className="text-red-400 text-xs">
+                              {fieldErrors[utmStep.key]}
+                            </p>
+                          )}
+                        </div>
                     </div>
                   );
                 })()

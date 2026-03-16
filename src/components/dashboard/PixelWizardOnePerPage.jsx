@@ -510,7 +510,11 @@ export default function PixelWizardOnePerPage({ initialData, editingPixelId, onS
                     className="w-full bg-transparent py-5 px-6 text-xl outline-none border-none text-[#1b1b1b] placeholder-slate-500"
                   />
                 </div>
-                {fieldErrors.name && <p className="text-red-400 text-xs">{fieldErrors.name}</p>}
+                <div className="min-h-[24px] mt-1">
+                  {fieldErrors.name && (
+                    <p className="text-red-400 text-xs">{fieldErrors.name}</p>
+                  )}
+                </div>
               </>
             )}
 
@@ -554,9 +558,11 @@ export default function PixelWizardOnePerPage({ initialData, editingPixelId, onS
                     className="w-full bg-transparent py-5 px-6 text-xl outline-none border-none text-[#1b1b1b] placeholder-slate-500 font-mono"
                   />
                 </div>
-                {fieldErrors.pixelId && (
-                  <p className="text-red-400 text-xs">{fieldErrors.pixelId}</p>
-                )}
+                <div className="min-h-[20px] mt-1">
+                  {fieldErrors.pixelId && (
+                    <p className="text-red-400 text-xs">{fieldErrors.pixelId}</p>
+                  )}
+                </div>
                 <p className="text-slate-500 text-xs">
                   {getPixelIdLabel(formData.platform)} • {currentPlatform?.placeholder}
                 </p>
@@ -577,9 +583,11 @@ export default function PixelWizardOnePerPage({ initialData, editingPixelId, onS
                     className="w-full bg-transparent py-4 px-6 text-base outline-none border-none text-[#1b1b1b] placeholder-slate-500 font-mono resize-y"
                   />
                 </div>
-                {fieldErrors.capiToken && (
-                  <p className="text-red-400 text-xs">{fieldErrors.capiToken}</p>
-                )}
+                <div className="min-h-[20px] mt-1">
+                  {fieldErrors.capiToken && (
+                    <p className="text-red-400 text-xs">{fieldErrors.capiToken}</p>
+                  )}
+                </div>
                 <p className="text-slate-500 text-xs">
                   {getCapiTokenLabel(formData.platform)} (required)
                 </p>
@@ -606,9 +614,11 @@ export default function PixelWizardOnePerPage({ initialData, editingPixelId, onS
                         className="w-full bg-transparent py-5 px-6 text-xl outline-none border-none text-[#1b1b1b] placeholder-slate-500"
                       />
                     </div>
-                    {fieldErrors.eventType && (
-                      <p className="text-red-400 text-xs">{fieldErrors.eventType}</p>
-                    )}
+                    <div className="min-h-[20px] mt-1">
+                      {fieldErrors.eventType && (
+                        <p className="text-red-400 text-xs">{fieldErrors.eventType}</p>
+                      )}
+                    </div>
                   </>
                 ) : (
                   <>
@@ -652,9 +662,13 @@ export default function PixelWizardOnePerPage({ initialData, editingPixelId, onS
                         />
                       </div>
                     )}
-                    {fieldErrors.customEventName && (
-                      <p className="text-red-400 text-xs">{fieldErrors.customEventName}</p>
-                    )}
+                    <div className="min-h-[20px] mt-1">
+                      {fieldErrors.customEventName && (
+                        <p className="text-red-400 text-xs">
+                          {fieldErrors.customEventName}
+                        </p>
+                      )}
+                    </div>
                   </>
                 )}
                 <p className="text-slate-500 text-xs">{getEventTypeLabel(formData.platform)}</p>
