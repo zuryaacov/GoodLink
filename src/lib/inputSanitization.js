@@ -112,7 +112,20 @@ export function sanitizeInput(value) {
   // Step 3 – strip any remaining HTML tags as a final safety net
   const stripped = cleaned.replace(/<[^>]*>/g, '');
 
-  return { safe: true, sanitized: stripped };
+  // Step 4 – restrict allowed characters for structured inputs:
+  // allow only: letters (a-z, A-Z), digits (0-9), spaces, hyphens (-), and dots (.)
+  // This prevents problematic symbols while still allowing natural names.
+  const withoutDisallowedChars = stripped.replace(/[^a-zA-Z0-9 .-]/g, '');
+
+  // Step 5 – disallow multiple consecutive hyphens
+  if (/--+/.test(withoutDisallowedChars)) {
+    return {
+      safe: false,
+      error: 'Input cannot contain multiple hyphens in a row. Please remove extra "-" characters.',
+    };
+  }
+
+  return { safe: true, sanitized: withoutDisallowedChars };
 }
 
 /**
