@@ -389,6 +389,10 @@ const AuthPage = () => {
           throw new Error('Password must contain at least one number');
         }
 
+        if (!confirmPassword) {
+          throw new Error('Please confirm your password.');
+        }
+
         if (password !== confirmPassword) {
           throw new Error('Passwords do not match');
         }
