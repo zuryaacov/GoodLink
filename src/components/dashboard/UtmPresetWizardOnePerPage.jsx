@@ -359,13 +359,8 @@ export default function UtmPresetWizardOnePerPage({ initialData, editingPresetId
       if (currentStep?.id && UTM_STEPS.some((s) => s.id === currentStep.id)) {
         const utmStep = UTM_STEPS.find((s) => s.id === currentStep.id);
         const value = params[utmStep.key];
-        if (value) {
-          if (value.length > 250) {
-            nextErrors[utmStep.key] = `${utmStep.label} cannot exceed 250 characters.`;
-          } else {
-            const check = sanitizeInput(value);
-            if (!check.safe) nextErrors[utmStep.key] = check.error || `Invalid ${utmStep.label}.`;
-          }
+        if (value && value.length > 250) {
+          nextErrors[utmStep.key] = `${utmStep.label} cannot exceed 250 characters.`;
         }
       }
       setFieldErrors(nextErrors);

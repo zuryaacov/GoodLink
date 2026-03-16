@@ -329,7 +329,6 @@ const UtmPresetBuilder = ({ isOpen, onClose, editingPreset, links }) => {
       }
 
       // Validate UTM parameter lengths (max 250 chars each – browser/GA limits)
-      // + XSS / injection check on each UTM parameter
       const utmMaxLen = 250;
       const sanitizedParams = {};
       for (const field of ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term']) {
@@ -338,17 +337,9 @@ const UtmPresetBuilder = ({ isOpen, onClose, editingPreset, links }) => {
           setLoading(false);
           return;
         }
-        if (params[field]) {
-          const utmCheck = sanitizeInput(params[field]);
-          if (!utmCheck.safe) {
-            setError(`${field.replace('utm_', 'UTM ')}: ${utmCheck.error}`);
-            setLoading(false);
-            return;
-          }
-          sanitizedParams[field] = (utmCheck.sanitized || '').trim();
-        } else {
-          sanitizedParams[field] = '';
-        }
+        // UTM parameters can contain a wide range of characters (including encoded values),
+        // so we only enforce length here and pass them as-is.
+        sanitizedParams[field] = params[field] || '';
       }
 
       const {
