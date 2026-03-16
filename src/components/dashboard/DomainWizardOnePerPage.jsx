@@ -185,7 +185,7 @@ export default function DomainWizardOnePerPage({
         aria-hidden="true"
       />
       <div className="flex-1 min-h-0 flex flex-col justify-center px-6 pb-32 pt-8 max-w-2xl mx-auto w-full relative z-10">
-        {(errorToShow || verifyError) && (
+        {((errorToShow && currentStep.id !== 'rootRedirect') || verifyError) && (
           <div className="mb-4 p-4 bg-red-500/10 border border-red-500/20 text-red-400 rounded-xl text-sm">
             {currentStep.id === 'verify' ? verifyError : errorToShow}
           </div>

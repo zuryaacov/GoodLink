@@ -723,6 +723,12 @@ export default function AccountSettingsPage() {
                   )}
                 </div>
 
+                <div className="min-h-[24px] mt-1">
+                  {passwordError && (
+                    <p className="text-red-400 text-xs mt-1">{passwordError}</p>
+                  )}
+                </div>
+
                 <div className="flex justify-end gap-2 pt-2">
                   <button
                     type="button"

@@ -871,9 +871,11 @@ export default function LinkWizardOnePerPage({
                           className="w-full bg-transparent py-4 px-4 outline-none border-none text-[#1b1b1b] placeholder-slate-500"
                         />
                       </div>
-                      {fallbackUrlError && (
-                        <p className="text-red-400 text-xs mt-2">{fallbackUrlError}</p>
-                      )}
+                      <div className="min-h-[24px] mt-1">
+                        {fallbackUrlError && (
+                          <p className="text-red-400 text-xs">{fallbackUrlError}</p>
+                        )}
+                      </div>
                     </div>
                   )}
                 </div>

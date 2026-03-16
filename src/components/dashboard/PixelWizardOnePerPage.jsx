@@ -563,9 +563,7 @@ export default function PixelWizardOnePerPage({ initialData, editingPixelId, onS
                     <p className="text-red-400 text-xs">{fieldErrors.pixelId}</p>
                   )}
                 </div>
-                <p className="text-slate-500 text-xs">
-                  {getPixelIdLabel(formData.platform)} • {currentPlatform?.placeholder}
-                </p>
+                <p className="text-slate-500 text-xs">{currentPlatform?.placeholder}</p>
               </div>
             )}
 
@@ -588,9 +586,6 @@ export default function PixelWizardOnePerPage({ initialData, editingPixelId, onS
                     <p className="text-red-400 text-xs">{fieldErrors.capiToken}</p>
                   )}
                 </div>
-                <p className="text-slate-500 text-xs">
-                  {getCapiTokenLabel(formData.platform)} (required)
-                </p>
               </div>
             )}
 
@@ -671,7 +666,6 @@ export default function PixelWizardOnePerPage({ initialData, editingPixelId, onS
                     </div>
                   </>
                 )}
-                <p className="text-slate-500 text-xs">{getEventTypeLabel(formData.platform)}</p>
               </div>
             )}
           </motion.div>
