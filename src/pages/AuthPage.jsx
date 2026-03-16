@@ -684,29 +684,6 @@ const AuthPage = () => {
         <Logo />
 
         <div className="w-full bg-white backdrop-blur-xl border border-[#d7fec8]/60 p-8 rounded-3xl shadow-2xl relative shadow-[0_0_40px_rgba(99,88,222,0.35)]">
-          {showSignupSuccessModal && (
-            <div className="fixed inset-0 z-30 flex items-center justify-center bg-black/40">
-              <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full mx-4 p-6 relative">
-                <button
-                  type="button"
-                  onClick={() => setShowSignupSuccessModal(false)}
-                  className="absolute top-3 right-3 text-slate-400 hover:text-slate-600"
-                  aria-label="Close"
-                >
-                  ×
-                </button>
-                <div className="text-center space-y-3">
-                  <h2 className="text-xl font-bold text-[#1b1b1b]">
-                    Registration completed successfully
-                  </h2>
-                  <p className="text-sm text-slate-600 leading-relaxed">
-                    Check your email for the confirmation link! If you don&apos;t receive it, check
-                    your spam folder.
-                  </p>
-                </div>
-              </div>
-            </div>
-          )}
           {planParam && (
             <div className="mb-4 p-3 bg-primary/10 border border-primary/30 rounded-lg text-center">
               <p className="text-sm text-primary font-bold">
@@ -945,6 +922,23 @@ const AuthPage = () => {
                       </button>
                     </div>
                   </div>
+
+      {/* Signup success modal using shared Modal component */}
+      <Modal
+        isOpen={showSignupSuccessModal}
+        onClose={() => setShowSignupSuccessModal(false)}
+        title="Registration completed successfully"
+        message={
+          <p className="text-sm text-slate-600 leading-relaxed">
+            Check your email for the confirmation link! If you don&apos;t receive it, check your
+            spam folder.
+          </p>
+        }
+        type="success"
+        confirmText="Got it"
+        onConfirm={() => setShowSignupSuccessModal(false)}
+        confirmButtonClass="btn-primary"
+      />
 
                   {/* Honeypot field - hidden from humans, traps bots */}
                   <input
