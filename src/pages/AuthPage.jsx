@@ -387,7 +387,7 @@ const AuthPage = () => {
         // If Supabase returns a user with empty identities, it usually means the email already exists
         // (Supabase may do this to prevent user enumeration).
         if (data?.user && Array.isArray(data.user.identities) && data.user.identities.length === 0) {
-          throw new Error('This email already exists. Please log in instead.');
+          throw new Error('This email already exists. Please Sign In.');
         }
 
         if (data?.user && !data?.session) {
@@ -408,7 +408,7 @@ const AuthPage = () => {
             err.message
           )
         ) {
-          message = 'This email already exists. Please log in instead.';
+          message = 'This email already exists. Please Sign In.';
         }
 
         setError(message);
