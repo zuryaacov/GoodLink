@@ -26,6 +26,7 @@ const AuthPage = () => {
   const [turnstileToken, setTurnstileToken] = useState(null);
   const [turnstileWidgetId, setTurnstileWidgetId] = useState(null);
   const [shouldRenderTurnstile, setShouldRenderTurnstile] = useState(false);
+  const [autoSubmitAfterTurnstile, setAutoSubmitAfterTurnstile] = useState(false);
   const turnstileContainerRef = useRef(null);
   const navigate = useNavigate();
   const [legalModalType, setLegalModalType] = useState(null); // 'terms' | 'privacy' | null
@@ -318,6 +319,99 @@ const AuthPage = () => {
     };
   }, [view, shouldRenderTurnstile]);
 
+  // When Turnstile token is ready and auto-submit is requested, complete signup automatically
+  useEffect(() => {
+    const runAutoSubmit = async () => {
+      if (
+        view !== 'signup' ||
+        !shouldRenderTurnstile ||
+        !turnstileToken ||
+        !autoSubmitAfterTurnstile ||
+        loading
+      ) {
+        return;
+      }
+
+      try {
+        setLoading(true);
+
+        const turnstileWorkerUrl =
+          import.meta.env.VITE_TURNSTILE_WORKER_URL ||
+          'https://turnstile-verification.fancy-sky-7888.workers.dev';
+        const verifyResponse = await fetch(`${turnstileWorkerUrl}/api/verify-turnstile`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            token: turnstileToken,
+          }),
+        });
+
+        if (!verifyResponse.ok) {
+          const errorData = await verifyResponse.json().catch(() => ({}));
+          throw new Error(
+            errorData.error || 'Security verification failed. Please try again.'
+          );
+        }
+
+        const verifyResult = await verifyResponse.json();
+        if (!verifyResult.success) {
+          throw new Error('Security verification failed. Please try again.');
+        }
+
+        // Only proceed with signup if Turnstile verification passed
+        const { error, data } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            data: { full_name: fullName.trim() || undefined },
+            emailRedirectTo: `${window.location.origin}/login${
+              planParam ? `?plan=${planParam}` : ''
+            }`,
+          },
+        });
+
+        if (error) {
+          if (error.message && error.message.includes('confirmation email')) {
+            throw new Error(
+              'Email configuration error. Please contact support or check your Supabase email settings.'
+            );
+          }
+          throw error;
+        }
+
+        if (data?.user && !data?.session) {
+          setMessage(
+            "Check your email for the confirmation link! If you don't receive it, check your spam folder."
+          );
+        } else if (data?.session) {
+          navigate('/dashboard/links');
+        }
+      } catch (err) {
+        const message =
+          err instanceof Error ? err.message : 'Something went wrong. Please try again.';
+        setError(message);
+      } finally {
+        setLoading(false);
+        setAutoSubmitAfterTurnstile(false);
+      }
+    };
+
+    runAutoSubmit();
+  }, [
+    autoSubmitAfterTurnstile,
+    shouldRenderTurnstile,
+    turnstileToken,
+    view,
+    loading,
+    email,
+    password,
+    fullName,
+    planParam,
+    navigate,
+  ]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -411,71 +505,10 @@ const AuthPage = () => {
         // Trigger Turnstile only after all validations pass
         if (!shouldRenderTurnstile) {
           setShouldRenderTurnstile(true);
+          setAutoSubmitAfterTurnstile(true);
           setLoading(false);
           return;
         }
-
-        // Verify Turnstile token before signup
-        if (!turnstileToken) {
-          throw new Error('Security verification is required.');
-        }
-
-        const turnstileWorkerUrl =
-          import.meta.env.VITE_TURNSTILE_WORKER_URL ||
-          'https://turnstile-verification.fancy-sky-7888.workers.dev';
-        const verifyResponse = await fetch(`${turnstileWorkerUrl}/api/verify-turnstile`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            token: turnstileToken,
-          }),
-        });
-
-        if (!verifyResponse.ok) {
-          const errorData = await verifyResponse.json().catch(() => ({}));
-          throw new Error(errorData.error || 'Security verification failed. Please try again.');
-        }
-
-        const verifyResult = await verifyResponse.json();
-        if (!verifyResult.success) {
-          throw new Error('Security verification failed. Please try again.');
-        }
-
-        // Only proceed with signup if Turnstile verification passed
-        const { error, data } = await supabase.auth.signUp({
-          email,
-          password,
-          options: {
-            data: { full_name: fullName.trim() || undefined },
-            emailRedirectTo: `${window.location.origin}/login${
-              planParam ? `?plan=${planParam}` : ''
-            }`,
-          },
-        });
-
-        if (error) {
-          // Check if it's an email sending error
-          if (error.message && error.message.includes('confirmation email')) {
-            throw new Error(
-              'Email configuration error. Please contact support or check your Supabase email settings.'
-            );
-          }
-          throw error;
-        }
-
-        // Check if email confirmation is required
-        if (data?.user && !data?.session) {
-          setMessage(
-            "Check your email for the confirmation link! If you don't receive it, check your spam folder."
-          );
-        } else if (data?.session) {
-          // User is already confirmed (if email confirmation is disabled)
-          // After signup with immediate session, go to Link Manager
-          navigate('/dashboard/links');
-        }
-        // Note: For signup, checkout will open after email confirmation when user signs in
       } else if (view === 'forgot-password') {
         if (!isValidEmail(email)) {
           throw new Error('Please enter a valid email address (e.g. name@example.com)');
