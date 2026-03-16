@@ -558,12 +558,12 @@ export default function PixelWizardOnePerPage({ initialData, editingPixelId, onS
                     className="w-full bg-transparent py-5 px-6 text-xl outline-none border-none text-[#1b1b1b] placeholder-slate-500 font-mono"
                   />
                 </div>
+                <p className="text-slate-500 text-xs mt-1">{currentPlatform?.placeholder}</p>
                 <div className="min-h-[20px] mt-1">
                   {fieldErrors.pixelId && (
                     <p className="text-red-400 text-sm">{fieldErrors.pixelId}</p>
                   )}
                 </div>
-                <p className="text-slate-500 text-xs">{currentPlatform?.placeholder}</p>
               </div>
             )}
 
