@@ -345,7 +345,7 @@ const AuthPage = () => {
         // Full name validation
         const trimmedName = fullName.trim();
         if (!trimmedName || trimmedName.length < 2) {
-          throw new Error('Full name must be at least 2 characters');
+          throw new Error('Your full name is required so we can personalize your Goodlink experience.');
         }
         if (trimmedName.length > 20) {
           throw new Error('Full name cannot exceed 20 characters');
