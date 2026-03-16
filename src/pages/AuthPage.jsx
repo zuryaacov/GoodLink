@@ -25,6 +25,7 @@ const AuthPage = () => {
   const [message, setMessage] = useState(null);
   const [turnstileToken, setTurnstileToken] = useState(null);
   const [turnstileWidgetId, setTurnstileWidgetId] = useState(null);
+  const [shouldRenderTurnstile, setShouldRenderTurnstile] = useState(false);
   const turnstileContainerRef = useRef(null);
   const navigate = useNavigate();
   const [legalModalType, setLegalModalType] = useState(null); // 'terms' | 'privacy' | null
@@ -182,13 +183,13 @@ const AuthPage = () => {
     }
   }, [navigate]);
 
-  // Initialize Turnstile widget when signup view is active
+  // Initialize Turnstile widget only after all signup validations passed
   useEffect(() => {
     let currentWidgetId = null;
     let timer = null;
 
-    if (view !== 'signup') {
-      // Cleanup when leaving signup view
+    if (view !== 'signup' || !shouldRenderTurnstile) {
+      // Cleanup when leaving signup view or when we shouldn't render Turnstile yet
       if (turnstileWidgetId && window.turnstile) {
         try {
           window.turnstile.remove(turnstileWidgetId);
@@ -315,7 +316,7 @@ const AuthPage = () => {
         }
       }
     };
-  }, [view]);
+  }, [view, shouldRenderTurnstile]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -407,9 +408,17 @@ const AuthPage = () => {
           return;
         }
 
+        // Trigger Turnstile only after all validations pass
+        if (!shouldRenderTurnstile) {
+          setShouldRenderTurnstile(true);
+          setLoading(false);
+          setError('Please complete the security verification.');
+          return;
+        }
+
         // Verify Turnstile token before signup
         if (!turnstileToken) {
-          throw new Error('Please complete the security verification');
+          throw new Error('Please complete the security verification.');
         }
 
         const turnstileWorkerUrl =
@@ -902,16 +911,18 @@ const AuthPage = () => {
                     aria-hidden="true"
                   />
 
-                  {/* Turnstile Widget - only for email signup */}
-                  <div
-                    ref={turnstileContainerRef}
-                    id="turnstile-widget"
-                    className="flex justify-center min-h-[65px]"
-                  ></div>
+                  {/* Turnstile Widget - only shown after all validations pass */}
+                  {shouldRenderTurnstile && (
+                    <div
+                      ref={turnstileContainerRef}
+                      id="turnstile-widget"
+                      className="flex justify-center min-h-[65px]"
+                    ></div>
+                  )}
 
                   <button
                     type="submit"
-                    disabled={loading || !turnstileToken}
+                    disabled={loading}
                     className="h-12 w-full bg-[#d7fec8] hover:bg-[#c9f3b9] text-[#1b1b1b] font-bold rounded-xl transition-all shadow-lg shadow-[#d7fec8]/40 mt-2 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                   >
                     {loading && (
