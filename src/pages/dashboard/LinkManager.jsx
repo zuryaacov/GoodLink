@@ -1089,15 +1089,29 @@ const LinkManager = () => {
 
       {/* Links List */}
       {directLinks.length === 0 && childSpaces.length === 0 ? (
-        <div className="bg-card-bg border border-card-border rounded-2xl p-4 md:p-6 w-full hover:shadow-card-mint transition-all">
-          <div className="text-center py-12">
-            <span className="material-symbols-outlined text-6xl text-slate-600 mb-4">link_off</span>
-            <p className="text-[#1b1b1b] text-lg mb-2">No items yet</p>
-            <p className="text-slate-500 text-sm">
-              {isFoldersEnabled
-                ? 'Create a new workspace/campaign/group, or add a link directly here.'
-                : 'Create your first link to get started.'}
-            </p>
+        <div className="bg-[#fcfdfd] border rounded-2xl p-12 text-center hover:shadow-card-mint transition-all border-[#6358de]/40 md:border-card-border md:hover:border-[#6358de]/40">
+          <span className="material-symbols-outlined text-6xl text-black mb-4">link</span>
+          <h3 className="text-xl font-bold text-black mb-2">No Links or Workspaces Yet</h3>
+          <p className="text-black mb-6">
+            Create your first link or workspace to start organizing your tracking.
+          </p>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+            <button
+              type="button"
+              onClick={() => navigate('/dashboard/links/new')}
+              className="px-6 py-3 bg-[#6358de] hover:bg-[#5348c7] text-white font-bold rounded-xl transition-all"
+            >
+              Create First Link
+            </button>
+            {isFoldersEnabled && (
+              <button
+                type="button"
+                onClick={() => openCreateSpaceModal('workspace')}
+                className="px-6 py-3 bg-white border border-[#6358de] text-[#6358de] font-bold rounded-xl transition-all hover:bg-[#f3f2ff]"
+              >
+                Create First Workspace
+              </button>
+            )}
           </div>
         </div>
       ) : (
