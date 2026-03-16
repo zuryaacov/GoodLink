@@ -364,12 +364,16 @@ const AuthPage = () => {
         }
 
         // Password validation
+        if (!password) {
+          throw new Error('Please enter a password.');
+        }
+
         if (password.length < 8) {
-          throw new Error('Password must be at least 8 characters long');
+          throw new Error('Password is not valid.');
         }
 
         if (password.length > 15) {
-          throw new Error('Password cannot exceed 15 characters');
+          throw new Error('Password is not valid.');
         }
 
         // Check for at least one uppercase letter, one lowercase letter, and one number
@@ -377,16 +381,8 @@ const AuthPage = () => {
         const hasLower = /[a-z]/.test(password);
         const hasNumber = /[0-9]/.test(password);
 
-        if (!hasUpper) {
-          throw new Error('Password must contain at least one uppercase letter (A-Z)');
-        }
-
-        if (!hasLower) {
-          throw new Error('Password must contain at least one lowercase letter (a-z)');
-        }
-
-        if (!hasNumber) {
-          throw new Error('Password must contain at least one number');
+        if (!hasUpper || !hasLower || !hasNumber) {
+          throw new Error('Password is not valid.');
         }
 
         if (!confirmPassword) {
