@@ -744,21 +744,24 @@ export default function LinkWizardOnePerPage({
                       className="w-full bg-transparent py-5 px-6 text-xl outline-none border-none text-[#1b1b1b] placeholder-slate-500"
                     />
                   </div>
-                  {urlSafety.loading && (
-                    <p className="text-[#1b1b1b] text-xs flex items-center gap-2">
-                      <span className="material-symbols-outlined animate-spin text-sm">
-                        refresh
-                      </span>
-                      Scanning for safety...
-                    </p>
-                  )}
-                  {urlError && <p className="text-red-400 text-xs">{urlError}</p>}
-                  {!urlError && urlSafety.isSafe === true && (
-                    <p className="text-green-400 text-xs flex items-center gap-1">
-                      <span className="material-symbols-outlined text-sm">verified</span>
-                      Secure link
-                    </p>
-                  )}
+                  {/* Reserve space for URL error / safety text to avoid layout jumps */}
+                  <div className="min-h-[32px] mt-1 space-y-1">
+                    {urlError && <p className="text-red-400 text-xs">{urlError}</p>}
+                    {!urlError && urlSafety.loading && (
+                      <p className="text-[#1b1b1b] text-xs flex items-center gap-2">
+                        <span className="material-symbols-outlined animate-spin text-sm">
+                          refresh
+                        </span>
+                        Scanning for safety...
+                      </p>
+                    )}
+                    {!urlError && !urlSafety.loading && urlSafety.isSafe === true && (
+                      <p className="text-green-400 text-xs flex items-center gap-1">
+                        <span className="material-symbols-outlined text-sm">verified</span>
+                        Secure link
+                      </p>
+                    )}
+                  </div>
                 </div>
               )}
 
