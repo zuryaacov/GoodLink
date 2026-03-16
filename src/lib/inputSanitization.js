@@ -119,7 +119,7 @@ export function sanitizeInput(value) {
     return {
       safe: false,
       error:
-        'Only letters (a-z), numbers (0-9), hyphens (-), dots (.) and spaces are allowed. Please remove any other characters.',
+        'Only letters (a-z), numbers (0-9), hyphens (-), dots (.) and spaces are allowed.',
     };
   }
 
