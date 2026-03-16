@@ -23,6 +23,7 @@ const AuthPage = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [message, setMessage] = useState(null);
+  const [showSignupSuccessModal, setShowSignupSuccessModal] = useState(false);
   const [turnstileToken, setTurnstileToken] = useState(null);
   const [turnstileWidgetId, setTurnstileWidgetId] = useState(null);
   const [shouldRenderTurnstile, setShouldRenderTurnstile] = useState(false);
@@ -382,9 +383,8 @@ const AuthPage = () => {
         }
 
         if (data?.user && !data?.session) {
-          setMessage(
-            "Check your email for the confirmation link! If you don't receive it, check your spam folder."
-          );
+          setShowSignupSuccessModal(true);
+          setMessage(null);
         } else if (data?.session) {
           navigate('/dashboard/links');
         }
@@ -684,6 +684,29 @@ const AuthPage = () => {
         <Logo />
 
         <div className="w-full bg-white backdrop-blur-xl border border-[#d7fec8]/60 p-8 rounded-3xl shadow-2xl relative shadow-[0_0_40px_rgba(99,88,222,0.35)]">
+          {showSignupSuccessModal && (
+            <div className="fixed inset-0 z-30 flex items-center justify-center bg-black/40">
+              <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full mx-4 p-6 relative">
+                <button
+                  type="button"
+                  onClick={() => setShowSignupSuccessModal(false)}
+                  className="absolute top-3 right-3 text-slate-400 hover:text-slate-600"
+                  aria-label="Close"
+                >
+                  ×
+                </button>
+                <div className="text-center space-y-3">
+                  <h2 className="text-xl font-bold text-[#1b1b1b]">
+                    Registration completed successfully
+                  </h2>
+                  <p className="text-sm text-slate-600 leading-relaxed">
+                    Check your email for the confirmation link! If you don&apos;t receive it, check
+                    your spam folder.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
           {planParam && (
             <div className="mb-4 p-3 bg-primary/10 border border-primary/30 rounded-lg text-center">
               <p className="text-sm text-primary font-bold">
@@ -849,7 +872,7 @@ const AuthPage = () => {
                   </div>
                 )}
 
-                {message && (
+                {message && view !== 'signup' && (
                   <div className="bg-green-500/10 border border-green-500/20 text-green-500 text-sm p-3 rounded-lg text-center">
                     {message}
                   </div>
