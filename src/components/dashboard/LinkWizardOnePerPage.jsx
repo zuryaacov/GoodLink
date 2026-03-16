@@ -699,27 +699,31 @@ export default function LinkWizardOnePerPage({
 
               {/* Step: Name */}
               {currentStep.id === 'name' && (
-                <div className="rounded-2xl bg-white border-2 border-slate-200 focus-within:border-[#135bec] focus-within:shadow-[0_0_15px_rgba(19,91,236,0.3)] transition-all">
-                  <input
-                    type="text"
-                    value={formData.name || ''}
-                    onChange={(e) => {
-                      updateFormData('name', e.target.value);
-                      setNameError(null);
-                    }}
-                    placeholder="e.g. Black Friday Promo"
-                    className="w-full bg-transparent py-5 px-6 text-xl outline-none border-none text-[#1b1b1b] placeholder-slate-500"
-                  />
-                  {nameError && <p className="text-red-400 text-xs px-6 pb-3">{nameError}</p>}
+                <>
+                  <div className="rounded-2xl bg-white border-2 border-slate-200 focus-within:border-[#135bec] focus-within:shadow-[0_0_15px_rgba(19,91,236,0.3)] transition-all">
+                    <input
+                      type="text"
+                      value={formData.name || ''}
+                      onChange={(e) => {
+                        updateFormData('name', e.target.value);
+                        setNameError(null);
+                      }}
+                      placeholder="e.g. Black Friday Promo"
+                      className="w-full bg-transparent py-5 px-6 text-xl outline-none border-none text-[#1b1b1b] placeholder-slate-500"
+                    />
+                  </div>
+                  {nameError && (
+                    <p className="text-red-400 text-xs px-1 pt-2">{nameError}</p>
+                  )}
                   {validating && (
-                    <p className="text-[#1b1b1b] text-xs px-6 pb-3 flex items-center gap-2">
+                    <p className="text-[#1b1b1b] text-xs px-1 pt-1 flex items-center gap-2">
                       <span className="material-symbols-outlined animate-spin text-sm">
                         refresh
                       </span>
                       Checking...
                     </p>
                   )}
-                </div>
+                </>
               )}
 
               {/* Step: URL */}
