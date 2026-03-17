@@ -509,38 +509,81 @@ export default Sentry.withSentry(
                     const turnstileVerified = Boolean(turnstile_token);
 
                     let safeBrowsingResponse = null;
-                    if (env.GOOGLE_SAFE_BROWSING_API_KEY) {
-                        console.log("[SafeBrowsing] Sending check for URL:", reported_url);
+                    if (env.GOOGLE_WEB_RISK_API_KEY) {
+                        console.log("[WebRisk] Sending check for URL:", reported_url);
                         try {
-                            const apiUrl = "https://safebrowsing.googleapis.com/v4/threatMatches:find";
-                            const reqBody = {
-                                client: { clientId: "goodlink-abuse-report", clientVersion: "1.0" },
-                                threatInfo: {
-                                    threatTypes: ["MALWARE", "SOCIAL_ENGINEERING", "UNWANTED_SOFTWARE", "POTENTIALLY_HARMFUL_APPLICATION"],
-                                    platformTypes: ["ANY_PLATFORM"],
-                                    threatEntryTypes: ["URL"],
-                                    threatEntries: [{ url: reported_url }]
+                            const isTrickySubdomainsHost = (hostname) => {
+                                const labels = String(hostname || "").toLowerCase().split(".").filter(Boolean);
+                                if (labels.length < 3) return false;
+                                const brandKeywords = [
+                                    "google", "gmail", "youtube",
+                                    "apple", "icloud",
+                                    "microsoft", "office", "outlook",
+                                    "amazon", "aws",
+                                    "paypal",
+                                    "facebook", "instagram", "meta", "whatsapp",
+                                    "netflix",
+                                    "bank", "banking",
+                                ];
+                                const suspiciousIntent = ["login", "signin", "verify", "secure", "account", "update", "support", "billing", "wallet"];
+                                const subdomainPart = labels.slice(0, -2).join(".");
+                                if (!subdomainPart) return false;
+                                const hasBrand = brandKeywords.some((k) => subdomainPart.includes(k));
+                                const hasIntent = suspiciousIntent.some((k) => subdomainPart.includes(k));
+                                return hasBrand && (hasIntent || subdomainPart.includes("-"));
+                            };
+
+                            const isSuspiciousUrlHeuristic = (urlString) => {
+                                try {
+                                    const u = new URL(urlString);
+                                    const host = u.hostname.toLowerCase();
+                                    const path = (u.pathname + u.search).toLowerCase();
+                                    const labels = host.split(".").filter(Boolean);
+                                    const manySubdomains = labels.length >= 4;
+                                    const credentialPath = /(login|signin|verify|secure|account|password|reset|billing|wallet)/.test(path);
+                                    const oddHost = /--|\.{2,}/.test(host) || host.startsWith("xn--");
+                                    return (manySubdomains && credentialPath) || oddHost;
+                                } catch {
+                                    return false;
                                 }
                             };
-                            const sbRes = await fetch(`${apiUrl}?key=${env.GOOGLE_SAFE_BROWSING_API_KEY}`, {
-                                method: "POST",
-                                headers: { "Content-Type": "application/json" },
-                                body: JSON.stringify(reqBody)
-                            });
-                            const sbData = await sbRes.json().catch(() => ({}));
-                            if (sbRes.ok && sbData.matches && sbData.matches.length > 0) {
-                                safeBrowsingResponse = { isSafe: false, threatType: sbData.matches[0].threatType || null, raw: sbData };
-                                console.log("[SafeBrowsing] Result: UNSAFE | threatType:", sbData.matches[0].threatType, "| matches:", sbData.matches.length, "| raw:", JSON.stringify(sbData));
+
+                            // Heuristics
+                            if (isSuspiciousUrlHeuristic(reported_url)) {
+                                safeBrowsingResponse = { isSafe: false, threatType: "SUSPICIOUS", source: "heuristic" };
+                                console.log("[WebRisk] Result: UNSAFE | threatType: SUSPICIOUS (heuristic)");
+                            } else if (isTrickySubdomainsHost(new URL(reported_url).hostname)) {
+                                safeBrowsingResponse = { isSafe: false, threatType: "TRICKY_SUBDOMAINS", source: "heuristic" };
+                                console.log("[WebRisk] Result: UNSAFE | threatType: TRICKY_SUBDOMAINS (heuristic)");
                             } else {
-                                safeBrowsingResponse = { isSafe: true, threatType: null };
-                                console.log("[SafeBrowsing] Result: SAFE | HTTP status:", sbRes.status, "| response:", JSON.stringify(sbData));
+                                const apiUrl = new URL("https://webrisk.googleapis.com/v1/uris:search");
+                                apiUrl.searchParams.set("key", env.GOOGLE_WEB_RISK_API_KEY);
+                                apiUrl.searchParams.append("threatTypes", "MALWARE");
+                                apiUrl.searchParams.append("threatTypes", "SOCIAL_ENGINEERING");
+                                apiUrl.searchParams.append("threatTypes", "UNWANTED_SOFTWARE");
+                                apiUrl.searchParams.set("uri", reported_url);
+
+                                const sbRes = await fetch(apiUrl.toString(), { method: "GET" });
+                                const sbData = await sbRes.json().catch(() => ({}));
+                                const threatTypes = (sbData && sbData.threat && sbData.threat.threatTypes) ? sbData.threat.threatTypes : [];
+
+                                if (sbRes.ok && Array.isArray(threatTypes) && threatTypes.length > 0) {
+                                    safeBrowsingResponse = { isSafe: false, threatType: threatTypes[0] || null, raw: sbData, provider: "web_risk" };
+                                    console.log("[WebRisk] Result: UNSAFE | threatType:", threatTypes[0], "| raw:", JSON.stringify(sbData));
+                                } else if (sbRes.ok) {
+                                    safeBrowsingResponse = { isSafe: true, threatType: null, provider: "web_risk" };
+                                    console.log("[WebRisk] Result: SAFE | HTTP status:", sbRes.status, "| response:", JSON.stringify(sbData));
+                                } else {
+                                    safeBrowsingResponse = { error: "web_risk_http_error", status: sbRes.status, raw: sbData, provider: "web_risk" };
+                                    console.warn("[WebRisk] Check failed | HTTP status:", sbRes.status, "| response:", JSON.stringify(sbData));
+                                }
                             }
                         } catch (sbErr) {
-                            console.warn("[SafeBrowsing] Check failed with error:", sbErr.message || sbErr);
+                            console.warn("[WebRisk] Check failed with error:", sbErr.message || sbErr);
                             safeBrowsingResponse = { error: String(sbErr.message || "check_failed") };
                         }
                     } else {
-                        console.log("[SafeBrowsing] Skipped — GOOGLE_SAFE_BROWSING_API_KEY not configured.");
+                        console.log("[WebRisk] Skipped — GOOGLE_WEB_RISK_API_KEY not configured.");
                     }
 
                     const insertUrl = `${env.SUPABASE_URL}/rest/v1/abuse_reports`;

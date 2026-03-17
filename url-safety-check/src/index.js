@@ -1,15 +1,16 @@
 /**
- * Cloudflare Worker for Google Safe Browsing API URL Safety Check
+ * Cloudflare Worker for Google Web Risk API URL Safety Check
  * 
- * This worker receives a URL via POST request, checks it against Google Safe Browsing API,
- * and returns whether the link is safe, socially engineered, or malicious.
+ * This worker receives a URL via POST request, checks it against Google Web Risk `uris:search`,
+ * and returns whether the link is in known threat lists.
  * 
  * ENHANCEMENTS:
  * 1. Follows redirects to check the FINAL destination URL.
  * 2. Blocks raw IP addresses (often used for malicious hosting).
+ * 3. Adds heuristic detections (SUSPICIOUS, TRICKY_SUBDOMAINS).
  * 
  * Environment Variables Required:
- * - GOOGLE_SAFE_BROWSING_API_KEY: Your Google Safe Browsing API key
+ * - GOOGLE_WEB_RISK_API_KEY: Your Google Web Risk API key
  * 
  * Usage:
  * POST / with body: { "url": "https://example.com" }
@@ -24,8 +25,80 @@ const corsHeaders = {
   'Content-Type': 'application/json',
 };
 
-// Google Safe Browsing API endpoint
-const GOOGLE_SAFE_BROWSING_API_URL = 'https://safebrowsing.googleapis.com/v4/threatMatches:find';
+// Google Web Risk `uris:search` endpoint
+// Docs: https://cloud.google.com/web-risk/docs/reference/rest/v1/uris/search
+const GOOGLE_WEB_RISK_API_URL = 'https://webrisk.googleapis.com/v1/uris:search';
+
+function isTrickySubdomainsHost(hostname) {
+  const labels = String(hostname || '').toLowerCase().split('.').filter(Boolean);
+  if (labels.length < 3) return false; // needs subdomain
+
+  // Small, practical keyword set to catch common impersonations in subdomains.
+  const brandKeywords = [
+    'google', 'gmail', 'youtube',
+    'apple', 'icloud',
+    'microsoft', 'office', 'outlook',
+    'amazon', 'aws',
+    'paypal',
+    'facebook', 'instagram', 'meta', 'whatsapp',
+    'netflix',
+    'bank', 'banking',
+  ];
+  const suspiciousIntent = ['login', 'signin', 'verify', 'secure', 'account', 'update', 'support', 'billing', 'wallet'];
+
+  // Only look inside subdomain portion (exclude last 2 labels to reduce false positives).
+  const subdomainPart = labels.slice(0, -2).join('.');
+  if (!subdomainPart) return false;
+
+  const hasBrand = brandKeywords.some((k) => subdomainPart.includes(k));
+  const hasIntent = suspiciousIntent.some((k) => subdomainPart.includes(k));
+
+  // Catch patterns like "paypal-login.example.com" / "google.verify.example.co"
+  return hasBrand && (hasIntent || subdomainPart.includes('-'));
+}
+
+function isSuspiciousUrlHeuristic(urlString) {
+  try {
+    const u = new URL(urlString);
+    const host = u.hostname.toLowerCase();
+    const path = (u.pathname + u.search).toLowerCase();
+
+    const labels = host.split('.').filter(Boolean);
+    const manySubdomains = labels.length >= 4;
+    const credentialPath = /(login|signin|verify|secure|account|password|reset|billing|wallet)/.test(path);
+    const oddHost = /--|\.{2,}/.test(host) || host.startsWith('xn--');
+
+    return (manySubdomains && credentialPath) || oddHost;
+  } catch {
+    return false;
+  }
+}
+
+async function queryWebRiskForUri(uri, apiKey) {
+  const params = new URLSearchParams();
+  params.set('key', apiKey);
+  params.set('uri', uri);
+  params.append('threatTypes', 'MALWARE');
+  params.append('threatTypes', 'SOCIAL_ENGINEERING');
+  params.append('threatTypes', 'UNWANTED_SOFTWARE');
+
+  const res = await fetch(`${GOOGLE_WEB_RISK_API_URL}?${params.toString()}`, { method: 'GET' });
+
+  if (!res.ok) {
+    const errorText = await res.text();
+    console.error('Google Web Risk API error:', res.status, errorText);
+
+    // Fail open on config/quota issues.
+    if (res.status === 400 || res.status === 403) {
+      return { ok: false, error: 'API configuration issue' };
+    }
+    throw new Error(`API request failed: ${res.status}`);
+  }
+
+  const data = await res.json().catch(() => ({}));
+  const threatTypes = data?.threat?.threatTypes || [];
+  return { ok: true, threatTypes, raw: data };
+}
 
 /**
  * Handle CORS preflight requests
@@ -101,7 +174,7 @@ async function resolveFinalUrl(url) {
 }
 
 /**
- * Check URL against Google Safe Browsing API
+ * Check URL against Google Web Risk API (+ heuristics)
  */
 async function checkUrlSafety(url, apiKey) {
   try {
@@ -120,82 +193,41 @@ async function checkUrlSafety(url, apiKey) {
       };
     }
 
-    // 3. Prepare the request body for Google Safe Browsing API
-    // We check BOTH the original URL and the final URL
+    // 3. We check BOTH the original URL and the final URL
     const urlsToCheck = [url];
     if (finalUrl !== url) urlsToCheck.push(finalUrl);
 
-    // Limit to unique URLs
-    const threatEntries = [...new Set(urlsToCheck)].map(u => ({ url: u }));
+    const uniqueUrls = [...new Set(urlsToCheck)];
 
-    const requestBody = {
-      client: {
-        clientId: 'goodlink-safety-check',
-        clientVersion: '1.1.0',
-      },
-      threatInfo: {
-        threatTypes: ['MALWARE', 'SOCIAL_ENGINEERING', 'UNWANTED_SOFTWARE', 'POTENTIALLY_HARMFUL_APPLICATION'],
-        platformTypes: ['ANY_PLATFORM'],
-        threatEntryTypes: ['URL'],
-        threatEntries: threatEntries,
-      },
-    };
+    // 4. Heuristic detections
+    if (uniqueUrls.some(isSuspiciousUrlHeuristic)) {
+      return { isSafe: false, threatType: 'suspicious', finalUrl };
+    }
+    const finalUrlObj = new URL(finalUrl);
+    if (isTrickySubdomainsHost(finalUrlObj.hostname)) {
+      return { isSafe: false, threatType: 'tricky subdomains', finalUrl };
+    }
 
-    const response = await fetch(
-      `${GOOGLE_SAFE_BROWSING_API_URL}?key=${apiKey}`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(requestBody),
+    // 5. Google Web Risk API check (fail-open on config/quota)
+    for (const u of uniqueUrls) {
+      const wr = await queryWebRiskForUri(u, apiKey);
+      if (!wr.ok) {
+        return { isSafe: true, threatType: null, error: wr.error, finalUrl };
       }
-    );
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Google Safe Browsing API error:', response.status, errorText);
-
-      // If API key is invalid or quota exceeded, return safe (fail open)
-      if (response.status === 400 || response.status === 403) {
-        return {
-          isSafe: true,
-          threatType: null,
-          error: 'API configuration issue',
-          finalUrl
+      if (wr.threatTypes && wr.threatTypes.length > 0) {
+        const t = String(wr.threatTypes[0] || 'UNKNOWN');
+        const threatTypeMap = {
+          MALWARE: 'malicious',
+          SOCIAL_ENGINEERING: 'socially engineered',
+          UNWANTED_SOFTWARE: 'unwanted software',
+          SUSPICIOUS: 'suspicious',
+          TRICKY_SUBDOMAINS: 'tricky subdomains',
         };
+        return { isSafe: false, threatType: threatTypeMap[t] || t.toLowerCase(), finalUrl };
       }
-
-      throw new Error(`API request failed: ${response.status}`);
     }
 
-    const data = await response.json();
-
-    // If no matches found, URL is safe
-    if (!data.matches || data.matches.length === 0) {
-      return {
-        isSafe: true,
-        threatType: null,
-        finalUrl
-      };
-    }
-
-    // Extract threat type from first match
-    const threatType = data.matches[0].threatType || 'UNKNOWN';
-
-    // Map Google threat types to user-friendly strings
-    const threatTypeMap = {
-      'MALWARE': 'malicious',
-      'SOCIAL_ENGINEERING': 'socially engineered',
-      'UNWANTED_SOFTWARE': 'unwanted software',
-      'POTENTIALLY_HARMFUL_APPLICATION': 'potentially harmful',
-    };
-
-    return {
-      isSafe: false,
-      threatType: threatTypeMap[threatType] || threatType.toLowerCase(),
-      finalUrl
-    };
+    return { isSafe: true, threatType: null, finalUrl };
   } catch (error) {
     console.error('Error checking URL safety:', error);
 
@@ -230,8 +262,8 @@ export default {
     }
 
     // Check for API key
-    if (!env.GOOGLE_SAFE_BROWSING_API_KEY) {
-      console.error('GOOGLE_SAFE_BROWSING_API_KEY not configured');
+    if (!env.GOOGLE_WEB_RISK_API_KEY) {
+      console.error('GOOGLE_WEB_RISK_API_KEY not configured');
       return new Response(
         JSON.stringify({
           isSafe: true,
@@ -271,7 +303,7 @@ export default {
       }
 
       // Check URL safety
-      const result = await checkUrlSafety(body.url, env.GOOGLE_SAFE_BROWSING_API_KEY);
+      const result = await checkUrlSafety(body.url, env.GOOGLE_WEB_RISK_API_KEY);
 
       // Return result
       return new Response(JSON.stringify(result), {
