@@ -117,7 +117,7 @@ const PLATFORMS = [
   { value: 'meta', label: 'Facebook', placeholder: 'Enter Dataset ID' },
   { value: 'instagram', label: 'Instagram', placeholder: 'Enter Dataset ID' },
   { value: 'tiktok', label: 'TikTok', placeholder: 'Pixel ID' },
-  { value: 'google', label: 'Google Ads', placeholder: 'Measurement_Id (e.g. G-77Y4B2X5Z1)' },
+  { value: 'google', label: 'Google Ads', placeholder: 'Google Conversion ID' },
   // { value: 'snapchat', label: 'Snapchat', placeholder: 'UUID Pixel ID' },
   // { value: 'outbrain', label: 'Outbrain', placeholder: 'Marketer ID (0-9, a-f)' },
   // { value: 'taboola', label: 'Taboola', placeholder: 'Account ID (numbers only)' },
@@ -324,14 +324,19 @@ export default function PixelWizardOnePerPage({ initialData, editingPixelId, onS
   const isMetaOrInstagramDatasetStep =
     currentStep?.id === 'pixelId' &&
     (formData.platform === 'meta' || formData.platform === 'instagram');
+  const isGooglePixelStep = currentStep?.id === 'pixelId' && formData.platform === 'google';
   const titleText =
     isMetaOrInstagramDatasetStep ? 'Enter' : currentStep?.title;
   const highlightText =
     isMetaOrInstagramDatasetStep ? 'Dataset ID' : currentStep?.highlight;
   const isTiktokTokenStep =
     currentStep?.id === 'capiToken' && formData.platform === 'tiktok';
-  const finalTitleText = isTiktokTokenStep ? 'TikTok' : titleText;
-  const finalHighlightText = isTiktokTokenStep ? 'Events API' : highlightText;
+  const finalTitleText = isTiktokTokenStep ? 'TikTok' : isGooglePixelStep ? 'Google' : titleText;
+  const finalHighlightText = isTiktokTokenStep
+    ? 'Events API'
+    : isGooglePixelStep
+      ? 'Conversion ID'
+      : highlightText;
   const subtitleText =
     isMetaOrInstagramDatasetStep
       ? formData.platform === 'meta'
@@ -339,6 +344,8 @@ export default function PixelWizardOnePerPage({ initialData, editingPixelId, onS
         : 'The Dataset ID from your Instagram account.'
       : currentStep?.id === 'pixelId' && formData.platform === 'tiktok'
         ? 'The Pixel ID from your TikTok platform.'
+      : isGooglePixelStep
+        ? 'The Conversion ID from your Google Ads account.'
       : isTiktokTokenStep
         ? 'Your Token so we can send Events API.'
       : currentStep?.subtitle;
