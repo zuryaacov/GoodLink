@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../../lib/supabase';
 import { refreshRedisForLinksUsingPixel } from '../../lib/redisCache';
@@ -176,6 +176,8 @@ const PixelModal = ({ isOpen, onClose, initialData = null }) => {
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorModal, setErrorModal] = useState({ isOpen: false, message: '' });
+  const pixelIdInputRef = useRef(null);
+  const capiTokenTextareaRef = useRef(null);
 
   useEffect(() => {
     if (initialData) {
@@ -199,6 +201,15 @@ const PixelModal = ({ isOpen, onClose, initialData = null }) => {
     }
     setErrors({});
   }, [initialData, isOpen]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const t = setTimeout(() => {
+      pixelIdInputRef.current?.focus?.();
+      pixelIdInputRef.current?.select?.();
+    }, 0);
+    return () => clearTimeout(t);
+  }, [isOpen]);
 
   const validateForm = () => {
     const newErrors = {};
@@ -502,6 +513,7 @@ const PixelModal = ({ isOpen, onClose, initialData = null }) => {
                       {getPixelIdLabel(formData.platform)} <span className="text-red-400">*</span>
                     </label>
                     <input
+                      ref={pixelIdInputRef}
                       type="text"
                       value={formData.pixelId}
                       onChange={(e) => {
@@ -539,6 +551,7 @@ const PixelModal = ({ isOpen, onClose, initialData = null }) => {
                       {getCapiTokenLabel(formData.platform)} <span className="text-red-400">*</span>
                     </label>
                     <textarea
+                      ref={capiTokenTextareaRef}
                       value={formData.capiToken}
                       onChange={(e) => {
                         setFormData({ ...formData, capiToken: e.target.value });

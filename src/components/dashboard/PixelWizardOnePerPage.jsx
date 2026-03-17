@@ -587,6 +587,7 @@ export default function PixelWizardOnePerPage({ initialData, editingPixelId, onS
                     }}
                     placeholder={currentPlatform?.placeholder}
                     className="w-full bg-transparent py-5 px-6 text-xl outline-none border-none text-[#1b1b1b] placeholder-slate-500 font-mono"
+                      autoFocus
                   />
                 </div>
                 <p className="text-slate-500 text-xs mt-1">{currentPlatform?.placeholder}</p>
@@ -611,6 +612,7 @@ export default function PixelWizardOnePerPage({ initialData, editingPixelId, onS
                     placeholder={getCapiTokenPlaceholder(formData.platform)}
                     rows={4}
                     className="w-full bg-transparent py-4 px-6 text-base outline-none border-none text-[#1b1b1b] placeholder-slate-500 font-mono resize-y"
+                    autoFocus
                   />
                 </div>
                 <div className="min-h-[20px] mt-1">
