@@ -344,24 +344,20 @@ export default function UtmPresetWizardOnePerPage({ initialData, editingPresetId
         } else if (name.length > 100) {
           nextErrors.name = 'Preset name cannot exceed 100 characters.';
         } else {
-          const check = sanitizeInput(name);
-          if (!check.safe) nextErrors.name = check.error || 'Please enter a valid preset name.';
-          else {
-            const {
-              data: { user },
-            } = await supabase.auth.getUser();
-            if (user) {
-              const { data: existing } = await supabase
-                .from('utm_presets')
-                .select('id')
-                .eq('user_id', user.id)
-                .ilike('name', name);
-              const isDuplicate =
-                existing?.length > 0 &&
-                (isEdit && editingPresetId ? existing.some((p) => p.id !== editingPresetId) : true);
-              if (isDuplicate) {
-                nextErrors.name = 'A UTM preset with this name already exists. Please choose a different name.';
-              }
+          const {
+            data: { user },
+          } = await supabase.auth.getUser();
+          if (user) {
+            const { data: existing } = await supabase
+              .from('utm_presets')
+              .select('id')
+              .eq('user_id', user.id)
+              .ilike('name', name);
+            const isDuplicate =
+              existing?.length > 0 &&
+              (isEdit && editingPresetId ? existing.some((p) => p.id !== editingPresetId) : true);
+            if (isDuplicate) {
+              nextErrors.name = 'A UTM preset with this name already exists. Please choose a different name.';
             }
           }
         }
