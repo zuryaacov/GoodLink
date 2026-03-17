@@ -73,6 +73,13 @@ async function queryWebRiskForUri(uri, apiKey) {
   params.append('threatTypes', 'SOCIAL_ENGINEERING');
   params.append('threatTypes', 'UNWANTED_SOFTWARE');
 
+  // Log request payload (redacted API key)
+  console.log('[WebRisk] Request:', {
+    endpoint: GOOGLE_WEB_RISK_API_URL,
+    uri,
+    threatTypes: ['MALWARE', 'SOCIAL_ENGINEERING', 'UNWANTED_SOFTWARE'],
+  });
+
   const res = await fetch(`${GOOGLE_WEB_RISK_API_URL}?${params.toString()}`, { method: 'GET' });
 
   if (!res.ok) {
@@ -86,6 +93,7 @@ async function queryWebRiskForUri(uri, apiKey) {
   }
 
   const data = await res.json().catch(() => ({}));
+  console.log('[WebRisk] Response:', { status: res.status, uri, data });
   const threatTypes = data?.threat?.threatTypes || [];
   return { ok: true, threatTypes, raw: data };
 }

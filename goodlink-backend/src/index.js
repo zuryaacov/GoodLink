@@ -563,8 +563,15 @@ export default Sentry.withSentry(
                                 apiUrl.searchParams.append("threatTypes", "UNWANTED_SOFTWARE");
                                 apiUrl.searchParams.set("uri", reported_url);
 
+                                console.log("[WebRisk] Request:", {
+                                    endpoint: "https://webrisk.googleapis.com/v1/uris:search",
+                                    uri: reported_url,
+                                    threatTypes: ["MALWARE", "SOCIAL_ENGINEERING", "UNWANTED_SOFTWARE"],
+                                });
+
                                 const sbRes = await fetch(apiUrl.toString(), { method: "GET" });
                                 const sbData = await sbRes.json().catch(() => ({}));
+                                console.log("[WebRisk] Response:", { status: sbRes.status, uri: reported_url, data: sbData });
                                 const threatTypes = (sbData && sbData.threat && sbData.threat.threatTypes) ? sbData.threat.threatTypes : [];
 
                                 if (sbRes.ok && Array.isArray(threatTypes) && threatTypes.length > 0) {
