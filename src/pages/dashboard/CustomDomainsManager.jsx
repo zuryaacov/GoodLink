@@ -479,7 +479,10 @@ const CustomDomainsManager = () => {
           <p className="font-semibold">Follow these steps:</p>
           <p>1. Log in to your domain registrar (e.g., GoDaddy, Namecheap, Cloudflare).</p>
           <p>2. Navigate to the DNS Management section.</p>
-          <p>3. Add a CNAME record exactly as shown in the table below.</p>
+          <p>
+            3. Add the CNAME and TXT records exactly as shown in the Setup Wizard or in the
+            Details section of your domain card.
+          </p>
           <p>
             4. Important for Cloudflare users: Set the Proxy Status to &quot;DNS Only&quot; (Grey
             Cloud). Do NOT use &quot;Proxied&quot; (Orange Cloud), as it will interfere with our
