@@ -469,6 +469,37 @@ const CustomDomainsManager = () => {
         </button>
       </div>
 
+      <div className="bg-card-bg border border-card-border rounded-2xl p-6 space-y-4">
+        <h2 className="text-xl font-bold text-[#1b1b1b]">Connect Your Custom Domain</h2>
+        <p className="text-[#1b1b1b] text-sm">
+          To use your own domain with glynk.to, you need to point your DNS settings to our
+          servers. This allows us to handle bot protection, analytics, and CAPI events under your
+          brand.
+        </p>
+        <div className="text-[#1b1b1b] text-sm space-y-2">
+          <p className="font-semibold">Follow these steps:</p>
+          <p>Log in to your domain registrar (e.g., GoDaddy, Namecheap, Cloudflare).</p>
+          <p>Navigate to the DNS Management section.</p>
+          <p>Add a CAME record exactly as shown in the table below.</p>
+          <p>
+            Important for Cloudflare users: Set the Proxy Status to &quot;DNS Only&quot; (Grey
+            Cloud). Do NOT use &quot;Proxied&quot; (Orange Cloud), as it will interfere with our
+            routing and SSL.
+          </p>
+        </div>
+        <div className="text-[#1b1b1b] text-sm space-y-2">
+          <p className="font-semibold">Verification & Timing</p>
+          <p>
+            Propagation: DNS changes usually take a few minutes, but can take up to 24 hours to
+            fully update globally.
+          </p>
+          <p>
+            Status: Your domain status will change to &quot;Active&quot; in your dashboard once the
+            connection is verified.
+          </p>
+        </div>
+      </div>
+
       {/* Domains List */}
       {domains.length === 0 ? (
         <div className="bg-[#fcfdfd] border rounded-2xl p-12 text-center hover:shadow-card-mint transition-all border-[#6358de]/40 md:border-card-border md:hover:border-[#6358de]/40">
