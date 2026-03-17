@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from '../../lib/supabase';
 import {
   cleanPayloadForDb,
@@ -244,6 +244,7 @@ const UtmPresetBuilder = ({ isOpen, onClose, editingPreset, links }) => {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const presetNameInputRef = useRef(null);
 
   useEffect(() => {
     if (editingPreset) {
@@ -268,6 +269,15 @@ const UtmPresetBuilder = ({ isOpen, onClose, editingPreset, links }) => {
       });
     }
   }, [editingPreset, isOpen]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const t = setTimeout(() => {
+      presetNameInputRef.current?.focus?.();
+      presetNameInputRef.current?.select?.();
+    }, 0);
+    return () => clearTimeout(t);
+  }, [isOpen]);
 
   const handlePlatformChange = (platformId) => {
     setSelectedPlatform(platformId);
@@ -450,6 +460,7 @@ const UtmPresetBuilder = ({ isOpen, onClose, editingPreset, links }) => {
           <div>
             <label className="block text-sm font-bold text-slate-300 mb-2">Preset Name</label>
             <input
+              ref={presetNameInputRef}
               type="text"
               value={presetName}
               onChange={(e) => setPresetName(e.target.value)}
