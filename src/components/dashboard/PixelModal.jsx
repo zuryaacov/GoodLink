@@ -59,11 +59,11 @@ const getCapiTokenPlaceholder = (platform) => {
 const PLATFORMS_WITH_PLACEHOLDERS = [
   {
     ...PLATFORMS.find((p) => p.value === 'meta'),
-    placeholder: 'Enter your Pixel ID (numbers only)',
+    placeholder: 'Enter your Dataset ID (numbers only)',
   },
   {
     ...PLATFORMS.find((p) => p.value === 'instagram'),
-    placeholder: 'Enter your Pixel ID (numbers only)',
+    placeholder: 'Enter your Dataset ID (numbers only)',
   },
   {
     ...PLATFORMS.find((p) => p.value === 'tiktok'),
@@ -369,7 +369,9 @@ const PixelModal = ({ isOpen, onClose, initialData = null }) => {
         if (error) {
           // Unique index conflict (same user/platform/pixel_id)
           if (error.code === '23505') {
-            throw new Error('This Pixel ID already exists for this platform.');
+            throw new Error(
+              `This ${getPixelIdLabel(formData.platform)} already exists for this platform.`
+            );
           }
           throw error;
         }
@@ -531,7 +533,9 @@ const PixelModal = ({ isOpen, onClose, initialData = null }) => {
                           ? 'Enter Measurement_Id'
                           : formData.platform === 'taboola'
                             ? 'Enter Account Id'
-                            : 'Enter Pixel ID')
+                            : formData.platform === 'meta' || formData.platform === 'instagram'
+                              ? 'Enter Dataset ID'
+                              : 'Enter Pixel ID')
                       }
                       className={`w-full px-4 py-3 bg-white border rounded-xl text-[#1b1b1b] placeholder-slate-500 focus:outline-none transition-colors font-mono text-sm ${
                         errors.pixelId

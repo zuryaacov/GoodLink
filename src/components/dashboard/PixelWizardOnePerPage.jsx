@@ -115,7 +115,7 @@ const getPlatformLogo = (platform) => {
 
 const PLATFORMS = [
   { value: 'meta', label: 'Facebook', placeholder: 'Enter Dataset ID' },
-  { value: 'instagram', label: 'Instagram', placeholder: 'Enter Pixel ID' },
+  { value: 'instagram', label: 'Instagram', placeholder: 'Enter Dataset ID' },
   { value: 'tiktok', label: 'TikTok', placeholder: 'Pixel ID (A-Z, 0-9)' },
   { value: 'google', label: 'Google Ads', placeholder: 'Measurement_Id (e.g. G-77Y4B2X5Z1)' },
   // { value: 'snapchat', label: 'Snapchat', placeholder: 'UUID Pixel ID' },

@@ -61,6 +61,9 @@ export function validateCapiToken(token, platform) {
  */
 export function getPixelIdLabel(platform) {
   switch (platform) {
+    case 'meta':
+    case 'instagram':
+      return 'Dataset ID';
     case 'google':
       return 'Measurement_Id';
     case 'taboola':
