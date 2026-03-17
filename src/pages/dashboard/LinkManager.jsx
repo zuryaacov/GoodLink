@@ -946,7 +946,7 @@ const LinkManager = () => {
         )}
       </div>
 
-      {/* Active Grid cards for current level children */}
+      {/* Active Grid cards for current level children1 */}
       {isFoldersEnabled && childSpaces.length > 0 && (
         <div className="flex flex-col gap-6 w-full">
           <div className="relative flex py-5 items-center">
@@ -1082,7 +1082,6 @@ const LinkManager = () => {
           onClick={() => setOpenSpaceMenuId(null)}
         />
       )}
-
       {/* Individual links divider */}
       {directLinks.length > 0 && (
         <div className="relative flex py-5 items-center">
@@ -1096,9 +1095,10 @@ const LinkManager = () => {
           <div className="flex-grow border-t border-[#E5E9E8]"></div>
         </div>
       )}
-
       {/* Links List */}
-      {directLinks.length === 0 && childSpaces.length === 0 && (!isFoldersEnabled || currentLevel === 0) ? (
+      {directLinks.length === 0 &&
+      childSpaces.length === 0 &&
+      (!isFoldersEnabled || currentLevel === 0) ? (
         <div className="bg-[#fcfdfd] border rounded-2xl p-12 text-center hover:shadow-card-mint transition-all border-[#6358de]/40 md:border-card-border md:hover:border-[#6358de]/40">
           <span className="material-symbols-outlined text-6xl text-black mb-4">link</span>
           <h3 className="text-xl font-bold text-black mb-2">No Links or Workspaces Yet</h3>
@@ -1274,7 +1274,6 @@ const LinkManager = () => {
           })}
         </div>
       )}
-
       {/* QR Code Modal */}
       <Modal
         isOpen={qrModal.isOpen}
@@ -1326,7 +1325,6 @@ const LinkManager = () => {
           ) : null
         }
       />
-
       {/* Move Link Modal */}
       <Modal
         isOpen={moveModal.isOpen}
@@ -1433,7 +1431,6 @@ const LinkManager = () => {
           </div>
         }
       />
-
       {/* Error/Alert Modal */}
       <Modal
         isOpen={modalState.isOpen}
@@ -1444,7 +1441,6 @@ const LinkManager = () => {
         onConfirm={modalState.onConfirm}
         isLoading={modalState.isLoading}
       />
-
       {/* Delete Link Modal - rendered here so overlay covers full screen like Delete Workspace */}
       <Modal
         isOpen={deleteLinkModal.isOpen}
@@ -1467,7 +1463,6 @@ const LinkManager = () => {
         onConfirm={handleDeleteLink}
         isLoading={deleteLinkModal.isLoading}
       />
-
       {/* UTM Presets Modal */}
       <Modal
         isOpen={utmPresetsModal.isOpen}
@@ -1490,7 +1485,6 @@ const LinkManager = () => {
         }
         type="info"
       />
-
       {/* Create Workspace / Campaign / Group modal */}
       <Modal
         isOpen={spaceModal.isOpen}
@@ -1521,9 +1515,7 @@ const LinkManager = () => {
               placeholder={`Enter ${spaceModal.kind ? KIND_LABEL[spaceModal.kind] : 'item'} name`}
             />
             <div className="min-h-[20px]">
-              {spaceModal.error ? (
-                <p className="text-sm text-red-500">{spaceModal.error}</p>
-              ) : null}
+              {spaceModal.error ? <p className="text-sm text-red-500">{spaceModal.error}</p> : null}
             </div>
           </div>
         }
