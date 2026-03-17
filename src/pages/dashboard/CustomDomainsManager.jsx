@@ -551,23 +551,23 @@ const CustomDomainsManager = () => {
                           type="button"
                           onClick={() => {
                             setOpenMenuDomainId(null);
-                            navigate(`/dashboard/domains/edit/${domain.id}`);
-                          }}
-                          className="w-full px-4 py-3 text-left text-[#1b1b1b] hover:bg-white/5 transition-colors flex items-center gap-3 text-sm"
-                        >
-                          <span className="material-symbols-outlined text-base">edit</span>
-                          Edit Root
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setOpenMenuDomainId(null);
                             setDetailsModalDomain(domain);
                           }}
                           className="w-full px-4 py-3 text-left text-[#1b1b1b] hover:bg-white/5 transition-colors flex items-center gap-3 text-sm"
                         >
                           <span className="material-symbols-outlined text-base">info</span>
                           Details
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setOpenMenuDomainId(null);
+                            navigate(`/dashboard/domains/edit/${domain.id}`);
+                          }}
+                          className="w-full px-4 py-3 text-left text-[#1b1b1b] hover:bg-white/5 transition-colors flex items-center gap-3 text-sm"
+                        >
+                          <span className="material-symbols-outlined text-base">edit</span>
+                          Edit Root
                         </button>
                         <button
                           type="button"
