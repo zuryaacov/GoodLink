@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getPixelIdLabel, validateCapiToken, validatePixelId } from '../../lib/pixelValidation';
 import { checkForMaliciousInput, sanitizeInput } from '../../lib/inputSanitization';
@@ -296,6 +296,10 @@ export default function PixelWizardOnePerPage({ initialData, editingPixelId, onS
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [fieldErrors, setFieldErrors] = useState({});
+  const nameInputRef = useRef(null);
+  const pixelIdInputRef = useRef(null);
+  const capiTokenTextareaRef = useRef(null);
+  const eventTypeInputRef = useRef(null);
 
   useEffect(() => {
     if (initialData) {
@@ -317,6 +321,31 @@ export default function PixelWizardOnePerPage({ initialData, editingPixelId, onS
   const progressPct = totalSteps ? ((stepIndex + 1) / totalSteps) * 100 : 0;
   const currentPlatform = PLATFORMS.find((p) => p.value === formData.platform);
   const availableEvents = STANDARD_EVENTS[formData.platform] || [];
+  useEffect(() => {
+    if (!currentStep) return;
+    const t = setTimeout(() => {
+      if (currentStep.id === 'name') {
+        nameInputRef.current?.focus?.();
+        nameInputRef.current?.select?.();
+        return;
+      }
+      if (currentStep.id === 'pixelId') {
+        pixelIdInputRef.current?.focus?.();
+        pixelIdInputRef.current?.select?.();
+        return;
+      }
+      if (currentStep.id === 'capiToken') {
+        capiTokenTextareaRef.current?.focus?.();
+        capiTokenTextareaRef.current?.select?.();
+        return;
+      }
+      if (currentStep.id === 'eventType') {
+        eventTypeInputRef.current?.focus?.();
+        eventTypeInputRef.current?.select?.();
+      }
+    }, 0);
+    return () => clearTimeout(t);
+  }, [currentStep?.id, formData.platform]);
   const goNext = async () => {
     const validateCurrentStep = async () => {
       const nextErrors = {};
@@ -500,6 +529,7 @@ export default function PixelWizardOnePerPage({ initialData, editingPixelId, onS
               <>
                 <div className="rounded-2xl bg-white border-2 border-slate-200 focus-within:border-[#135bec] transition-all">
                   <input
+                    ref={nameInputRef}
                     type="text"
                     value={formData.name}
                     onChange={(e) => {
@@ -542,6 +572,7 @@ export default function PixelWizardOnePerPage({ initialData, editingPixelId, onS
               <div className="space-y-2">
                 <div className="rounded-2xl bg-white border-2 border-slate-200 focus-within:border-[#135bec] transition-all">
                   <input
+                    ref={pixelIdInputRef}
                     type="text"
                     value={formData.pixelId}
                     onChange={(e) => {
@@ -571,6 +602,7 @@ export default function PixelWizardOnePerPage({ initialData, editingPixelId, onS
               <div className="space-y-2">
                 <div className="rounded-2xl bg-white border-2 border-slate-200 focus-within:border-[#135bec] transition-all">
                   <textarea
+                    ref={capiTokenTextareaRef}
                     value={formData.capiToken}
                     onChange={(e) => {
                       setFormData((p) => ({ ...p, capiToken: e.target.value }));
@@ -595,6 +627,7 @@ export default function PixelWizardOnePerPage({ initialData, editingPixelId, onS
                   <>
                     <div className="rounded-2xl bg-white border-2 border-slate-200 focus-within:border-[#135bec] transition-all">
                       <input
+                        ref={eventTypeInputRef}
                         type="text"
                         value={formData.eventType}
                         onChange={(e) => {
