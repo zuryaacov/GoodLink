@@ -937,13 +937,24 @@ export default function LinkWizardOnePerPage({
                               {rule.url}
                             </button>
                           </div>
-                          <button
-                            type="button"
-                            onClick={() => removeGeoRule(idx)}
-                            className="text-red-500 hover:text-red-400 flex-shrink-0 p-1"
-                          >
-                            <span className="material-symbols-outlined text-lg">delete</span>
-                          </button>
+                          <div className="flex items-center gap-1 flex-shrink-0">
+                            <button
+                              type="button"
+                              onClick={() => beginEditGeoRule(idx)}
+                              className="text-slate-500 hover:text-[#135bec] p-1"
+                              title="Edit rule"
+                            >
+                              <span className="material-symbols-outlined text-lg">edit</span>
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => removeGeoRule(idx)}
+                              className="text-red-500 hover:text-red-400 p-1"
+                              title="Delete rule"
+                            >
+                              <span className="material-symbols-outlined text-lg">delete</span>
+                            </button>
+                          </div>
                         </div>
                       ))}
                     </div>
