@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import Modal from '../../components/common/Modal';
@@ -63,6 +63,16 @@ const LinkManager = () => {
     error: null,
     isLoading: false,
   });
+  const spaceNameInputRef = useRef(null);
+
+  useEffect(() => {
+    if (!spaceModal.isOpen) return;
+    const t = setTimeout(() => {
+      spaceNameInputRef.current?.focus?.();
+      spaceNameInputRef.current?.select?.();
+    }, 0);
+    return () => clearTimeout(t);
+  }, [spaceModal.isOpen]);
   const [utmPresetsModal, setUtmPresetsModal] = useState({
     isOpen: false,
     link: null,
@@ -1500,11 +1510,13 @@ const LinkManager = () => {
                 : `Name your new ${spaceModal.kind ? KIND_LABEL[spaceModal.kind].toLowerCase() : 'item'}.`}
             </p>
             <input
+              ref={spaceNameInputRef}
               type="text"
               value={spaceModal.name}
               onChange={(e) =>
                 setSpaceModal((prev) => ({ ...prev, name: e.target.value, error: null }))
               }
+              autoFocus
               className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm"
               placeholder={`Enter ${spaceModal.kind ? KIND_LABEL[spaceModal.kind] : 'item'} name`}
             />
