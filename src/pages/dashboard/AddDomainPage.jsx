@@ -462,17 +462,19 @@ const AddDomainPage = () => {
               } else {
                 await handleRegister(name, redirect);
               }
-              navigate('/dashboard/domains', {
-                state: {
-                  toast: {
-                    type: 'success',
-                    title: savedDomainId ? 'Domain updated' : 'Domain added',
-                    message: savedDomainId
-                      ? 'Your custom domain was updated successfully.'
-                      : 'Your new custom domain was added successfully.',
+              // Keep new-domain users in the wizard DNS/Verify steps.
+              // For edit flow (root redirect only), go back to domains list after update.
+              if (savedDomainId) {
+                navigate('/dashboard/domains', {
+                  state: {
+                    toast: {
+                      type: 'success',
+                      title: 'Domain updated',
+                      message: 'Your custom domain was updated successfully.',
+                    },
                   },
-                },
-              });
+                });
+              }
             } catch (e) {
               setSaveError(e.message);
               throw e;
