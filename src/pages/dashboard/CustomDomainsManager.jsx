@@ -472,17 +472,16 @@ const CustomDomainsManager = () => {
       <div className="bg-card-bg border border-card-border rounded-2xl p-6 space-y-4">
         <h2 className="text-xl font-bold text-[#1b1b1b]">Connect Your Custom Domain</h2>
         <p className="text-[#1b1b1b] text-sm">
-          To use your own domain with glynk.to, you need to point your DNS settings to our
-          servers. This allows us to handle bot protection, analytics, and CAPI events under your
-          brand.
+          To use your own domain with GoodLink.ai, you need to point your DNS settings to our
+          servers.
         </p>
         <div className="text-[#1b1b1b] text-sm space-y-2">
           <p className="font-semibold">Follow these steps:</p>
-          <p>Log in to your domain registrar (e.g., GoDaddy, Namecheap, Cloudflare).</p>
-          <p>Navigate to the DNS Management section.</p>
-          <p>Add a CAME record exactly as shown in the table below.</p>
+          <p>1. Log in to your domain registrar (e.g., GoDaddy, Namecheap, Cloudflare).</p>
+          <p>2. Navigate to the DNS Management section.</p>
+          <p>3. Add a CAME record exactly as shown in the table below.</p>
           <p>
-            Important for Cloudflare users: Set the Proxy Status to &quot;DNS Only&quot; (Grey
+            4. Important for Cloudflare users: Set the Proxy Status to &quot;DNS Only&quot; (Grey
             Cloud). Do NOT use &quot;Proxied&quot; (Orange Cloud), as it will interfere with our
             routing and SSL.
           </p>
