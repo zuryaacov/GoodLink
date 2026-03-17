@@ -802,6 +802,7 @@ export default function LinkWizardOnePerPage({
                         setUrlError(null);
                       }}
                       placeholder="https://..."
+                      autoFocus
                       className="w-full bg-transparent py-5 px-6 text-xl outline-none border-none text-[#1b1b1b] placeholder-slate-500"
                     />
                   </div>
@@ -877,6 +878,7 @@ export default function LinkWizardOnePerPage({
                         setSlugError(null);
                       }}
                       placeholder="my-deal"
+                      autoFocus
                       className="flex-1 bg-transparent py-5 px-3 text-xl outline-none font-semibold border-none text-[#1b1b1b] placeholder-slate-500"
                     />
                   </div>
@@ -931,6 +933,7 @@ export default function LinkWizardOnePerPage({
                             setFallbackUrlError(null);
                           }}
                           placeholder="https://google.com"
+                          autoFocus
                           className="w-full bg-transparent py-4 px-4 outline-none border-none text-[#1b1b1b] placeholder-slate-500"
                         />
                       </div>
@@ -1033,6 +1036,7 @@ export default function LinkWizardOnePerPage({
                           value={newGeoRule.url}
                           onChange={(e) => setNewGeoRule((r) => ({ ...r, url: e.target.value.toLowerCase() }))}
                           placeholder="https://..."
+                          autoFocus
                           className="w-full bg-white border border-slate-200 rounded-xl p-4 text-[#1b1b1b] outline-none focus:border-[#135bec]"
                         />
                         <div className="min-h-[20px] mt-1">
