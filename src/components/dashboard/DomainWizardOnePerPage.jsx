@@ -76,6 +76,10 @@ export default function DomainWizardOnePerPage({
   const isFirst = stepIndex === 0;
   const isLast = stepIndex === totalSteps - 1;
   const progressPct = totalSteps ? ((stepIndex + 1) / totalSteps) * 100 : 0;
+  const validDnsRecordsCount = Array.isArray(dnsRecords)
+    ? dnsRecords.filter((r) => r && (r.host || r.name) && r.value).length
+    : 0;
+  const hasAllRequiredDnsRecords = validDnsRecordsCount >= 6;
 
   useEffect(() => {
     if (!currentStep) return;
@@ -301,7 +305,7 @@ export default function DomainWizardOnePerPage({
             {currentStep?.id === 'dns' && (
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  {!(Array.isArray(dnsRecords) && dnsRecords.length >= 6) && (
+                  {!hasAllRequiredDnsRecords && (
                     <button
                       type="button"
                       onClick={onRefreshDns}
