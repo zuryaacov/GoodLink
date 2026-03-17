@@ -1088,7 +1088,7 @@ const LinkManager = () => {
       )}
 
       {/* Links List */}
-      {directLinks.length === 0 && childSpaces.length === 0 ? (
+      {directLinks.length === 0 && childSpaces.length === 0 && (!isFoldersEnabled || currentLevel === 0) ? (
         <div className="bg-[#fcfdfd] border rounded-2xl p-12 text-center hover:shadow-card-mint transition-all border-[#6358de]/40 md:border-card-border md:hover:border-[#6358de]/40">
           <span className="material-symbols-outlined text-6xl text-black mb-4">link</span>
           <h3 className="text-xl font-bold text-black mb-2">No Links or Workspaces Yet</h3>
@@ -1151,7 +1151,6 @@ const LinkManager = () => {
                   className="absolute top-4 right-4"
                   hoverBorderClass="hover:border-[#0b996f]/60"
                   link={link}
-                  onRefresh={fetchData}
                   onEdit={(linkToEdit) => navigate(`/dashboard/links/edit/${linkToEdit.id}`)}
                   onDuplicate={(linkToDuplicate) =>
                     navigate(
@@ -1164,7 +1163,6 @@ const LinkManager = () => {
                     )
                   }
                   onMove={isFoldersEnabled ? openMoveModal : null}
-                  onShowModal={(modalConfig) => setModalState(modalConfig)}
                   onDeleteClick={(linkToDelete) =>
                     setDeleteLinkModal({ isOpen: true, link: linkToDelete, isLoading: false })
                   }
@@ -1525,12 +1523,10 @@ const LinkManager = () => {
 // Actions Menu Component
 const LinkActionsMenu = ({
   link,
-  onRefresh,
   onEdit,
   onDuplicate,
   onAnalytics,
   onMove,
-  onShowModal,
   onDeleteClick,
   className = '',
   hoverBorderClass = 'hover:border-primary/40',
