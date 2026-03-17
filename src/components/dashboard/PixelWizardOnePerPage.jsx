@@ -133,7 +133,7 @@ const getCapiTokenLabel = (platform) => {
     case 'tiktok':
       return 'Access Token';
     case 'google':
-      return 'Api_Secret';
+      return 'Conversion Label';
     // case 'snapchat':
     //   return 'Access Token';
     // case 'outbrain':
@@ -153,7 +153,7 @@ const getCapiTokenPlaceholder = (platform) => {
     case 'tiktok':
       return 'Access Token';
     case 'google':
-      return 'Api_Secret';
+      return 'Conversion Label';
     // case 'snapchat':
     //   return 'Access Token';
     // case 'outbrain':
@@ -331,9 +331,19 @@ export default function PixelWizardOnePerPage({ initialData, editingPixelId, onS
     isMetaOrInstagramDatasetStep ? 'Dataset ID' : currentStep?.highlight;
   const isTiktokTokenStep =
     currentStep?.id === 'capiToken' && formData.platform === 'tiktok';
-  const finalTitleText = isTiktokTokenStep ? 'TikTok' : isGooglePixelStep ? 'Google' : titleText;
+  const isGoogleTokenStep =
+    currentStep?.id === 'capiToken' && formData.platform === 'google';
+  const finalTitleText = isTiktokTokenStep
+    ? 'TikTok'
+    : isGoogleTokenStep
+      ? 'Conversion'
+      : isGooglePixelStep
+        ? 'Google'
+        : titleText;
   const finalHighlightText = isTiktokTokenStep
     ? 'Events API'
+    : isGoogleTokenStep
+      ? 'Label'
     : isGooglePixelStep
       ? 'Conversion ID'
       : highlightText;
@@ -348,6 +358,8 @@ export default function PixelWizardOnePerPage({ initialData, editingPixelId, onS
         ? 'The Conversion ID from your Google Ads account.'
       : isTiktokTokenStep
         ? 'Your Token so we can send Events API.'
+      : isGoogleTokenStep
+        ? 'The Conversion Label from your Google Ads account.'
       : currentStep?.subtitle;
   useEffect(() => {
     if (!currentStep) return;

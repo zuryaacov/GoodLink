@@ -43,7 +43,7 @@ export function validateCapiToken(token, platform) {
   if (!token || token.trim() === '') {
     switch (platform) {
       case 'google':
-        return { isValid: false, error: 'Api_Secret is required' };
+        return { isValid: false, error: 'Conversion Label is required' };
       case 'taboola':
         return { isValid: false, error: 'Client Secret is required' };
       default:
