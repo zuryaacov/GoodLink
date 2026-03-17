@@ -366,13 +366,6 @@ export default function UtmPresetWizardOnePerPage({ initialData, editingPresetId
           }
         }
       }
-      if (currentStep?.id && UTM_STEPS.some((s) => s.id === currentStep.id)) {
-        const utmStep = UTM_STEPS.find((s) => s.id === currentStep.id);
-        const value = params[utmStep.key];
-        if (value && value.length > 250) {
-          nextErrors[utmStep.key] = `${utmStep.label} cannot exceed 250 characters.`;
-        }
-      }
       setFieldErrors(nextErrors);
       return Object.keys(nextErrors).length === 0;
     };
