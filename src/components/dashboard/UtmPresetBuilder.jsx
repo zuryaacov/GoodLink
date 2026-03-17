@@ -330,14 +330,6 @@ const UtmPresetBuilder = ({ isOpen, onClose, editingPreset, links }) => {
         return;
       }
 
-      // XSS / injection check on preset name
-      const nameCheck = sanitizeInput(presetName);
-      if (!nameCheck.safe) {
-        setError(nameCheck.error);
-        setLoading(false);
-        return;
-      }
-
       // Validate UTM parameter lengths (max 250 chars each – browser/GA limits)
       const utmMaxLen = 250;
       const sanitizedParams = {};
@@ -362,7 +354,7 @@ const UtmPresetBuilder = ({ isOpen, onClose, editingPreset, links }) => {
       }
 
       // Check duplicate preset name (same user, case-insensitive)
-      const trimmedPresetName = (nameCheck.sanitized || '').trim();
+      const trimmedPresetName = presetName.trim();
       const { data: existingPresets } = await supabase
         .from('utm_presets')
         .select('id')
