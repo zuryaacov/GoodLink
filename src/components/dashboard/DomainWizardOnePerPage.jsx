@@ -310,7 +310,7 @@ export default function DomainWizardOnePerPage({
                       type="button"
                       onClick={onRefreshDns}
                       disabled={isSubmitting}
-                      className="flex items-center gap-2 px-3 py-2 bg-slate-200 hover:bg-[#324467] text-[#1b1b1b] text-sm font-medium rounded-xl transition-colors border border-slate-200"
+                      className="flex items-center gap-2 px-3 py-2 bg-slate-200 hover:bg-slate-100 text-[#1b1b1b] text-sm font-medium rounded-xl transition-colors border border-slate-200 hover:border-[#6358de]"
                     >
                       <span
                         className={`material-symbols-outlined text-lg ${isSubmitting ? 'animate-spin' : ''}`}
