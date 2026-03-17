@@ -148,17 +148,15 @@ export default function AccountSettingsPage() {
     setSuccess(null);
 
     try {
-      // 1. Validate User Input
-      if (!fullName.trim() || fullName.length < 2) {
+      // 1. Validate User Input (allow any language + @)
+      const trimmedName = fullName.trim();
+      if (!trimmedName || trimmedName.length < 2) {
         throw new Error('Full name must be at least 2 characters.');
       }
 
-      const nameCheck = sanitizeInput(fullName);
-      if (!nameCheck.safe) throw new Error(nameCheck.error);
-
       // 2. Update Auth Metadata (Name only – email is not editable)
       const updates = {
-        data: { full_name: nameCheck.sanitized || fullName },
+        data: { full_name: trimmedName },
       };
 
       const { error: authError } = await supabase.auth.updateUser(updates);
@@ -168,7 +166,7 @@ export default function AccountSettingsPage() {
       const { error: profileError } = await supabase
         .from('profiles')
         .update({
-          full_name: nameCheck.sanitized || fullName.trim(),
+          full_name: trimmedName,
           timezone: timezone,
           updated_at: new Date().toISOString(),
         })
