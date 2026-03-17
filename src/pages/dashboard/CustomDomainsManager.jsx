@@ -624,19 +624,31 @@ const CustomDomainsManager = () => {
                       DNS Configuration Required
                     </p>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => fetchDomainRecords(detailsModalDomain)}
-                    disabled={!!dnsLoadingByDomainId[detailsModalDomain.id]}
-                    className="flex items-center gap-1 text-xs px-2.5 py-1.5 rounded-lg border border-slate-300 bg-white hover:bg-white hover:border-[#6358de] disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
-                  >
-                    <span
-                      className={`material-symbols-outlined text-sm ${dnsLoadingByDomainId[detailsModalDomain.id] ? 'animate-spin' : ''}`}
-                    >
-                      refresh
-                    </span>
-                    Refresh
-                  </button>
+                  {(() => {
+                    const currentRecords = getDnsRecordsArray(
+                      dnsRecordsByDomainId[detailsModalDomain.id] ?? detailsModalDomain.dns_records
+                    );
+                    const validRecordsCount = Array.isArray(currentRecords)
+                      ? currentRecords.filter((r) => r && (r.host || r.name) && r.value).length
+                      : 0;
+                    if (validRecordsCount >= 6) return null;
+
+                    return (
+                      <button
+                        type="button"
+                        onClick={() => fetchDomainRecords(detailsModalDomain)}
+                        disabled={!!dnsLoadingByDomainId[detailsModalDomain.id]}
+                        className="flex items-center gap-1 text-xs px-2.5 py-1.5 rounded-lg border border-slate-300 bg-white hover:bg-white hover:border-[#6358de] disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
+                      >
+                        <span
+                          className={`material-symbols-outlined text-sm ${dnsLoadingByDomainId[detailsModalDomain.id] ? 'animate-spin' : ''}`}
+                        >
+                          refresh
+                        </span>
+                        Refresh
+                      </button>
+                    );
+                  })()}
                 </div>
 
                 {(() => {

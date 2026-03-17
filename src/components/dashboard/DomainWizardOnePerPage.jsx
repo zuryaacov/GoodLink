@@ -76,6 +76,10 @@ export default function DomainWizardOnePerPage({
   const isFirst = stepIndex === 0;
   const isLast = stepIndex === totalSteps - 1;
   const progressPct = totalSteps ? ((stepIndex + 1) / totalSteps) * 100 : 0;
+  const validDnsRecordsCount = Array.isArray(dnsRecords)
+    ? dnsRecords.filter((r) => r && (r.host || r.name) && r.value).length
+    : 0;
+  const hasAllRequiredDnsRecords = validDnsRecordsCount >= 6;
 
   useEffect(() => {
     if (!currentStep) return;
@@ -170,7 +174,8 @@ export default function DomainWizardOnePerPage({
       return;
     }
     if (currentStep.id === 'verify') {
-      // Navigation after verify is handled by onVerify (in parent) when verification succeeds.
+      // Allow finishing even if DNS is still pending.
+      onBack?.();
       return;
     }
   };
@@ -301,19 +306,21 @@ export default function DomainWizardOnePerPage({
             {currentStep?.id === 'dns' && (
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <button
-                    type="button"
-                    onClick={onRefreshDns}
-                    disabled={isSubmitting}
-                    className="flex items-center gap-2 px-3 py-2 bg-white hover:bg-white text-[#1b1b1b] text-sm font-medium rounded-xl transition-colors border border-slate-300 hover:border-[#6358de]"
-                  >
-                    <span
-                      className={`material-symbols-outlined text-lg ${isSubmitting ? 'animate-spin' : ''}`}
+                  {!hasAllRequiredDnsRecords && (
+                    <button
+                      type="button"
+                      onClick={onRefreshDns}
+                      disabled={isSubmitting}
+                      className="flex items-center gap-2 px-3 py-2 bg-white hover:bg-white text-[#1b1b1b] text-sm font-medium rounded-xl transition-colors border border-slate-300 hover:border-[#6358de]"
                     >
-                      refresh
-                    </span>
-                    Refresh Records
-                  </button>
+                      <span
+                        className={`material-symbols-outlined text-lg ${isSubmitting ? 'animate-spin' : ''}`}
+                      >
+                        refresh
+                      </span>
+                      Refresh Records
+                    </button>
+                  )}
                 </div>
                 {dnsRecords && dnsRecords.length > 0 ? (
                   <DNSRecordsDisplay records={dnsRecords} domain={domainName} />
