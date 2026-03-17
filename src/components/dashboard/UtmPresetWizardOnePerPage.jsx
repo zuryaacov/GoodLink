@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import taboolaLogo from '../../assets/idRS-vCmxj_1769618141092.svg';
 import outbrainLogo from '../../assets/id-bNajMAc_1769618145922.svg';
@@ -295,6 +295,7 @@ export default function UtmPresetWizardOnePerPage({ initialData, editingPresetId
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [fieldErrors, setFieldErrors] = useState({});
+  const presetNameInputRef = useRef(null);
 
   useEffect(() => {
     if (initialData) {
@@ -317,6 +318,15 @@ export default function UtmPresetWizardOnePerPage({ initialData, editingPresetId
   const progressPct = totalSteps ? ((stepIndex + 1) / totalSteps) * 100 : 0;
   const platformOptions = UTM_OPTIONS[platform] || {};
   const previewQuery = buildPreviewFromParams(params);
+
+  useEffect(() => {
+    if (!currentStep || currentStep.id !== 'name') return;
+    const t = setTimeout(() => {
+      presetNameInputRef.current?.focus?.();
+      presetNameInputRef.current?.select?.();
+    }, 0);
+    return () => clearTimeout(t);
+  }, [currentStep?.id]);
 
   const handleChipClick = (utmKey, value) => {
     const current = params[utmKey];
@@ -496,6 +506,7 @@ export default function UtmPresetWizardOnePerPage({ initialData, editingPresetId
               <>
                 <div className="rounded-2xl bg-white border-2 border-slate-200 focus-within:border-[#135bec] transition-all">
                   <input
+                    ref={presetNameInputRef}
                     type="text"
                     value={presetName}
                     onChange={(e) => {
