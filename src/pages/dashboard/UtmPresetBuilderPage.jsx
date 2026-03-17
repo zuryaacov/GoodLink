@@ -63,9 +63,8 @@ const UtmPresetBuilderPage = () => {
       data: { user },
     } = await supabase.auth.getUser();
     if (!user) throw new Error('User not authenticated');
-    const nameCheck = sanitizeInput(presetData.name || '');
-    if (!nameCheck.safe) throw new Error(nameCheck.error || 'Preset name contains invalid content');
-    const trimmedName = (nameCheck.sanitized || '').trim();
+    const rawName = (presetData.name || '').trim();
+    const trimmedName = rawName;
     if (!trimmedName) throw new Error('Preset name is required');
     if (trimmedName.length > 100) throw new Error('Preset name cannot exceed 100 characters');
 
@@ -83,9 +82,7 @@ const UtmPresetBuilderPage = () => {
 
     const sanitizeUtmField = (v) => {
       if (!v) return null;
-      const check = sanitizeInput(v);
-      if (!check.safe) throw new Error(check.error || 'UTM field contains invalid content');
-      const cleaned = (check.sanitized || '').trim();
+      const cleaned = String(v).trim();
       if (cleaned.length > 250) throw new Error('UTM value cannot exceed 250 characters');
       return cleaned || null;
     };
