@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import DNSRecordsDisplay from './DNSRecordsDisplay';
 import { validateDomain } from '../../lib/domainValidation';
@@ -64,6 +64,8 @@ export default function DomainWizardOnePerPage({
   const [stepIndex, setStepIndex] = useState(0);
   const [localError, setLocalError] = useState(null);
   const [fieldErrors, setFieldErrors] = useState({});
+  const domainInputRef = useRef(null);
+  const rootRedirectInputRef = useRef(null);
 
   useEffect(() => {
     setStepIndex(0);
@@ -74,6 +76,22 @@ export default function DomainWizardOnePerPage({
   const isFirst = stepIndex === 0;
   const isLast = stepIndex === totalSteps - 1;
   const progressPct = totalSteps ? ((stepIndex + 1) / totalSteps) * 100 : 0;
+
+  useEffect(() => {
+    if (!currentStep) return;
+    const t = setTimeout(() => {
+      if (currentStep.id === 'domain' && !isEdit) {
+        domainInputRef.current?.focus?.();
+        domainInputRef.current?.select?.();
+        return;
+      }
+      if (currentStep.id === 'rootRedirect') {
+        rootRedirectInputRef.current?.focus?.();
+        rootRedirectInputRef.current?.select?.();
+      }
+    }, 0);
+    return () => clearTimeout(t);
+  }, [currentStep?.id, isEdit]);
 
   const goNext = async () => {
     if (currentStep.id === 'domain') {
@@ -228,6 +246,7 @@ export default function DomainWizardOnePerPage({
               <div className="space-y-5">
                 <div className="rounded-2xl bg-white border-2 border-slate-200 focus-within:border-[#135bec] transition-all">
                   <input
+                    ref={domainInputRef}
                     type="text"
                     value={domainName}
                     onChange={(e) => {
@@ -254,6 +273,7 @@ export default function DomainWizardOnePerPage({
               <div className="space-y-5">
                 <div className="rounded-2xl bg-white border-2 border-slate-200 focus-within:border-[#135bec] transition-all">
                   <input
+                    ref={rootRedirectInputRef}
                     type="text"
                     value={rootRedirect}
                     onChange={(e) => {
