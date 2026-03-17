@@ -667,16 +667,42 @@ export default function LinkWizardOnePerPage({
 
   const selectedDomain = formData.domain || domains[0];
   const nameInputRef = useRef(null);
+  const targetUrlInputRef = useRef(null);
+  const slugInputRef = useRef(null);
+  const botFallbackUrlInputRef = useRef(null);
+  const geoThenUrlInputRef = useRef(null);
   const progressPct = totalSteps ? ((stepIndex + 1) / totalSteps) * 100 : 0;
 
   useEffect(() => {
-    if (!currentStep || currentStep.id !== 'name') return;
+    if (!currentStep) return;
     const t = setTimeout(() => {
-      nameInputRef.current?.focus?.();
-      nameInputRef.current?.select?.();
+      if (currentStep.id === 'name') {
+        nameInputRef.current?.focus?.();
+        nameInputRef.current?.select?.();
+        return;
+      }
+      if (currentStep.id === 'url') {
+        targetUrlInputRef.current?.focus?.();
+        targetUrlInputRef.current?.select?.();
+        return;
+      }
+      if (currentStep.id === 'slug') {
+        slugInputRef.current?.focus?.();
+        slugInputRef.current?.select?.();
+        return;
+      }
+      if (currentStep.id === 'bot' && formData.botAction === 'redirect') {
+        botFallbackUrlInputRef.current?.focus?.();
+        botFallbackUrlInputRef.current?.select?.();
+        return;
+      }
+      if (currentStep.id === 'geo' && showGeoForm) {
+        geoThenUrlInputRef.current?.focus?.();
+        geoThenUrlInputRef.current?.select?.();
+      }
     }, 0);
     return () => clearTimeout(t);
-  }, [currentStep?.id]);
+  }, [currentStep?.id, formData.botAction, showGeoForm]);
 
   return (
     <div className="flex flex-col flex-1 min-h-0">
@@ -768,6 +794,7 @@ export default function LinkWizardOnePerPage({
                 <div className="space-y-2">
                   <div className="rounded-2xl bg-white border-2 border-slate-200 focus-within:border-[#135bec] focus-within:shadow-[0_0_15px_rgba(19,91,236,0.3)] transition-all">
                     <input
+                      ref={targetUrlInputRef}
                       type="url"
                       value={formData.targetUrl || ''}
                       onChange={(e) => {
@@ -842,6 +869,7 @@ export default function LinkWizardOnePerPage({
                       {selectedDomain}/
                     </div>
                     <input
+                      ref={slugInputRef}
                       type="text"
                       value={formData.slug || ''}
                       onChange={(e) => {
@@ -895,6 +923,7 @@ export default function LinkWizardOnePerPage({
                       </p>
                       <div className="rounded-xl bg-white border-2 border-slate-200 focus-within:border-[#135bec] transition-all">
                         <input
+                          ref={botFallbackUrlInputRef}
                           type="url"
                           value={formData.fallbackUrl || ''}
                           onChange={(e) => {
@@ -999,6 +1028,7 @@ export default function LinkWizardOnePerPage({
                           Then go to URL
                         </label>
                         <input
+                          ref={geoThenUrlInputRef}
                           type="url"
                           value={newGeoRule.url}
                           onChange={(e) => setNewGeoRule((r) => ({ ...r, url: e.target.value.toLowerCase() }))}
