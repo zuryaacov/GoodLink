@@ -82,14 +82,6 @@ async function queryWebRiskForUri(uri, apiKey) {
   params.append('threatTypes', 'SOCIAL_ENGINEERING');
   params.append('threatTypes', 'UNWANTED_SOFTWARE');
 
-  // Log request payload (redacted API key)
-  console.log('[WebRisk] Request:', {
-    endpoint: GOOGLE_WEB_RISK_API_URL,
-    uri,
-    threatTypes: ['MALWARE', 'SOCIAL_ENGINEERING', 'UNWANTED_SOFTWARE'],
-    localThreatTypes: ['SUSPICIOUS', 'TRICKY_SUBDOMAINS'],
-  });
-
   const res = await fetch(`${GOOGLE_WEB_RISK_API_URL}?${params.toString()}`, { method: 'GET' });
 
   if (!res.ok) {
@@ -104,7 +96,6 @@ async function queryWebRiskForUri(uri, apiKey) {
   }
 
   const data = await res.json().catch(() => ({}));
-  console.log('[WebRisk] Response:', { status: res.status, uri, data });
   const threatTypes = data?.threat?.threatTypes || [];
   return { ok: true, threatTypes, raw: data };
 }
@@ -210,12 +201,10 @@ async function checkUrlSafety(url, apiKey) {
 
     // 4. Heuristic detections
     if (uniqueUrls.some(isSuspiciousUrlHeuristic)) {
-      console.log('[WebRisk] Heuristic match:', { type: 'SUSPICIOUS', urls: uniqueUrls });
       return { isSafe: false, threatType: 'suspicious', finalUrl };
     }
     const finalUrlObj = new URL(finalUrl);
     if (isTrickySubdomainsHost(finalUrlObj.hostname)) {
-      console.log('[WebRisk] Heuristic match:', { type: 'TRICKY_SUBDOMAINS', hostname: finalUrlObj.hostname });
       return { isSafe: false, threatType: 'tricky subdomains', finalUrl };
     }
 

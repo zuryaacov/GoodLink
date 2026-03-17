@@ -551,12 +551,8 @@ export default Sentry.withSentry(
                             // Heuristics
                             if (isSuspiciousUrlHeuristic(reported_url)) {
                                 safeBrowsingResponse = { isSafe: false, threatType: "SUSPICIOUS", source: "heuristic" };
-                                console.log("[WebRisk] Heuristic match:", { type: "SUSPICIOUS", uri: reported_url });
-                                console.log("[WebRisk] Result: UNSAFE | threatType: SUSPICIOUS (heuristic)");
                             } else if (isTrickySubdomainsHost(new URL(reported_url).hostname)) {
                                 safeBrowsingResponse = { isSafe: false, threatType: "TRICKY_SUBDOMAINS", source: "heuristic" };
-                                console.log("[WebRisk] Heuristic match:", { type: "TRICKY_SUBDOMAINS", hostname: new URL(reported_url).hostname, uri: reported_url });
-                                console.log("[WebRisk] Result: UNSAFE | threatType: TRICKY_SUBDOMAINS (heuristic)");
                             } else {
                                 const apiUrl = new URL("https://webrisk.googleapis.com/v1/uris:search");
                                 apiUrl.searchParams.set("key", env.GOOGLE_WEB_RISK_API_KEY);
@@ -565,27 +561,16 @@ export default Sentry.withSentry(
                                 apiUrl.searchParams.append("threatTypes", "UNWANTED_SOFTWARE");
                                 apiUrl.searchParams.set("uri", reported_url);
 
-                                console.log("[WebRisk] Request:", {
-                                    endpoint: "https://webrisk.googleapis.com/v1/uris:search",
-                                    uri: reported_url,
-                                    threatTypes: ["MALWARE", "SOCIAL_ENGINEERING", "UNWANTED_SOFTWARE"],
-                                    localThreatTypes: ["SUSPICIOUS", "TRICKY_SUBDOMAINS"],
-                                });
-
                                 const sbRes = await fetch(apiUrl.toString(), { method: "GET" });
                                 const sbData = await sbRes.json().catch(() => ({}));
-                                console.log("[WebRisk] Response:", { status: sbRes.status, uri: reported_url, data: sbData });
                                 const threatTypes = (sbData && sbData.threat && sbData.threat.threatTypes) ? sbData.threat.threatTypes : [];
 
                                 if (sbRes.ok && Array.isArray(threatTypes) && threatTypes.length > 0) {
                                     safeBrowsingResponse = { isSafe: false, threatType: threatTypes[0] || null, raw: sbData, provider: "web_risk" };
-                                    console.log("[WebRisk] Result: UNSAFE | threatType:", threatTypes[0], "| raw:", JSON.stringify(sbData));
                                 } else if (sbRes.ok) {
                                     safeBrowsingResponse = { isSafe: true, threatType: null, provider: "web_risk" };
-                                    console.log("[WebRisk] Result: SAFE | HTTP status:", sbRes.status, "| response:", JSON.stringify(sbData));
                                 } else {
                                     safeBrowsingResponse = { error: "web_risk_http_error", status: sbRes.status, raw: sbData, provider: "web_risk" };
-                                    console.warn("[WebRisk] Check failed | HTTP status:", sbRes.status, "| response:", JSON.stringify(sbData));
                                 }
                             }
                         } catch (sbErr) {
