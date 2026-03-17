@@ -328,6 +328,10 @@ export default function PixelWizardOnePerPage({ initialData, editingPixelId, onS
     isMetaOrInstagramDatasetStep ? 'Enter' : currentStep?.title;
   const highlightText =
     isMetaOrInstagramDatasetStep ? 'Dataset ID' : currentStep?.highlight;
+  const isTiktokTokenStep =
+    currentStep?.id === 'capiToken' && formData.platform === 'tiktok';
+  const finalTitleText = isTiktokTokenStep ? 'TikTok' : titleText;
+  const finalHighlightText = isTiktokTokenStep ? 'Events API' : highlightText;
   const subtitleText =
     isMetaOrInstagramDatasetStep
       ? formData.platform === 'meta'
@@ -335,6 +339,8 @@ export default function PixelWizardOnePerPage({ initialData, editingPixelId, onS
         : 'The Dataset ID from your Instagram account.'
       : currentStep?.id === 'pixelId' && formData.platform === 'tiktok'
         ? 'The Pixel ID from your TikTok platform.'
+      : isTiktokTokenStep
+        ? 'Your Token so we can send Events API.'
       : currentStep?.subtitle;
   useEffect(() => {
     if (!currentStep) return;
@@ -527,14 +533,14 @@ export default function PixelWizardOnePerPage({ initialData, editingPixelId, onS
                 </span>
               </div>
               <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-[#1b1b1b]">
-                {titleText}{' '}
+                {finalTitleText}{' '}
                 <span
                   className={
                     currentStep?.highlightClass ||
                     'bg-gradient-to-r from-[#6358de] to-[#7c6ee8] bg-clip-text text-transparent'
                   }
                 >
-                  {highlightText}
+                  {finalHighlightText}
                 </span>
               </h1>
               <p className="text-gray-400 font-medium text-2xl">{subtitleText}</p>
