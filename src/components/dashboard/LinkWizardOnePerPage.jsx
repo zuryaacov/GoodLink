@@ -666,7 +666,17 @@ export default function LinkWizardOnePerPage({
   const getCountryName = (code) => countriesData.find((c) => c.code === code)?.name || code;
 
   const selectedDomain = formData.domain || domains[0];
+  const nameInputRef = useRef(null);
   const progressPct = totalSteps ? ((stepIndex + 1) / totalSteps) * 100 : 0;
+
+  useEffect(() => {
+    if (!currentStep || currentStep.id !== 'name') return;
+    const t = setTimeout(() => {
+      nameInputRef.current?.focus?.();
+      nameInputRef.current?.select?.();
+    }, 0);
+    return () => clearTimeout(t);
+  }, [currentStep?.id]);
 
   return (
     <div className="flex flex-col flex-1 min-h-0">
@@ -725,6 +735,7 @@ export default function LinkWizardOnePerPage({
                 <>
                   <div className="rounded-2xl bg-white border-2 border-slate-200 focus-within:border-[#135bec] focus-within:shadow-[0_0_15px_rgba(19,91,236,0.3)] transition-all">
                     <input
+                      ref={nameInputRef}
                       type="text"
                       value={formData.name || ''}
                       onChange={(e) => {
