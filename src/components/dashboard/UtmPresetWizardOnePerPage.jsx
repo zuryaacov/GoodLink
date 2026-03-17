@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import taboolaLogo from '../../assets/idRS-vCmxj_1769618141092.svg';
 import outbrainLogo from '../../assets/id-bNajMAc_1769618145922.svg';
-import { sanitizeInput } from '../../lib/inputSanitization';
 import { supabase } from '../../lib/supabase';
 
 const getPlatformLogo = (platform) => {
@@ -334,6 +333,22 @@ export default function UtmPresetWizardOnePerPage({ initialData, editingPresetId
     setFieldErrors((prev) => ({ ...prev, [utmKey]: null }));
   };
 
+  const handlePlatformSelect = (nextPlatform) => {
+    if (nextPlatform === platform) return;
+    setPlatform(nextPlatform);
+    // Important: clear existing UTM values when switching company/platform
+    // so old preset values won't leak into the new platform flow.
+    setParams({
+      utm_source: '',
+      utm_medium: '',
+      utm_campaign: '',
+      utm_content: '',
+      utm_term: '',
+    });
+    setFieldErrors({});
+    setError(null);
+  };
+
   const goNext = async () => {
     const validateCurrentStep = async () => {
       const nextErrors = {};
@@ -520,7 +535,7 @@ export default function UtmPresetWizardOnePerPage({ initialData, editingPresetId
                   <button
                     key={p.id}
                     type="button"
-                    onClick={() => setPlatform(p.id)}
+                    onClick={() => handlePlatformSelect(p.id)}
                     className={`p-5 rounded-2xl border-2 text-left transition-all flex items-center gap-4 ${
                       platform === p.id
                         ? 'border-[#6358de] bg-[#6358de]/5'
