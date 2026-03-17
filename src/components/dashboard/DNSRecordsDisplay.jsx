@@ -150,32 +150,6 @@ const DNSRecordsDisplay = ({ records, domain }) => {
         </motion.div>
       )}
 
-      {/* Common Pitfalls */}
-      <div className="bg-[#fff7ed] border border-[#f59e0b]/30 rounded-xl p-4">
-        <h6 className="text-sm font-bold text-[#b45309] mb-2">⚠️ Common Pitfalls to Avoid:</h6>
-        <ul className="space-y-2 text-xs text-[#1b1b1b]">
-          <li>
-            <strong>Double Domain Names:</strong> In the "Host" field, do not include your full
-            domain. For example, use{' '}
-            <code className="bg-white border border-[#f59e0b]/30 px-1 py-0.5 rounded text-[#92400e]">
-              _cf-custom-hostname.www
-            </code>{' '}
-            instead of{' '}
-            <code className="bg-white border border-[#f59e0b]/30 px-1 py-0.5 rounded text-[#92400e]">
-              _cf-custom-hostname.www.tipul4u.com
-            </code>
-            .
-          </li>
-          <li>
-            <strong>Propagation Time:</strong> DNS changes usually take 5–10 minutes but can take up
-            to 24 hours in some cases.
-          </li>
-          <li>
-            <strong>Cloudflare Users:</strong> If you are using Cloudflare for your own DNS, ensure
-            the CNAME record is set to DNS Only (Grey Cloud), not Proxied.
-          </li>
-        </ul>
-      </div>
     </div>
   );
 };
