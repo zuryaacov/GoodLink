@@ -116,7 +116,7 @@ const getPlatformLogo = (platform) => {
 const PLATFORMS = [
   { value: 'meta', label: 'Facebook', placeholder: 'Enter Dataset ID' },
   { value: 'instagram', label: 'Instagram', placeholder: 'Enter Dataset ID' },
-  { value: 'tiktok', label: 'TikTok', placeholder: 'Pixel ID (A-Z, 0-9)' },
+  { value: 'tiktok', label: 'TikTok', placeholder: 'Pixel ID' },
   { value: 'google', label: 'Google Ads', placeholder: 'Measurement_Id (e.g. G-77Y4B2X5Z1)' },
   // { value: 'snapchat', label: 'Snapchat', placeholder: 'UUID Pixel ID' },
   // { value: 'outbrain', label: 'Outbrain', placeholder: 'Marketer ID (0-9, a-f)' },
@@ -333,6 +333,8 @@ export default function PixelWizardOnePerPage({ initialData, editingPixelId, onS
       ? formData.platform === 'meta'
         ? 'The Dataset ID from your Facebook account.'
         : 'The Dataset ID from your Instagram account.'
+      : currentStep?.id === 'pixelId' && formData.platform === 'tiktok'
+        ? 'The Pixel ID from your TikTok platform.'
       : currentStep?.subtitle;
   useEffect(() => {
     if (!currentStep) return;
