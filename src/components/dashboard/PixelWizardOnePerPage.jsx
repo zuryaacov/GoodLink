@@ -321,15 +321,18 @@ export default function PixelWizardOnePerPage({ initialData, editingPixelId, onS
   const progressPct = totalSteps ? ((stepIndex + 1) / totalSteps) * 100 : 0;
   const currentPlatform = PLATFORMS.find((p) => p.value === formData.platform);
   const availableEvents = STANDARD_EVENTS[formData.platform] || [];
+  const isMetaOrInstagramDatasetStep =
+    currentStep?.id === 'pixelId' &&
+    (formData.platform === 'meta' || formData.platform === 'instagram');
   const titleText =
-    currentStep?.id === 'pixelId' && formData.platform === 'meta' ? 'Enter' : currentStep?.title;
+    isMetaOrInstagramDatasetStep ? 'Enter' : currentStep?.title;
   const highlightText =
-    currentStep?.id === 'pixelId' && formData.platform === 'meta'
-      ? 'Dataset ID'
-      : currentStep?.highlight;
+    isMetaOrInstagramDatasetStep ? 'Dataset ID' : currentStep?.highlight;
   const subtitleText =
-    currentStep?.id === 'pixelId' && formData.platform === 'meta'
-      ? 'The Dataset ID from your Facebook account.'
+    isMetaOrInstagramDatasetStep
+      ? formData.platform === 'meta'
+        ? 'The Dataset ID from your Facebook account.'
+        : 'The Dataset ID from your Instagram account.'
       : currentStep?.subtitle;
   useEffect(() => {
     if (!currentStep) return;
