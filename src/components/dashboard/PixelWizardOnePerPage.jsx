@@ -114,8 +114,8 @@ const getPlatformLogo = (platform) => {
 };
 
 const PLATFORMS = [
-  { value: 'meta', label: 'Facebook', placeholder: 'Pixel ID (numbers only)' },
-  { value: 'instagram', label: 'Instagram', placeholder: 'Pixel ID (numbers only)' },
+  { value: 'meta', label: 'Facebook', placeholder: 'Enter Dataset ID' },
+  { value: 'instagram', label: 'Instagram', placeholder: 'Enter Pixel ID' },
   { value: 'tiktok', label: 'TikTok', placeholder: 'Pixel ID (A-Z, 0-9)' },
   { value: 'google', label: 'Google Ads', placeholder: 'Measurement_Id (e.g. G-77Y4B2X5Z1)' },
   // { value: 'snapchat', label: 'Snapchat', placeholder: 'UUID Pixel ID' },
@@ -321,6 +321,16 @@ export default function PixelWizardOnePerPage({ initialData, editingPixelId, onS
   const progressPct = totalSteps ? ((stepIndex + 1) / totalSteps) * 100 : 0;
   const currentPlatform = PLATFORMS.find((p) => p.value === formData.platform);
   const availableEvents = STANDARD_EVENTS[formData.platform] || [];
+  const titleText =
+    currentStep?.id === 'pixelId' && formData.platform === 'meta' ? 'Enter' : currentStep?.title;
+  const highlightText =
+    currentStep?.id === 'pixelId' && formData.platform === 'meta'
+      ? 'Dataset ID'
+      : currentStep?.highlight;
+  const subtitleText =
+    currentStep?.id === 'pixelId' && formData.platform === 'meta'
+      ? 'The Dataset ID from your Facebook account.'
+      : currentStep?.subtitle;
   useEffect(() => {
     if (!currentStep) return;
     const t = setTimeout(() => {
@@ -512,17 +522,17 @@ export default function PixelWizardOnePerPage({ initialData, editingPixelId, onS
                 </span>
               </div>
               <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-[#1b1b1b]">
-                {currentStep?.title}{' '}
+                {titleText}{' '}
                 <span
                   className={
                     currentStep?.highlightClass ||
                     'bg-gradient-to-r from-[#6358de] to-[#7c6ee8] bg-clip-text text-transparent'
                   }
                 >
-                  {currentStep?.highlight}
+                  {highlightText}
                 </span>
               </h1>
-              <p className="text-gray-400 font-medium text-2xl">{currentStep?.subtitle}</p>
+              <p className="text-gray-400 font-medium text-2xl">{subtitleText}</p>
             </div>
 
             {currentStep?.id === 'name' && (
