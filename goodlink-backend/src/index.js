@@ -551,9 +551,11 @@ export default Sentry.withSentry(
                             // Heuristics
                             if (isSuspiciousUrlHeuristic(reported_url)) {
                                 safeBrowsingResponse = { isSafe: false, threatType: "SUSPICIOUS", source: "heuristic" };
+                                console.log("[WebRisk] Heuristic match:", { type: "SUSPICIOUS", uri: reported_url });
                                 console.log("[WebRisk] Result: UNSAFE | threatType: SUSPICIOUS (heuristic)");
                             } else if (isTrickySubdomainsHost(new URL(reported_url).hostname)) {
                                 safeBrowsingResponse = { isSafe: false, threatType: "TRICKY_SUBDOMAINS", source: "heuristic" };
+                                console.log("[WebRisk] Heuristic match:", { type: "TRICKY_SUBDOMAINS", hostname: new URL(reported_url).hostname, uri: reported_url });
                                 console.log("[WebRisk] Result: UNSAFE | threatType: TRICKY_SUBDOMAINS (heuristic)");
                             } else {
                                 const apiUrl = new URL("https://webrisk.googleapis.com/v1/uris:search");
@@ -567,6 +569,7 @@ export default Sentry.withSentry(
                                     endpoint: "https://webrisk.googleapis.com/v1/uris:search",
                                     uri: reported_url,
                                     threatTypes: ["MALWARE", "SOCIAL_ENGINEERING", "UNWANTED_SOFTWARE"],
+                                    localThreatTypes: ["SUSPICIOUS", "TRICKY_SUBDOMAINS"],
                                 });
 
                                 const sbRes = await fetch(apiUrl.toString(), { method: "GET" });
