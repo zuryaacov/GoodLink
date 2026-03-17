@@ -174,6 +174,15 @@ export default function AccountSettingsPage() {
 
       if (profileError) throw profileError;
 
+      // 4. Notify other UI parts (e.g., sidebar greeting) that the name changed
+      try {
+        window.dispatchEvent(
+          new CustomEvent('goodlink:user:name-updated', { detail: trimmedName })
+        );
+      } catch (e) {
+        // Ignore if dispatch fails (e.g., SSR)
+      }
+
       let didChangePassword = false;
 
       // 4. Update Password (if requested)

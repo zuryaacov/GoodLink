@@ -85,6 +85,19 @@ const Sidebar = ({ className = '', onLinkClick }) => {
     return () => subscription.unsubscribe();
   }, []);
 
+  useEffect(() => {
+    const handleNameUpdated = (event) => {
+      const next = String(event.detail || '').trim();
+      if (next) {
+        setUserName(next);
+      }
+    };
+    window.addEventListener('goodlink:user:name-updated', handleNameUpdated);
+    return () => {
+      window.removeEventListener('goodlink:user:name-updated', handleNameUpdated);
+    };
+  }, []);
+
   // Format plan name for display
   const getPlanDisplayName = (plan) => {
     switch (plan) {
