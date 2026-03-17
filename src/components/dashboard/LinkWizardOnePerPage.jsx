@@ -194,6 +194,7 @@ export default function LinkWizardOnePerPage({
   const [showGeoForm, setShowGeoForm] = useState(false);
   const [newGeoRule, setNewGeoRule] = useState({ country: '', url: '' });
   const [geoRuleErrors, setGeoRuleErrors] = useState({ country: null, url: null });
+  const [editingGeoIndex, setEditingGeoIndex] = useState(null);
 
   // Step visibility by plan:
   // FREE & START: Name, Target URL, Custom Slug only.
@@ -611,9 +612,11 @@ export default function LinkWizardOnePerPage({
       setGeoRuleErrors((e) => ({ ...e, country: 'Please select a country' }));
       return;
     }
-    // Check for duplicate country
     const rules = Array.isArray(formData.geoRules) ? formData.geoRules : [];
-    if (rules.some((r) => r.country === newGeoRule.country)) {
+    // Check for duplicate country (ignore the rule currently being edited)
+    if (
+      rules.some((r, idx) => r.country === newGeoRule.country && idx !== (editingGeoIndex ?? -1))
+    ) {
       setGeoRuleErrors((e) => ({ ...e, country: 'A rule for this country already exists' }));
       return;
     }
@@ -626,11 +629,21 @@ export default function LinkWizardOnePerPage({
       setGeoRuleErrors((e) => ({ ...e, url: v.error || 'Please enter a valid URL.' }));
       return;
     }
-    updateFormData('geoRules', [
-      ...rules,
-      { country: newGeoRule.country, url: v.normalizedUrl || newGeoRule.url },
-    ]);
+    const normalizedRule = {
+      country: newGeoRule.country,
+      url: v.normalizedUrl || newGeoRule.url,
+    };
+
+    if (editingGeoIndex != null) {
+      const next = [...rules];
+      next[editingGeoIndex] = normalizedRule;
+      updateFormData('geoRules', next);
+    } else {
+      updateFormData('geoRules', [...rules, normalizedRule]);
+    }
+
     setNewGeoRule({ country: '', url: '' });
+    setEditingGeoIndex(null);
     setShowGeoForm(false);
   };
 
@@ -638,6 +651,16 @@ export default function LinkWizardOnePerPage({
     const rules = [...(formData.geoRules || [])];
     rules.splice(index, 1);
     updateFormData('geoRules', rules);
+  };
+
+  const beginEditGeoRule = (index) => {
+    const rules = Array.isArray(formData.geoRules) ? formData.geoRules : [];
+    const rule = rules[index];
+    if (!rule) return;
+    setNewGeoRule({ country: rule.country, url: rule.url });
+    setGeoRuleErrors({ country: null, url: null });
+    setEditingGeoIndex(index);
+    setShowGeoForm(true);
   };
 
   const getCountryName = (code) => countriesData.find((c) => c.code === code)?.name || code;
@@ -895,7 +918,13 @@ export default function LinkWizardOnePerPage({
                             <span className="bg-[#135bec]/20 text-[#135bec] px-2 py-1 rounded text-[10px] font-bold flex-shrink-0">
                               {getCountryName(rule.country)}
                             </span>
-                            <span className="text-sm text-gray-400 truncate">{rule.url}</span>
+                            <button
+                              type="button"
+                              onClick={() => beginEditGeoRule(idx)}
+                              className="text-left text-sm text-gray-400 truncate hover:text-[#135bec] underline-offset-2 hover:underline"
+                            >
+                              {rule.url}
+                            </button>
                           </div>
                           <button
                             type="button"
@@ -963,7 +992,12 @@ export default function LinkWizardOnePerPage({
                       <div className="flex gap-3">
                         <button
                           type="button"
-                          onClick={() => setShowGeoForm(false)}
+                          onClick={() => {
+                            setShowGeoForm(false);
+                            setEditingGeoIndex(null);
+                            setNewGeoRule({ country: '', url: '' });
+                            setGeoRuleErrors({ country: null, url: null });
+                          }}
                           className="flex-1 py-3 rounded-xl font-bold bg-slate-200 text-[#1b1b1b]"
                         >
                           Cancel
@@ -973,7 +1007,7 @@ export default function LinkWizardOnePerPage({
                           onClick={addGeoRule}
                           className="flex-1 py-3 rounded-xl font-bold bg-[#10b981] text-[#1b1b1b]"
                         >
-                          Add Rule
+                          {editingGeoIndex != null ? 'Update Rule' : 'Add Rule'}
                         </button>
                       </div>
                     </div>
