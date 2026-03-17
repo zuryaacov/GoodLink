@@ -399,12 +399,7 @@ const AddDomainPage = () => {
           },
         });
       } else {
-        const statusMessage = result.ssl_status
-          ? `Status: ${result.ssl_status}`
-          : 'DNS records not fully propagated yet';
-        setVerifyError(
-          `DNS records are still pending. ${statusMessage}. Please wait a few minutes and try again.`
-        );
+        setVerifyError('DNS records are still pending. Please wait a few minutes and try again.');
       }
     } catch (err) {
       setVerifyError(

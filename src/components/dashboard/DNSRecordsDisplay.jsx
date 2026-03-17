@@ -151,17 +151,17 @@ const DNSRecordsDisplay = ({ records, domain }) => {
       )}
 
       {/* Common Pitfalls */}
-      <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-xl p-4">
-        <h6 className="text-sm font-bold text-yellow-400 mb-2">⚠️ Common Pitfalls to Avoid:</h6>
-        <ul className="space-y-2 text-xs text-slate-300">
+      <div className="bg-[#fff7ed] border border-[#f59e0b]/30 rounded-xl p-4">
+        <h6 className="text-sm font-bold text-[#b45309] mb-2">⚠️ Common Pitfalls to Avoid:</h6>
+        <ul className="space-y-2 text-xs text-[#1b1b1b]">
           <li>
             <strong>Double Domain Names:</strong> In the "Host" field, do not include your full
             domain. For example, use{' '}
-            <code className="bg-white px-1 py-0.5 rounded text-yellow-300">
+            <code className="bg-white border border-[#f59e0b]/30 px-1 py-0.5 rounded text-[#92400e]">
               _cf-custom-hostname.www
             </code>{' '}
             instead of{' '}
-            <code className="bg-white px-1 py-0.5 rounded text-yellow-300">
+            <code className="bg-white border border-[#f59e0b]/30 px-1 py-0.5 rounded text-[#92400e]">
               _cf-custom-hostname.www.tipul4u.com
             </code>
             .
