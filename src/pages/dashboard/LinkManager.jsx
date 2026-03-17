@@ -946,7 +946,7 @@ const LinkManager = () => {
         )}
       </div>
 
-      {/* Active Grid cards for current level children1 */}
+      {/* Active Grid cards for current level children */}
       {isFoldersEnabled && childSpaces.length > 0 && (
         <div className="flex flex-col gap-6 w-full">
           <div className="relative flex py-5 items-center">

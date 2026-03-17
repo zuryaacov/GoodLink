@@ -282,6 +282,7 @@ export default function DomainWizardOnePerPage({
                     }}
                     placeholder="https://example.com"
                     className="w-full bg-transparent py-5 px-6 text-xl outline-none border-none text-[#1b1b1b] placeholder-slate-500"
+                    autoFocus
                   />
                 </div>
                 <p className="text-slate-500 text-xs mt-1">

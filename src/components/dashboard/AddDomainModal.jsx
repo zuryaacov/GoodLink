@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../../lib/supabase';
 import DNSRecordsDisplay from './DNSRecordsDisplay';
@@ -36,6 +36,8 @@ const AddDomainModal = ({ isOpen, onClose, domain = null }) => {
   const [verifyError, setVerifyError] = useState(null);
   const [rootRedirect, setRootRedirect] = useState(domain?.root_redirect || '');
   const [rootRedirectError, setRootRedirectError] = useState(null);
+
+  const rootRedirectInputRef = useRef(null);
 
   const steps = [
     { number: 1, title: 'Domain', subtitle: 'Enter your domain' },
@@ -398,6 +400,17 @@ const AddDomainModal = ({ isOpen, onClose, domain = null }) => {
     onClose();
   };
 
+  useEffect(() => {
+    if (!isOpen) return;
+    const t = setTimeout(() => {
+      if (domainName && rootRedirectInputRef.current) {
+        rootRedirectInputRef.current.focus();
+        rootRedirectInputRef.current.select?.();
+      }
+    }, 0);
+    return () => clearTimeout(t);
+  }, [isOpen, domainName]);
+
   if (!isOpen) return null;
 
   return (
@@ -508,6 +521,7 @@ const AddDomainModal = ({ isOpen, onClose, domain = null }) => {
                       redirected to the root domain.
                     </p>
                     <input
+                      ref={rootRedirectInputRef}
                       type="text"
                       value={rootRedirect}
                       onChange={(e) => {
