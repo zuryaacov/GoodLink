@@ -432,7 +432,7 @@ async function sendCapiToQStash(env, relayUrl, payload) {
             body: JSON.stringify(payload)
         });
         const text = await res.text();
-        console.log("QStash CAPI publish:", res.status, text);
+        console.log("QStash CAPI: response received:", res.status, text);
         if (!res.ok) console.error("QStash CAPI error:", res.status, text);
     } catch (e) {
         console.error("QStash CAPI error:", e.message);
@@ -2103,6 +2103,8 @@ export default Sentry.withSentry(
             const wantsCapi = trackingMode === "capi" || trackingMode === "pixel_and_capi";
             const wantsPixel = trackingMode === "pixel" || trackingMode === "pixel_and_capi";
             const capiPixels = pixels.filter((p) => p?.status === "active" && (p?.capi_token || p?.platform === "taboola" || p?.platform === "outbrain"));
+            let capiPixelsToSend = [];
+            let capiSent = false;
 
             if (isPro && (pixels.length > 0 || capiPixels.length > 0)) {
                 const eventId = crypto.randomUUID();
@@ -2111,7 +2113,7 @@ export default Sentry.withSentry(
                 const clickIds = getClickIdsFromUrl(url.searchParams);
                 const platformsFromUrl = getPlatformsFromClickIds(clickIds, request, url.searchParams);
                 // Send CAPI only to platforms found in URL. If one param → one (or two for meta); if multiple params → send to all. Within each platform, send to every CAPI (e.g. 3 Facebook pixels).
-                const capiPixelsToSend = capiPixels.filter((p) => platformsFromUrl.has(p.platform));
+                capiPixelsToSend = capiPixels.filter((p) => platformsFromUrl.has(p.platform));
                 if (capiPixels.length && !capiPixelsToSend.length) {
                     console.log("CAPI: no matching click ID in URL for link pixels (URL platforms:", [...platformsFromUrl].join(",") || "none", ")");
                 } else if (capiPixelsToSend.length) {
@@ -2171,6 +2173,7 @@ export default Sentry.withSentry(
                         capi_payload: capiPayload
                     });
                     ctx.waitUntil(sendCapiToQStash(env, relayUrl, capiPayload));
+                    capiSent = true;
                 }
 
                 if (wantsPixel && pixels.length > 0) {
@@ -2196,6 +2199,22 @@ export default Sentry.withSentry(
                     });
                     return Response.redirect(finalRedirectUrl, 302);
                 }
+            }
+
+            if (!capiSent) {
+                let reason = "not_applicable";
+                if (!isPro) {
+                    reason = `plan_not_pro (${planType || "unknown"})`;
+                } else if (!wantsCapi) {
+                    reason = `tracking_mode_without_capi (${trackingMode})`;
+                } else if (!capiPixels.length) {
+                    reason = "no_active_capi_pixels_configured";
+                } else if (!capiPixelsToSend.length) {
+                    reason = "no_matching_click_id_platform_for_capi_pixels";
+                } else if (!env.CAPI_RELAY_URL) {
+                    reason = "missing_CAPI_RELAY_URL";
+                }
+                console.log("CAPI: NOT sent. Reason:", reason);
             }
 
             // 8. Default redirect
