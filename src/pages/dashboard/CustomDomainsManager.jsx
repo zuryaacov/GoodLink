@@ -470,7 +470,7 @@ const CustomDomainsManager = () => {
       </div>
 
       <div className="bg-card-bg border border-card-border rounded-2xl p-6 space-y-4">
-        <h2 className="text-xl font-bold text-[#1b1b1b]">Connect Your Custom Domain</h2>
+        <h2 className="text-xl font-bold text-[#1b1b1b]">How To Connect Your Custom Domain</h2>
         <p className="text-[#1b1b1b] text-sm">
           To use your own domain with GoodLink.ai, you need to point your DNS settings to our
           servers.
