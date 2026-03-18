@@ -4,11 +4,13 @@ import { deleteLinkFromRedis } from '../../lib/redisCache';
 
 const AdminOverviewPage = () => {
   const WORKER_BASE_URL = (import.meta.env.VITE_WORKER_URL || 'https://glynk.to').replace(/\/$/, '');
-  const [activeView, setActiveView] = useState('overview'); // 'overview' | 'new-links' | 'users'
+  const [activeView, setActiveView] = useState('overview'); // 'overview' | 'new-links' | 'users' | 'custom-domains'
   const [pendingLinks, setPendingLinks] = useState([]);
   const [users, setUsers] = useState([]);
+  const [customDomains, setCustomDomains] = useState([]);
   const [loading, setLoading] = useState(true); // new-links loading
   const [usersLoading, setUsersLoading] = useState(false);
+  const [domainsLoading, setDomainsLoading] = useState(false);
   const [actionLoading, setActionLoading] = useState(null); // link id being approved/rejected
   const [impersonatingUserId, setImpersonatingUserId] = useState(null);
 
@@ -56,6 +58,29 @@ const AdminOverviewPage = () => {
   useEffect(() => {
     if (activeView === 'users') {
       fetchUsers();
+    }
+  }, [activeView]);
+
+  const fetchCustomDomains = async () => {
+    setDomainsLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('custom_domains')
+        .select('id, domain, status, created_at, user_id')
+        .order('created_at', { ascending: true });
+      if (error) throw error;
+      setCustomDomains(data || []);
+    } catch (err) {
+      console.error('Error fetching custom domains:', err);
+      setCustomDomains([]);
+    } finally {
+      setDomainsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (activeView === 'custom-domains') {
+      fetchCustomDomains();
     }
   }, [activeView]);
 
@@ -209,6 +234,13 @@ const AdminOverviewPage = () => {
             >
               Users
             </button>
+            <button
+              type="button"
+              onClick={() => setActiveView('custom-domains')}
+              className="ml-3 px-4 py-2.5 rounded-xl border border-slate-200 text-[#1b1b1b] text-base font-bold hover:bg-slate-100 transition-colors"
+            >
+              Custom Domain
+            </button>
           </>
         ) : activeView === 'new-links' ? (
           <>
@@ -281,7 +313,7 @@ const AdminOverviewPage = () => {
               </ul>
             )}
           </>
-        ) : (
+        ) : activeView === 'users' ? (
           <>
             <div className="flex items-center justify-between gap-3 mb-4">
               <h3 className="text-lg font-bold text-[#1b1b1b]">Users</h3>
@@ -325,6 +357,45 @@ const AdminOverviewPage = () => {
                     >
                       {impersonatingUserId === u.user_id ? 'Opening…' : 'Login as User'}
                     </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </>
+        ) : (
+          <>
+            <div className="flex items-center justify-between gap-3 mb-4">
+              <h3 className="text-lg font-bold text-[#1b1b1b]">Custom Domains</h3>
+              <button
+                type="button"
+                onClick={() => setActiveView('overview')}
+                className="px-3 py-2 rounded-lg border border-slate-200 text-sm font-semibold text-[#1b1b1b] hover:bg-slate-100"
+              >
+                Back
+              </button>
+            </div>
+            {domainsLoading ? (
+              <p className="text-slate-500 text-base font-medium">Loading...</p>
+            ) : customDomains.length === 0 ? (
+              <p className="text-slate-500 text-base font-medium">No custom domains found.</p>
+            ) : (
+              <ul className="space-y-3">
+                {customDomains.map((d) => (
+                  <li
+                    key={d.id}
+                    className="p-4 rounded-xl border border-slate-200 bg-slate-50/50 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"
+                  >
+                    <div className="min-w-0">
+                      <p className="text-base font-bold text-[#1b1b1b] break-all">{d.domain || '-'}</p>
+                      <p className="text-xs text-slate-500 break-all">{d.user_id || '-'}</p>
+                      <p className="text-xs text-slate-500 mt-1">
+                        Created:{' '}
+                        {d.created_at ? new Date(d.created_at).toLocaleString() : '-'}
+                      </p>
+                    </div>
+                    <span className="inline-flex items-center px-3 py-1 rounded-full border border-slate-300 text-xs font-bold text-slate-700 uppercase tracking-wide">
+                      {d.status || 'unknown'}
+                    </span>
                   </li>
                 ))}
               </ul>
