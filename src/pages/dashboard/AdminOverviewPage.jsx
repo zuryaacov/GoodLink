@@ -41,6 +41,7 @@ const AdminOverviewPage = () => {
       const { data, error } = await supabase
         .from('profiles')
         .select('user_id, email, full_name, plan_type, role, created_at')
+        .neq('email', 'hello@goodlink.ai')
         .order('created_at', { ascending: false });
       if (error) throw error;
       setUsers(data || []);
