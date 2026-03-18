@@ -158,6 +158,8 @@ const AdminOverviewPage = () => {
         startedAt: new Date().toISOString(),
       };
       localStorage.setItem('goodlink:impersonation_backup', JSON.stringify(backupSession));
+      // Mark impersonation intent before redirecting to magic link callback.
+      localStorage.setItem('goodlink:impersonation_active', 'true');
 
       const response = await fetch(`${WORKER_BASE_URL}/api/admin/impersonate`, {
         method: 'POST',
@@ -181,6 +183,7 @@ const AdminOverviewPage = () => {
       console.error('Error impersonating user:', err);
       alert(err?.message || 'Failed to login as user.');
       localStorage.removeItem('goodlink:impersonation_backup');
+      localStorage.removeItem('goodlink:impersonation_active');
     } finally {
       setImpersonatingUserId(null);
     }

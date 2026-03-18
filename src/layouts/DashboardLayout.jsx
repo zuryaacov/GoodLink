@@ -38,9 +38,10 @@ const DashboardLayout = () => {
       const adminEmail = (backup?.adminEmail || '').toLowerCase();
       const targetEmail = (backup?.targetEmail || '').toLowerCase();
       const isUrlImpersonator = new URL(window.location.href).searchParams.get('impersonator') === 'true';
+      const isActiveFlag = localStorage.getItem('goodlink:impersonation_active') === 'true';
 
-      // Mark this browser session as active impersonation only when magic-link callback contains impersonator=true
-      if (isUrlImpersonator && currentEmail && adminEmail && currentEmail !== adminEmail) {
+      // Keep supporting URL marker (if present) but do not rely on it exclusively.
+      if (isUrlImpersonator && !isActiveFlag) {
         localStorage.setItem('goodlink:impersonation_active', 'true');
       }
 
