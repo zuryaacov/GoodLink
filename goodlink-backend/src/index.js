@@ -2054,6 +2054,17 @@ export default Sentry.withSentry(
             }
 
             if (!linkData) return terminateWithLog('link_not_found');
+
+            // Redis may return stringified JSON; normalize before any field checks
+            if (typeof linkData === "string") {
+                try {
+                    linkData = JSON.parse(linkData);
+                } catch {
+                    linkData = null;
+                }
+            }
+
+            if (!linkData || typeof linkData !== "object") return terminateWithLog('link_not_found');
             if (linkData.status !== 'active') return terminateWithLog('link_inactive', linkData);
 
             // 4. Blacklist Check
@@ -2070,7 +2081,24 @@ export default Sentry.withSentry(
             const isImpersonator = isBotUA && !isVerifiedBot;
             const isBot = botScore <= 29 || isVerifiedBot || isImpersonator;
 
+            // Geo redirect override (if configured): match visitor country to geo_rules.country
+            // and use the rule URL as target. Query params/UTMs are preserved later by buildSafeUrl.
+            const visitorCountry = String(country || "").trim().toUpperCase();
+            const geoRules = Array.isArray(linkData.geo_rules) ? linkData.geo_rules : [];
+            const matchedGeoRule = geoRules.find((rule) => {
+                const ruleCountry = String(rule?.country || "").trim().toUpperCase();
+                const ruleUrl = ensureValidUrl(rule?.url);
+                return Boolean(ruleCountry && ruleUrl && visitorCountry && ruleCountry === visitorCountry);
+            });
+
             let targetUrl = ensureValidUrl(linkData.target_url);
+            if (matchedGeoRule) {
+                const geoTargetUrl = ensureValidUrl(matchedGeoRule.url);
+                if (geoTargetUrl) {
+                    targetUrl = geoTargetUrl;
+                    console.log(`🌍 Geo redirect matched country "${visitorCountry}" → ${geoTargetUrl}`);
+                }
+            }
             let verdict = "clean";
             let shouldBlock = false;
 
@@ -2140,15 +2168,6 @@ export default Sentry.withSentry(
                     }
                 });
                 return htmlResponse(getGlynk404Page());
-            }
-
-            // 7. Parse linkData (Redis may return string)
-            if (typeof linkData === "string") {
-                try {
-                    linkData = JSON.parse(linkData);
-                } catch {
-                    linkData = {};
-                }
             }
 
             const finalRedirectUrl = buildSafeUrl(targetUrl, url.searchParams);
