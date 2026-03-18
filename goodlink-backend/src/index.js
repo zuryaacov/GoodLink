@@ -121,6 +121,73 @@ async function getCustomDomainConfig(env, domain) {
     }
 }
 
+function getBearerToken(request) {
+    const authHeader = request.headers.get("Authorization") || request.headers.get("authorization") || "";
+    if (!authHeader.toLowerCase().startsWith("bearer ")) return null;
+    const token = authHeader.slice(7).trim();
+    return token || null;
+}
+
+function parseAdminAllowlist(env) {
+    const defaults = ["hello@goodlink.ai"];
+    const fromEnv = String(env.ADMIN_IMPERSONATION_EMAILS || "")
+        .split(",")
+        .map((email) => email.trim().toLowerCase())
+        .filter(Boolean);
+    return new Set([...defaults, ...fromEnv]);
+}
+
+async function getAuthedUserByAccessToken(env, accessToken) {
+    const res = await fetch(`${env.SUPABASE_URL}/auth/v1/user`, {
+        method: "GET",
+        headers: {
+            "apikey": env.SUPABASE_SERVICE_ROLE_KEY,
+            "Authorization": `Bearer ${accessToken}`
+        }
+    });
+    if (!res.ok) return null;
+    return res.json().catch(() => null);
+}
+
+async function getProfileRoleByUserId(env, userId) {
+    if (!userId) return null;
+    const profileUrl = `${env.SUPABASE_URL}/rest/v1/profiles?user_id=eq.${encodeURIComponent(userId)}&select=role,email&limit=1`;
+    const res = await fetch(profileUrl, {
+        headers: {
+            "apikey": env.SUPABASE_SERVICE_ROLE_KEY,
+            "Authorization": `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}`
+        }
+    });
+    if (!res.ok) return null;
+    const rows = await res.json().catch(() => []);
+    return rows?.[0] || null;
+}
+
+function buildImpersonationRedirectUrl(request, env, targetEmail) {
+    const origin = request.headers.get("Origin") || request.headers.get("origin") || "";
+    const configuredBase = String(env.IMPERSONATION_REDIRECT_URL || "").trim();
+    const fallbackBase = origin ? `${origin}/dashboard` : "https://goodlink.ai/dashboard";
+    const redirectBase = configuredBase || fallbackBase;
+    const redirectUrl = new URL(redirectBase);
+    redirectUrl.searchParams.set("impersonator", "true");
+    redirectUrl.searchParams.set("impersonating", String(targetEmail || "").trim().toLowerCase());
+    return redirectUrl.toString();
+}
+
+async function insertImpersonationAuditLog(env, payload) {
+    const res = await fetch(`${env.SUPABASE_URL}/rest/v1/admin_impersonation_audit`, {
+        method: "POST",
+        headers: {
+            "apikey": env.SUPABASE_SERVICE_ROLE_KEY,
+            "Authorization": `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}`,
+            "Content-Type": "application/json",
+            "Prefer": "return=minimal"
+        },
+        body: JSON.stringify(payload)
+    });
+    return res.ok;
+}
+
 /**
  * Send click record directly to Supabase via QStash
  * All data is collected from Cloudflare (no IPINFO)
@@ -427,7 +494,7 @@ export default Sentry.withSentry(
             const corsHeaders = {
                 "Access-Control-Allow-Origin": "*",
                 "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-                "Access-Control-Allow-Headers": "Content-Type"
+                "Access-Control-Allow-Headers": "Content-Type, Authorization"
             };
 
             // Handle CORS preflight
@@ -472,6 +539,108 @@ export default Sentry.withSentry(
                     });
                 } catch (error) {
                     return new Response(JSON.stringify({ error: error.message || "Failed to log event" }), {
+                        status: 500,
+                        headers: { ...corsHeaders, "Content-Type": "application/json" }
+                    });
+                }
+            }
+
+            // === API Endpoint: Admin-only impersonation (Magic Link) ===
+            if (path === "/api/admin/impersonate" && request.method === "POST") {
+                try {
+                    const accessToken = getBearerToken(request);
+                    if (!accessToken) {
+                        return new Response(JSON.stringify({ error: "Unauthorized" }), {
+                            status: 401,
+                            headers: { ...corsHeaders, "Content-Type": "application/json" }
+                        });
+                    }
+
+                    const authedUser = await getAuthedUserByAccessToken(env, accessToken);
+                    if (!authedUser?.id || !authedUser?.email) {
+                        return new Response(JSON.stringify({ error: "Unauthorized" }), {
+                            status: 401,
+                            headers: { ...corsHeaders, "Content-Type": "application/json" }
+                        });
+                    }
+
+                    const profile = await getProfileRoleByUserId(env, authedUser.id);
+                    const allowlist = parseAdminAllowlist(env);
+                    const isAdminRole = profile?.role === "admin";
+                    const isAllowlistedEmail = allowlist.has(String(authedUser.email).trim().toLowerCase());
+                    if (!isAdminRole && !isAllowlistedEmail) {
+                        return new Response(JSON.stringify({ error: "Forbidden" }), {
+                            status: 403,
+                            headers: { ...corsHeaders, "Content-Type": "application/json" }
+                        });
+                    }
+
+                    const body = await request.json().catch(() => ({}));
+                    const targetEmail = String(body?.targetEmail || "").trim().toLowerCase();
+                    if (!targetEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(targetEmail)) {
+                        return new Response(JSON.stringify({ error: "Valid targetEmail is required." }), {
+                            status: 400,
+                            headers: { ...corsHeaders, "Content-Type": "application/json" }
+                        });
+                    }
+
+                    const redirectTo = buildImpersonationRedirectUrl(request, env, targetEmail);
+                    const generateRes = await fetch(`${env.SUPABASE_URL}/auth/v1/admin/generate_link`, {
+                        method: "POST",
+                        headers: {
+                            "apikey": env.SUPABASE_SERVICE_ROLE_KEY,
+                            "Authorization": `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}`,
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({
+                            type: "magiclink",
+                            email: targetEmail,
+                            options: { redirectTo }
+                        })
+                    });
+
+                    const generateData = await generateRes.json().catch(() => ({}));
+                    if (!generateRes.ok) {
+                        return new Response(JSON.stringify({
+                            error: generateData?.error_description || generateData?.msg || "Failed to generate magic link."
+                        }), {
+                            status: 400,
+                            headers: { ...corsHeaders, "Content-Type": "application/json" }
+                        });
+                    }
+
+                    const loginUrl =
+                        generateData?.properties?.action_link ||
+                        generateData?.action_link ||
+                        generateData?.data?.properties?.action_link ||
+                        null;
+                    if (!loginUrl) {
+                        return new Response(JSON.stringify({ error: "Magic link was generated without login URL." }), {
+                            status: 500,
+                            headers: { ...corsHeaders, "Content-Type": "application/json" }
+                        });
+                    }
+
+                    const targetUserId = generateData?.user?.id || generateData?.properties?.user_id || null;
+                    await insertImpersonationAuditLog(env, {
+                        admin_user_id: authedUser.id,
+                        admin_email: String(authedUser.email).trim().toLowerCase(),
+                        target_user_id: targetUserId,
+                        target_email: targetEmail,
+                        created_at: new Date().toISOString(),
+                        metadata: {
+                            source: "admin_panel",
+                            request_ip: request.headers.get("cf-connecting-ip") || null,
+                            user_agent: request.headers.get("user-agent") || null
+                        }
+                    });
+
+                    return new Response(JSON.stringify({ loginUrl }), {
+                        status: 200,
+                        headers: { ...corsHeaders, "Content-Type": "application/json" }
+                    });
+                } catch (error) {
+                    return new Response(JSON.stringify({ error: error.message || "Impersonation request failed." }), {
                         status: 500,
                         headers: { ...corsHeaders, "Content-Type": "application/json" }
                     });

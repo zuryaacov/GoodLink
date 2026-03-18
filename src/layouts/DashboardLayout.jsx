@@ -2,14 +2,96 @@ import React, { useState, useEffect } from 'react';
 import { Outlet, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import Sidebar from '../components/dashboard/Sidebar';
+import { supabase } from '../lib/supabase';
 
 const DashboardLayout = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [impersonationBanner, setImpersonationBanner] = useState(null);
 
   // Ensure page starts at top on mount
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
+
+  useEffect(() => {
+    if (!supabase) return undefined;
+    let mounted = true;
+
+    const readImpersonationState = async () => {
+      const backupRaw = localStorage.getItem('goodlink:impersonation_backup');
+      if (!backupRaw) {
+        if (mounted) setImpersonationBanner(null);
+        return;
+      }
+
+      let backup = null;
+      try {
+        backup = JSON.parse(backupRaw);
+      } catch {
+        localStorage.removeItem('goodlink:impersonation_backup');
+        if (mounted) setImpersonationBanner(null);
+        return;
+      }
+
+      const { data } = await supabase.auth.getUser();
+      const currentEmail = data?.user?.email || null;
+      const adminEmail = backup?.adminEmail || null;
+      const targetEmail = backup?.targetEmail || null;
+      const isImpersonating = Boolean(currentEmail && adminEmail && currentEmail !== adminEmail);
+
+      if (mounted) {
+        setImpersonationBanner(
+          isImpersonating
+            ? {
+                adminEmail,
+                targetEmail: targetEmail || currentEmail,
+              }
+            : null
+        );
+      }
+    };
+
+    readImpersonationState();
+    const { data: authListener } = supabase.auth.onAuthStateChange(() => {
+      readImpersonationState();
+    });
+
+    return () => {
+      mounted = false;
+      authListener?.subscription?.unsubscribe?.();
+    };
+  }, []);
+
+  const exitImpersonation = async () => {
+    if (!supabase) return;
+    const backupRaw = localStorage.getItem('goodlink:impersonation_backup');
+    if (!backupRaw) return;
+
+    try {
+      const backup = JSON.parse(backupRaw);
+      if (!backup?.accessToken || !backup?.refreshToken) {
+        throw new Error('Missing admin session backup.');
+      }
+
+      const { error } = await supabase.auth.setSession({
+        access_token: backup.accessToken,
+        refresh_token: backup.refreshToken,
+      });
+      if (error) throw error;
+
+      localStorage.removeItem('goodlink:impersonation_backup');
+      setImpersonationBanner(null);
+
+      const cleanUrl = new URL(window.location.href);
+      cleanUrl.searchParams.delete('impersonator');
+      cleanUrl.searchParams.delete('impersonating');
+      window.history.replaceState({}, '', cleanUrl.toString());
+      window.location.assign('/dashboard/admin');
+    } catch (err) {
+      console.error('Failed to exit impersonation mode:', err);
+      alert('Failed to exit impersonation mode. Please login again.');
+    }
+  };
 
   return (
     <div className="flex h-screen bg-white overflow-hidden">
@@ -94,6 +176,20 @@ const DashboardLayout = () => {
         </AnimatePresence>
 
         <main className="flex-1 p-4 lg:p-6 overflow-y-auto overflow-x-hidden w-full lg:pt-6 pt-20">
+          {impersonationBanner && (
+            <div className="mb-4 rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <p className="text-sm sm:text-base font-semibold text-amber-900">
+                {'⚠️'} You are in impersonation mode ({impersonationBanner.targetEmail}).
+              </p>
+              <button
+                type="button"
+                onClick={exitImpersonation}
+                className="px-3 py-2 rounded-lg border border-amber-400 text-amber-900 text-sm font-bold hover:bg-amber-100 transition-colors"
+              >
+                Exit Impersonation
+              </button>
+            </div>
+          )}
           <Outlet />
         </main>
       </div>

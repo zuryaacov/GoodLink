@@ -3,12 +3,14 @@ import { supabase } from '../../lib/supabase';
 import { deleteLinkFromRedis } from '../../lib/redisCache';
 
 const AdminOverviewPage = () => {
+  const WORKER_BASE_URL = (import.meta.env.VITE_WORKER_URL || 'https://glynk.to').replace(/\/$/, '');
   const [activeView, setActiveView] = useState('overview'); // 'overview' | 'new-links' | 'users'
   const [pendingLinks, setPendingLinks] = useState([]);
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true); // new-links loading
   const [usersLoading, setUsersLoading] = useState(false);
   const [actionLoading, setActionLoading] = useState(null); // link id being approved/rejected
+  const [impersonatingUserId, setImpersonatingUserId] = useState(null);
 
   const fetchPendingLinks = async () => {
     setLoading(true);
@@ -81,6 +83,58 @@ const AdminOverviewPage = () => {
       console.error('Error updating link status:', err);
     } finally {
       setActionLoading(null);
+    }
+  };
+
+  const loginAsUser = async (user) => {
+    const targetEmail = user?.email?.trim();
+    if (!targetEmail) {
+      alert('Cannot impersonate user without email.');
+      return;
+    }
+
+    setImpersonatingUserId(user.user_id);
+    try {
+      const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+      if (sessionError) throw sessionError;
+      const session = sessionData?.session;
+      if (!session?.access_token || !session?.refresh_token) {
+        throw new Error('Admin session not found. Please login again.');
+      }
+
+      const backupSession = {
+        accessToken: session.access_token,
+        refreshToken: session.refresh_token,
+        adminEmail: session.user?.email || null,
+        targetEmail,
+        startedAt: new Date().toISOString(),
+      };
+      localStorage.setItem('goodlink:impersonation_backup', JSON.stringify(backupSession));
+
+      const response = await fetch(`${WORKER_BASE_URL}/api/admin/impersonate`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({ targetEmail }),
+      });
+
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(payload?.error || 'Failed to create impersonation login link.');
+      }
+      if (!payload?.loginUrl) {
+        throw new Error('Impersonation link was not returned by server.');
+      }
+
+      window.location.assign(payload.loginUrl);
+    } catch (err) {
+      console.error('Error impersonating user:', err);
+      alert(err?.message || 'Failed to login as user.');
+      localStorage.removeItem('goodlink:impersonation_backup');
+    } finally {
+      setImpersonatingUserId(null);
     }
   };
 
@@ -264,10 +318,11 @@ const AdminOverviewPage = () => {
                     </div>
                     <button
                       type="button"
-                      onClick={() => {}}
-                      className="px-4 py-2.5 rounded-xl bg-[#6358de] text-white text-sm font-bold hover:bg-[#5348c7] transition-colors"
+                      onClick={() => loginAsUser(u)}
+                      disabled={impersonatingUserId === u.user_id}
+                      className="px-4 py-2.5 rounded-xl bg-[#6358de] text-white text-sm font-bold hover:bg-[#5348c7] disabled:opacity-60 transition-colors"
                     >
-                      Login as User
+                      {impersonatingUserId === u.user_id ? 'Opening…' : 'Login as User'}
                     </button>
                   </li>
                 ))}
