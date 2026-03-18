@@ -1,13 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { deleteLinkFromRedis } from '../../lib/redisCache';
 
+const VALID_VIEWS = new Set(['overview', 'new-links', 'users', 'custom-domains']);
+
 const AdminOverviewPage = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [searchParams] = useSearchParams();
   const WORKER_BASE_URL = (import.meta.env.VITE_WORKER_URL || 'https://glynk.to').replace(/\/$/, '');
-  const [activeView, setActiveView] = useState('overview'); // 'overview' | 'new-links' | 'users' | 'custom-domains'
+  const initialView = searchParams.get('view');
+  const [activeView, setActiveView] = useState(
+    VALID_VIEWS.has(initialView) ? initialView : 'overview'
+  ); // 'overview' | 'new-links' | 'users' | 'custom-domains'
   const [pendingLinks, setPendingLinks] = useState([]);
   const [users, setUsers] = useState([]);
   const [customDomains, setCustomDomains] = useState([]);
@@ -16,6 +22,12 @@ const AdminOverviewPage = () => {
   const [domainsLoading, setDomainsLoading] = useState(false);
   const [actionLoading, setActionLoading] = useState(null); // link id being approved/rejected
   const [impersonatingUserId, setImpersonatingUserId] = useState(null);
+
+  const changeView = (view) => {
+    if (!VALID_VIEWS.has(view)) return;
+    const nextPath = view === 'overview' ? '/dashboard/admin' : `/dashboard/admin?view=${view}`;
+    navigate(nextPath);
+  };
 
   const fetchPendingLinks = async () => {
     setLoading(true);
@@ -66,10 +78,8 @@ const AdminOverviewPage = () => {
 
   useEffect(() => {
     const view = searchParams.get('view');
-    if (view === 'new-links' || view === 'users' || view === 'custom-domains' || view === 'overview') {
-      setActiveView(view);
-    }
-  }, [searchParams]);
+    setActiveView(VALID_VIEWS.has(view) ? view : 'overview');
+  }, [location.search, searchParams]);
 
   const fetchCustomDomains = async () => {
     setDomainsLoading(true);
@@ -232,21 +242,21 @@ const AdminOverviewPage = () => {
             </p>
             <button
               type="button"
-              onClick={() => setActiveView('new-links')}
+              onClick={() => changeView('new-links')}
               className="px-4 py-2.5 rounded-xl bg-[#6358de] text-white text-base font-bold hover:bg-[#5348c7] transition-colors"
             >
               New Links
             </button>
             <button
               type="button"
-              onClick={() => setActiveView('users')}
+              onClick={() => changeView('users')}
               className="ml-3 px-4 py-2.5 rounded-xl border border-slate-200 text-[#1b1b1b] text-base font-bold hover:bg-slate-100 transition-colors"
             >
               Users
             </button>
             <button
               type="button"
-              onClick={() => setActiveView('custom-domains')}
+              onClick={() => changeView('custom-domains')}
               className="ml-3 px-4 py-2.5 rounded-xl border border-slate-200 text-[#1b1b1b] text-base font-bold hover:bg-slate-100 transition-colors"
             >
               Custom Domain
@@ -258,7 +268,7 @@ const AdminOverviewPage = () => {
               <h3 className="text-lg font-bold text-[#1b1b1b]">New Links</h3>
               <button
                 type="button"
-                onClick={() => setActiveView('overview')}
+                onClick={() => changeView('overview')}
                 className="px-3 py-2 rounded-lg border border-slate-200 text-sm font-semibold text-[#1b1b1b] hover:bg-slate-100"
               >
                 Back
@@ -329,7 +339,7 @@ const AdminOverviewPage = () => {
               <h3 className="text-lg font-bold text-[#1b1b1b]">Users</h3>
               <button
                 type="button"
-                onClick={() => setActiveView('overview')}
+                onClick={() => changeView('overview')}
                 className="px-3 py-2 rounded-lg border border-slate-200 text-sm font-semibold text-[#1b1b1b] hover:bg-slate-100"
               >
                 Back
@@ -378,7 +388,7 @@ const AdminOverviewPage = () => {
               <h3 className="text-lg font-bold text-[#1b1b1b]">Custom Domains</h3>
               <button
                 type="button"
-                onClick={() => setActiveView('overview')}
+                onClick={() => changeView('overview')}
                 className="px-3 py-2 rounded-lg border border-slate-200 text-sm font-semibold text-[#1b1b1b] hover:bg-slate-100"
               >
                 Back
