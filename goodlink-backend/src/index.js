@@ -1995,15 +1995,62 @@ export default Sentry.withSentry(
                 return terminateWithLog('invalid_slug_format');
             }
 
-            // 3. Fetch link data from Redis/Supabase
-            let linkData = await redis.get(`link:${domain}:${slug}`);
+            // 3. Fetch link data from Redis/Supabase (supports apex/www domain mismatch)
+            const requestedHost = url.hostname.toLowerCase();
+            const normalizedDomain = domain;
+            const alternateDomain =
+                requestedHost.startsWith("www.")
+                    ? requestedHost.slice(4)
+                    : `www.${requestedHost}`;
+            const domainCandidates = [...new Set([normalizedDomain, requestedHost, alternateDomain])].filter(Boolean);
+
+            console.log("*** LINK LOOKUP ***");
+            console.log("Lookup candidates:", JSON.stringify({ slug, domainCandidates }));
+
+            let linkData = null;
+            let matchedDomain = null;
+
+            for (const candidate of domainCandidates) {
+                const cached = await redis.get(`link:${candidate}:${slug}`);
+                if (cached) {
+                    linkData = cached;
+                    matchedDomain = candidate;
+                    console.log(`Link lookup cache hit: link:${candidate}:${slug}`);
+                    break;
+                }
+            }
+
             if (!linkData) {
-                const sbRes = await fetch(`${env.SUPABASE_URL}/rest/v1/links?slug=eq.${slug}&domain=eq.${domain}&select=*`, {
-                    headers: { 'apikey': env.SUPABASE_SERVICE_ROLE_KEY, 'Authorization': `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}` }
-                });
-                const data = await sbRes.json();
-                linkData = data?.[0];
-                if (linkData) ctx.waitUntil(redis.set(`link:${domain}:${slug}`, JSON.stringify(linkData), { ex: 3600 }));
+                for (const candidate of domainCandidates) {
+                    const sbRes = await fetch(
+                        `${env.SUPABASE_URL}/rest/v1/links?slug=eq.${encodeURIComponent(slug)}&domain=eq.${encodeURIComponent(candidate)}&select=*`,
+                        {
+                            headers: {
+                                'apikey': env.SUPABASE_SERVICE_ROLE_KEY,
+                                'Authorization': `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}`
+                            }
+                        }
+                    );
+                    const data = await sbRes.json().catch(() => []);
+                    const row = data?.[0] || null;
+                    if (row) {
+                        linkData = row;
+                        matchedDomain = candidate;
+                        console.log(`Link lookup DB hit: domain=${candidate}, slug=${slug}`);
+                        break;
+                    }
+                }
+
+                if (linkData) {
+                    const serialized = JSON.stringify(linkData);
+                    for (const candidate of domainCandidates) {
+                        ctx.waitUntil(redis.set(`link:${candidate}:${slug}`, serialized, { ex: 3600 }));
+                    }
+                }
+            }
+
+            if (matchedDomain && matchedDomain !== normalizedDomain) {
+                console.log(`Link lookup matched alternate domain "${matchedDomain}" for requested "${normalizedDomain}"`);
             }
 
             if (!linkData) return terminateWithLog('link_not_found');

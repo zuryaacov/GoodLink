@@ -50,25 +50,16 @@ export async function sendAxiomEvent(env, event) {
     const dataset = env?.AXIOM_DATASET;
     const token = env?.AXIOM_TOKEN;
     if (!dataset || !token) {
-      console.warn("⚠️ [Axiom] Missing AXIOM_DATASET or AXIOM_TOKEN. Skipping log.");
       return false;
     }
 
     const payload = normalizeEvent(event);
     const ua = String(payload.user_agent || "").toLowerCase();
     if (ua.includes("sentryuptimebot/1.0") || ua.includes("sentryuptimebot")) {
-      console.log("⏭️ [Axiom] Skipping Sentry Uptime bot log");
       return false;
     }
 
     const ingestUrl = `${AXIOM_INGEST_BASE}/${encodeURIComponent(dataset)}/ingest`;
-    console.log("*** AXIOM REQUEST ***");
-    console.log("[Axiom] Sending event:", {
-      dataset,
-      ingestUrl,
-      method: "POST",
-      payload,
-    });
     const res = await fetch(ingestUrl, {
       method: "POST",
       headers: {
@@ -78,23 +69,11 @@ export async function sendAxiomEvent(env, event) {
       body: JSON.stringify([payload]),
     });
 
-    const responseText = await res.text();
-    console.log("*** AXIOM RESPONSE ***");
-    console.log("[Axiom] Status:", res.status);
-    console.log("[Axiom] Body:", responseText);
-
     if (!res.ok) {
-      console.warn("⚠️ [Axiom] Ingest failed:", res.status, responseText);
       return false;
     }
-    console.log("✅ [Axiom] Ingest success:", {
-      status: res.status,
-      action: payload.action,
-      short_code: payload.short_code,
-    });
     return true;
   } catch (error) {
-    console.warn("⚠️ [Axiom] Ingest error:", error?.message || error);
     return false;
   }
 }
