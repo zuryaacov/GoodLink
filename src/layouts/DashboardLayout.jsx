@@ -69,15 +69,6 @@ const DashboardLayout = () => {
         return;
       }
 
-      if (event === 'SIGNED_IN') {
-        const isUrlImpersonator = new URL(window.location.href).searchParams.get('impersonator') === 'true';
-        // Regular login should never keep stale impersonation state
-        if (!isUrlImpersonator) {
-          localStorage.removeItem('goodlink:impersonation_active');
-          localStorage.removeItem('goodlink:impersonation_backup');
-        }
-      }
-
       readImpersonationState();
     });
 
