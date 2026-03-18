@@ -3,9 +3,11 @@ import { supabase } from '../../lib/supabase';
 import { deleteLinkFromRedis } from '../../lib/redisCache';
 
 const AdminOverviewPage = () => {
-  const [activeView, setActiveView] = useState('overview'); // 'overview' | 'new-links'
+  const [activeView, setActiveView] = useState('overview'); // 'overview' | 'new-links' | 'users'
   const [pendingLinks, setPendingLinks] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true); // new-links loading
+  const [usersLoading, setUsersLoading] = useState(false);
   const [actionLoading, setActionLoading] = useState(null); // link id being approved/rejected
 
   const fetchPendingLinks = async () => {
@@ -30,6 +32,29 @@ const AdminOverviewPage = () => {
   useEffect(() => {
     fetchPendingLinks();
   }, []);
+
+  const fetchUsers = async () => {
+    setUsersLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('user_id, full_name, plan_type, role, created_at')
+        .order('created_at', { ascending: false });
+      if (error) throw error;
+      setUsers(data || []);
+    } catch (err) {
+      console.error('Error fetching users:', err);
+      setUsers([]);
+    } finally {
+      setUsersLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (activeView === 'users') {
+      fetchUsers();
+    }
+  }, [activeView]);
 
   const setLinkStatus = async (link, action) => {
     const linkId = link.id;
@@ -122,8 +147,15 @@ const AdminOverviewPage = () => {
             >
               New Links
             </button>
+            <button
+              type="button"
+              onClick={() => setActiveView('users')}
+              className="ml-3 px-4 py-2.5 rounded-xl border border-slate-200 text-[#1b1b1b] text-base font-bold hover:bg-slate-100 transition-colors"
+            >
+              Users
+            </button>
           </>
-        ) : (
+        ) : activeView === 'new-links' ? (
           <>
             <div className="flex items-center justify-between gap-3 mb-4">
               <h3 className="text-lg font-bold text-[#1b1b1b]">New Links</h3>
@@ -189,6 +221,51 @@ const AdminOverviewPage = () => {
                         </button>
                       </div>
                     </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </>
+        ) : (
+          <>
+            <div className="flex items-center justify-between gap-3 mb-4">
+              <h3 className="text-lg font-bold text-[#1b1b1b]">Users</h3>
+              <button
+                type="button"
+                onClick={() => setActiveView('overview')}
+                className="px-3 py-2 rounded-lg border border-slate-200 text-sm font-semibold text-[#1b1b1b] hover:bg-slate-100"
+              >
+                Back
+              </button>
+            </div>
+            {usersLoading ? (
+              <p className="text-slate-500 text-base font-medium">Loading...</p>
+            ) : users.length === 0 ? (
+              <p className="text-slate-500 text-base font-medium">No users found.</p>
+            ) : (
+              <ul className="space-y-3">
+                {users.map((u) => (
+                  <li
+                    key={u.user_id}
+                    className="p-4 rounded-xl border border-slate-200 bg-slate-50/50 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"
+                  >
+                    <div className="min-w-0">
+                      <p className="text-base font-bold text-[#1b1b1b] break-all">
+                        {u.full_name?.trim() || 'Unnamed user'}
+                      </p>
+                      <p className="text-xs text-slate-500 break-all">{u.user_id}</p>
+                      <p className="text-xs text-slate-600 mt-1">
+                        Plan: {(u.plan_type || 'free').toUpperCase()} | Role:{' '}
+                        {(u.role || 'user').toUpperCase()}
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {}}
+                      className="px-4 py-2.5 rounded-xl bg-[#6358de] text-white text-sm font-bold hover:bg-[#5348c7] transition-colors"
+                    >
+                      Login as User
+                    </button>
                   </li>
                 ))}
               </ul>
