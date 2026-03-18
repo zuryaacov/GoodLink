@@ -43,10 +43,19 @@ const Navbar = () => {
   }, [navigate]);
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
-    setIsOpen(false);
-    // Refresh the page after logout
-    window.location.reload();
+    // Always clear impersonation state on logout
+    localStorage.removeItem('goodlink:impersonation_backup');
+    localStorage.removeItem('goodlink:impersonation_active');
+    try {
+      await supabase.auth.signOut();
+    } finally {
+      // Defensive cleanup even if signOut throws
+      localStorage.removeItem('goodlink:impersonation_backup');
+      localStorage.removeItem('goodlink:impersonation_active');
+      setIsOpen(false);
+      // Refresh the page after logout
+      window.location.reload();
+    }
   };
 
   const navLinks = [

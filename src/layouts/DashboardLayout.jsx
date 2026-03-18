@@ -34,17 +34,26 @@ const DashboardLayout = () => {
       }
 
       const { data } = await supabase.auth.getUser();
-      const currentEmail = data?.user?.email || null;
-      const adminEmail = backup?.adminEmail || null;
-      const targetEmail = backup?.targetEmail || null;
-      const isImpersonating = Boolean(currentEmail && adminEmail && currentEmail !== adminEmail);
+      const currentEmail = (data?.user?.email || '').toLowerCase();
+      const adminEmail = (backup?.adminEmail || '').toLowerCase();
+      const targetEmail = (backup?.targetEmail || '').toLowerCase();
+      const isUrlImpersonator = new URL(window.location.href).searchParams.get('impersonator') === 'true';
+
+      // Mark this browser session as active impersonation only when magic-link callback contains impersonator=true
+      if (isUrlImpersonator && currentEmail && adminEmail && currentEmail !== adminEmail) {
+        localStorage.setItem('goodlink:impersonation_active', 'true');
+      }
+
+      const isActive = localStorage.getItem('goodlink:impersonation_active') === 'true';
+      const isExpectedTarget = !targetEmail || currentEmail === targetEmail;
+      const isImpersonating = Boolean(isActive && currentEmail && adminEmail && currentEmail !== adminEmail && isExpectedTarget);
 
       if (mounted) {
         setImpersonationBanner(
           isImpersonating
             ? {
-                adminEmail,
-                targetEmail: targetEmail || currentEmail,
+                adminEmail: backup?.adminEmail || null,
+                targetEmail: backup?.targetEmail || data?.user?.email || null,
               }
             : null
         );
@@ -52,7 +61,23 @@ const DashboardLayout = () => {
     };
 
     readImpersonationState();
-    const { data: authListener } = supabase.auth.onAuthStateChange(() => {
+    const { data: authListener } = supabase.auth.onAuthStateChange((event) => {
+      if (event === 'SIGNED_OUT') {
+        localStorage.removeItem('goodlink:impersonation_active');
+        localStorage.removeItem('goodlink:impersonation_backup');
+        setImpersonationBanner(null);
+        return;
+      }
+
+      if (event === 'SIGNED_IN') {
+        const isUrlImpersonator = new URL(window.location.href).searchParams.get('impersonator') === 'true';
+        // Regular login should never keep stale impersonation state
+        if (!isUrlImpersonator) {
+          localStorage.removeItem('goodlink:impersonation_active');
+          localStorage.removeItem('goodlink:impersonation_backup');
+        }
+      }
+
       readImpersonationState();
     });
 
@@ -80,6 +105,7 @@ const DashboardLayout = () => {
       if (error) throw error;
 
       localStorage.removeItem('goodlink:impersonation_backup');
+      localStorage.removeItem('goodlink:impersonation_active');
       setImpersonationBanner(null);
 
       const cleanUrl = new URL(window.location.href);

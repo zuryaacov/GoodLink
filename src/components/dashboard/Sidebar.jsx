@@ -132,13 +132,23 @@ const Sidebar = ({ className = '', onLinkClick }) => {
   };
 
   const handleLogout = async () => {
+    // Always clear any impersonation leftovers before logout
+    localStorage.removeItem('goodlink:impersonation_backup');
+    localStorage.removeItem('goodlink:impersonation_active');
+
     // Close mobile menu if open
     if (onLinkClick) {
       onLinkClick();
     }
     // Navigate to homepage first to avoid ProtectedRoute redirecting to /login
     navigate('/');
-    await supabase.auth.signOut();
+    try {
+      await supabase.auth.signOut();
+    } finally {
+      // Defensive cleanup even if signOut throws
+      localStorage.removeItem('goodlink:impersonation_backup');
+      localStorage.removeItem('goodlink:impersonation_active');
+    }
     // Refresh the page after logout
     window.location.reload();
   };

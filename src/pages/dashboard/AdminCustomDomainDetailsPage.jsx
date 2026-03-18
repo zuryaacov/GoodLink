@@ -55,15 +55,15 @@ const AdminCustomDomainDetailsPage = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between gap-3">
-        <h1 className="text-2xl font-bold text-[#1b1b1b]">Custom Domain Details</h1>
+      <div>
         <button
           type="button"
           onClick={() => navigate('/dashboard/admin?view=custom-domains')}
-          className="px-3 py-2 rounded-lg border border-slate-200 text-sm font-semibold text-[#1b1b1b] hover:bg-slate-100"
+          className="mb-3 px-3 py-2 rounded-lg border border-slate-200 text-sm font-semibold text-[#1b1b1b] hover:bg-slate-100"
         >
           Back to Custom Domains
         </button>
+        <h1 className="text-2xl font-bold text-[#1b1b1b]">Custom Domain Details</h1>
       </div>
 
       <div className="rounded-2xl border border-slate-200 bg-white p-4 sm:p-6 shadow-sm">

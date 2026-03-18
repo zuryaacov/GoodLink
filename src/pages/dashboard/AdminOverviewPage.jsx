@@ -22,6 +22,8 @@ const AdminOverviewPage = () => {
   const [domainsLoading, setDomainsLoading] = useState(false);
   const [actionLoading, setActionLoading] = useState(null); // link id being approved/rejected
   const [impersonatingUserId, setImpersonatingUserId] = useState(null);
+  const overviewNavButtonClass =
+    'ml-3 px-4 py-2.5 rounded-xl bg-[#6358de] text-white text-base font-bold hover:bg-[#5348c7] transition-colors';
 
   const changeView = (view) => {
     if (!VALID_VIEWS.has(view)) return;
@@ -250,29 +252,29 @@ const AdminOverviewPage = () => {
             <button
               type="button"
               onClick={() => changeView('users')}
-              className="ml-3 px-4 py-2.5 rounded-xl border border-slate-200 text-[#1b1b1b] text-base font-bold hover:bg-slate-100 transition-colors"
+              className={overviewNavButtonClass}
             >
               Users
             </button>
             <button
               type="button"
               onClick={() => changeView('custom-domains')}
-              className="ml-3 px-4 py-2.5 rounded-xl border border-slate-200 text-[#1b1b1b] text-base font-bold hover:bg-slate-100 transition-colors"
+              className={overviewNavButtonClass}
             >
               Custom Domain
             </button>
           </>
         ) : activeView === 'new-links' ? (
           <>
-            <div className="flex items-center justify-between gap-3 mb-4">
-              <h3 className="text-lg font-bold text-[#1b1b1b]">New Links</h3>
+            <div className="mb-4">
               <button
                 type="button"
                 onClick={() => changeView('overview')}
-                className="px-3 py-2 rounded-lg border border-slate-200 text-sm font-semibold text-[#1b1b1b] hover:bg-slate-100"
+                className="mb-3 px-3 py-2 rounded-lg border border-slate-200 text-sm font-semibold text-[#1b1b1b] hover:bg-slate-100"
               >
                 Back
               </button>
+              <h3 className="text-lg font-bold text-[#1b1b1b]">New Links</h3>
             </div>
             {loading ? (
               <p className="text-slate-500 text-base font-medium">Loading...</p>
@@ -335,15 +337,15 @@ const AdminOverviewPage = () => {
           </>
         ) : activeView === 'users' ? (
           <>
-            <div className="flex items-center justify-between gap-3 mb-4">
-              <h3 className="text-lg font-bold text-[#1b1b1b]">Users</h3>
+            <div className="mb-4">
               <button
                 type="button"
                 onClick={() => changeView('overview')}
-                className="px-3 py-2 rounded-lg border border-slate-200 text-sm font-semibold text-[#1b1b1b] hover:bg-slate-100"
+                className="mb-3 px-3 py-2 rounded-lg border border-slate-200 text-sm font-semibold text-[#1b1b1b] hover:bg-slate-100"
               >
                 Back
               </button>
+              <h3 className="text-lg font-bold text-[#1b1b1b]">Users</h3>
             </div>
             {usersLoading ? (
               <p className="text-slate-500 text-base font-medium">Loading...</p>
@@ -384,15 +386,15 @@ const AdminOverviewPage = () => {
           </>
         ) : (
           <>
-            <div className="flex items-center justify-between gap-3 mb-4">
-              <h3 className="text-lg font-bold text-[#1b1b1b]">Custom Domains</h3>
+            <div className="mb-4">
               <button
                 type="button"
                 onClick={() => changeView('overview')}
-                className="px-3 py-2 rounded-lg border border-slate-200 text-sm font-semibold text-[#1b1b1b] hover:bg-slate-100"
+                className="mb-3 px-3 py-2 rounded-lg border border-slate-200 text-sm font-semibold text-[#1b1b1b] hover:bg-slate-100"
               >
                 Back
               </button>
+              <h3 className="text-lg font-bold text-[#1b1b1b]">Custom Domains</h3>
             </div>
             {domainsLoading ? (
               <p className="text-slate-500 text-base font-medium">Loading...</p>
