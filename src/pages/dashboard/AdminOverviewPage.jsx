@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { deleteLinkFromRedis } from '../../lib/redisCache';
 
 const AdminOverviewPage = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const WORKER_BASE_URL = (import.meta.env.VITE_WORKER_URL || 'https://glynk.to').replace(/\/$/, '');
   const [activeView, setActiveView] = useState('overview'); // 'overview' | 'new-links' | 'users' | 'custom-domains'
   const [pendingLinks, setPendingLinks] = useState([]);
@@ -62,6 +63,13 @@ const AdminOverviewPage = () => {
       fetchUsers();
     }
   }, [activeView]);
+
+  useEffect(() => {
+    const view = searchParams.get('view');
+    if (view === 'new-links' || view === 'users' || view === 'custom-domains' || view === 'overview') {
+      setActiveView(view);
+    }
+  }, [searchParams]);
 
   const fetchCustomDomains = async () => {
     setDomainsLoading(true);

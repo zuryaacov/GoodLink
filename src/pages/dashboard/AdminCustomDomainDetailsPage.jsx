@@ -59,10 +59,10 @@ const AdminCustomDomainDetailsPage = () => {
         <h1 className="text-2xl font-bold text-[#1b1b1b]">Custom Domain Details</h1>
         <button
           type="button"
-          onClick={() => navigate('/dashboard/admin')}
+          onClick={() => navigate('/dashboard/admin?view=custom-domains')}
           className="px-3 py-2 rounded-lg border border-slate-200 text-sm font-semibold text-[#1b1b1b] hover:bg-slate-100"
         >
-          Back to Admin
+          Back to Custom Domains
         </button>
       </div>
 
