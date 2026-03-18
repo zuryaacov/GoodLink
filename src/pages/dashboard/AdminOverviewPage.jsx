@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { deleteLinkFromRedis } from '../../lib/redisCache';
 
 const AdminOverviewPage = () => {
+  const navigate = useNavigate();
   const WORKER_BASE_URL = (import.meta.env.VITE_WORKER_URL || 'https://glynk.to').replace(/\/$/, '');
   const [activeView, setActiveView] = useState('overview'); // 'overview' | 'new-links' | 'users' | 'custom-domains'
   const [pendingLinks, setPendingLinks] = useState([]);
@@ -393,9 +395,18 @@ const AdminOverviewPage = () => {
                         {d.created_at ? new Date(d.created_at).toLocaleString() : '-'}
                       </p>
                     </div>
-                    <span className="inline-flex items-center px-3 py-1 rounded-full border border-slate-300 text-xs font-bold text-slate-700 uppercase tracking-wide">
-                      {d.status || 'unknown'}
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <span className="inline-flex items-center px-3 py-1 rounded-full border border-slate-300 text-xs font-bold text-slate-700 uppercase tracking-wide">
+                        {d.status || 'unknown'}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => navigate(`/dashboard/admin/custom-domains/${d.id}`)}
+                        className="px-3 py-2 rounded-lg border border-slate-300 text-xs font-bold text-[#1b1b1b] hover:bg-slate-100 transition-colors"
+                      >
+                        Details
+                      </button>
+                    </div>
                   </li>
                 ))}
               </ul>

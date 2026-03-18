@@ -21,6 +21,7 @@ import AddDomainPage from './pages/dashboard/AddDomainPage';
 import LinkBuilderPage from './pages/dashboard/LinkBuilderPage';
 import AccountSettingsPage from './pages/dashboard/AccountSettingsPage';
 import AdminOverviewPage from './pages/dashboard/AdminOverviewPage';
+import AdminCustomDomainDetailsPage from './pages/dashboard/AdminCustomDomainDetailsPage';
 import AdminGuard from './components/AdminGuard';
 import { supabase } from './lib/supabase';
 
@@ -122,6 +123,14 @@ function App() {
           element={
             <AdminGuard>
               <AdminOverviewPage />
+            </AdminGuard>
+          }
+        />
+        <Route
+          path="admin/custom-domains/:id"
+          element={
+            <AdminGuard>
+              <AdminCustomDomainDetailsPage />
             </AdminGuard>
           }
         />
