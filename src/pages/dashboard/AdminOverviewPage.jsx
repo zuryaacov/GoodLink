@@ -67,7 +67,7 @@ const AdminOverviewPage = () => {
       const { data, error } = await supabase
         .from('custom_domains')
         .select('id, domain, status, created_at, user_id')
-        .order('created_at', { ascending: true });
+        .order('created_at', { ascending: false });
       if (error) throw error;
       setCustomDomains(data || []);
     } catch (err) {
