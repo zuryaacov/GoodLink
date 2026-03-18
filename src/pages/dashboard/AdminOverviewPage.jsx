@@ -38,7 +38,7 @@ const AdminOverviewPage = () => {
     try {
       const { data, error } = await supabase
         .from('profiles')
-        .select('user_id, full_name, plan_type, role, created_at')
+        .select('user_id, email, full_name, plan_type, role, created_at')
         .order('created_at', { ascending: false });
       if (error) throw error;
       setUsers(data || []);
@@ -250,6 +250,9 @@ const AdminOverviewPage = () => {
                     className="p-4 rounded-xl border border-slate-200 bg-slate-50/50 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"
                   >
                     <div className="min-w-0">
+                      <p className="text-sm font-bold text-[#1b1b1b] break-all">
+                        {u.email?.trim() || 'No email'}
+                      </p>
                       <p className="text-base font-bold text-[#1b1b1b] break-all">
                         {u.full_name?.trim() || 'Unnamed user'}
                       </p>
