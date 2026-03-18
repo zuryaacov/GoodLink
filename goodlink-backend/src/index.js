@@ -215,7 +215,10 @@ async function logClickToSupabase(env, clickRecord, redis) {
         const supabaseUrl = `${env.SUPABASE_URL}/rest/v1/clicks`;
         const qstashUrl = `https://qstash.upstash.io/v2/publish/${supabaseUrl}`;
 
-        console.log(`📤 Sending to QStash → ${supabaseUrl}`);
+        console.log(`*** QSTASH REQUEST (click logger) ***`);
+        console.log(`QStash publish URL: ${qstashUrl}`);
+        console.log(`Forward target (Supabase): ${supabaseUrl}`);
+        console.log(`Method: POST`);
         console.log(`🔗 Full URL: ${clickRecord.full_url || "N/A"}`);
         console.log(`📦 Click Record:`, JSON.stringify(clickRecord));
 
@@ -234,7 +237,9 @@ async function logClickToSupabase(env, clickRecord, redis) {
         });
 
         const responseText = await response.text();
-        console.log(`📬 QStash Response: ${response.status} - ${responseText}`);
+        console.log(`*** QSTASH RESPONSE (click logger) ***`);
+        console.log(`Status: ${response.status}`);
+        console.log(`Body: ${responseText}`);
 
         if (!response.ok) {
             console.error(`❌ QStash Error: ${response.status} - ${responseText}`);
@@ -419,7 +424,10 @@ async function sendCapiToQStash(env, relayUrl, payload) {
         return;
     }
     const qstashPublishUrl = `https://qstash.upstash.io/v2/publish/${relayUrl}`;
-    console.log("QStash CAPI: publishing to relay:", relayUrl);
+    console.log("*** QSTASH REQUEST (CAPI) ***");
+    console.log("QStash publish URL:", qstashPublishUrl);
+    console.log("Relay target URL:", relayUrl);
+    console.log("Method: POST");
     const payloadJson = JSON.stringify(payload, null, 2);
     console.log("QStash CAPI: JSON sent:", payloadJson);
     try {
@@ -432,7 +440,9 @@ async function sendCapiToQStash(env, relayUrl, payload) {
             body: JSON.stringify(payload)
         });
         const text = await res.text();
-        console.log("QStash CAPI: response received:", res.status, text);
+        console.log("*** QSTASH RESPONSE (CAPI) ***");
+        console.log("Status:", res.status);
+        console.log("Body:", text);
         if (!res.ok) console.error("QStash CAPI error:", res.status, text);
     } catch (e) {
         console.error("QStash CAPI error:", e.message);

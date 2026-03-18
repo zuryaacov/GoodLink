@@ -62,9 +62,11 @@ export async function sendAxiomEvent(env, event) {
     }
 
     const ingestUrl = `${AXIOM_INGEST_BASE}/${encodeURIComponent(dataset)}/ingest`;
-    console.log("📤 [Axiom] Sending event:", {
+    console.log("*** AXIOM REQUEST ***");
+    console.log("[Axiom] Sending event:", {
       dataset,
       ingestUrl,
+      method: "POST",
       payload,
     });
     const res = await fetch(ingestUrl, {
@@ -76,9 +78,13 @@ export async function sendAxiomEvent(env, event) {
       body: JSON.stringify([payload]),
     });
 
+    const responseText = await res.text();
+    console.log("*** AXIOM RESPONSE ***");
+    console.log("[Axiom] Status:", res.status);
+    console.log("[Axiom] Body:", responseText);
+
     if (!res.ok) {
-      const text = await res.text();
-      console.warn("⚠️ [Axiom] Ingest failed:", res.status, text);
+      console.warn("⚠️ [Axiom] Ingest failed:", res.status, responseText);
       return false;
     }
     console.log("✅ [Axiom] Ingest success:", {
