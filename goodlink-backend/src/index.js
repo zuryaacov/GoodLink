@@ -1913,6 +1913,14 @@ export default Sentry.withSentry(
                 }
             });
 
+            console.log(
+                "CF request info:",
+                JSON.stringify({
+                    asOrganization: request.cf?.asOrganization ?? null,
+                    clientTcpEdgeStart: request.cf?.clientTcpEdgeStart ?? null
+                })
+            );
+
             if (path === '/') {
                 // For active custom domains, root path should either redirect to root_redirect or show branded 404.
                 if (domain !== 'glynk.to') {
