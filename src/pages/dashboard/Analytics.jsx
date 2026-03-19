@@ -483,8 +483,17 @@ const Analytics = () => {
 
       {/* Traffic Log */}
       <div className="bg-card-bg border border-card-border rounded-2xl flex flex-col transition-all hover:shadow-card-mint">
-        <div className="p-6 border-b border-slate-200">
+        <div className="p-6 border-b border-slate-200 flex items-center justify-between gap-3">
           <h3 className="text-sm font-bold text-[#1b1b1b]">Traffic Log</h3>
+          <button
+            type="button"
+            onClick={fetchTrafficPage}
+            disabled={loadingTrafficPage}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-bold text-[#1b1b1b] hover:bg-slate-100 disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
+          >
+            <span className="material-symbols-outlined text-[16px]">refresh</span>
+            {loadingTrafficPage ? 'Refreshing...' : 'Refresh'}
+          </button>
         </div>
 
         <div className="overflow-x-auto">
