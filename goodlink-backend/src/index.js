@@ -893,7 +893,7 @@ export default Sentry.withSentry(
                 }
             }
 
-            // === CAPI Relay (receives from QStash, forwards to Meta/test endpoint, logs to capi_logs) ===
+            // === CAPI Relay (receives from QStash, forwards to platform APIs, logs to capi_logs) ===
             if (path === "/api/capi-relay" && request.method === "POST") {
                 try {
                     const body = await request.json();
@@ -920,12 +920,13 @@ export default Sentry.withSentry(
                         });
                     }
 
-                    // Testing: send CAPI to webhook.site. Set CAPI_TEST_ENDPOINT to "off" for production (Meta).
-                    const DEFAULT_CAPI_TEST_URL = "https://webhook.site/14ef81a2-b744-4e42-a508-b03e462fdf46";
+                    // Optional debug: set CAPI_TEST_ENDPOINT to a URL to mirror Meta/TikTok/Snapchat traffic.
+                    // If unset, empty, "off", or "false" → always use real endpoints (e.g. graph.facebook.com).
                     const raw = env.CAPI_TEST_ENDPOINT;
-                    const testEndpoint = (raw === "off" || raw === "false")
-                        ? null
-                        : (raw && String(raw).trim() ? String(raw).trim() : DEFAULT_CAPI_TEST_URL);
+                    const testEndpoint =
+                        raw === "off" || raw === "false" || !raw || !String(raw).trim()
+                            ? null
+                            : String(raw).trim();
                     const supabaseUrl = `${env.SUPABASE_URL}/rest/v1/capi_logs`;
                     const inserted = [];
 
