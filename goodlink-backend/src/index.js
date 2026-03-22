@@ -1026,8 +1026,6 @@ export default Sentry.withSentry(
                             requestBody = { data: [snapchatEvent] };
                             platformUrl = testEndpoint || "https://tr.snapchat.com/v2/conversion";
                             requestHeaders = { "Content-Type": "application/json", "Authorization": `Bearer ${p.capi_token}` };
-                            console.log("Snapchat CAPI: HEADERS:", JSON.stringify(requestHeaders, null, 2));
-                            console.log("Snapchat CAPI: JSON body:", JSON.stringify(requestBody, null, 2));
                         } else if (p.platform === "taboola") {
                             // Taboola CAPI: GET request, all data in query params. Send real visitor IP and UA via headers.
                             const itemId = user_data?.tblci || user_data?.tglid || "";
@@ -1041,10 +1039,6 @@ export default Sentry.withSentry(
                             requestHeaders = {};
                             if (user_data?.client_ip_address) requestHeaders["X-Forwarded-For"] = user_data.client_ip_address;
                             if (user_data?.client_user_agent) requestHeaders["User-Agent"] = user_data.client_user_agent;
-                            console.log("Taboola CAPI: GET URL:", platformUrl);
-                            console.log("Taboola CAPI: method: GET");
-                            console.log("Taboola CAPI: HEADERS:", JSON.stringify(requestHeaders, null, 2));
-                            console.log("Taboola CAPI: params sent (query string):", JSON.stringify(requestBody, null, 2));
                         } else if (p.platform === "outbrain") {
                             // Outbrain CAPI: GET request, all data in query params. Send real visitor IP and UA via headers.
                             const obClickId = user_data?.ob_click_id || user_data?.oglid || user_data?.dicbid || "";
@@ -1058,30 +1052,33 @@ export default Sentry.withSentry(
                             requestHeaders = {};
                             if (user_data?.client_ip_address) requestHeaders["X-Forwarded-For"] = user_data.client_ip_address;
                             if (user_data?.client_user_agent) requestHeaders["User-Agent"] = user_data.client_user_agent;
-                            console.log("Outbrain CAPI: GET URL:", platformUrl);
-                            console.log("Outbrain CAPI: method: GET");
-                            console.log("Outbrain CAPI: HEADERS:", JSON.stringify(requestHeaders, null, 2));
-                            console.log("Outbrain CAPI: params sent (query string):", JSON.stringify(requestBody, null, 2));
                         }
 
                         if (!platformUrl) continue;
                         if (p.platform !== "taboola" && p.platform !== "outbrain" && !requestBody) continue;
 
                         const logUrl = p.platform === "google" ? platformUrl.replace(/api_secret=[^&]+/, "api_secret=[REDACTED]") : platformUrl;
-                        console.log("CAPI Relay: sending to URL:", logUrl);
-                        console.log("CAPI Relay: headers:", JSON.stringify(requestHeaders, null, 2));
-                        if (p.platform === "taboola" || p.platform === "outbrain") {
-                            console.log("CAPI Relay: " + p.platform + " GET (params in query string only, no body). Params sent:", requestBody != null ? JSON.stringify(requestBody, null, 2) : "—");
-                        } else {
-                            const bodyJson = requestBody != null ? JSON.stringify(requestBody, null, 2) : "(GET – no body)";
-                            console.log("CAPI Relay: JSON sent to platform:", bodyJson);
+                        const isGet = p.platform === "taboola" || p.platform === "outbrain";
+                        const headersForLog = { ...requestHeaders };
+                        if (headersForLog.Authorization) headersForLog.Authorization = "[REDACTED]";
+                        if (headersForLog["Access-Token"]) headersForLog["Access-Token"] = "[REDACTED]";
+                        let bodyForLog = requestBody;
+                        if (bodyForLog && (p.platform === "meta" || p.platform === "instagram")) {
+                            bodyForLog = { ...bodyForLog, access_token: bodyForLog.access_token ? "[REDACTED]" : undefined };
                         }
+                        console.log("*** CAPI REQUEST ***", JSON.stringify({
+                            platform: p.platform,
+                            pixel_id: p.pixel_id,
+                            method: isGet ? "GET" : "POST",
+                            url: logUrl,
+                            headers: headersForLog,
+                            body: isGet ? requestBody : bodyForLog
+                        }, null, 2));
 
                         const start = Date.now();
                         let statusCode = 0;
                         let responseBody = "";
                         try {
-                            const isGet = p.platform === "taboola" || p.platform === "outbrain";
                             const fetchOpts = isGet
                                 ? { method: "GET", headers: requestHeaders }
                                 : { method: "POST", headers: requestHeaders, body: JSON.stringify(requestBody) };
@@ -1093,8 +1090,19 @@ export default Sentry.withSentry(
                         }
                         const relayDurationMs = Date.now() - start;
 
-                        // Log: body only. Meta token is in body (redacted); TikTok token is in HTTP header only, not in body.
-                        const logRequestBody = p.platform === "meta"
+                        const respPreview = responseBody && responseBody.length > 8000
+                            ? `${responseBody.slice(0, 8000)}...(truncated)`
+                            : responseBody;
+                        console.log("*** CAPI RESPONSE ***", JSON.stringify({
+                            platform: p.platform,
+                            pixel_id: p.pixel_id,
+                            status: statusCode,
+                            duration_ms: relayDurationMs,
+                            body: respPreview
+                        }, null, 2));
+
+                        // Log: body only. Meta/Instagram token is in body (redacted); TikTok token is in HTTP header only, not in body.
+                        const logRequestBody = (p.platform === "meta" || p.platform === "instagram")
                             ? { ...requestBody, access_token: requestBody.access_token ? "[REDACTED]" : undefined }
                             : { ...requestBody };
 
