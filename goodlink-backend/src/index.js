@@ -416,7 +416,10 @@ async function sendCapiToQStash(env, relayUrl, payload) {
             method: "POST",
             headers: {
                 "Authorization": `Bearer ${env.QSTASH_TOKEN}`,
-                "Content-Type": "application/json"
+                "Content-Type": "application/json",
+                // Prevent QStash from delivering the same click twice (at-least-once semantics).
+                // event_id is a per-click UUID so duplicate deliveries within the dedup window are dropped.
+                "Upstash-Deduplication-Id": String(payload.event_id || "")
             },
             body: JSON.stringify(payload)
         });
