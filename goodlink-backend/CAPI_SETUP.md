@@ -49,5 +49,5 @@ npx wrangler secret put CAPI_TEST_ENDPOINT
 - **Endpoint:** `https://business-api.tiktok.com/open_api/v1.3/event/track/` (token in header `Access-Token`).
 - Root: `event_source` = `web`, `event_source_id` = pixel id (string only — no `pixel_code` at root).
 - `data` = array of events (same idea as Meta’s `data` array).
-- Each item: `event`, `event_id`, `timestamp` (ISO 8601 UTC), `context` with `ad.callback` (ttclid), `page.url`, `user.client_ip_address`, `user.user_agent`.
+- Each item: `event`, `event_id`, `event_time` (**Unix seconds, integer** — not ISO), `context` with `ad.callback` (ttclid), `page.url`, `user.client_ip_address`, `user.user_agent`.
 - `test_event_code` = optional at root (default `TEST07082` unless `TIKTOK_CAPI_TEST_EVENT_CODE=off`).

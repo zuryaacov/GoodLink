@@ -941,13 +941,18 @@ export default Sentry.withSentry(
                         } else if (p.platform === "tiktok") {
                             // TikTok Events API v1.3 (newer shape): event_source + event_source_id + data[] (like Meta).
                             const tiktokPixelId = String(p.pixel_id ?? "").trim();
+                            const ttEventTimeSec = Math.floor(Number(evTime));
+                            const tiktokEventTime = Number.isFinite(ttEventTimeSec)
+                                ? ttEventTimeSec
+                                : Math.floor(Date.now() / 1000);
                             requestBody = {
                                 event_source: "web",
                                 event_source_id: tiktokPixelId,
                                 data: [{
                                     event: eventName,
                                     event_id: String(evId),
-                                    timestamp: new Date(evTime * 1000).toISOString(),
+                                    // TikTok data[] requires event_time as Unix seconds (integer), not ISO "timestamp".
+                                    event_time: tiktokEventTime,
                                     context: {
                                         ...(user_data?.ttclid && { ad: { callback: String(user_data.ttclid) } }),
                                         page: { url: event_source_url || "" },
