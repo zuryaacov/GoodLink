@@ -9,7 +9,9 @@
 3. **QStash** POSTs the payload to your **CAPI Relay** (`/api/capi-relay`).
 4. **Relay** forwards each pixel to the platform API (Meta or TikTok) and logs result in **capi_logs**.
 
-**`event_time` (Meta / TikTok):** The relay sets this to **`Math.floor(Date.now() / 1000)` when `/api/capi-relay` runs**, not from the QStash payload — so bad or “future” timestamps from upstream cannot break reporting.
+**`event_time` (Meta / TikTok):** The relay sets this to **`currentTime = Math.floor(Date.now() / 1000)` as soon as the relay handler runs** (not from the QStash payload), so clocks stay correct in production.
+
+**Duplicate TikTok (or any platform) in logs:** The relay sends **one HTTP request per item** in the `pixels` array. If you see TikTok twice, you likely had **two pixel rows** (same or duplicate config). The Worker now **dedupes by `platform` + `pixel_id`** before QStash and again in the relay, so the same pixel only fires once.
 
 ## Secrets (Cloudflare)
 

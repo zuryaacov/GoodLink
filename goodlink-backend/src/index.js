@@ -343,38 +343,29 @@ function getClickIdsFromUrl(searchParams) {
 
 /**
  * Resolve Meta (Facebook vs Instagram) when fbclid is present: Referer first, then utm_source.
- * @param {Request} request - Worker request (for Referer header)
- * @param {URLSearchParams} searchParams - URL query params (for utm_source)
- * @returns {string[]} ['meta'] | ['instagram'] | ['meta','instagram'] when unknown
+ * Always returns exactly ONE platform — never both.
+ * Default (unknown source) → "meta".
  */
 function resolveMetaPlatformFromRefererAndUtm(request, searchParams) {
     const referer = (request.headers.get("Referer") || request.headers.get("referer") || "").toLowerCase();
     const utmSource = (searchParams.get("utm_source") || "").toLowerCase().trim();
 
-    // 1. Referer first (most common): l.instagram.com, instagram.com, l.facebook.com, m.facebook.com
-    if (referer.includes("instagram.com")) {
-        return ["instagram"];
-    }
-    if (referer.includes("facebook.com")) {
-        return ["meta"];
-    }
+    // 1. Referer first (most common): l.instagram.com, instagram.com
+    if (referer.includes("instagram.com")) return "instagram";
+    if (referer.includes("facebook.com")) return "meta";
 
-    // 2. UTM (most reliable when set): utm_source=ig/instagram → Instagram, utm_source=fb/facebook → Facebook
-    if (utmSource === "ig" || utmSource === "instagram") {
-        return ["instagram"];
-    }
-    if (utmSource === "fb" || utmSource === "facebook") {
-        return ["meta"];
-    }
+    // 2. UTM source
+    if (utmSource === "ig" || utmSource === "instagram") return "instagram";
+    if (utmSource === "fb" || utmSource === "facebook") return "meta";
 
-    // Unknown: send to both so we don't miss the conversion
-    return ["meta", "instagram"];
+    // Default: fbclid always originates from Meta (Facebook), not Instagram
+    return "meta";
 }
 
 /**
- * Return set of pixel platform values that should get CAPI: all platforms that have a click ID in the URL.
- * If URL has one param → one platform (or meta+instagram when fbclid unknown). If multiple params → send to all.
- * No priority: we send to every company we detected in the URL.
+ * Return set of pixel platform values that should get CAPI.
+ * Each click ID maps to exactly ONE company — no cross-platform sending.
+ * fbclid → meta OR instagram (resolved from Referer/utm_source, default meta).
  */
 function getPlatformsFromClickIds(clickIds, request, searchParams) {
     const platforms = new Set();
@@ -386,11 +377,27 @@ function getPlatformsFromClickIds(clickIds, request, searchParams) {
     }
 
     if (clickIds.fbclid) {
-        const metaPlatforms = resolveMetaPlatformFromRefererAndUtm(request, searchParams);
-        metaPlatforms.forEach((p) => platforms.add(p));
+        platforms.add(resolveMetaPlatformFromRefererAndUtm(request, searchParams));
     }
 
     return platforms;
+}
+
+/**
+ * One outbound CAPI call per (platform, pixel_id). Duplicate pixel rows (e.g. two TikTok rows with the same pixel) would otherwise produce duplicate console/API calls.
+ */
+function dedupeCapiPixelsByPlatformAndPixelId(pixels) {
+    const seen = new Set();
+    const out = [];
+    for (const p of pixels) {
+        if (!p || !p.platform) continue;
+        const pid = String(p.pixel_id ?? "").trim();
+        const key = `${String(p.platform).toLowerCase()}:${pid}`;
+        if (seen.has(key)) continue;
+        seen.add(key);
+        out.push(p);
+    }
+    return out;
 }
 
 /**
@@ -878,6 +885,9 @@ export default Sentry.withSentry(
                         });
                     }
 
+                    // Real Unix seconds at relay time — always use for Meta/TikTok event_time (never trust payload).
+                    const currentTime = Math.floor(Date.now() / 1000);
+
                     // Optional debug: set CAPI_TEST_ENDPOINT to a URL to mirror Meta/TikTok/Snapchat traffic.
                     // If unset, empty, "off", or "false" → always use real endpoints (e.g. graph.facebook.com).
                     const raw = env.CAPI_TEST_ENDPOINT;
@@ -897,12 +907,9 @@ export default Sentry.withSentry(
                                 ? String(tiktokTestRaw).trim()
                                 : "TEST07082");
 
-                    // Unix seconds when this relay runs — use for all platform event_time fields (ignore payload event_time
-                    // to avoid wrong/future timestamps that platforms may drop from reporting).
-                    const relayEventTimeSeconds = Math.floor(Date.now() / 1000);
-
                     // Each pixel: one CAPI request to platform, then one separate row write to Supabase (capi_logs)
-                    for (const p of pixels) {
+                    const pixelsToRelay = dedupeCapiPixelsByPlatformAndPixelId(pixels);
+                    for (const p of pixelsToRelay) {
                         if (!p.platform) continue;
                         // QStash JSON may use capi_token (DB) or capiToken (camelCase from some clients)
                         const pixelCapiToken = String(p.capi_token ?? p.capiToken ?? "").trim();
@@ -929,7 +936,7 @@ export default Sentry.withSentry(
                             requestBody = {
                                 data: [{
                                     event_name: eventName,
-                                    event_time: relayEventTimeSeconds,
+                                    event_time: currentTime,
                                     action_source: "website",
                                     event_id: evId,
                                     user_data: {
@@ -949,7 +956,7 @@ export default Sentry.withSentry(
                                 data: [{
                                     event: eventName,
                                     event_id: String(evId),
-                                    event_time: relayEventTimeSeconds,
+                                    event_time: currentTime,
                                     context: {
                                         ...(user_data?.ttclid && { ad: { callback: String(user_data.ttclid) } }),
                                         page: { url: event_source_url || "" },
@@ -2135,12 +2142,16 @@ export default Sentry.withSentry(
 
             if (isPro && (pixels.length > 0 || capiPixels.length > 0)) {
                 const eventId = crypto.randomUUID();
+                // Wall-clock second at click (payload hint; relay overwrites platform event_time with its own currentTime).
                 const eventTime = Math.floor(Date.now() / 1000);
                 const eventSourceUrl = request.url || `${url.origin}${url.pathname}${url.search}`;
                 const clickIds = getClickIdsFromUrl(url.searchParams);
                 const platformsFromUrl = getPlatformsFromClickIds(clickIds, request, url.searchParams);
-                // Send CAPI only to platforms found in URL. If one param → one (or two for meta); if multiple params → send to all. Within each platform, send to every CAPI (e.g. 3 Facebook pixels).
-                capiPixelsToSend = capiPixels.filter((p) => platformsFromUrl.has(p.platform));
+                // Send CAPI only to platforms found in URL. If one param → one (or two for meta); if multiple params → send to all.
+                // Dedupe by platform + pixel_id so duplicate DB rows (e.g. two identical TikTok pixels) only fire once.
+                capiPixelsToSend = dedupeCapiPixelsByPlatformAndPixelId(
+                    capiPixels.filter((p) => platformsFromUrl.has(p.platform))
+                );
 
                 // fbc format: fb.1.[CreationTime in ms].[fbclid from URL]. Only when fbclid exists (do not invent).
                 const userData = {
