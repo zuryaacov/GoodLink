@@ -901,14 +901,12 @@ export default Sentry.withSentry(
                     const supabaseUrl = `${env.SUPABASE_URL}/rest/v1/capi_logs`;
                     const inserted = [];
 
-                    // TikTok Test Events (Events Manager → Test Events). Default TEST07082; set TIKTOK_CAPI_TEST_EVENT_CODE=off|false to omit.
+                    // TikTok Test Events: only sent when TIKTOK_CAPI_TEST_EVENT_CODE env var is explicitly set.
                     const tiktokTestRaw = env.TIKTOK_CAPI_TEST_EVENT_CODE;
                     const tiktokTestEventCode =
-                        tiktokTestRaw === "off" || tiktokTestRaw === "false"
-                            ? null
-                            : (tiktokTestRaw && String(tiktokTestRaw).trim()
-                                ? String(tiktokTestRaw).trim()
-                                : "TEST07082");
+                        tiktokTestRaw && tiktokTestRaw !== "off" && tiktokTestRaw !== "false"
+                            ? String(tiktokTestRaw).trim()
+                            : null;
 
                     // Each pixel: one CAPI request to platform, then one separate row write to Supabase (capi_logs)
                     const pixelsToRelay = dedupeCapiPixelsByPlatformAndPixelId(pixels);
