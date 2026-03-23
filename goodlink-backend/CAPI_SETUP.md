@@ -47,12 +47,7 @@ npx wrangler secret put CAPI_TEST_ENDPOINT
 ## TikTok payload (reference)
 
 - **Endpoint:** `https://business-api.tiktok.com/open_api/v1.3/event/track/` (token in header `Access-Token`).
-- **Events 2.0 / consolidated:** `event_source` = `WEB`, `event_source_id` = pixel id (string, same as `pixel_code`).
-- `pixel_code` = same pixel id (kept for compatibility with older docs).
-- `event` = custom_event_name or PageView.
-- `event_id` = string UUID for dedup (same flow as Meta when both fire from one click).
-- `timestamp` = ISO 8601 string (UTC).
-- `test_event_code` = from TikTok Test Events tab (default `TEST07082` unless `TIKTOK_CAPI_TEST_EVENT_CODE=off`).
-- `context.ad.callback` = ttclid from URL param `ttclid` (only when present).
-- `context.ip` / `context.user_agent` = visitor IP and UA (TikTok `PixelContext` model).
-- `context.page.url` = entry URL; `context.page.referrer` = `""` (reserved).
+- Root: `event_source` = `web`, `event_source_id` = pixel id (string only — no `pixel_code` at root).
+- `data` = array of events (same idea as Meta’s `data` array).
+- Each item: `event`, `event_id`, `timestamp` (ISO 8601 UTC), `context` with `ad.callback` (ttclid), `page.url`, `user.client_ip_address`, `user.user_agent`.
+- `test_event_code` = optional at root (default `TEST07082` unless `TIKTOK_CAPI_TEST_EVENT_CODE=off`).

@@ -939,25 +939,28 @@ export default Sentry.withSentry(
                                 }]
                             };
                         } else if (p.platform === "tiktok") {
-                            // Events API (consolidated / v1.3): requires WEB + event_source_id (pixel id as string).
-                            // Context IP/UA belong on context root per TikTok PixelContext model (not context.user.*).
+                            // TikTok Events API v1.3 (newer shape): event_source + event_source_id + data[] (like Meta).
                             const tiktokPixelId = String(p.pixel_id ?? "").trim();
                             requestBody = {
-                                event_source: "WEB",
+                                event_source: "web",
                                 event_source_id: tiktokPixelId,
-                                pixel_code: tiktokPixelId,
-                                event: eventName,
-                                event_id: String(evId),
-                                timestamp: new Date(evTime * 1000).toISOString(),
-                                context: {
-                                    ...(user_data?.ttclid && { ad: { callback: String(user_data.ttclid) } }),
-                                    page: {
-                                        url: event_source_url || "",
-                                        referrer: ""
-                                    },
-                                    ...(user_data?.client_ip_address && { ip: String(user_data.client_ip_address) }),
-                                    ...(user_data?.client_user_agent && { user_agent: String(user_data.client_user_agent) })
-                                },
+                                data: [{
+                                    event: eventName,
+                                    event_id: String(evId),
+                                    timestamp: new Date(evTime * 1000).toISOString(),
+                                    context: {
+                                        ...(user_data?.ttclid && { ad: { callback: String(user_data.ttclid) } }),
+                                        page: { url: event_source_url || "" },
+                                        user: {
+                                            client_ip_address: user_data?.client_ip_address
+                                                ? String(user_data.client_ip_address)
+                                                : "",
+                                            user_agent: user_data?.client_user_agent
+                                                ? String(user_data.client_user_agent)
+                                                : ""
+                                        }
+                                    }
+                                }],
                                 ...(tiktokTestEventCode && { test_event_code: tiktokTestEventCode })
                             };
                             platformUrl = testEndpoint || "https://business-api.tiktok.com/open_api/v1.3/event/track/";
