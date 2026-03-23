@@ -930,6 +930,15 @@ export default Sentry.withSentry(
                     const supabaseUrl = `${env.SUPABASE_URL}/rest/v1/capi_logs`;
                     const inserted = [];
 
+                    // Meta test events (Events Manager → Test Events). Default TEST84125 for QA; set META_CAPI_TEST_EVENT_CODE=off in prod to omit.
+                    const metaTestRaw = env.META_CAPI_TEST_EVENT_CODE;
+                    const metaTestEventCode =
+                        metaTestRaw === "off" || metaTestRaw === "false"
+                            ? null
+                            : (metaTestRaw && String(metaTestRaw).trim()
+                                ? String(metaTestRaw).trim()
+                                : "TEST84125");
+
                     // Each pixel: one CAPI request to platform, then one separate row write to Supabase (capi_logs)
                     for (const p of pixels) {
                         if (!p.platform) continue;
@@ -956,7 +965,8 @@ export default Sentry.withSentry(
                                     },
                                     event_source_url: event_source_url || undefined
                                 }],
-                                access_token: p.capi_token
+                                access_token: p.capi_token,
+                                ...(metaTestEventCode && { test_event_code: metaTestEventCode })
                             };
                             platformUrl = testEndpoint || `https://graph.facebook.com/v19.0/${p.pixel_id}/events`;
                         } else if (p.platform === "tiktok") {
