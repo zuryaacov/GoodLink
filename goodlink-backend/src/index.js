@@ -2174,38 +2174,44 @@ export default Sentry.withSentry(
                 };
 
                 if (wantsCapi && capiPixelsToSend.length > 0 && env.CAPI_RELAY_URL) {
-                    const relayUrl = env.CAPI_RELAY_URL.startsWith("http")
-                        ? env.CAPI_RELAY_URL
-                        : `https://${url.host}${env.CAPI_RELAY_URL}`;
-                    const capiPayload = {
-                        event_id: eventId,
-                        event_time: eventTime,
-                        event_source_url: eventSourceUrl,
-                        destination_url: finalRedirectUrl,
-                        short_code: slug || null,
-                        link_data: linkData || null,
-                        verdict,
-                        is_bot: isBot,
-                        utm_source: url.searchParams.get("utm_source") || undefined,
-                        utm_medium: url.searchParams.get("utm_medium") || undefined,
-                        utm_campaign: url.searchParams.get("utm_campaign") || undefined,
-                        user_data: userData,
-                        pixels: capiPixelsToSend.map((p) => ({
-                            pixel_id: p.pixel_id,
-                            capi_token: p.capi_token ?? p.capiToken ?? null,
-                            event_name: p.event_type === "custom" ? (p.custom_event_name || "PageView") : (p.event_type || "PageView"),
-                            platform: p.platform,
-                            event_type: p.event_type,
-                            custom_event_name: p.custom_event_name
-                        }))
-                    };
-                    queueAxiomLog("capi_sent", slug || null, isBot, {
-                        backend_event: "capi_queued_to_qstash",
-                        capi_companies: [...new Set(capiPixelsToSend.map((p) => p.platform))],
-                        capi_pixels_count: capiPixelsToSend.length,
-                        capi_payload: capiPayload
-                    });
-                    ctx.waitUntil(sendCapiToQStash(env, relayUrl, capiPayload));
+                    // Dedup: send CAPI only once per (IP, slug) within 2 seconds.
+                    // Prevents double-firing from browser prefetch, bridge-page reload, or other duplicate requests.
+                    const capiDedupKey = `capi:${ip}:${slug}`;
+                    const isNewCapiRequest = await redis.set(capiDedupKey, "1", { nx: true, ex: 2 });
+                    if (isNewCapiRequest !== null) {
+                        const relayUrl = env.CAPI_RELAY_URL.startsWith("http")
+                            ? env.CAPI_RELAY_URL
+                            : `https://${url.host}${env.CAPI_RELAY_URL}`;
+                        const capiPayload = {
+                            event_id: eventId,
+                            event_time: eventTime,
+                            event_source_url: eventSourceUrl,
+                            destination_url: finalRedirectUrl,
+                            short_code: slug || null,
+                            link_data: linkData || null,
+                            verdict,
+                            is_bot: isBot,
+                            utm_source: url.searchParams.get("utm_source") || undefined,
+                            utm_medium: url.searchParams.get("utm_medium") || undefined,
+                            utm_campaign: url.searchParams.get("utm_campaign") || undefined,
+                            user_data: userData,
+                            pixels: capiPixelsToSend.map((p) => ({
+                                pixel_id: p.pixel_id,
+                                capi_token: p.capi_token ?? p.capiToken ?? null,
+                                event_name: p.event_type === "custom" ? (p.custom_event_name || "PageView") : (p.event_type || "PageView"),
+                                platform: p.platform,
+                                event_type: p.event_type,
+                                custom_event_name: p.custom_event_name
+                            }))
+                        };
+                        queueAxiomLog("capi_sent", slug || null, isBot, {
+                            backend_event: "capi_queued_to_qstash",
+                            capi_companies: [...new Set(capiPixelsToSend.map((p) => p.platform))],
+                            capi_pixels_count: capiPixelsToSend.length,
+                            capi_payload: capiPayload
+                        });
+                        ctx.waitUntil(sendCapiToQStash(env, relayUrl, capiPayload));
+                    }
                 }
 
                 if (wantsPixel && pixels.length > 0) {
