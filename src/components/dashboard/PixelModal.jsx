@@ -69,10 +69,7 @@ const PLATFORMS_WITH_PLACEHOLDERS = [
     ...PLATFORMS.find((p) => p.value === 'tiktok'),
     placeholder: 'Enter your Pixel ID (A-Z, 0-9)',
   },
-  {
-    ...PLATFORMS.find((p) => p.value === 'google'),
-    placeholder: 'Enter your Measurement_Id (e.g., G-77Y4B2X5Z1)',
-  },
+  // google removed — CAPI supports Facebook, Instagram, TikTok only
   {
     ...PLATFORMS.find((p) => p.value === 'snapchat'),
     placeholder: 'Enter your UUID Pixel ID',
@@ -85,7 +82,7 @@ const PLATFORMS_WITH_PLACEHOLDERS = [
     ...PLATFORMS.find((p) => p.value === 'taboola'),
     placeholder: 'Enter your Account ID (numbers only)',
   },
-];
+].filter(Boolean);
 
 const STANDARD_EVENTS = {
   meta: [

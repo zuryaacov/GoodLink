@@ -293,8 +293,15 @@ function buildClickRecord(request, rayId, ip, slug, domain, userAgent, verdict, 
         // Metadata
         verdict: verdict,
         full_url: requestUrl.toString(),
-        query_params: new URL(request.url).search || "",
-        clicked_at: new Date().toISOString()
+        query_params: requestUrl.search || "",
+        clicked_at: new Date().toISOString(),
+
+        // Traffic source: detected from click-ID params in URL
+        traffic_source: requestUrl.searchParams.has("fbclid") || requestUrl.searchParams.has("FBCLID")
+            ? "meta"
+            : requestUrl.searchParams.has("ttclid") || requestUrl.searchParams.has("TTCLID")
+                ? "tiktok"
+                : null
     };
 }
 

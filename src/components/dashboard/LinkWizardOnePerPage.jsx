@@ -597,13 +597,21 @@ export default function LinkWizardOnePerPage({
   const togglePixel = (pixelId) => {
     const list = formData.selectedPixels || [];
     if (list.includes(pixelId)) {
-      updateFormData(
-        'selectedPixels',
-        list.filter((id) => id !== pixelId)
-      );
-    } else {
-      updateFormData('selectedPixels', [...list, pixelId]);
+      updateFormData('selectedPixels', list.filter((id) => id !== pixelId));
+      return;
     }
+    // Meta and Instagram share the same API endpoint — only one may be active at a time.
+    const clickedPixel = availablePixels.find((p) => p.id === pixelId);
+    const META_PLATFORMS = ['meta', 'instagram'];
+    let filtered = list;
+    if (clickedPixel && META_PLATFORMS.includes(clickedPixel.platform)) {
+      // Remove any currently-selected meta/instagram pixel before adding the new one.
+      const metaIds = availablePixels
+        .filter((p) => META_PLATFORMS.includes(p.platform))
+        .map((p) => p.id);
+      filtered = list.filter((id) => !metaIds.includes(id));
+    }
+    updateFormData('selectedPixels', [...filtered, pixelId]);
   };
 
   const addGeoRule = () => {

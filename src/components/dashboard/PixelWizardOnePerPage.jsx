@@ -117,7 +117,7 @@ const PLATFORMS = [
   { value: 'meta', label: 'Facebook', placeholder: 'Enter Dataset ID' },
   { value: 'instagram', label: 'Instagram', placeholder: 'Enter Dataset ID' },
   { value: 'tiktok', label: 'TikTok', placeholder: 'Pixel ID' },
-  { value: 'google', label: 'Google Ads', placeholder: 'Google Conversion ID' },
+  // { value: 'google', label: 'Google Ads', placeholder: 'Google Conversion ID' },
   // { value: 'snapchat', label: 'Snapchat', placeholder: 'UUID Pixel ID' },
   // { value: 'outbrain', label: 'Outbrain', placeholder: 'Marketer ID (0-9, a-f)' },
   // { value: 'taboola', label: 'Taboola', placeholder: 'Account ID (numbers only)' },
