@@ -27,9 +27,13 @@ const PLATFORM_NAMES = {
 };
 
 const META_FAMILY_PLATFORMS = new Set(['meta', 'facebook', 'instagram']);
+const SINGLE_SELECT_PLATFORMS = new Set(['tiktok']);
 
 const isMetaFamilyPlatform = (platform) =>
   META_FAMILY_PLATFORMS.has(String(platform || '').trim().toLowerCase());
+
+const isSingleSelectPlatform = (platform) =>
+  SINGLE_SELECT_PLATFORMS.has(String(platform || '').trim().toLowerCase());
 
 function getPlatformLogo(platform) {
   switch (platform) {
@@ -639,7 +643,8 @@ export default function LinkWizardOnePerPage({
       return;
     }
 
-    // Meta and Instagram share the same Graph API endpoint — only one may be active at a time.
+    // Meta-family share the same Graph API endpoint — only one may be active at a time.
+    // TikTok is also limited to one selected profile.
     const clickedPixel = availablePixels.find((p) => p.id === pixelId);
     let filtered = list;
     if (clickedPixel && isMetaFamilyPlatform(clickedPixel.platform)) {
@@ -650,6 +655,14 @@ export default function LinkWizardOnePerPage({
           .map((p) => p.id)
       );
       filtered = list.filter((id) => !metaIds.has(id));
+    } else if (clickedPixel && isSingleSelectPlatform(clickedPixel.platform)) {
+      // Allow only one selected TikTok profile.
+      const samePlatformIds = new Set(
+        availablePixels
+          .filter((p) => isSingleSelectPlatform(p.platform))
+          .map((p) => p.id)
+      );
+      filtered = list.filter((id) => !samePlatformIds.has(id));
     }
     updateFormData('selectedPixels', [...filtered, pixelId]);
   };
