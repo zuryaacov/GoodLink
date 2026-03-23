@@ -24,7 +24,10 @@ npx wrangler secret put CAPI_TEST_ENDPOINT
 ```
 
 - **CAPI_RELAY_URL** – Must be the full URL of your worker’s relay (e.g. `https://<worker-domain>/api/capi-relay`). Required for CAPI to work.
-- **CAPI_TEST_ENDPOINT** – If set, the relay sends requests here instead of Meta/TikTok (for debugging). Leave unset for production.
+- **CAPI_TEST_ENDPOINT** – If set, the relay sends **Meta/TikTok/Snapchat** traffic to this URL instead of the real APIs (debug only). **Leave unset for production.**
+  - To turn off without deleting the secret: set value to `off` or `false`.
+  - **Webhook.site 404** (`Token "…" not found`): the unique path expired or was deleted — create a new URL on webhook.site and update the secret, **or** remove the secret / set `off` to use `graph.facebook.com` again.
+- **TIKTOK_CAPI_TEST_EVENT_CODE** (optional) – Sent as `test_event_code` on TikTok Events API for Test Events. Default in code: `TEST07082`. Set to `off` or `false` to omit in production.
 
 ## Supabase
 
@@ -33,6 +36,7 @@ npx wrangler secret put CAPI_TEST_ENDPOINT
 
 ## Meta payload (reference)
 
+- Body is `{ data: [ { ... } ] }` only (no `test_event_code`).
 - `event_name` = `custom_event_name` from pixels table (or standard e.g. PageView).
 - `event_time` = Unix timestamp in seconds (`Math.floor(Date.now() / 1000)`).
 - `event_source_url` = URL the user clicked (entry URL).
@@ -45,9 +49,9 @@ npx wrangler secret put CAPI_TEST_ENDPOINT
 - **Endpoint:** `https://business-api.tiktok.com/open_api/v1.3/event/track/` (token in header `Access-Token`).
 - `pixel_code` = pixel_id from table.
 - `event` = custom_event_name or PageView.
-- `event_id` = UUID for dedup.
-- `timestamp` = ISO string (e.g. `2024-01-29T10:00:00.000Z`).
+- `event_id` = UUID for dedup (same flow as Meta when both fire from one click).
+- `timestamp` = ISO 8601 string (UTC).
+- `test_event_code` = from TikTok Test Events tab (default `TEST07082` unless `TIKTOK_CAPI_TEST_EVENT_CODE=off`).
 - `context.ad.callback` = ttclid from URL param `ttclid` (only when present).
-- `context.user.ip` = client IP.
-- `context.user.user_agent` = user-agent.
-- `context.page.url` = event_source_url (entry URL).
+- `context.user.client_ip_address` / `context.user.user_agent` = visitor IP and UA.
+- `context.page.url` = entry URL; `context.page.referrer` = `""` (reserved).

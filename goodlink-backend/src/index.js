@@ -889,14 +889,14 @@ export default Sentry.withSentry(
                     const supabaseUrl = `${env.SUPABASE_URL}/rest/v1/capi_logs`;
                     const inserted = [];
 
-                    // Meta test events (Events Manager → Test Events). Default TEST84125 for QA; set META_CAPI_TEST_EVENT_CODE=off in prod to omit.
-                    const metaTestRaw = env.META_CAPI_TEST_EVENT_CODE;
-                    const metaTestEventCode =
-                        metaTestRaw === "off" || metaTestRaw === "false"
+                    // TikTok Test Events (Events Manager → Test Events). Default TEST07082; set TIKTOK_CAPI_TEST_EVENT_CODE=off|false to omit.
+                    const tiktokTestRaw = env.TIKTOK_CAPI_TEST_EVENT_CODE;
+                    const tiktokTestEventCode =
+                        tiktokTestRaw === "off" || tiktokTestRaw === "false"
                             ? null
-                            : (metaTestRaw && String(metaTestRaw).trim()
-                                ? String(metaTestRaw).trim()
-                                : "TEST84125");
+                            : (tiktokTestRaw && String(tiktokTestRaw).trim()
+                                ? String(tiktokTestRaw).trim()
+                                : "TEST07082");
 
                     // Each pixel: one CAPI request to platform, then one separate row write to Supabase (capi_logs)
                     for (const p of pixels) {
@@ -914,7 +914,7 @@ export default Sentry.withSentry(
 
                         if (p.platform === "meta" || p.platform === "instagram") {
                             // Meta expects the Conversions API token as access_token — use pixel capi_token from QStash payload.
-                            // Pass it in the query string (Graph accepts this); body is only data + optional test_event_code.
+                            // Pass it in the query string (Graph accepts this); JSON body is only `data` (no test_event_code).
                             const baseGraph = testEndpoint || `https://graph.facebook.com/v19.0/${encodeURIComponent(p.pixel_id)}/events`;
                             let graphU;
                             try {
@@ -936,8 +936,7 @@ export default Sentry.withSentry(
                                         ...(user_data?.client_user_agent && { client_user_agent: user_data.client_user_agent })
                                     },
                                     event_source_url: event_source_url || undefined
-                                }],
-                                ...(metaTestEventCode && { test_event_code: metaTestEventCode })
+                                }]
                             };
                         } else if (p.platform === "tiktok") {
                             requestBody = {
@@ -947,12 +946,16 @@ export default Sentry.withSentry(
                                 timestamp: new Date(evTime * 1000).toISOString(),
                                 context: {
                                     ...(user_data?.ttclid && { ad: { callback: user_data.ttclid } }),
-                                    user: {
-                                        ip: user_data?.client_ip_address || "",
-                                        user_agent: user_data?.client_user_agent || ""
+                                    page: {
+                                        url: event_source_url || "",
+                                        referrer: ""
                                     },
-                                    page: { url: event_source_url || "" }
-                                }
+                                    user: {
+                                        client_ip_address: user_data?.client_ip_address || "",
+                                        user_agent: user_data?.client_user_agent || ""
+                                    }
+                                },
+                                ...(tiktokTestEventCode && { test_event_code: tiktokTestEventCode })
                             };
                             platformUrl = testEndpoint || "https://business-api.tiktok.com/open_api/v1.3/event/track/";
                             requestHeaders = { "Content-Type": "application/json", "Access-Token": pixelCapiToken };
