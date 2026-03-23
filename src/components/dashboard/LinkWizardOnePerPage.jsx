@@ -17,6 +17,7 @@ const BOT_OPTIONS = [
 
 const PLATFORM_NAMES = {
   meta: 'Facebook',
+  facebook: 'Facebook',
   instagram: 'Instagram',
   tiktok: 'TikTok',
   google: 'Google Ads',
@@ -25,9 +26,15 @@ const PLATFORM_NAMES = {
   outbrain: 'Outbrain',
 };
 
+const META_FAMILY_PLATFORMS = new Set(['meta', 'facebook', 'instagram']);
+
+const isMetaFamilyPlatform = (platform) =>
+  META_FAMILY_PLATFORMS.has(String(platform || '').trim().toLowerCase());
+
 function getPlatformLogo(platform) {
   switch (platform) {
     case 'meta':
+    case 'facebook':
       return (
         <div className="w-10 h-10 rounded-xl bg-[#1877F2] flex items-center justify-center flex-shrink-0">
           <svg
@@ -368,13 +375,12 @@ export default function LinkWizardOnePerPage({
           // Enforce mutual-exclusivity for Meta/Instagram on load.
           // If formData.selectedPixels already contains more than one Meta/Instagram
           // pixel (e.g. from old data), keep only the last one selected.
-          const META_PLATFORMS = ['meta', 'instagram'];
           const current = formData.selectedPixels || [];
           // Normalise each item to a string ID (handles stored objects or plain strings)
           const toId = (item) => (typeof item === 'string' ? item : item?.id ?? '');
           const currentIds = current.map(toId).filter(Boolean);
           const metaPixelIds = pixels
-            .filter((p) => META_PLATFORMS.includes((p.platform || '').toLowerCase()))
+            .filter((p) => isMetaFamilyPlatform(p.platform))
             .map((p) => p.id);
           const selectedMetaIds = currentIds.filter((id) => metaPixelIds.includes(id));
           if (selectedMetaIds.length > 1) {
@@ -634,14 +640,13 @@ export default function LinkWizardOnePerPage({
     }
 
     // Meta and Instagram share the same Graph API endpoint — only one may be active at a time.
-    const META_PLATFORMS = ['meta', 'instagram'];
     const clickedPixel = availablePixels.find((p) => p.id === pixelId);
     let filtered = list;
-    if (clickedPixel && META_PLATFORMS.includes((clickedPixel.platform || '').toLowerCase())) {
+    if (clickedPixel && isMetaFamilyPlatform(clickedPixel.platform)) {
       // Remove every currently-selected Meta/Instagram pixel before adding the new one.
       const metaIds = new Set(
         availablePixels
-          .filter((p) => META_PLATFORMS.includes((p.platform || '').toLowerCase()))
+          .filter((p) => isMetaFamilyPlatform(p.platform))
           .map((p) => p.id)
       );
       filtered = list.filter((id) => !metaIds.has(id));
