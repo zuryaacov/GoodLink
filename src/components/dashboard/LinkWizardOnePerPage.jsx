@@ -310,7 +310,8 @@ export default function LinkWizardOnePerPage({
     const plan = (planType || '').toLowerCase();
     if (plan === 'free' || plan === 'start' || plan === 'starter') {
       setDomains(['glynk.to']);
-      updateFormData('domain', 'glynk.to');
+      // In edit mode keep the existing domain; only default for new links
+      if (!isEditMode) updateFormData('domain', 'glynk.to');
       return;
     }
     const fetchDomains = async () => {
@@ -360,9 +361,36 @@ export default function LinkWizardOnePerPage({
           .eq('user_id', user.id)
           .eq('status', 'active')
           .order('created_at', { ascending: false });
-        if (!error) setAvailablePixels(data || []);
+        if (!error) {
+          const pixels = data || [];
+          setAvailablePixels(pixels);
+
+          // Enforce mutual-exclusivity for Meta/Instagram on load.
+          // If formData.selectedPixels already contains more than one Meta/Instagram
+          // pixel (e.g. from old data), keep only the last one selected.
+          const META_PLATFORMS = ['meta', 'instagram'];
+          const current = formData.selectedPixels || [];
+          // Normalise each item to a string ID (handles stored objects or plain strings)
+          const toId = (item) => (typeof item === 'string' ? item : item?.id ?? '');
+          const currentIds = current.map(toId).filter(Boolean);
+          const metaPixelIds = pixels
+            .filter((p) => META_PLATFORMS.includes((p.platform || '').toLowerCase()))
+            .map((p) => p.id);
+          const selectedMetaIds = currentIds.filter((id) => metaPixelIds.includes(id));
+          if (selectedMetaIds.length > 1) {
+            // Keep only the last (most recent) Meta/Instagram selection
+            const keepId = selectedMetaIds[selectedMetaIds.length - 1];
+            const cleaned = currentIds.filter(
+              (id) => !metaPixelIds.includes(id) || id === keepId
+            );
+            updateFormData('selectedPixels', cleaned);
+          } else if (currentIds.length !== current.length || current.some((i) => typeof i !== 'string')) {
+            // Normalise to plain string IDs if needed (objects → strings)
+            updateFormData('selectedPixels', currentIds);
+          }
+        }
       } catch (e) {
-        console.error(e);
+        // silent
       } finally {
         setLoadingPixels(false);
       }
@@ -595,21 +623,28 @@ export default function LinkWizardOnePerPage({
   }, [stepRefs, formData.botAction, formData.fallbackUrl]);
 
   const togglePixel = (pixelId) => {
-    const list = formData.selectedPixels || [];
+    // Normalise stored items — they may be plain UUID strings or full pixel objects
+    const toId = (item) => (typeof item === 'string' ? item : item?.id ?? '');
+    const raw = formData.selectedPixels || [];
+    const list = raw.map(toId).filter(Boolean); // always work with plain ID strings
+
     if (list.includes(pixelId)) {
       updateFormData('selectedPixels', list.filter((id) => id !== pixelId));
       return;
     }
-    // Meta and Instagram share the same API endpoint — only one may be active at a time.
-    const clickedPixel = availablePixels.find((p) => p.id === pixelId);
+
+    // Meta and Instagram share the same Graph API endpoint — only one may be active at a time.
     const META_PLATFORMS = ['meta', 'instagram'];
+    const clickedPixel = availablePixels.find((p) => p.id === pixelId);
     let filtered = list;
-    if (clickedPixel && META_PLATFORMS.includes(clickedPixel.platform)) {
-      // Remove any currently-selected meta/instagram pixel before adding the new one.
-      const metaIds = availablePixels
-        .filter((p) => META_PLATFORMS.includes(p.platform))
-        .map((p) => p.id);
-      filtered = list.filter((id) => !metaIds.includes(id));
+    if (clickedPixel && META_PLATFORMS.includes((clickedPixel.platform || '').toLowerCase())) {
+      // Remove every currently-selected Meta/Instagram pixel before adding the new one.
+      const metaIds = new Set(
+        availablePixels
+          .filter((p) => META_PLATFORMS.includes((p.platform || '').toLowerCase()))
+          .map((p) => p.id)
+      );
+      filtered = list.filter((id) => !metaIds.has(id));
     }
     updateFormData('selectedPixels', [...filtered, pixelId]);
   };
@@ -838,7 +873,12 @@ export default function LinkWizardOnePerPage({
               {/* Step: Domain */}
               {currentStep.id === 'domain' && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {domains.map((d) => {
+                  {uniqueDomains([
+                    // In edit mode, always show the link's current domain first so it
+                    // appears selected even before the async domains fetch completes
+                    ...(isEditMode && formData.domain ? [formData.domain] : []),
+                    ...domains,
+                  ]).map((d) => {
                     const isSelected = selectedDomain === d;
                     const status = domainStatuses[d];
                     const isPending = status === 'pending';
@@ -1098,7 +1138,10 @@ export default function LinkWizardOnePerPage({
                       style={{ minHeight: '200px' }}
                     >
                       {availablePixels.map((pixel) => {
-                        const isSelected = (formData.selectedPixels || []).includes(pixel.id);
+                        // Support both plain UUID strings and stored pixel objects
+                        const isSelected = (formData.selectedPixels || []).some(
+                          (item) => (typeof item === 'string' ? item : item?.id) === pixel.id
+                        );
                         const name = PLATFORM_NAMES[pixel.platform] || pixel.platform;
                         return (
                           <button
