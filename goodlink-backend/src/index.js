@@ -397,7 +397,7 @@ function getPlatformsFromClickIds(clickIds, request, searchParams) {
  * Publish CAPI payload to QStash; QStash will POST to relayUrl (our /api/capi-relay).
  * @param {Object} env - Worker env (QSTASH_TOKEN, etc.)
  * @param {string} relayUrl - Full URL of the relay (e.g. https://worker.workers.dev/api/capi-relay)
- * @param {Object} payload - { event_id, event_time, event_source_url, user_data, pixels }
+ * @param {Object} payload - { event_id, event_time (optional; relay uses Worker time for Meta/TikTok), event_source_url, user_data, pixels }
  */
 async function sendCapiToQStash(env, relayUrl, payload) {
     if (!env.QSTASH_TOKEN || !relayUrl) {
@@ -858,7 +858,6 @@ export default Sentry.withSentry(
                     const body = await request.json();
                     const {
                         event_id,
-                        event_time,
                         event_source_url,
                         destination_url,
                         short_code,
@@ -898,6 +897,10 @@ export default Sentry.withSentry(
                                 ? String(tiktokTestRaw).trim()
                                 : "TEST07082");
 
+                    // Unix seconds when this relay runs — use for all platform event_time fields (ignore payload event_time
+                    // to avoid wrong/future timestamps that platforms may drop from reporting).
+                    const relayEventTimeSeconds = Math.floor(Date.now() / 1000);
+
                     // Each pixel: one CAPI request to platform, then one separate row write to Supabase (capi_logs)
                     for (const p of pixels) {
                         if (!p.platform) continue;
@@ -906,7 +909,6 @@ export default Sentry.withSentry(
                         if (p.platform !== "taboola" && p.platform !== "outbrain" && !pixelCapiToken) continue;
                         const eventName = p.event_name || (p.event_type === "custom" ? (p.custom_event_name || "PageView") : (p.event_type || "PageView"));
                         const evId = event_id || crypto.randomUUID();
-                        const evTime = event_time || Math.floor(Date.now() / 1000);
 
                         let platformUrl = null;
                         let requestBody = null;
@@ -927,7 +929,7 @@ export default Sentry.withSentry(
                             requestBody = {
                                 data: [{
                                     event_name: eventName,
-                                    event_time: evTime,
+                                    event_time: relayEventTimeSeconds,
                                     action_source: "website",
                                     event_id: evId,
                                     user_data: {
@@ -941,18 +943,13 @@ export default Sentry.withSentry(
                         } else if (p.platform === "tiktok") {
                             // TikTok Events API v1.3 (newer shape): event_source + event_source_id + data[] (like Meta).
                             const tiktokPixelId = String(p.pixel_id ?? "").trim();
-                            const ttEventTimeSec = Math.floor(Number(evTime));
-                            const tiktokEventTime = Number.isFinite(ttEventTimeSec)
-                                ? ttEventTimeSec
-                                : Math.floor(Date.now() / 1000);
                             requestBody = {
                                 event_source: "web",
                                 event_source_id: tiktokPixelId,
                                 data: [{
                                     event: eventName,
                                     event_id: String(evId),
-                                    // TikTok data[] requires event_time as Unix seconds (integer), not ISO "timestamp".
-                                    event_time: tiktokEventTime,
+                                    event_time: relayEventTimeSeconds,
                                     context: {
                                         ...(user_data?.ttclid && { ad: { callback: String(user_data.ttclid) } }),
                                         page: { url: event_source_url || "" },

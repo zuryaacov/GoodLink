@@ -9,6 +9,8 @@
 3. **QStash** POSTs the payload to your **CAPI Relay** (`/api/capi-relay`).
 4. **Relay** forwards each pixel to the platform API (Meta or TikTok) and logs result in **capi_logs**.
 
+**`event_time` (Meta / TikTok):** The relay sets this to **`Math.floor(Date.now() / 1000)` when `/api/capi-relay` runs**, not from the QStash payload — so bad or “future” timestamps from upstream cannot break reporting.
+
 ## Secrets (Cloudflare)
 
 From `goodlink-backend`:
