@@ -90,11 +90,9 @@ function buildSafeUrl(base, searchParams) {
         // Copy params from original request to target URL (encoded safely)
         searchParams.forEach((value, key) => urlObj.searchParams.set(key, value));
         const finalUrl = urlObj.toString();
-        console.log(`🚀 Redirecting to: ${finalUrl}`);
         return finalUrl;
     } catch (e) {
         // If URL in database is broken, return as-is
-        console.error("❌ Redirect Construction Error:", e.message);
         return base;
     }
 }
@@ -116,7 +114,6 @@ async function getCustomDomainConfig(env, domain) {
         if (!row) return { exists: false, rootRedirect: null };
         return { exists: true, rootRedirect: row.root_redirect || null };
     } catch (e) {
-        console.warn("⚠️ [CustomDomain] Failed to load root redirect:", e?.message || e);
         return { exists: false, rootRedirect: null };
     }
 }
@@ -200,27 +197,18 @@ async function logClickToSupabase(env, clickRecord, redis) {
         // 1. Protection against technical retries (exact same request)
         const isNewRay = await redis.set(rayDedupKey, "1", { nx: true, ex: 120 });
         if (isNewRay === null) {
-            console.log(`⏭️ Duplicate Ray ID (${clickRecord.ray_id}) - skipping`);
             return;
         }
 
         // 2. Protection against duplicate clicks (same IP to same slug within 1 second)
         const isNewClick = await redis.set(ipDedupKey, "1", { nx: true, ex: 1 });
         if (isNewClick === null) {
-            console.log(`⏭️ Rate limit: Same IP within 1s (${clickRecord.ip_address}) - skipping`);
             return;
         }
 
         // Send directly to Supabase via QStash
         const supabaseUrl = `${env.SUPABASE_URL}/rest/v1/clicks`;
         const qstashUrl = `https://qstash.upstash.io/v2/publish/${supabaseUrl}`;
-
-        console.log(`*** QSTASH REQUEST (click logger) ***`);
-        console.log(`QStash publish URL: ${qstashUrl}`);
-        console.log(`Forward target (Supabase): ${supabaseUrl}`);
-        console.log(`Method: POST`);
-        console.log(`🔗 Full URL: ${clickRecord.full_url || "N/A"}`);
-        console.log(`📦 Click Record:`, JSON.stringify(clickRecord));
 
         const response = await fetch(qstashUrl, {
             method: "POST",
@@ -236,16 +224,9 @@ async function logClickToSupabase(env, clickRecord, redis) {
             body: JSON.stringify(clickRecord)
         });
 
-        const responseText = await response.text();
-        console.log(`*** QSTASH RESPONSE (click logger) ***`);
-        console.log(`Status: ${response.status}`);
-        console.log(`Body: ${responseText}`);
-
-        if (!response.ok) {
-            console.error(`❌ QStash Error: ${response.status} - ${responseText}`);
-        }
-    } catch (e) {
-        console.error("❌ Logger Error:", e.message);
+        await response.text();
+    } catch {
+        /* silent */
     }
 }
 
@@ -420,16 +401,9 @@ function getPlatformsFromClickIds(clickIds, request, searchParams) {
  */
 async function sendCapiToQStash(env, relayUrl, payload) {
     if (!env.QSTASH_TOKEN || !relayUrl) {
-        console.warn("CAPI: missing QSTASH_TOKEN or CAPI_RELAY_URL, skipping QStash publish");
         return;
     }
     const qstashPublishUrl = `https://qstash.upstash.io/v2/publish/${relayUrl}`;
-    console.log("*** QSTASH REQUEST (CAPI) ***");
-    console.log("QStash publish URL:", qstashPublishUrl);
-    console.log("Relay target URL:", relayUrl);
-    console.log("Method: POST");
-    const payloadJson = JSON.stringify(payload, null, 2);
-    console.log("QStash CAPI: JSON sent:", payloadJson);
     try {
         const res = await fetch(qstashPublishUrl, {
             method: "POST",
@@ -439,13 +413,9 @@ async function sendCapiToQStash(env, relayUrl, payload) {
             },
             body: JSON.stringify(payload)
         });
-        const text = await res.text();
-        console.log("*** QSTASH RESPONSE (CAPI) ***");
-        console.log("Status:", res.status);
-        console.log("Body:", text);
-        if (!res.ok) console.error("QStash CAPI error:", res.status, text);
-    } catch (e) {
-        console.error("QStash CAPI error:", e.message);
+        await res.text();
+    } catch {
+        /* silent */
     }
 }
 
@@ -689,7 +659,6 @@ export default Sentry.withSentry(
 
                     let safeBrowsingResponse = null;
                     if (env.GOOGLE_WEB_RISK_API_KEY) {
-                        console.log("[WebRisk] Sending check for URL:", reported_url);
                         try {
                             const isTrickySubdomainsHost = (hostname) => {
                                 const labels = String(hostname || "").toLowerCase().split(".").filter(Boolean);
@@ -753,11 +722,8 @@ export default Sentry.withSentry(
                                 }
                             }
                         } catch (sbErr) {
-                            console.warn("[WebRisk] Check failed with error:", sbErr.message || sbErr);
                             safeBrowsingResponse = { error: String(sbErr.message || "check_failed") };
                         }
-                    } else {
-                        console.log("[WebRisk] Skipped — GOOGLE_WEB_RISK_API_KEY not configured.");
                     }
 
                     const insertUrl = `${env.SUPABASE_URL}/rest/v1/abuse_reports`;
@@ -780,8 +746,7 @@ export default Sentry.withSentry(
                     });
 
                     if (!insertRes.ok) {
-                        const errData = await insertRes.json().catch(() => ({}));
-                        console.error("Abuse report insert failed:", insertRes.status, errData);
+                        await insertRes.json().catch(() => ({}));
                         return new Response(JSON.stringify({ error: "Failed to save report. Please try again." }), {
                             status: 500,
                             headers: { ...corsHeaders, "Content-Type": "application/json" }
@@ -793,7 +758,6 @@ export default Sentry.withSentry(
                         headers: { ...corsHeaders, "Content-Type": "application/json" }
                     });
                 } catch (error) {
-                    console.error("❌ [Abuse Report] Error:", error);
                     return new Response(JSON.stringify({ error: error.message || "Failed to submit report" }), {
                         status: 500,
                         headers: { ...corsHeaders, "Content-Type": "application/json" }
@@ -823,7 +787,6 @@ export default Sentry.withSentry(
                         const oldKey = `link:${oldDomain}:${oldSlug}`;
                         const newKey = `link:${domain}:${slug}`;
                         if (oldKey !== newKey) {
-                            console.log(`🧹 [Redis] Deleting old key: ${oldKey}`);
                             await redis.del(oldKey);
                             deletedOld = true;
                             deletedOldKey = oldKey;
@@ -833,7 +796,6 @@ export default Sentry.withSentry(
                     // Save the new data
                     const newKey = `link:${domain}:${slug}`;
                     await redis.set(newKey, JSON.stringify(cacheData));
-                    console.log(`✅ [Redis] Cache updated: ${newKey}`);
 
                     return new Response(JSON.stringify({
                         success: true,
@@ -847,7 +809,6 @@ export default Sentry.withSentry(
                     });
 
                 } catch (error) {
-                    console.error("❌ [Redis] Error updating cache:", error);
                     return new Response(JSON.stringify({ error: error.message }), {
                         status: 500,
                         headers: { ...corsHeaders, "Content-Type": "application/json" }
@@ -872,7 +833,6 @@ export default Sentry.withSentry(
 
                     const cacheKey = `link:${domain}:${slug}`;
                     const deleted = await redis.del(cacheKey);
-                    console.log(`🗑️ [Redis] Cache deleted: ${cacheKey}, result: ${deleted}`);
 
                     return new Response(JSON.stringify({
                         success: true,
@@ -885,7 +845,6 @@ export default Sentry.withSentry(
                     });
 
                 } catch (error) {
-                    console.error("❌ [Redis] Error deleting cache:", error);
                     return new Response(JSON.stringify({ error: error.message }), {
                         status: 500,
                         headers: { ...corsHeaders, "Content-Type": "application/json" }
@@ -942,7 +901,9 @@ export default Sentry.withSentry(
                     // Each pixel: one CAPI request to platform, then one separate row write to Supabase (capi_logs)
                     for (const p of pixels) {
                         if (!p.platform) continue;
-                        if (p.platform !== "taboola" && p.platform !== "outbrain" && !p.capi_token) continue;
+                        // QStash JSON may use capi_token (DB) or capiToken (camelCase from some clients)
+                        const pixelCapiToken = String(p.capi_token ?? p.capiToken ?? "").trim();
+                        if (p.platform !== "taboola" && p.platform !== "outbrain" && !pixelCapiToken) continue;
                         const eventName = p.event_name || (p.event_type === "custom" ? (p.custom_event_name || "PageView") : (p.event_type || "PageView"));
                         const evId = event_id || crypto.randomUUID();
                         const evTime = event_time || Math.floor(Date.now() / 1000);
@@ -952,6 +913,17 @@ export default Sentry.withSentry(
                         let requestHeaders = { "Content-Type": "application/json" };
 
                         if (p.platform === "meta" || p.platform === "instagram") {
+                            // Meta expects the Conversions API token as access_token — use pixel capi_token from QStash payload.
+                            // Pass it in the query string (Graph accepts this); body is only data + optional test_event_code.
+                            const baseGraph = testEndpoint || `https://graph.facebook.com/v19.0/${encodeURIComponent(p.pixel_id)}/events`;
+                            let graphU;
+                            try {
+                                graphU = new URL(baseGraph);
+                            } catch {
+                                graphU = new URL(baseGraph, "https://graph.facebook.com");
+                            }
+                            graphU.searchParams.set("access_token", pixelCapiToken);
+                            platformUrl = graphU.toString();
                             requestBody = {
                                 data: [{
                                     event_name: eventName,
@@ -965,10 +937,8 @@ export default Sentry.withSentry(
                                     },
                                     event_source_url: event_source_url || undefined
                                 }],
-                                access_token: p.capi_token,
                                 ...(metaTestEventCode && { test_event_code: metaTestEventCode })
                             };
-                            platformUrl = testEndpoint || `https://graph.facebook.com/v19.0/${p.pixel_id}/events`;
                         } else if (p.platform === "tiktok") {
                             requestBody = {
                                 pixel_code: p.pixel_id,
@@ -985,7 +955,7 @@ export default Sentry.withSentry(
                                 }
                             };
                             platformUrl = testEndpoint || "https://business-api.tiktok.com/open_api/v1.3/event/track/";
-                            requestHeaders = { "Content-Type": "application/json", "Access-Token": p.capi_token };
+                            requestHeaders = { "Content-Type": "application/json", "Access-Token": pixelCapiToken };
                         } else if (p.platform === "google") {
                             // GA4 Measurement Protocol: measurement_id (pixel_id), api_secret (capi_token), client_id, events
                             const ga4ClientId = `${Math.floor(Math.random() * 1e10)}.${Math.floor(Date.now() / 1000)}`;
@@ -1013,7 +983,7 @@ export default Sentry.withSentry(
                                 non_personalized_ads: false,
                                 events: [{ name: eventName, params: ga4Params }]
                             };
-                            platformUrl = `https://www.google-analytics.com/mp/collect?measurement_id=${encodeURIComponent(p.pixel_id)}&api_secret=${encodeURIComponent(p.capi_token)}`;
+                            platformUrl = `https://www.google-analytics.com/mp/collect?measurement_id=${encodeURIComponent(p.pixel_id)}&api_secret=${encodeURIComponent(pixelCapiToken)}`;
                         } else if (p.platform === "snapchat") {
                             // Snapchat CAPI: pixel_id, Bearer token, event_type, hashed_ip_address (SHA-256, IP clean + lowercase), click_id (scid), user_agent
                             const sha256Hex = async (str) => {
@@ -1035,7 +1005,7 @@ export default Sentry.withSentry(
                             };
                             requestBody = { data: [snapchatEvent] };
                             platformUrl = testEndpoint || "https://tr.snapchat.com/v2/conversion";
-                            requestHeaders = { "Content-Type": "application/json", "Authorization": `Bearer ${p.capi_token}` };
+                            requestHeaders = { "Content-Type": "application/json", "Authorization": `Bearer ${pixelCapiToken}` };
                         } else if (p.platform === "taboola") {
                             // Taboola CAPI: GET request, all data in query params. Send real visitor IP and UA via headers.
                             const itemId = user_data?.tblci || user_data?.tglid || "";
@@ -1067,15 +1037,15 @@ export default Sentry.withSentry(
                         if (!platformUrl) continue;
                         if (p.platform !== "taboola" && p.platform !== "outbrain" && !requestBody) continue;
 
-                        const logUrl = p.platform === "google" ? platformUrl.replace(/api_secret=[^&]+/, "api_secret=[REDACTED]") : platformUrl;
+                        let logUrl = p.platform === "google" ? platformUrl.replace(/api_secret=[^&]+/, "api_secret=[REDACTED]") : platformUrl;
+                        if (p.platform === "meta" || p.platform === "instagram") {
+                            logUrl = String(logUrl).replace(/([?&])access_token=[^&]*/gi, "$1access_token=[REDACTED]");
+                        }
                         const isGet = p.platform === "taboola" || p.platform === "outbrain";
                         const headersForLog = { ...requestHeaders };
                         if (headersForLog.Authorization) headersForLog.Authorization = "[REDACTED]";
                         if (headersForLog["Access-Token"]) headersForLog["Access-Token"] = "[REDACTED]";
-                        let bodyForLog = requestBody;
-                        if (bodyForLog && (p.platform === "meta" || p.platform === "instagram")) {
-                            bodyForLog = { ...bodyForLog, access_token: bodyForLog.access_token ? "[REDACTED]" : undefined };
-                        }
+                        const bodyForLog = requestBody;
                         console.log("*** CAPI REQUEST ***", JSON.stringify({
                             platform: p.platform,
                             pixel_id: p.pixel_id,
@@ -1111,10 +1081,8 @@ export default Sentry.withSentry(
                             body: respPreview
                         }, null, 2));
 
-                        // Log: body only. Meta/Instagram token is in body (redacted); TikTok token is in HTTP header only, not in body.
-                        const logRequestBody = (p.platform === "meta" || p.platform === "instagram")
-                            ? { ...requestBody, access_token: requestBody.access_token ? "[REDACTED]" : undefined }
-                            : { ...requestBody };
+                        // Log: Meta/Instagram access_token is in URL query (redacted in capi_target_url); TikTok in header.
+                        const logRequestBody = { ...requestBody };
 
                         const logRow = {
                             pixel_id: p.pixel_id,
@@ -1165,18 +1133,15 @@ export default Sentry.withSentry(
                             const data = await insertRes.json();
                             inserted.push(data[0]?.id || "ok");
                         } else {
-                            const errText = await insertRes.text();
-                            console.error("CAPI Relay: Supabase insert failed for pixel", p.pixel_id, p.platform, insertRes.status, errText);
+                            await insertRes.text();
                         }
                     }
 
-                    console.log("CAPI Relay: done, inserted", inserted.length, "rows");
                     return new Response(JSON.stringify({ ok: true, logged: inserted.length }), {
                         status: 200,
                         headers: { ...corsHeaders, "Content-Type": "application/json" }
                     });
                 } catch (error) {
-                    console.error("❌ CAPI Relay:", error);
                     return new Response(JSON.stringify({ error: error.message }), {
                         status: 500,
                         headers: { ...corsHeaders, "Content-Type": "application/json" }
@@ -1485,7 +1450,6 @@ export default Sentry.withSentry(
                     const supabaseData = await supabaseResponse.json();
 
                     if (!supabaseResponse.ok) {
-                        console.error("Supabase error:", supabaseData);
                         logAxiomInBackground(ctx, env, {
                             action: "custom_domain_create",
                             backend_event: "custom_domain_create_failed_db",
@@ -1544,7 +1508,6 @@ export default Sentry.withSentry(
                     });
 
                 } catch (error) {
-                    console.error("❌ [Custom Domain] Error:", error);
                     logAxiomInBackground(ctx, env, {
                         action: "custom_domain_create",
                         backend_event: "custom_domain_create_exception",
@@ -1676,17 +1639,9 @@ export default Sentry.withSentry(
                         });
 
                         if (!supabaseUpdateResponse.ok) {
-                            const updateError = await supabaseUpdateResponse.json().catch(() => null);
-                            console.error("⚠️ Failed to persist dns_records on verify:", {
-                                status: supabaseUpdateResponse.status,
-                                data: updateError,
-                                domain_id,
-                                cloudflare_hostname_id
-                            });
+                            await supabaseUpdateResponse.json().catch(() => null);
                         } else {
-                            const updateResult = await supabaseUpdateResponse.json().catch(() => null);
-                            const updatedRows = Array.isArray(updateResult) ? updateResult.length : 0;
-                            console.log(`✅ verify-custom-domain persisted dns_records (rows: ${updatedRows})`);
+                            await supabaseUpdateResponse.json().catch(() => null);
                         }
                     }
 
@@ -1702,7 +1657,6 @@ export default Sentry.withSentry(
                     });
 
                 } catch (error) {
-                    console.error("❌ [Verify Domain] Error:", error);
                     return new Response(JSON.stringify({ success: false, error: error.message }), {
                         status: 500,
                         headers: { ...corsHeaders, "Content-Type": "application/json" }
@@ -1807,20 +1761,8 @@ export default Sentry.withSentry(
                             })
                         });
 
-                        const supabaseUpdateData = await supabaseUpdateResponse.json().catch(() => null);
-
-                        if (!supabaseUpdateResponse.ok) {
-                            console.error("⚠️ Failed to update DNS records in Supabase:", {
-                                status: supabaseUpdateResponse.status,
-                                data: supabaseUpdateData
-                            });
-                        } else {
-                            // Helpful debug: confirm we updated at least 1 row
-                            const updatedCount = Array.isArray(supabaseUpdateData) ? supabaseUpdateData.length : 0;
-                            console.log(`✅ DNS records updated in Supabase (rows: ${updatedCount})`);
-                        }
-                    } catch (updateError) {
-                        console.error("⚠️ Failed to update DNS records in Supabase (exception):", updateError);
+                        await supabaseUpdateResponse.json().catch(() => null);
+                    } catch {
                         // Continue anyway - still return records to the UI
                     }
 
@@ -1833,7 +1775,6 @@ export default Sentry.withSentry(
                     });
 
                 } catch (error) {
-                    console.error("❌ [Get Domain Records] Error:", error);
                     return new Response(JSON.stringify({ success: false, error: error.message }), {
                         status: 500,
                         headers: { ...corsHeaders, "Content-Type": "application/json" }
@@ -1991,7 +1932,6 @@ export default Sentry.withSentry(
                 if (linkData?.fallback_url) {
                     const fallbackUrl = ensureValidUrl(linkData.fallback_url);
                     if (fallbackUrl) {
-                        console.log(`🔀 Redirecting to fallback URL: ${fallbackUrl} (reason: ${verdict})`);
                         queueAxiomLog("redirect", slug || null, false, {
                             redirect_target_url: fallbackUrl,
                             redirect_reason: `fallback_for_${verdict}`,
@@ -2010,7 +1950,6 @@ export default Sentry.withSentry(
 
             const isValidSlug = /^[a-z0-9-]+$/.test(slug);
             if (!isValidSlug) {
-                console.log(`🚫 Invalid slug format: "${slug}"`);
                 return terminateWithLog('invalid_slug_format');
             }
 
@@ -2023,18 +1962,12 @@ export default Sentry.withSentry(
                     : `www.${requestedHost}`;
             const domainCandidates = [...new Set([normalizedDomain, requestedHost, alternateDomain])].filter(Boolean);
 
-            console.log("*** LINK LOOKUP ***");
-            console.log("Lookup candidates:", JSON.stringify({ slug, domainCandidates }));
-
             let linkData = null;
-            let matchedDomain = null;
 
             for (const candidate of domainCandidates) {
                 const cached = await redis.get(`link:${candidate}:${slug}`);
                 if (cached) {
                     linkData = cached;
-                    matchedDomain = candidate;
-                    console.log(`Link lookup cache hit: link:${candidate}:${slug}`);
                     break;
                 }
             }
@@ -2054,8 +1987,6 @@ export default Sentry.withSentry(
                     const row = data?.[0] || null;
                     if (row) {
                         linkData = row;
-                        matchedDomain = candidate;
-                        console.log(`Link lookup DB hit: domain=${candidate}, slug=${slug}`);
                         break;
                     }
                 }
@@ -2066,10 +1997,6 @@ export default Sentry.withSentry(
                         ctx.waitUntil(redis.set(`link:${candidate}:${slug}`, serialized, { ex: 3600 }));
                     }
                 }
-            }
-
-            if (matchedDomain && matchedDomain !== normalizedDomain) {
-                console.log(`Link lookup matched alternate domain "${matchedDomain}" for requested "${normalizedDomain}"`);
             }
 
             if (!linkData) return terminateWithLog('link_not_found');
@@ -2089,7 +2016,6 @@ export default Sentry.withSentry(
             // 4. Blacklist Check
             const isBlacklisted = await redis.get(`blacklist:${ip}`);
             if (isBlacklisted) {
-                console.log(`🚫 IP Blacklisted: ${ip} → ${domain}/${slug}`);
                 return terminateWithLog('blacklisted', linkData);
             }
 
@@ -2115,7 +2041,6 @@ export default Sentry.withSentry(
                 const geoTargetUrl = ensureValidUrl(matchedGeoRule.url);
                 if (geoTargetUrl) {
                     targetUrl = geoTargetUrl;
-                    console.log(`🌍 Geo redirect matched country "${visitorCountry}" → ${geoTargetUrl}`);
                 }
             }
             let verdict = "clean";
@@ -2143,8 +2068,6 @@ export default Sentry.withSentry(
                     // If no fallback, continue to regular target
                 }
                 // If botAction === "no-tracking" - continue to regular target (already set)
-
-                console.log(`🤖 Bot detected: ${verdict}, action: ${botAction}, target: ${targetUrl}`);
             } else if (botScore <= 59) {
                 verdict = "suspicious";
             }
@@ -2158,7 +2081,6 @@ export default Sentry.withSentry(
                 if (linkData?.fallback_url) {
                     const fallbackUrl = ensureValidUrl(linkData.fallback_url);
                     if (fallbackUrl) {
-                        console.log(`🔀 Bot blocked, redirecting to fallback URL: ${fallbackUrl}`);
                         queueAxiomLog("bot_blocked", slug || null, true, {
                             verdict,
                             bot_action: botAction,
@@ -2199,7 +2121,6 @@ export default Sentry.withSentry(
             const wantsPixel = trackingMode === "pixel" || trackingMode === "pixel_and_capi";
             const capiPixels = pixels.filter((p) => p?.status === "active" && (p?.capi_token || p?.platform === "taboola" || p?.platform === "outbrain"));
             let capiPixelsToSend = [];
-            let capiSent = false;
 
             if (isPro && (pixels.length > 0 || capiPixels.length > 0)) {
                 const eventId = crypto.randomUUID();
@@ -2209,12 +2130,6 @@ export default Sentry.withSentry(
                 const platformsFromUrl = getPlatformsFromClickIds(clickIds, request, url.searchParams);
                 // Send CAPI only to platforms found in URL. If one param → one (or two for meta); if multiple params → send to all. Within each platform, send to every CAPI (e.g. 3 Facebook pixels).
                 capiPixelsToSend = capiPixels.filter((p) => platformsFromUrl.has(p.platform));
-                if (capiPixels.length && !capiPixelsToSend.length) {
-                    console.log("CAPI: no matching click ID in URL for link pixels (URL platforms:", [...platformsFromUrl].join(",") || "none", ")");
-                } else if (capiPixelsToSend.length) {
-                    const byPlatform = capiPixelsToSend.reduce((acc, p) => { acc[p.platform] = (acc[p.platform] || 0) + 1; return acc; }, {});
-                    console.log("CAPI: sending to", capiPixelsToSend.length, "pixel(s), platforms:", JSON.stringify(byPlatform));
-                }
 
                 // fbc format: fb.1.[CreationTime in ms].[fbclid from URL]. Only when fbclid exists (do not invent).
                 const userData = {
@@ -2252,15 +2167,13 @@ export default Sentry.withSentry(
                         user_data: userData,
                         pixels: capiPixelsToSend.map((p) => ({
                             pixel_id: p.pixel_id,
-                            capi_token: p.capi_token,
+                            capi_token: p.capi_token ?? p.capiToken ?? null,
                             event_name: p.event_type === "custom" ? (p.custom_event_name || "PageView") : (p.event_type || "PageView"),
                             platform: p.platform,
                             event_type: p.event_type,
                             custom_event_name: p.custom_event_name
                         }))
                     };
-                    const capiPayloadJson = JSON.stringify(capiPayload, null, 2);
-                    console.log("CAPI: JSON sent to QStash:", capiPayloadJson);
                     queueAxiomLog("capi_sent", slug || null, isBot, {
                         backend_event: "capi_queued_to_qstash",
                         capi_companies: [...new Set(capiPixelsToSend.map((p) => p.platform))],
@@ -2268,7 +2181,6 @@ export default Sentry.withSentry(
                         capi_payload: capiPayload
                     });
                     ctx.waitUntil(sendCapiToQStash(env, relayUrl, capiPayload));
-                    capiSent = true;
                 }
 
                 if (wantsPixel && pixels.length > 0) {
@@ -2294,22 +2206,6 @@ export default Sentry.withSentry(
                     });
                     return Response.redirect(finalRedirectUrl, 302);
                 }
-            }
-
-            if (!capiSent) {
-                let reason = "not_applicable";
-                if (!isPro) {
-                    reason = `plan_not_pro (${planType || "unknown"})`;
-                } else if (!wantsCapi) {
-                    reason = `tracking_mode_without_capi (${trackingMode})`;
-                } else if (!capiPixels.length) {
-                    reason = "no_active_capi_pixels_configured";
-                } else if (!capiPixelsToSend.length) {
-                    reason = "no_matching_click_id_platform_for_capi_pixels";
-                } else if (!env.CAPI_RELAY_URL) {
-                    reason = "missing_CAPI_RELAY_URL";
-                }
-                console.log("CAPI: NOT sent. Reason:", reason);
             }
 
             // 8. Default redirect
