@@ -207,7 +207,7 @@ const CTASection = () => {
                         : 'text-2xl font-bold text-slate-900'
                     }`}
                   >
-                    {plan.highlighted ? 'Professional' : plan.name}
+                    {plan.highlighted ? 'Advanced' : plan.name}
                   </h3>
                   <p
                     className={`text-sm ${
@@ -219,17 +219,6 @@ const CTASection = () => {
                 </div>
 
                 <div className="mb-10 flex items-baseline gap-1">
-                  {plan.originalPrice && (
-                    <span
-                      className={`line-through ${
-                        plan.highlighted
-                          ? 'text-[#2f4e27]/70 text-3xl font-bold'
-                          : 'text-slate-500 text-2xl font-semibold'
-                      }`}
-                    >
-                      ${plan.originalPrice}
-                    </span>
-                  )}
                   <span
                     className={`tracking-tighter ${
                       plan.highlighted

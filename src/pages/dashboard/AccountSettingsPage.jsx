@@ -557,7 +557,7 @@ export default function AccountSettingsPage() {
         {!isFreeTrial && (
           <div className="mt-12">
             <h2 className="text-2xl font-bold text-[#1b1b1b] dark:text-[#1b1b1b] mb-6">Plans</h2>
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8 xl:gap-10 items-stretch">
               {SETTINGS_PLANS.map((plan) => {
               const planKey = planKeyFromName(plan.name);
               const isCurrentPlan = currentPlanKey != null && planKey === currentPlanKey;
@@ -572,42 +572,71 @@ export default function AccountSettingsPage() {
                     key={plan.name}
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className={`relative flex flex-col rounded-xl border-2 transition-all duration-300 w-full md:max-w-md md:mx-auto lg:max-w-none lg:mx-0 ${
+                    className={`group relative flex flex-col h-full transition-all duration-300 ${
                       plan.highlighted
-                        ? 'border-[#c0ffa5] bg-[#c0ffa5]/10 shadow-2xl scale-105 lg:scale-110'
-                        : 'border-slate-200 dark:border-slate-200 bg-white dark:bg-white hover:border-[#c0ffa5]/50 hover:shadow-xl'
+                        ? 'bg-[#c7edb8] p-8 lg:p-10 xl:p-12 rounded-[2.5rem] shadow-[0_32px_64px_rgba(74,61,196,0.12)] scale-100 xl:scale-105 z-10 border-4 border-white hover:border-[#6358de]'
+                        : 'bg-[#f3f3f4] p-8 lg:p-10 rounded-[2rem] border border-[#c8c4d6]/20 hover:border-[#6358de]'
                     }`}
                   >
                     {plan.highlighted && (
-                      <span className="absolute -top-4 left-1/2 -translate-x-1/2 bg-[#c0ffa5] text-[#1b1b1b] text-xs font-black px-4 py-1.5 rounded-full uppercase tracking-wider z-10">
+                      <span className="absolute -top-5 left-1/2 -translate-x-1/2 px-6 py-2 bg-[#6358de] text-white text-xs font-black rounded-full uppercase tracking-widest shadow-lg">
                         Most Popular
                       </span>
                     )}
-                    <div className="p-8 flex flex-col gap-6">
-                      <div className={`-mx-8 -mt-8 px-8 pt-8 pb-6 ${plan.highlighted ? 'bg-[#0b996f]/15' : 'bg-[#0b996f]/15'}`}>
-                        <h3 className="text-slate-900 dark:text-[#1b1b1b] text-2xl font-black">{plan.name}</h3>
-                        <p className="text-slate-500 dark:text-[#1b1b1b] text-sm">{plan.description}</p>
-                        <div className="flex items-baseline gap-2 flex-wrap mt-4">
-                          {plan.originalPrice && (
-                            <span className="hidden text-slate-500 dark:text-slate-400 text-5xl font-black line-through">${plan.originalPrice}</span>
-                          )}
-                          <span className="text-slate-900 dark:text-[#1b1b1b] text-5xl font-black">${plan.price}</span>
-                          <span className="text-slate-500 dark:text-[#1b1b1b] text-lg font-medium">/month</span>
-                        </div>
-                        <button
-                          type="button"
-                          disabled={isCurrentPlan}
-                          onClick={() => !isCurrentPlan && openCheckout(plan)}
-                          className={`mt-6 w-full py-4 px-6 rounded-lg font-bold text-base transition-all text-center ${
-                            isCurrentPlan
-                              ? 'bg-slate-200 text-slate-500 cursor-not-allowed'
-                              : 'bg-[#c0ffa5] hover:bg-[#b0ef95] text-[#1b1b1b] shadow-lg shadow-[#c0ffa5]/20'
+                    <div className="flex flex-col h-full">
+                      <div className="mb-8">
+                        <h3
+                          className={`mb-2 ${
+                            plan.highlighted
+                              ? 'text-3xl font-black text-[#032102]'
+                              : 'text-2xl font-bold text-slate-900'
                           }`}
                         >
-                          {buttonLabel}
-                        </button>
+                          {plan.highlighted ? 'Advanced' : plan.name}
+                        </h3>
+                        <p
+                          className={`text-sm ${
+                            plan.highlighted ? 'text-[#2f4e27] font-medium' : 'text-slate-600'
+                          }`}
+                        >
+                          {plan.description}
+                        </p>
                       </div>
-                      <ul className="flex flex-col gap-4 mt-4">
+                      <div className="mb-10 flex items-baseline gap-1">
+                        <span
+                          className={`tracking-tighter ${
+                            plan.highlighted
+                              ? 'text-7xl font-extrabold text-[#032102]'
+                              : 'text-5xl font-extrabold text-slate-900'
+                          }`}
+                        >
+                          ${plan.price}
+                        </span>
+                        <span
+                          className={`font-medium ${
+                            plan.highlighted ? 'text-[#2f4e27] font-bold' : 'text-slate-500'
+                          }`}
+                        >
+                          /mo
+                        </span>
+                      </div>
+                      <button
+                        type="button"
+                        disabled={isCurrentPlan}
+                        onClick={() => !isCurrentPlan && openCheckout(plan)}
+                        className={`mb-10 w-full text-center inline-block active:scale-95 transition-all ${
+                          plan.highlighted
+                            ? isCurrentPlan
+                              ? 'py-5 rounded-full bg-slate-300 text-slate-500 font-black text-lg cursor-not-allowed'
+                              : 'py-5 rounded-full bg-[#6358de] text-white font-black text-lg shadow-xl shadow-[#4a3dc4]/30 hover:opacity-90 cursor-pointer'
+                            : isCurrentPlan
+                              ? 'py-4 rounded-full border border-[#787585] text-slate-500 font-bold cursor-not-allowed'
+                              : 'py-4 rounded-full border border-[#787585] text-[#5549d0] font-bold hover:bg-[#eeeeee] cursor-pointer'
+                        }`}
+                      >
+                        {buttonLabel}
+                      </button>
+                      <ul className="space-y-6 mb-2 flex-grow">
                         {plan.features.map((feature, i) => {
                           const purpleFeatures = ['10 Custom Domains', 'Workspaces, Campaigns and Groups', 'Bot Protection', 'UTM Presets', 'Advanced Analytics', 'Unlimited Custom Domains', 'Geo Redirect', 'Conversion API & S2S tracking', 'Pro Analytics', 'Expedited Support'];
                           const proBlackFeatures = ['Workspaces, Campaigns and Groups', 'Bot Protection', 'UTM Presets'];
@@ -615,8 +644,24 @@ export default function AccountSettingsPage() {
                           const isPurple = !isBlack && purpleFeatures.includes(feature);
                           return (
                             <li key={i} className="flex items-start gap-3">
-                              <Check className="w-5 h-5 mt-0.5 flex-shrink-0 text-[#6358de] font-bold stroke-[2.5]" />
-                              <span className={`text-base font-bold leading-relaxed ${isBlack ? 'text-black dark:text-white' : isPurple ? 'text-[#6358de]' : 'text-slate-700 dark:text-slate-300'}`}>{feature}</span>
+                              <Check
+                                className={`w-5 h-5 mt-0.5 flex-shrink-0 ${
+                                  plan.highlighted ? 'text-[#032102]' : 'text-[#46673d]'
+                                }`}
+                              />
+                              <span
+                                className={`text-sm md:text-base font-semibold leading-relaxed ${
+                                  isBlack
+                                    ? 'text-black'
+                                    : isPurple
+                                      ? 'text-[#6358de]'
+                                      : plan.highlighted
+                                        ? 'text-[#032102]'
+                                        : 'text-slate-700'
+                                }`}
+                              >
+                                {feature}
+                              </span>
                             </li>
                           );
                         })}
