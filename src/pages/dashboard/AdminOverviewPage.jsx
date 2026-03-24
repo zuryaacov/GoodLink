@@ -3,7 +3,15 @@ import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { deleteLinkFromRedis } from '../../lib/redisCache';
 
-const VALID_VIEWS = new Set(['overview', 'new-links', 'links', 'users', 'custom-domains', 'capi']);
+const VALID_VIEWS = new Set([
+  'overview',
+  'new-links',
+  'links',
+  'users',
+  'custom-domains',
+  'capi',
+  'clicks',
+]);
 
 const StatCard = ({
   title,
@@ -48,6 +56,7 @@ const AdminOverviewPage = () => {
   const [pendingLinks, setPendingLinks] = useState([]);
   const [activeLinks, setActiveLinks] = useState([]);
   const [activeCapi, setActiveCapi] = useState([]);
+  const [cleanClicks, setCleanClicks] = useState([]);
   const [users, setUsers] = useState([]);
   const [customDomains, setCustomDomains] = useState([]);
   const [overviewStats, setOverviewStats] = useState({
@@ -62,12 +71,14 @@ const AdminOverviewPage = () => {
   const [loading, setLoading] = useState(true); // new-links loading
   const [linksLoading, setLinksLoading] = useState(false);
   const [capiLoading, setCapiLoading] = useState(false);
+  const [clicksLoading, setClicksLoading] = useState(false);
   const [usersLoading, setUsersLoading] = useState(false);
   const [domainsLoading, setDomainsLoading] = useState(false);
   const [actionLoading, setActionLoading] = useState(null); // link id being approved/rejected
   const [impersonatingUserId, setImpersonatingUserId] = useState(null);
   const [selectedActiveLink, setSelectedActiveLink] = useState(null);
   const [selectedCapi, setSelectedCapi] = useState(null);
+  const [selectedCleanClick, setSelectedCleanClick] = useState(null);
 
   const changeView = (view) => {
     if (!VALID_VIEWS.has(view)) return;
@@ -198,6 +209,12 @@ const AdminOverviewPage = () => {
     }
   }, [activeView]);
 
+  useEffect(() => {
+    if (activeView === 'clicks') {
+      fetchCleanClicks();
+    }
+  }, [activeView]);
+
   const fetchActiveLinks = async () => {
     setLinksLoading(true);
     try {
@@ -275,6 +292,45 @@ const AdminOverviewPage = () => {
       setActiveCapi([]);
     } finally {
       setCapiLoading(false);
+    }
+  };
+
+  const fetchCleanClicks = async () => {
+    setClicksLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('clicks')
+        .select('*')
+        .eq('verdict', 'clean')
+        .order('created_at', { ascending: false });
+      if (error) throw error;
+
+      const clicks = data || [];
+      const userIds = [...new Set(clicks.map((c) => c.user_id).filter(Boolean))];
+      let profilesByUserId = {};
+      if (userIds.length > 0) {
+        const { data: profiles, error: profilesError } = await supabase
+          .from('profiles')
+          .select('user_id, email, full_name')
+          .in('user_id', userIds);
+        if (profilesError) throw profilesError;
+        profilesByUserId = (profiles || []).reduce((acc, p) => {
+          acc[p.user_id] = p;
+          return acc;
+        }, {});
+      }
+
+      const merged = clicks.map((c) => ({
+        ...c,
+        user_email: profilesByUserId[c.user_id]?.email || '',
+        user_full_name: profilesByUserId[c.user_id]?.full_name || '',
+      }));
+      setCleanClicks(merged);
+    } catch (err) {
+      console.error('Error fetching clean clicks:', err);
+      setCleanClicks([]);
+    } finally {
+      setClicksLoading(false);
     }
   };
 
@@ -522,6 +578,7 @@ const AdminOverviewPage = () => {
                 icon="ads_click"
                 iconBgClass="bg-[#10b981]/10"
                 iconColorClass="text-[#10b981]"
+                onClick={() => changeView('clicks')}
               />
               <StatCard
                 title="Bots"
@@ -713,6 +770,56 @@ const AdminOverviewPage = () => {
               </ul>
             )}
           </>
+        ) : activeView === 'clicks' ? (
+          <>
+            <div className="mb-4">
+              <button
+                type="button"
+                onClick={() => changeView('overview')}
+                className="mb-3 px-3 py-2 rounded-lg border border-slate-200 text-sm font-semibold text-[#1b1b1b] hover:bg-slate-100"
+              >
+                Back
+              </button>
+              <h3 className="text-lg font-bold text-[#1b1b1b]">Clicks (Clean)</h3>
+            </div>
+            {clicksLoading ? (
+              <p className="text-slate-500 text-base font-medium">Loading...</p>
+            ) : cleanClicks.length === 0 ? (
+              <p className="text-slate-500 text-base font-medium">No clean clicks found.</p>
+            ) : (
+              <ul className="space-y-3">
+                {cleanClicks.map((click) => (
+                  <li
+                    key={click.id}
+                    className="p-4 rounded-xl border border-slate-200 bg-slate-50/50 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"
+                  >
+                    <div className="min-w-0">
+                      <p className="text-base font-bold text-[#1b1b1b] break-all">
+                        {click.domain && click.slug ? `${click.domain}/${click.slug}` : 'Click'}
+                      </p>
+                      <p className="text-sm font-semibold text-[#1b1b1b] break-all mt-1">
+                        {click.user_full_name?.trim() || 'Unnamed user'}
+                      </p>
+                      <p className="text-xs text-slate-600 break-all">
+                        {click.user_email?.trim() || 'No email'}
+                      </p>
+                      <p className="text-xs text-slate-500 break-all mt-1">Verdict: {click.verdict || '-'}</p>
+                      <p className="text-xs text-slate-500 mt-1">
+                        Created: {click.created_at ? new Date(click.created_at).toLocaleString() : '-'}
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setSelectedCleanClick(click)}
+                      className="px-3 py-2 rounded-lg border border-slate-300 text-xs font-bold text-[#1b1b1b] hover:bg-slate-100 transition-colors"
+                    >
+                      Details
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </>
         ) : activeView === 'users' ? (
           <>
             <div className="mb-4">
@@ -855,6 +962,26 @@ const AdminOverviewPage = () => {
             </div>
             <pre className="text-xs text-slate-800 bg-slate-50 border border-slate-200 rounded-xl p-4 overflow-x-auto whitespace-pre-wrap break-words">
 {JSON.stringify(selectedCapi, null, 2)}
+            </pre>
+          </div>
+        </div>
+      )}
+
+      {selectedCleanClick && (
+        <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4">
+          <div className="w-full max-w-2xl bg-white rounded-2xl border border-slate-200 shadow-xl p-5 max-h-[85vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-bold text-[#1b1b1b]">Click Details</h3>
+              <button
+                type="button"
+                onClick={() => setSelectedCleanClick(null)}
+                className="px-3 py-1.5 rounded-lg border border-slate-300 text-sm font-semibold text-[#1b1b1b] hover:bg-slate-100"
+              >
+                Close
+              </button>
+            </div>
+            <pre className="text-xs text-slate-800 bg-slate-50 border border-slate-200 rounded-xl p-4 overflow-x-auto whitespace-pre-wrap break-words">
+{JSON.stringify(selectedCleanClick, null, 2)}
             </pre>
           </div>
         </div>
