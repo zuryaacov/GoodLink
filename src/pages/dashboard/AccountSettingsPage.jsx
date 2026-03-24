@@ -563,7 +563,7 @@ export default function AccountSettingsPage() {
               const isCurrentPlan = currentPlanKey != null && planKey === currentPlanKey;
               const planPriceNum = plan.priceNum;
               const isDowngrade = currentPlanKey && planPriceNum < currentPlanPrice;
-              const isFeaturedCard = isCurrentPlan || plan.highlighted;
+              const isFeaturedCard = isCurrentPlan;
               let buttonLabel = plan.buttonText;
               if (isCurrentPlan) buttonLabel = 'Your current plan';
               else if (isDowngrade) buttonLabel = 'Switch to this plan';
@@ -579,13 +579,11 @@ export default function AccountSettingsPage() {
                         : 'bg-[#f3f3f4] p-8 lg:p-10 rounded-[2rem] border border-[#c8c4d6]/20 hover:border-[#6358de]'
                     }`}
                   >
-                    {(isCurrentPlan || plan.highlighted) && (
+                    {isCurrentPlan && (
                       <span
-                        className={`absolute -top-5 left-1/2 -translate-x-1/2 px-6 py-2 text-white text-xs font-black rounded-full uppercase tracking-widest shadow-lg ${
-                          isCurrentPlan ? 'bg-[#0b996f]' : 'bg-[#6358de]'
-                        }`}
+                        className="absolute -top-5 left-1/2 -translate-x-1/2 px-6 py-2 text-white text-xs font-black rounded-full uppercase tracking-widest shadow-lg bg-[#0b996f]"
                       >
-                        {isCurrentPlan ? 'Current Plan' : 'Most Popular'}
+                        Current Plan
                       </span>
                     )}
                     <div className="flex flex-col h-full">
