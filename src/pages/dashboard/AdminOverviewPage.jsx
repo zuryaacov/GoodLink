@@ -3,7 +3,7 @@ import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { deleteLinkFromRedis } from '../../lib/redisCache';
 
-const VALID_VIEWS = new Set(['overview', 'new-links', 'users', 'custom-domains']);
+const VALID_VIEWS = new Set(['overview', 'new-links', 'links', 'users', 'custom-domains']);
 
 const StatCard = ({
   title,
@@ -46,6 +46,7 @@ const AdminOverviewPage = () => {
     VALID_VIEWS.has(initialView) ? initialView : 'overview'
   ); // 'overview' | 'new-links' | 'users' | 'custom-domains'
   const [pendingLinks, setPendingLinks] = useState([]);
+  const [activeLinks, setActiveLinks] = useState([]);
   const [users, setUsers] = useState([]);
   const [customDomains, setCustomDomains] = useState([]);
   const [overviewStats, setOverviewStats] = useState({
@@ -58,10 +59,12 @@ const AdminOverviewPage = () => {
     bots: 0,
   });
   const [loading, setLoading] = useState(true); // new-links loading
+  const [linksLoading, setLinksLoading] = useState(false);
   const [usersLoading, setUsersLoading] = useState(false);
   const [domainsLoading, setDomainsLoading] = useState(false);
   const [actionLoading, setActionLoading] = useState(null); // link id being approved/rejected
   const [impersonatingUserId, setImpersonatingUserId] = useState(null);
+  const [selectedActiveLink, setSelectedActiveLink] = useState(null);
 
   const changeView = (view) => {
     if (!VALID_VIEWS.has(view)) return;
@@ -177,6 +180,53 @@ const AdminOverviewPage = () => {
       setUsers([]);
     } finally {
       setUsersLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (activeView === 'links') {
+      fetchActiveLinks();
+    }
+  }, [activeView]);
+
+  const fetchActiveLinks = async () => {
+    setLinksLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('links')
+        .select(
+          'id, name, short_url, target_url, fallback_url, geo_rules, created_at, updated_at, user_id, domain, slug, status, review_status, tracking_mode, server_side_tracking, pixels'
+        )
+        .eq('status', 'active')
+        .order('created_at', { ascending: false });
+      if (error) throw error;
+
+      const links = data || [];
+      const userIds = [...new Set(links.map((l) => l.user_id).filter(Boolean))];
+      let profilesByUserId = {};
+      if (userIds.length > 0) {
+        const { data: profiles, error: profilesError } = await supabase
+          .from('profiles')
+          .select('user_id, email, full_name')
+          .in('user_id', userIds);
+        if (profilesError) throw profilesError;
+        profilesByUserId = (profiles || []).reduce((acc, p) => {
+          acc[p.user_id] = p;
+          return acc;
+        }, {});
+      }
+
+      const merged = links.map((l) => ({
+        ...l,
+        user_email: profilesByUserId[l.user_id]?.email || '',
+        user_full_name: profilesByUserId[l.user_id]?.full_name || '',
+      }));
+      setActiveLinks(merged);
+    } catch (err) {
+      console.error('Error fetching active links:', err);
+      setActiveLinks([]);
+    } finally {
+      setLinksLoading(false);
     }
   };
 
@@ -400,6 +450,7 @@ const AdminOverviewPage = () => {
                 icon="link"
                 iconBgClass="bg-[#4a3dc4]/10"
                 iconColorClass="text-[#4a3dc4]"
+                onClick={() => changeView('links')}
               />
               <StatCard
                 title="Custom Domains"
@@ -500,6 +551,56 @@ const AdminOverviewPage = () => {
                         </button>
                       </div>
                     </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </>
+        ) : activeView === 'links' ? (
+          <>
+            <div className="mb-4">
+              <button
+                type="button"
+                onClick={() => changeView('overview')}
+                className="mb-3 px-3 py-2 rounded-lg border border-slate-200 text-sm font-semibold text-[#1b1b1b] hover:bg-slate-100"
+              >
+                Back
+              </button>
+              <h3 className="text-lg font-bold text-[#1b1b1b]">Links (Active)</h3>
+            </div>
+            {linksLoading ? (
+              <p className="text-slate-500 text-base font-medium">Loading...</p>
+            ) : activeLinks.length === 0 ? (
+              <p className="text-slate-500 text-base font-medium">No active links found.</p>
+            ) : (
+              <ul className="space-y-3">
+                {activeLinks.map((link) => (
+                  <li
+                    key={link.id}
+                    className="p-4 rounded-xl border border-slate-200 bg-slate-50/50 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"
+                  >
+                    <div className="min-w-0">
+                      <p className="text-base font-bold text-[#1b1b1b] break-all">
+                        {link.name?.trim() || 'Unnamed link'}
+                      </p>
+                      <p className="text-sm font-semibold text-[#1b1b1b] break-all mt-1">
+                        {link.user_full_name?.trim() || 'Unnamed user'}
+                      </p>
+                      <p className="text-xs text-slate-600 break-all">
+                        {link.user_email?.trim() || 'No email'}
+                      </p>
+                      <p className="text-xs text-slate-500 break-all mt-1">{link.short_url || '-'}</p>
+                      <p className="text-xs text-slate-500 mt-1">
+                        Created: {link.created_at ? new Date(link.created_at).toLocaleString() : '-'}
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setSelectedActiveLink(link)}
+                      className="px-3 py-2 rounded-lg border border-slate-300 text-xs font-bold text-[#1b1b1b] hover:bg-slate-100 transition-colors"
+                    >
+                      Details
+                    </button>
                   </li>
                 ))}
               </ul>
@@ -611,6 +712,26 @@ const AdminOverviewPage = () => {
           </>
         )}
       </div>
+
+      {selectedActiveLink && (
+        <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4">
+          <div className="w-full max-w-2xl bg-white rounded-2xl border border-slate-200 shadow-xl p-5 max-h-[85vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-bold text-[#1b1b1b]">Link Details</h3>
+              <button
+                type="button"
+                onClick={() => setSelectedActiveLink(null)}
+                className="px-3 py-1.5 rounded-lg border border-slate-300 text-sm font-semibold text-[#1b1b1b] hover:bg-slate-100"
+              >
+                Close
+              </button>
+            </div>
+            <pre className="text-xs text-slate-800 bg-slate-50 border border-slate-200 rounded-xl p-4 overflow-x-auto whitespace-pre-wrap break-words">
+{JSON.stringify(selectedActiveLink, null, 2)}
+            </pre>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
