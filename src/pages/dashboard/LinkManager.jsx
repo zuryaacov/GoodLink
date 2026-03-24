@@ -151,6 +151,8 @@ const LinkManager = () => {
     onConfirm: null,
     isLoading: false,
   });
+  const [detailsLink, setDetailsLink] = useState(null);
+
   const [deleteLinkModal, setDeleteLinkModal] = useState({
     isOpen: false,
     link: null,
@@ -1161,6 +1163,7 @@ const LinkManager = () => {
                   className="absolute top-4 right-4"
                   hoverBorderClass="hover:border-[#0b996f]/60"
                   link={link}
+                  onDetails={(linkToShow) => setDetailsLink(linkToShow)}
                   onEdit={(linkToEdit) => navigate(`/dashboard/links/edit/${linkToEdit.id}`)}
                   onDuplicate={(linkToDuplicate) =>
                     navigate(
@@ -1441,6 +1444,28 @@ const LinkManager = () => {
         onConfirm={modalState.onConfirm}
         isLoading={modalState.isLoading}
       />
+      {/* Link Details Modal */}
+      {detailsLink && (
+        <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4">
+          <div className="w-full max-w-2xl bg-white rounded-2xl border border-slate-200 shadow-xl p-5 max-h-[85vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-bold text-[#1b1b1b]">
+                {detailsLink.name || detailsLink.short_url || 'Link Details'}
+              </h3>
+              <button
+                type="button"
+                onClick={() => setDetailsLink(null)}
+                className="px-3 py-1.5 rounded-lg border border-slate-300 text-sm font-semibold text-[#1b1b1b] hover:bg-slate-100"
+              >
+                Close
+              </button>
+            </div>
+            <pre className="text-xs bg-slate-50 rounded-xl p-4 overflow-x-auto whitespace-pre-wrap break-all">
+              {JSON.stringify(detailsLink, null, 2)}
+            </pre>
+          </div>
+        </div>
+      )}
       {/* Delete Link Modal - rendered here so overlay covers full screen like Delete Workspace */}
       <Modal
         isOpen={deleteLinkModal.isOpen}
@@ -1532,6 +1557,7 @@ const LinkActionsMenu = ({
   onAnalytics,
   onMove,
   onDeleteClick,
+  onDetails,
   className = '',
   hoverBorderClass = 'hover:border-primary/40',
 }) => {
@@ -1559,6 +1585,16 @@ const LinkActionsMenu = ({
         <>
           <div className="fixed inset-0 z-10" onClick={() => setIsOpen(false)} />
           <div className="absolute right-0 mt-2 w-48 bg-white border border-slate-200 rounded-xl shadow-2xl z-20 overflow-hidden min-w-max">
+            <button
+              onClick={() => {
+                setIsOpen(false);
+                if (onDetails) onDetails(link);
+              }}
+              className="w-full px-4 py-3 text-left text-[#1b1b1b] hover:bg-white/5 transition-colors flex items-center gap-3 text-sm"
+            >
+              <span className="material-symbols-outlined text-base">info</span>
+              Details
+            </button>
             <button
               onClick={() => {
                 setIsOpen(false);

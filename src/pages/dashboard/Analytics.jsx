@@ -175,6 +175,7 @@ const Analytics = () => {
   );
 
   const [loading, setLoading] = useState(true);
+  const [linkName, setLinkName] = useState('');
   const [stats, setStats] = useState({
     totalClicks: 0,
     uniqueVisitors: 0,
@@ -195,6 +196,17 @@ const Analytics = () => {
 
   useEffect(() => {
     fetchStats();
+  }, [linkDomain, linkSlug]);
+
+  useEffect(() => {
+    if (!isSingleLink) { setLinkName(''); return; }
+    supabase
+      .from('links')
+      .select('name')
+      .eq('domain', linkDomain)
+      .eq('slug', linkSlug)
+      .maybeSingle()
+      .then(({ data }) => setLinkName(data?.name || ''));
   }, [linkDomain, linkSlug]);
 
   useEffect(() => {
@@ -412,7 +424,9 @@ const Analytics = () => {
   return (
     <div className="flex flex-col gap-6 max-w-7xl mx-auto">
       <div className="flex flex-col gap-2">
-        <h1 className="text-3xl font-bold text-[#1b1b1b]">Analytics</h1>
+        <h1 className="text-3xl font-bold text-[#1b1b1b]">
+          {isSingleLink && linkName ? `Analytics for ${linkName}` : 'Analytics'}
+        </h1>
         {isSingleLink ? (
           <p className="text-[#1b1b1b] text-sm">
             Data for this link only:{' '}
