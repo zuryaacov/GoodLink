@@ -563,6 +563,7 @@ export default function AccountSettingsPage() {
               const isCurrentPlan = currentPlanKey != null && planKey === currentPlanKey;
               const planPriceNum = plan.priceNum;
               const isDowngrade = currentPlanKey && planPriceNum < currentPlanPrice;
+              const isFeaturedCard = isCurrentPlan || plan.highlighted;
               let buttonLabel = plan.buttonText;
               if (isCurrentPlan) buttonLabel = 'Your current plan';
               else if (isDowngrade) buttonLabel = 'Switch to this plan';
@@ -573,30 +574,34 @@ export default function AccountSettingsPage() {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     className={`group relative flex flex-col h-full transition-all duration-300 ${
-                      plan.highlighted
+                      isFeaturedCard
                         ? 'bg-[#c7edb8] p-8 lg:p-10 xl:p-12 rounded-[2.5rem] shadow-[0_32px_64px_rgba(74,61,196,0.12)] scale-100 xl:scale-105 z-10 border-4 border-white hover:border-[#6358de]'
                         : 'bg-[#f3f3f4] p-8 lg:p-10 rounded-[2rem] border border-[#c8c4d6]/20 hover:border-[#6358de]'
                     }`}
                   >
-                    {plan.highlighted && (
-                      <span className="absolute -top-5 left-1/2 -translate-x-1/2 px-6 py-2 bg-[#6358de] text-white text-xs font-black rounded-full uppercase tracking-widest shadow-lg">
-                        Most Popular
+                    {(isCurrentPlan || plan.highlighted) && (
+                      <span
+                        className={`absolute -top-5 left-1/2 -translate-x-1/2 px-6 py-2 text-white text-xs font-black rounded-full uppercase tracking-widest shadow-lg ${
+                          isCurrentPlan ? 'bg-[#0b996f]' : 'bg-[#6358de]'
+                        }`}
+                      >
+                        {isCurrentPlan ? 'Current Plan' : 'Most Popular'}
                       </span>
                     )}
                     <div className="flex flex-col h-full">
                       <div className="mb-8">
                         <h3
                           className={`mb-2 ${
-                            plan.highlighted
+                            isFeaturedCard
                               ? 'text-3xl font-black text-[#032102]'
                               : 'text-2xl font-bold text-slate-900'
                           }`}
                         >
-                          {plan.highlighted ? 'Advanced' : plan.name}
+                          {plan.name}
                         </h3>
                         <p
                           className={`text-sm ${
-                            plan.highlighted ? 'text-[#2f4e27] font-medium' : 'text-slate-600'
+                            isFeaturedCard ? 'text-[#2f4e27] font-medium' : 'text-slate-600'
                           }`}
                         >
                           {plan.description}
@@ -605,7 +610,7 @@ export default function AccountSettingsPage() {
                       <div className="mb-10 flex items-baseline gap-1">
                         <span
                           className={`tracking-tighter ${
-                            plan.highlighted
+                            isFeaturedCard
                               ? 'text-7xl font-extrabold text-[#032102]'
                               : 'text-5xl font-extrabold text-slate-900'
                           }`}
@@ -614,7 +619,7 @@ export default function AccountSettingsPage() {
                         </span>
                         <span
                           className={`font-medium ${
-                            plan.highlighted ? 'text-[#2f4e27] font-bold' : 'text-slate-500'
+                            isFeaturedCard ? 'text-[#2f4e27] font-bold' : 'text-slate-500'
                           }`}
                         >
                           /mo
@@ -625,7 +630,7 @@ export default function AccountSettingsPage() {
                         disabled={isCurrentPlan}
                         onClick={() => !isCurrentPlan && openCheckout(plan)}
                         className={`mb-10 w-full text-center inline-block active:scale-95 transition-all ${
-                          plan.highlighted
+                          isFeaturedCard
                             ? isCurrentPlan
                               ? 'py-5 rounded-full bg-slate-300 text-slate-500 font-black text-lg cursor-not-allowed'
                               : 'py-5 rounded-full bg-[#6358de] text-white font-black text-lg shadow-xl shadow-[#4a3dc4]/30 hover:opacity-90 cursor-pointer'
@@ -646,7 +651,7 @@ export default function AccountSettingsPage() {
                             <li key={i} className="flex items-start gap-3">
                               <Check
                                 className={`w-5 h-5 mt-0.5 flex-shrink-0 ${
-                                  plan.highlighted ? 'text-[#032102]' : 'text-[#46673d]'
+                                  isFeaturedCard ? 'text-[#032102]' : 'text-[#46673d]'
                                 }`}
                               />
                               <span
@@ -655,7 +660,7 @@ export default function AccountSettingsPage() {
                                     ? 'text-black'
                                     : isPurple
                                       ? 'text-[#6358de]'
-                                      : plan.highlighted
+                                      : isFeaturedCard
                                         ? 'text-[#032102]'
                                         : 'text-slate-700'
                                 }`}

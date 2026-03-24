@@ -207,7 +207,7 @@ const CTASection = () => {
                         : 'text-2xl font-bold text-slate-900'
                     }`}
                   >
-                    {plan.highlighted ? 'Advanced' : plan.name}
+                    {plan.highlighted ? 'ADVANCED' : plan.name}
                   </h3>
                   <p
                     className={`text-sm ${
