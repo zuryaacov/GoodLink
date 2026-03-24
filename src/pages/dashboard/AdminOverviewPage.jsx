@@ -138,7 +138,7 @@ const AdminOverviewPage = () => {
           .eq('status', 'active'),
         supabase.from('pixels').select('*', { count: 'exact', head: true }),
         supabase.from('clicks').select('*', { count: 'exact', head: true }),
-        supabase.from('clicks').select('*', { count: 'exact', head: true }).eq('verdict', 'clean'),
+        supabase.from('clicks').select('*', { count: 'exact', head: true }).ilike('verdict', 'clean'),
       ]);
 
       const errors = [
@@ -301,7 +301,7 @@ const AdminOverviewPage = () => {
       const { data, error } = await supabase
         .from('clicks')
         .select('*')
-        .eq('verdict', 'clean')
+        .ilike('verdict', 'clean')
         .order('created_at', { ascending: false });
       if (error) throw error;
 
