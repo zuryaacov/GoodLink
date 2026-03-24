@@ -152,6 +152,20 @@ const LinkManager = () => {
     isLoading: false,
   });
   const [detailsLink, setDetailsLink] = useState(null);
+  const [detailsPixelNames, setDetailsPixelNames] = useState([]);
+
+  useEffect(() => {
+    if (!detailsLink) { setDetailsPixelNames([]); return; }
+    const ids = (detailsLink.pixels || [])
+      .map((p) => (typeof p === 'string' ? p : p?.id))
+      .filter(Boolean);
+    if (ids.length === 0) { setDetailsPixelNames([]); return; }
+    supabase
+      .from('pixels')
+      .select('id, name')
+      .in('id', ids)
+      .then(({ data }) => setDetailsPixelNames(data || []));
+  }, [detailsLink]);
 
   const [deleteLinkModal, setDeleteLinkModal] = useState({
     isOpen: false,
@@ -1460,11 +1474,8 @@ const LinkManager = () => {
                 { label: 'Target URL', value: detailsLink.target_url },
                 { label: 'Fallback URL', value: detailsLink.fallback_url },
                 { label: 'Status', value: detailsLink.status },
-                { label: 'Review Status', value: detailsLink.review_status },
                 { label: 'Tracking Mode', value: detailsLink.tracking_mode },
                 { label: 'Server-Side Tracking', value: detailsLink.server_side_tracking != null ? (detailsLink.server_side_tracking ? 'Yes' : 'No') : null },
-                { label: 'ID', value: detailsLink.id },
-                { label: 'User ID', value: detailsLink.user_id },
                 { label: 'Created', value: detailsLink.created_at ? new Date(detailsLink.created_at).toLocaleString() : null },
                 { label: 'Updated', value: detailsLink.updated_at ? new Date(detailsLink.updated_at).toLocaleString() : null },
               ]
@@ -1475,24 +1486,25 @@ const LinkManager = () => {
                     <span className="text-sm text-[#1b1b1b] break-all text-right max-w-[70%] font-mono">{value}</span>
                   </div>
                 ))}
-              {detailsLink.pixels && detailsLink.pixels.length > 0 && (
-                <div className="flex items-start justify-between py-2 border-b border-gray-200">
-                  <span className="text-xs font-medium text-[#1b1b1b] shrink-0 mr-4">Pixels</span>
-                  <span className="text-sm text-[#1b1b1b] break-all text-right max-w-[70%] font-mono">
-                    {JSON.stringify(detailsLink.pixels)}
-                  </span>
-                </div>
-              )}
-              {detailsLink.geo_rules && (
-                <div className="flex items-start justify-between py-2 border-b border-gray-200">
-                  <span className="text-xs font-medium text-[#1b1b1b] shrink-0 mr-4">Geo Rules</span>
-                  <span className="text-sm text-[#1b1b1b] break-all text-right max-w-[70%] font-mono">
-                    {typeof detailsLink.geo_rules === 'string'
-                      ? detailsLink.geo_rules
-                      : JSON.stringify(detailsLink.geo_rules)}
-                  </span>
-                </div>
-              )}
+              <div className="flex items-start justify-between py-2 border-b border-gray-200">
+                <span className="text-xs font-medium text-[#1b1b1b] shrink-0 mr-4">Geo Rules</span>
+                <span className="text-sm text-[#1b1b1b] text-right">
+                  {detailsLink.geo_rules &&
+                  (Array.isArray(detailsLink.geo_rules)
+                    ? detailsLink.geo_rules.length > 0
+                    : Object.keys(detailsLink.geo_rules).length > 0)
+                    ? 'Yes'
+                    : 'No'}
+                </span>
+              </div>
+              <div className="flex items-start justify-between py-2 border-b border-gray-200">
+                <span className="text-xs font-medium text-[#1b1b1b] shrink-0 mr-4">Pixels</span>
+                <span className="text-sm text-[#1b1b1b] break-all text-right max-w-[70%]">
+                  {detailsPixelNames.length > 0
+                    ? detailsPixelNames.map((p) => p.name).join(', ')
+                    : 'None'}
+                </span>
+              </div>
             </div>
           ) : null
         }
