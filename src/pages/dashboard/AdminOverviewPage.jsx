@@ -304,7 +304,7 @@ const AdminOverviewPage = () => {
       const { data, error } = await supabase
         .from('clicks')
         .select(
-          'id, clicked_at, domain, slug, user_id, verdict, ip, country, device, browser, referrer, traffic_source'
+          'id, clicked_at, domain, slug, user_id, verdict, ip_address, country, city, device_type, browser, referer, traffic_source, is_bot, fraud_score'
         )
         .order('clicked_at', { ascending: false })
         .limit(500);
