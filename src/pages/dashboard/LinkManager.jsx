@@ -1445,27 +1445,59 @@ const LinkManager = () => {
         isLoading={modalState.isLoading}
       />
       {/* Link Details Modal */}
-      {detailsLink && (
-        <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4">
-          <div className="w-full max-w-2xl bg-white rounded-2xl border border-slate-200 shadow-xl p-5 max-h-[85vh] overflow-y-auto">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-bold text-[#1b1b1b]">
-                {detailsLink.name || detailsLink.short_url || 'Link Details'}
-              </h3>
-              <button
-                type="button"
-                onClick={() => setDetailsLink(null)}
-                className="px-3 py-1.5 rounded-lg border border-slate-300 text-sm font-semibold text-[#1b1b1b] hover:bg-slate-100"
-              >
-                Close
-              </button>
+      <Modal
+        isOpen={!!detailsLink}
+        onClose={() => setDetailsLink(null)}
+        title={detailsLink?.name || detailsLink?.short_url || 'Link Details'}
+        message={
+          detailsLink ? (
+            <div className="space-y-3 text-left">
+              {[
+                { label: 'Name', value: detailsLink.name },
+                { label: 'Short URL', value: detailsLink.short_url },
+                { label: 'Domain', value: detailsLink.domain },
+                { label: 'Slug', value: detailsLink.slug },
+                { label: 'Target URL', value: detailsLink.target_url },
+                { label: 'Fallback URL', value: detailsLink.fallback_url },
+                { label: 'Status', value: detailsLink.status },
+                { label: 'Review Status', value: detailsLink.review_status },
+                { label: 'Tracking Mode', value: detailsLink.tracking_mode },
+                { label: 'Server-Side Tracking', value: detailsLink.server_side_tracking != null ? (detailsLink.server_side_tracking ? 'Yes' : 'No') : null },
+                { label: 'ID', value: detailsLink.id },
+                { label: 'User ID', value: detailsLink.user_id },
+                { label: 'Created', value: detailsLink.created_at ? new Date(detailsLink.created_at).toLocaleString() : null },
+                { label: 'Updated', value: detailsLink.updated_at ? new Date(detailsLink.updated_at).toLocaleString() : null },
+              ]
+                .filter(({ value }) => value != null && value !== '')
+                .map(({ label, value }) => (
+                  <div key={label} className="flex items-start justify-between py-2 border-b border-gray-200">
+                    <span className="text-xs font-medium text-[#1b1b1b] shrink-0 mr-4">{label}</span>
+                    <span className="text-sm text-[#1b1b1b] break-all text-right max-w-[70%] font-mono">{value}</span>
+                  </div>
+                ))}
+              {detailsLink.pixels && detailsLink.pixels.length > 0 && (
+                <div className="flex items-start justify-between py-2 border-b border-gray-200">
+                  <span className="text-xs font-medium text-[#1b1b1b] shrink-0 mr-4">Pixels</span>
+                  <span className="text-sm text-[#1b1b1b] break-all text-right max-w-[70%] font-mono">
+                    {JSON.stringify(detailsLink.pixels)}
+                  </span>
+                </div>
+              )}
+              {detailsLink.geo_rules && (
+                <div className="flex items-start justify-between py-2 border-b border-gray-200">
+                  <span className="text-xs font-medium text-[#1b1b1b] shrink-0 mr-4">Geo Rules</span>
+                  <span className="text-sm text-[#1b1b1b] break-all text-right max-w-[70%] font-mono">
+                    {typeof detailsLink.geo_rules === 'string'
+                      ? detailsLink.geo_rules
+                      : JSON.stringify(detailsLink.geo_rules)}
+                  </span>
+                </div>
+              )}
             </div>
-            <pre className="text-xs bg-slate-50 rounded-xl p-4 overflow-x-auto whitespace-pre-wrap break-all">
-              {JSON.stringify(detailsLink, null, 2)}
-            </pre>
-          </div>
-        </div>
-      )}
+          ) : null
+        }
+        type="info"
+      />
       {/* Delete Link Modal - rendered here so overlay covers full screen like Delete Workspace */}
       <Modal
         isOpen={deleteLinkModal.isOpen}
