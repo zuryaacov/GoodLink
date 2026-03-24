@@ -180,118 +180,75 @@ const CTASection = () => {
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true }}
-          className="grid grid-cols-1 lg:grid-cols-3 gap-8"
+          className="grid grid-cols-1 md:grid-cols-3 gap-8 items-end"
         >
           {plans.map((plan) => (
             <motion.div
               key={plan.name}
               variants={itemVariants}
-              className={`relative flex flex-col rounded-xl border-2 transition-all duration-300 w-full md:max-w-md md:mx-auto lg:max-w-none lg:mx-0 ${
+              className={`relative flex flex-col h-full transition-all duration-300 ${
                 plan.highlighted
-                  ? 'border-[#c0ffa5] bg-[#c0ffa5]/10 shadow-2xl scale-105 lg:scale-110'
-                  : 'border-slate-200 dark:border-slate-200 bg-white dark:bg-white hover:border-[#c0ffa5]/50 hover:shadow-xl'
+                  ? 'bg-[#c7edb8] p-12 rounded-[2.5rem] shadow-[0_32px_64px_rgba(74,61,196,0.12)] scale-100 md:scale-105 z-10 border-4 border-white'
+                  : 'bg-[#f3f3f4] p-10 rounded-[2rem] border border-[#c8c4d6]/20'
               }`}
             >
               {plan.highlighted && (
-                <span className="absolute -top-4 left-1/2 -translate-x-1/2 bg-[#c0ffa5] text-[#1b1b1b] text-xs font-black px-4 py-1.5 rounded-full uppercase tracking-wider z-10">
+                <span className="absolute -top-5 left-1/2 -translate-x-1/2 px-6 py-2 bg-[#6358de] text-white text-xs font-black rounded-full uppercase tracking-widest shadow-lg">
                   Most Popular
                 </span>
               )}
 
-              <div className="p-8 flex flex-col gap-6">
-                {/* Top highlight area: header + price + CTA */}
-                <div
-                  className={`-mx-8 -mt-8 px-8 pt-8 pb-6 ${
-                    plan.highlighted ? 'bg-[#0b996f]/15' : 'bg-[#0b996f]/15'
-                  }`}
-                >
-                  {/* Plan Header */}
-                  <div className="flex flex-col gap-2">
-                    <h3 className="text-slate-900 dark:text-[#1b1b1b] text-2xl font-black">
-                      {plan.name}
-                    </h3>
-                    <p className="text-slate-500 dark:text-[#1b1b1b] text-sm">
-                      {plan.description}
-                    </p>
-                  </div>
-
-                  {/* Price */}
-                  <div className="flex items-baseline gap-2 flex-wrap mt-4">
-                    {plan.originalPrice && (
-                      <span className="hidden text-slate-500 dark:text-slate-400 text-5xl font-black line-through">
-                        ${plan.originalPrice}
-                      </span>
-                    )}
-                    <span className="text-slate-900 dark:text-[#1b1b1b] text-5xl font-black">
-                      ${plan.price}
-                    </span>
-                    <span className="text-slate-500 dark:text-[#1b1b1b] text-lg font-medium">
-                      /month
-                    </span>
-                  </div>
-
-                  {/* CTA Button (directly under price) */}
-                  <button
-                    type="button"
-                    disabled={plan.name !== 'PRO' || !!user}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      // Only allow click on PRO when user is not logged in
-                      if (plan.name !== 'PRO' || user) return;
-
-                      // For 30-day free trial we send users to signup
-                      navigate('/login?mode=signup');
-
-                      // 🔒 Future: when 30-day free trial is removed,
-                      // uncomment this block to send logged-in users directly to Lemon Squeezy:
-                      /*
-                      if (!user) {
-                        navigate(`/login?plan=${plan.name.toLowerCase()}`);
-                        return;
-                      }
-
-                      let targetUrl;
-                      if (
-                        userProfile?.plan_type !== 'free' &&
-                        userProfile?.lemon_squeezy_customer_portal_url
-                      ) {
-                        targetUrl = userProfile.lemon_squeezy_customer_portal_url;
-                      } else {
-                        const baseUrl = plan.checkoutUrl.split('?')[0];
-                        const q = [];
-                        const emailToUse = (userProfile?.email || user.email || '').trim();
-                        console.log(
-                          '[LS Checkout][CTA] emailToUse=',
-                          emailToUse,
-                          'user.email=',
-                          user?.email,
-                          'profile.email=',
-                          userProfile?.email
-                        );
-                        if (emailToUse) {
-                          q.push(`checkout[email]=${encodeURIComponent(emailToUse)}`);
-                        }
-                        q.push(`checkout[custom][user_id]=${encodeURIComponent(user.id)}`);
-                        q.push('embed=1');
-                        targetUrl = `${baseUrl}?${q.join('&')}`;
-                        console.log('[LS Checkout][CTA] targetUrl=', targetUrl);
-                      }
-
-                      window.open(targetUrl, '_blank', 'noopener,noreferrer');
-                      */
-                    }}
-                    className={`mt-6 w-full py-4 px-6 rounded-lg font-bold text-base transition-all text-center inline-block active:scale-95 ${
-                      plan.name === 'PRO' && !user
-                        ? 'bg-[#6358de] hover:bg-[#5348c7] text-white shadow-lg shadow-[#6358de]/30'
-                        : 'bg-slate-200 text-slate-500 cursor-not-allowed'
+              <div className="flex flex-col h-full">
+                <div className="mb-8">
+                  <h3
+                    className={`mb-2 ${
+                      plan.highlighted
+                        ? 'text-3xl font-black text-[#032102]'
+                        : 'text-2xl font-bold text-slate-900'
                     }`}
                   >
-                    {plan.name === 'PRO' ? '30-Day Free Trial' : plan.buttonText}
-                  </button>
+                    {plan.highlighted ? 'Professional' : plan.name}
+                  </h3>
+                  <p
+                    className={`text-sm ${
+                      plan.highlighted ? 'text-[#2f4e27] font-medium' : 'text-slate-600'
+                    }`}
+                  >
+                    {plan.description}
+                  </p>
                 </div>
 
-                {/* Features List */}
-                <ul className="flex flex-col gap-4 mt-4">
+                <div className="mb-10 flex items-baseline gap-1">
+                  {plan.originalPrice && (
+                    <span
+                      className={`line-through ${
+                        plan.highlighted
+                          ? 'text-[#2f4e27]/70 text-3xl font-bold'
+                          : 'text-slate-500 text-2xl font-semibold'
+                      }`}
+                    >
+                      ${plan.originalPrice}
+                    </span>
+                  )}
+                  <span
+                    className={`tracking-tighter ${
+                      plan.highlighted
+                        ? 'text-7xl font-extrabold text-[#032102]'
+                        : 'text-5xl font-extrabold text-slate-900'
+                    }`}
+                  >
+                    ${plan.price}
+                  </span>
+                  <span
+                    className={`font-medium ${
+                      plan.highlighted ? 'text-[#2f4e27] font-bold' : 'text-slate-500'
+                    }`}
+                  >
+                    /mo
+                  </span>
+                </div>
+
+                <ul className="space-y-6 mb-12 flex-grow">
                   {plan.features.map((feature, featureIndex) => {
                     const purpleFeatures = ['10 Custom Domains', 'Workspaces, Campaigns and Groups', 'Bot Protection', 'UTM Presets', 'Advanced Analytics', 'Unlimited Custom Domains', 'Geo Redirect', 'Conversion API & S2S tracking', 'Pro Analytics', 'Expedited Support'];
                     const proBlackFeatures = ['Workspaces, Campaigns and Groups', 'Bot Protection', 'UTM Presets'];
@@ -300,15 +257,48 @@ const CTASection = () => {
                     return (
                       <li key={featureIndex} className="flex items-start gap-3">
                         <Check
-                          className="w-5 h-5 mt-0.5 flex-shrink-0 text-[#6358de] font-bold stroke-[2.5]"
+                          className={`w-5 h-5 mt-0.5 flex-shrink-0 ${
+                            plan.highlighted ? 'text-[#032102]' : 'text-[#46673d]'
+                          }`}
                         />
-                        <span className={`text-base md:text-lg font-bold leading-relaxed ${isBlack ? 'text-black dark:text-white' : isPurple ? 'text-[#6358de]' : 'text-slate-700 dark:text-slate-300'}`}>
+                        <span
+                          className={`text-sm md:text-base font-semibold leading-relaxed ${
+                            isBlack
+                              ? 'text-black'
+                              : isPurple
+                                ? 'text-[#6358de]'
+                                : plan.highlighted
+                                  ? 'text-[#032102]'
+                                  : 'text-slate-700'
+                          }`}
+                        >
                           {feature}
                         </span>
                       </li>
                     );
                   })}
                 </ul>
+
+                <button
+                  type="button"
+                  disabled={plan.name !== 'PRO' || !!user}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    if (plan.name !== 'PRO' || user) return;
+                    navigate('/login?mode=signup');
+                  }}
+                  className={`w-full text-center inline-block active:scale-95 transition-all ${
+                    plan.highlighted
+                      ? plan.name === 'PRO' && !user
+                        ? 'py-5 rounded-full bg-[#6358de] text-white font-black text-lg shadow-xl shadow-[#4a3dc4]/30 hover:opacity-90'
+                        : 'py-5 rounded-full bg-slate-300 text-slate-500 font-black text-lg cursor-not-allowed'
+                      : plan.name === 'PRO' && !user
+                        ? 'py-4 rounded-full border border-[#787585] text-[#5549d0] font-bold hover:bg-[#eeeeee]'
+                        : 'py-4 rounded-full border border-[#787585] text-[#5549d0] font-bold'
+                  }`}
+                >
+                  {plan.name === 'PRO' ? '30-Day Free Trial' : plan.buttonText}
+                </button>
               </div>
             </motion.div>
           ))}
