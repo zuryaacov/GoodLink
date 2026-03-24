@@ -37,7 +37,10 @@ const AdminOverviewPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [searchParams] = useSearchParams();
-  const WORKER_BASE_URL = (import.meta.env.VITE_WORKER_URL || 'https://glynk.to').replace(/\/$/, '');
+  const WORKER_BASE_URL = (import.meta.env.VITE_WORKER_URL || 'https://glynk.to').replace(
+    /\/$/,
+    ''
+  );
   const initialView = searchParams.get('view');
   const [activeView, setActiveView] = useState(
     VALID_VIEWS.has(initialView) ? initialView : 'overview'
@@ -71,7 +74,9 @@ const AdminOverviewPage = () => {
     try {
       const { data, error } = await supabase
         .from('links')
-        .select('id, name, short_url, target_url, fallback_url, geo_rules, created_at, user_id, domain, slug')
+        .select(
+          'id, name, short_url, target_url, fallback_url, geo_rules, created_at, user_id, domain, slug'
+        )
         .eq('review_status', 'pending')
         .order('created_at', { ascending: false });
 
@@ -101,13 +106,19 @@ const AdminOverviewPage = () => {
         totalClicksRes,
         cleanClicksRes,
       ] = await Promise.all([
-        supabase.from('links').select('*', { count: 'exact', head: true }).eq('review_status', 'pending'),
+        supabase
+          .from('links')
+          .select('*', { count: 'exact', head: true })
+          .eq('review_status', 'pending'),
         supabase.from('links').select('*', { count: 'exact', head: true }).eq('status', 'active'),
         supabase
           .from('profiles')
           .select('*', { count: 'exact', head: true })
           .neq('email', 'hello@goodlink.ai'),
-        supabase.from('custom_domains').select('*', { count: 'exact', head: true }).eq('status', 'active'),
+        supabase
+          .from('custom_domains')
+          .select('*', { count: 'exact', head: true })
+          .eq('status', 'active'),
         supabase.from('pixels').select('*', { count: 'exact', head: true }),
         supabase.from('clicks').select('*', { count: 'exact', head: true }),
         supabase.from('clicks').select('*', { count: 'exact', head: true }).eq('verdict', 'clean'),
@@ -188,7 +199,31 @@ const AdminOverviewPage = () => {
         .select('id, domain, status, created_at, user_id')
         .order('created_at', { ascending: false });
       if (error) throw error;
-      setCustomDomains(data || []);
+      const domains = data || [];
+      const userIds = [...new Set(domains.map((d) => d.user_id).filter(Boolean))];
+
+      let profilesByUserId = {};
+      if (userIds.length > 0) {
+        const { data: profiles, error: profilesError } = await supabase
+          .from('profiles')
+          .select('user_id, email, full_name')
+          .in('user_id', userIds);
+        if (profilesError) throw profilesError;
+        profilesByUserId = (profiles || []).reduce((acc, p) => {
+          acc[p.user_id] = p;
+          return acc;
+        }, {});
+      }
+
+      const merged = domains.map((d) => ({
+        ...d,
+        user_email: profilesByUserId[d.user_id]?.email || '',
+        user_full_name: profilesByUserId[d.user_id]?.full_name || '',
+      }));
+
+      // Sort by domain creation date (newest first)
+      merged.sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
+      setCustomDomains(merged);
     } catch (err) {
       console.error('Error fetching custom domains:', err);
       setCustomDomains([]);
@@ -429,7 +464,9 @@ const AdminOverviewPage = () => {
                           {link.name || 'Unnamed link'}
                         </p>
                         <div className="space-y-0">
-                          <span className="block text-sm font-bold text-slate-700 mt-2">Short URL</span>
+                          <span className="block text-sm font-bold text-slate-700 mt-2">
+                            Short URL
+                          </span>
                           <a
                             href={link.short_url}
                             target="_blank"
@@ -541,11 +578,18 @@ const AdminOverviewPage = () => {
                     className="p-4 rounded-xl border border-slate-200 bg-slate-50/50 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"
                   >
                     <div className="min-w-0">
-                      <p className="text-base font-bold text-[#1b1b1b] break-all">{d.domain || '-'}</p>
+                      <p className="text-base font-bold text-[#1b1b1b] break-all">
+                        {d.domain || '-'}
+                      </p>
+                      <p className="text-sm font-semibold text-[#1b1b1b] break-all mt-1">
+                        {d.user_full_name?.trim() || 'Unnamed user'}
+                      </p>
+                      <p className="text-xs text-slate-600 break-all">
+                        {d.user_email?.trim() || 'No email'}
+                      </p>
                       <p className="text-xs text-slate-500 break-all">{d.user_id || '-'}</p>
                       <p className="text-xs text-slate-500 mt-1">
-                        Created:{' '}
-                        {d.created_at ? new Date(d.created_at).toLocaleString() : '-'}
+                        Created: {d.created_at ? new Date(d.created_at).toLocaleString() : '-'}
                       </p>
                     </div>
                     <div className="flex items-center gap-2">
