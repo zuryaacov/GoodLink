@@ -295,15 +295,20 @@ const AdminOverviewPage = () => {
     }
   };
 
+  const [clicksError, setClicksError] = useState(null);
+
   const fetchCleanClicks = async () => {
     setClicksLoading(true);
+    setClicksError(null);
     try {
       const { data, error } = await supabase
         .from('clicks')
-        .select('*')
-        .ilike('verdict', 'clean')
-        .order('created_at', { ascending: false });
-      if (error) throw error;
+        .select(
+          'id, created_at, domain, slug, user_id, verdict, ip, country, device, browser, referrer, traffic_source'
+        )
+        .order('created_at', { ascending: false })
+        .limit(500);
+      if (error) throw new Error(error.message);
 
       const clicks = data || [];
       const userIds = [...new Set(clicks.map((c) => c.user_id).filter(Boolean))];
@@ -313,7 +318,7 @@ const AdminOverviewPage = () => {
           .from('profiles')
           .select('user_id, email, full_name')
           .in('user_id', userIds);
-        if (profilesError) throw profilesError;
+        if (profilesError) throw new Error(profilesError.message);
         profilesByUserId = (profiles || []).reduce((acc, p) => {
           acc[p.user_id] = p;
           return acc;
@@ -327,7 +332,8 @@ const AdminOverviewPage = () => {
       }));
       setCleanClicks(merged);
     } catch (err) {
-      console.error('Error fetching clean clicks:', err);
+      console.error('Error fetching clicks:', err);
+      setClicksError(err.message || 'Unknown error');
       setCleanClicks([]);
     } finally {
       setClicksLoading(false);
@@ -780,12 +786,14 @@ const AdminOverviewPage = () => {
               >
                 Back
               </button>
-              <h3 className="text-lg font-bold text-[#1b1b1b]">Clicks (Clean)</h3>
+              <h3 className="text-lg font-bold text-[#1b1b1b]">Clicks</h3>
             </div>
             {clicksLoading ? (
               <p className="text-slate-500 text-base font-medium">Loading...</p>
+            ) : clicksError ? (
+              <p className="text-red-500 text-sm font-medium">Error: {clicksError}</p>
             ) : cleanClicks.length === 0 ? (
-              <p className="text-slate-500 text-base font-medium">No clean clicks found.</p>
+              <p className="text-slate-500 text-base font-medium">No clicks found.</p>
             ) : (
               <ul className="space-y-3">
                 {cleanClicks.map((click) => (
@@ -803,7 +811,19 @@ const AdminOverviewPage = () => {
                       <p className="text-xs text-slate-600 break-all">
                         {click.user_email?.trim() || 'No email'}
                       </p>
-                      <p className="text-xs text-slate-500 break-all mt-1">Verdict: {click.verdict || '-'}</p>
+                      <p className="text-xs mt-1">
+                        <span
+                          className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold uppercase tracking-wide ${
+                            (click.verdict || '').toLowerCase() === 'clean'
+                              ? 'bg-[#10b981]/10 text-[#0b996f]'
+                              : (click.verdict || '') !== ''
+                                ? 'bg-red-500/10 text-red-600'
+                                : 'bg-slate-200 text-slate-600'
+                          }`}
+                        >
+                          {click.verdict || 'unknown'}
+                        </span>
+                      </p>
                       <p className="text-xs text-slate-500 mt-1">
                         Created: {click.created_at ? new Date(click.created_at).toLocaleString() : '-'}
                       </p>
