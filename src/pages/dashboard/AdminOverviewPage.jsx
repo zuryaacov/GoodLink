@@ -5,8 +5,22 @@ import { deleteLinkFromRedis } from '../../lib/redisCache';
 
 const VALID_VIEWS = new Set(['overview', 'new-links', 'users', 'custom-domains']);
 
-const StatCard = ({ title, value, icon, iconBgClass = 'bg-[#135bec]/10', iconColorClass = 'text-[#135bec]' }) => (
-  <div className="bg-card-bg border border-card-border rounded-2xl p-5 transition-all hover:shadow-card-mint">
+const StatCard = ({
+  title,
+  value,
+  icon,
+  iconBgClass = 'bg-[#135bec]/10',
+  iconColorClass = 'text-[#135bec]',
+  onClick,
+}) => (
+  <button
+    type="button"
+    onClick={onClick}
+    className={`w-full text-left bg-card-bg border border-card-border rounded-2xl p-5 transition-all hover:shadow-card-mint ${
+      onClick ? 'cursor-pointer hover:border-[#6358de]' : 'cursor-default'
+    }`}
+    disabled={!onClick}
+  >
     <div className="flex justify-between items-start mb-4">
       <div className={`p-2 rounded-lg ${iconBgClass} ${iconColorClass}`}>
         <span className="material-symbols-outlined text-[20px]">{icon}</span>
@@ -16,7 +30,7 @@ const StatCard = ({ title, value, icon, iconBgClass = 'bg-[#135bec]/10', iconCol
       <h3 className="text-[#1b1b1b] text-xs uppercase font-bold tracking-widest">{title}</h3>
       <p className="text-3xl font-extrabold text-[#1b1b1b]">{value}</p>
     </div>
-  </div>
+  </button>
 );
 
 const AdminOverviewPage = () => {
@@ -45,8 +59,6 @@ const AdminOverviewPage = () => {
   const [domainsLoading, setDomainsLoading] = useState(false);
   const [actionLoading, setActionLoading] = useState(null); // link id being approved/rejected
   const [impersonatingUserId, setImpersonatingUserId] = useState(null);
-  const overviewNavButtonClass =
-    'ml-3 px-4 py-2.5 rounded-xl bg-[#6358de] text-white text-base font-bold hover:bg-[#5348c7] transition-colors';
 
   const changeView = (view) => {
     if (!VALID_VIEWS.has(view)) return;
@@ -337,6 +349,7 @@ const AdminOverviewPage = () => {
                 icon="link"
                 iconBgClass="bg-[#6358de]/10"
                 iconColorClass="text-[#6358de]"
+                onClick={() => changeView('new-links')}
               />
               <StatCard
                 title="Users"
@@ -344,6 +357,7 @@ const AdminOverviewPage = () => {
                 icon="group"
                 iconBgClass="bg-[#135bec]/10"
                 iconColorClass="text-[#135bec]"
+                onClick={() => changeView('users')}
               />
               <StatCard
                 title="Links"
@@ -358,6 +372,7 @@ const AdminOverviewPage = () => {
                 icon="dns"
                 iconBgClass="bg-[#0b996f]/10"
                 iconColorClass="text-[#0b996f]"
+                onClick={() => changeView('custom-domains')}
               />
               <StatCard
                 title="CAPI"
@@ -381,27 +396,6 @@ const AdminOverviewPage = () => {
                 iconColorClass="text-red-600"
               />
             </div>
-            <button
-              type="button"
-              onClick={() => changeView('new-links')}
-              className="px-4 py-2.5 rounded-xl bg-[#6358de] text-white text-base font-bold hover:bg-[#5348c7] transition-colors"
-            >
-              New Links
-            </button>
-            <button
-              type="button"
-              onClick={() => changeView('users')}
-              className={overviewNavButtonClass}
-            >
-              Users
-            </button>
-            <button
-              type="button"
-              onClick={() => changeView('custom-domains')}
-              className={overviewNavButtonClass}
-            >
-              Custom Domain
-            </button>
           </>
         ) : activeView === 'new-links' ? (
           <>
