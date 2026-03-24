@@ -304,9 +304,9 @@ const AdminOverviewPage = () => {
       const { data, error } = await supabase
         .from('clicks')
         .select(
-          'id, created_at, domain, slug, user_id, verdict, ip, country, device, browser, referrer, traffic_source'
+          'id, clicked_at, domain, slug, user_id, verdict, ip, country, device, browser, referrer, traffic_source'
         )
-        .order('created_at', { ascending: false })
+        .order('clicked_at', { ascending: false })
         .limit(500);
       if (error) throw new Error(error.message);
 
@@ -825,7 +825,7 @@ const AdminOverviewPage = () => {
                         </span>
                       </p>
                       <p className="text-xs text-slate-500 mt-1">
-                        Created: {click.created_at ? new Date(click.created_at).toLocaleString() : '-'}
+                        Clicked: {click.clicked_at ? new Date(click.clicked_at).toLocaleString() : '-'}
                       </p>
                     </div>
                     <button
