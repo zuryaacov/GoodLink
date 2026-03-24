@@ -128,7 +128,7 @@ const CTASection = () => {
       id="pricing"
       className="scroll-mt-20 py-20 px-6 md:px-20 bg-white"
     >
-      <div className="mx-auto max-w-[1200px] flex flex-col gap-16">
+      <div className="mx-auto max-w-[1440px] flex flex-col gap-16">
         {/* Headline */}
         <motion.div
           id="pricing-heading"
@@ -180,16 +180,16 @@ const CTASection = () => {
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true }}
-          className="grid grid-cols-1 md:grid-cols-3 gap-8 items-end"
+          className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8 xl:gap-10 items-stretch"
         >
           {plans.map((plan) => (
             <motion.div
               key={plan.name}
               variants={itemVariants}
-              className={`relative flex flex-col h-full transition-all duration-300 ${
+              className={`group relative flex flex-col h-full transition-all duration-300 ${
                 plan.highlighted
-                  ? 'bg-[#c7edb8] p-12 rounded-[2.5rem] shadow-[0_32px_64px_rgba(74,61,196,0.12)] scale-100 md:scale-105 z-10 border-4 border-white'
-                  : 'bg-[#f3f3f4] p-10 rounded-[2rem] border border-[#c8c4d6]/20'
+                  ? 'bg-[#c7edb8] p-8 lg:p-10 xl:p-12 rounded-[2.5rem] shadow-[0_32px_64px_rgba(74,61,196,0.12)] scale-100 xl:scale-105 z-10 border-4 border-white hover:border-[#6358de]'
+                  : 'bg-[#f3f3f4] p-8 lg:p-10 rounded-[2rem] border border-[#c8c4d6]/20 hover:border-[#6358de]'
               }`}
             >
               {plan.highlighted && (
@@ -248,7 +248,28 @@ const CTASection = () => {
                   </span>
                 </div>
 
-                <ul className="space-y-6 mb-12 flex-grow">
+                <button
+                  type="button"
+                  disabled={plan.name !== 'PRO' || !!user}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    if (plan.name !== 'PRO' || user) return;
+                    navigate('/login?mode=signup');
+                  }}
+                  className={`mb-10 w-full text-center inline-block active:scale-95 transition-all ${
+                    plan.highlighted
+                      ? plan.name === 'PRO' && !user
+                        ? 'py-5 rounded-full bg-[#6358de] text-white font-black text-lg shadow-xl shadow-[#4a3dc4]/30 hover:opacity-90 cursor-pointer'
+                        : 'py-5 rounded-full bg-slate-300 text-slate-500 font-black text-lg cursor-not-allowed'
+                      : plan.name === 'PRO' && !user
+                        ? 'py-4 rounded-full border border-[#787585] text-[#5549d0] font-bold hover:bg-[#eeeeee] cursor-pointer'
+                        : 'py-4 rounded-full border border-[#787585] text-[#5549d0] font-bold cursor-not-allowed'
+                  }`}
+                >
+                  {plan.name === 'PRO' ? '30-Day Free Trial' : plan.buttonText}
+                </button>
+
+                <ul className="space-y-6 mb-2 flex-grow">
                   {plan.features.map((feature, featureIndex) => {
                     const purpleFeatures = ['10 Custom Domains', 'Workspaces, Campaigns and Groups', 'Bot Protection', 'UTM Presets', 'Advanced Analytics', 'Unlimited Custom Domains', 'Geo Redirect', 'Conversion API & S2S tracking', 'Pro Analytics', 'Expedited Support'];
                     const proBlackFeatures = ['Workspaces, Campaigns and Groups', 'Bot Protection', 'UTM Presets'];
@@ -279,26 +300,6 @@ const CTASection = () => {
                   })}
                 </ul>
 
-                <button
-                  type="button"
-                  disabled={plan.name !== 'PRO' || !!user}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    if (plan.name !== 'PRO' || user) return;
-                    navigate('/login?mode=signup');
-                  }}
-                  className={`w-full text-center inline-block active:scale-95 transition-all ${
-                    plan.highlighted
-                      ? plan.name === 'PRO' && !user
-                        ? 'py-5 rounded-full bg-[#6358de] text-white font-black text-lg shadow-xl shadow-[#4a3dc4]/30 hover:opacity-90'
-                        : 'py-5 rounded-full bg-slate-300 text-slate-500 font-black text-lg cursor-not-allowed'
-                      : plan.name === 'PRO' && !user
-                        ? 'py-4 rounded-full border border-[#787585] text-[#5549d0] font-bold hover:bg-[#eeeeee]'
-                        : 'py-4 rounded-full border border-[#787585] text-[#5549d0] font-bold'
-                  }`}
-                >
-                  {plan.name === 'PRO' ? '30-Day Free Trial' : plan.buttonText}
-                </button>
               </div>
             </motion.div>
           ))}
