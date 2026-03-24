@@ -198,7 +198,7 @@ const AdminOverviewPage = () => {
           'id, name, short_url, target_url, fallback_url, geo_rules, created_at, updated_at, user_id, domain, slug, status, review_status, tracking_mode, server_side_tracking, pixels'
         )
         .eq('status', 'active')
-        .order('created_at', { ascending: false });
+        .order('updated_at', { ascending: false });
       if (error) throw error;
 
       const links = data || [];
@@ -592,6 +592,9 @@ const AdminOverviewPage = () => {
                       <p className="text-xs text-slate-500 break-all mt-1">{link.short_url || '-'}</p>
                       <p className="text-xs text-slate-500 mt-1">
                         Created: {link.created_at ? new Date(link.created_at).toLocaleString() : '-'}
+                      </p>
+                      <p className="text-xs text-slate-500 mt-1">
+                        Updated: {link.updated_at ? new Date(link.updated_at).toLocaleString() : '-'}
                       </p>
                     </div>
                     <button
