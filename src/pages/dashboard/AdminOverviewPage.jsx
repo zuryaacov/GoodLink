@@ -11,6 +11,7 @@ const VALID_VIEWS = new Set([
   'custom-domains',
   'capi',
   'clicks',
+  'bots',
 ]);
 
 const StatCard = ({
@@ -57,6 +58,10 @@ const AdminOverviewPage = () => {
   const [activeLinks, setActiveLinks] = useState([]);
   const [activeCapi, setActiveCapi] = useState([]);
   const [cleanClicks, setCleanClicks] = useState([]);
+  const [botClicks, setBotClicks] = useState([]);
+  const [botsLoading, setBotsLoading] = useState(false);
+  const [botsError, setBotsError] = useState(null);
+  const [selectedBotClick, setSelectedBotClick] = useState(null);
   const [users, setUsers] = useState([]);
   const [customDomains, setCustomDomains] = useState([]);
   const [overviewStats, setOverviewStats] = useState({
@@ -215,6 +220,12 @@ const AdminOverviewPage = () => {
     }
   }, [activeView]);
 
+  useEffect(() => {
+    if (activeView === 'bots') {
+      fetchBotClicks();
+    }
+  }, [activeView]);
+
   const fetchActiveLinks = async () => {
     setLinksLoading(true);
     try {
@@ -297,46 +308,68 @@ const AdminOverviewPage = () => {
 
   const [clicksError, setClicksError] = useState(null);
 
+  const fetchClicksWithProfiles = async (filterFn) => {
+    const { data, error } = await supabase
+      .from('clicks')
+      .select(
+        'id, clicked_at, domain, slug, user_id, verdict, ip_address, country, city, device_type, browser, referer, traffic_source, is_bot, fraud_score, bot_reason'
+      )
+      .order('clicked_at', { ascending: false })
+      .limit(500);
+    if (error) throw new Error(error.message);
+
+    const clicks = (data || []).filter(filterFn);
+    const userIds = [...new Set(clicks.map((c) => c.user_id).filter(Boolean))];
+    let profilesByUserId = {};
+    if (userIds.length > 0) {
+      const { data: profiles, error: profilesError } = await supabase
+        .from('profiles')
+        .select('user_id, email, full_name')
+        .in('user_id', userIds);
+      if (profilesError) throw new Error(profilesError.message);
+      profilesByUserId = (profiles || []).reduce((acc, p) => {
+        acc[p.user_id] = p;
+        return acc;
+      }, {});
+    }
+    return clicks.map((c) => ({
+      ...c,
+      user_email: profilesByUserId[c.user_id]?.email || '',
+      user_full_name: profilesByUserId[c.user_id]?.full_name || '',
+    }));
+  };
+
   const fetchCleanClicks = async () => {
     setClicksLoading(true);
     setClicksError(null);
     try {
-      const { data, error } = await supabase
-        .from('clicks')
-        .select(
-          'id, clicked_at, domain, slug, user_id, verdict, ip_address, country, city, device_type, browser, referer, traffic_source, is_bot, fraud_score'
-        )
-        .order('clicked_at', { ascending: false })
-        .limit(500);
-      if (error) throw new Error(error.message);
-
-      const clicks = data || [];
-      const userIds = [...new Set(clicks.map((c) => c.user_id).filter(Boolean))];
-      let profilesByUserId = {};
-      if (userIds.length > 0) {
-        const { data: profiles, error: profilesError } = await supabase
-          .from('profiles')
-          .select('user_id, email, full_name')
-          .in('user_id', userIds);
-        if (profilesError) throw new Error(profilesError.message);
-        profilesByUserId = (profiles || []).reduce((acc, p) => {
-          acc[p.user_id] = p;
-          return acc;
-        }, {});
-      }
-
-      const merged = clicks.map((c) => ({
-        ...c,
-        user_email: profilesByUserId[c.user_id]?.email || '',
-        user_full_name: profilesByUserId[c.user_id]?.full_name || '',
-      }));
+      const merged = await fetchClicksWithProfiles(
+        (c) => (c.verdict || '').toLowerCase() === 'clean'
+      );
       setCleanClicks(merged);
     } catch (err) {
-      console.error('Error fetching clicks:', err);
+      console.error('Error fetching clean clicks:', err);
       setClicksError(err.message || 'Unknown error');
       setCleanClicks([]);
     } finally {
       setClicksLoading(false);
+    }
+  };
+
+  const fetchBotClicks = async () => {
+    setBotsLoading(true);
+    setBotsError(null);
+    try {
+      const merged = await fetchClicksWithProfiles(
+        (c) => (c.verdict || '').toLowerCase() !== 'clean'
+      );
+      setBotClicks(merged);
+    } catch (err) {
+      console.error('Error fetching bot clicks:', err);
+      setBotsError(err.message || 'Unknown error');
+      setBotClicks([]);
+    } finally {
+      setBotsLoading(false);
     }
   };
 
@@ -592,6 +625,7 @@ const AdminOverviewPage = () => {
                 icon="smart_toy"
                 iconBgClass="bg-red-500/10"
                 iconColorClass="text-red-600"
+                onClick={() => changeView('bots')}
               />
             </div>
           </>
@@ -840,6 +874,72 @@ const AdminOverviewPage = () => {
               </ul>
             )}
           </>
+        ) : activeView === 'bots' ? (
+          <>
+            <div className="mb-4">
+              <button
+                type="button"
+                onClick={() => changeView('overview')}
+                className="mb-3 px-3 py-2 rounded-lg border border-slate-200 text-sm font-semibold text-[#1b1b1b] hover:bg-slate-100"
+              >
+                Back
+              </button>
+              <h3 className="text-lg font-bold text-[#1b1b1b]">Bots</h3>
+            </div>
+            {botsLoading ? (
+              <p className="text-slate-500 text-base font-medium">Loading...</p>
+            ) : botsError ? (
+              <p className="text-red-500 text-sm font-medium">Error: {botsError}</p>
+            ) : botClicks.length === 0 ? (
+              <p className="text-slate-500 text-base font-medium">No bot clicks found.</p>
+            ) : (
+              <ul className="space-y-3">
+                {botClicks.map((click) => (
+                  <li
+                    key={click.id}
+                    className="p-4 rounded-xl border border-slate-200 bg-slate-50/50 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"
+                  >
+                    <div className="min-w-0">
+                      <p className="text-base font-bold text-[#1b1b1b] break-all">
+                        {click.domain && click.slug ? `${click.domain}/${click.slug}` : 'Click'}
+                      </p>
+                      <p className="text-sm font-semibold text-[#1b1b1b] break-all mt-1">
+                        {click.user_full_name?.trim() || 'Unnamed user'}
+                      </p>
+                      <p className="text-xs text-slate-600 break-all">
+                        {click.user_email?.trim() || 'No email'}
+                      </p>
+                      <p className="text-xs mt-1 flex flex-wrap gap-1">
+                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold uppercase tracking-wide bg-red-500/10 text-red-600">
+                          {click.verdict || 'unknown'}
+                        </span>
+                        {click.bot_reason && (
+                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-slate-200 text-slate-600">
+                            {click.bot_reason}
+                          </span>
+                        )}
+                        {click.fraud_score != null && (
+                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-orange-100 text-orange-700">
+                            score: {click.fraud_score}
+                          </span>
+                        )}
+                      </p>
+                      <p className="text-xs text-slate-500 mt-1">
+                        Clicked: {click.clicked_at ? new Date(click.clicked_at).toLocaleString() : '-'}
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setSelectedBotClick(click)}
+                      className="px-3 py-2 rounded-lg border border-slate-300 text-xs font-bold text-[#1b1b1b] hover:bg-slate-100 transition-colors"
+                    >
+                      Details
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </>
         ) : activeView === 'users' ? (
           <>
             <div className="mb-4">
@@ -987,6 +1087,25 @@ const AdminOverviewPage = () => {
         </div>
       )}
 
+      {selectedBotClick && (
+        <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4">
+          <div className="w-full max-w-2xl bg-white rounded-2xl border border-slate-200 shadow-xl p-5 max-h-[85vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-bold text-[#1b1b1b]">Bot Click Details</h3>
+              <button
+                type="button"
+                onClick={() => setSelectedBotClick(null)}
+                className="px-3 py-1.5 rounded-lg border border-slate-300 text-sm font-semibold text-[#1b1b1b] hover:bg-slate-100"
+              >
+                Close
+              </button>
+            </div>
+            <pre className="text-xs bg-slate-50 rounded-xl p-4 overflow-x-auto whitespace-pre-wrap break-all">
+{JSON.stringify(selectedBotClick, null, 2)}
+            </pre>
+          </div>
+        </div>
+      )}
       {selectedCleanClick && (
         <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4">
           <div className="w-full max-w-2xl bg-white rounded-2xl border border-slate-200 shadow-xl p-5 max-h-[85vh] overflow-y-auto">
