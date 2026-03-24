@@ -5,6 +5,20 @@ import { deleteLinkFromRedis } from '../../lib/redisCache';
 
 const VALID_VIEWS = new Set(['overview', 'new-links', 'users', 'custom-domains']);
 
+const StatCard = ({ title, value, icon, iconBgClass = 'bg-[#135bec]/10', iconColorClass = 'text-[#135bec]' }) => (
+  <div className="bg-card-bg border border-card-border rounded-2xl p-5 transition-all hover:shadow-card-mint">
+    <div className="flex justify-between items-start mb-4">
+      <div className={`p-2 rounded-lg ${iconBgClass} ${iconColorClass}`}>
+        <span className="material-symbols-outlined text-[20px]">{icon}</span>
+      </div>
+    </div>
+    <div className="space-y-1">
+      <h3 className="text-[#1b1b1b] text-xs uppercase font-bold tracking-widest">{title}</h3>
+      <p className="text-3xl font-extrabold text-[#1b1b1b]">{value}</p>
+    </div>
+  </div>
+);
+
 const AdminOverviewPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -17,6 +31,14 @@ const AdminOverviewPage = () => {
   const [pendingLinks, setPendingLinks] = useState([]);
   const [users, setUsers] = useState([]);
   const [customDomains, setCustomDomains] = useState([]);
+  const [overviewStats, setOverviewStats] = useState({
+    newLinks: 0,
+    users: 0,
+    customDomains: 0,
+    capi: 0,
+    cleanClicks: 0,
+    bots: 0,
+  });
   const [loading, setLoading] = useState(true); // new-links loading
   const [usersLoading, setUsersLoading] = useState(false);
   const [domainsLoading, setDomainsLoading] = useState(false);
@@ -52,7 +74,52 @@ const AdminOverviewPage = () => {
 
   useEffect(() => {
     fetchPendingLinks();
+    fetchOverviewStats();
   }, []);
+
+  const fetchOverviewStats = async () => {
+    try {
+      const [
+        pendingLinksRes,
+        usersRes,
+        customDomainsRes,
+        capiRes,
+        totalClicksRes,
+        cleanClicksRes,
+      ] = await Promise.all([
+        supabase.from('links').select('*', { count: 'exact', head: true }).eq('review_status', 'pending'),
+        supabase
+          .from('profiles')
+          .select('*', { count: 'exact', head: true })
+          .neq('email', 'hello@goodlink.ai'),
+        supabase.from('custom_domains').select('*', { count: 'exact', head: true }),
+        supabase.from('pixels').select('*', { count: 'exact', head: true }),
+        supabase.from('clicks').select('*', { count: 'exact', head: true }),
+        supabase.from('clicks').select('*', { count: 'exact', head: true }).eq('verdict', 'clean'),
+      ]);
+
+      const totalClicks = totalClicksRes.count || 0;
+      const cleanClicks = cleanClicksRes.count || 0;
+      setOverviewStats({
+        newLinks: pendingLinksRes.count || 0,
+        users: usersRes.count || 0,
+        customDomains: customDomainsRes.count || 0,
+        capi: capiRes.count || 0,
+        cleanClicks,
+        bots: Math.max(0, totalClicks - cleanClicks),
+      });
+    } catch (err) {
+      console.error('Error fetching admin overview stats:', err);
+      setOverviewStats({
+        newLinks: 0,
+        users: 0,
+        customDomains: 0,
+        capi: 0,
+        cleanClicks: 0,
+        bots: 0,
+      });
+    }
+  };
 
   const fetchUsers = async () => {
     setUsersLoading(true);
@@ -245,6 +312,50 @@ const AdminOverviewPage = () => {
               Welcome to the admin overview. Here you can manage users, view global analytics, and
               monitor system health.
             </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 mb-6">
+              <StatCard
+                title="New Links"
+                value={overviewStats.newLinks}
+                icon="link"
+                iconBgClass="bg-[#6358de]/10"
+                iconColorClass="text-[#6358de]"
+              />
+              <StatCard
+                title="Users"
+                value={overviewStats.users}
+                icon="group"
+                iconBgClass="bg-[#135bec]/10"
+                iconColorClass="text-[#135bec]"
+              />
+              <StatCard
+                title="Custom Domains"
+                value={overviewStats.customDomains}
+                icon="dns"
+                iconBgClass="bg-[#0b996f]/10"
+                iconColorClass="text-[#0b996f]"
+              />
+              <StatCard
+                title="CAPI"
+                value={overviewStats.capi}
+                icon="bolt"
+                iconBgClass="bg-[#7c6ee8]/10"
+                iconColorClass="text-[#7c6ee8]"
+              />
+              <StatCard
+                title="Clicks"
+                value={overviewStats.cleanClicks}
+                icon="ads_click"
+                iconBgClass="bg-[#10b981]/10"
+                iconColorClass="text-[#10b981]"
+              />
+              <StatCard
+                title="Bots"
+                value={overviewStats.bots}
+                icon="smart_toy"
+                iconBgClass="bg-red-500/10"
+                iconColorClass="text-red-600"
+              />
+            </div>
             <button
               type="button"
               onClick={() => changeView('new-links')}
