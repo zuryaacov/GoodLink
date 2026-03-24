@@ -33,6 +33,7 @@ const AdminOverviewPage = () => {
   const [customDomains, setCustomDomains] = useState([]);
   const [overviewStats, setOverviewStats] = useState({
     newLinks: 0,
+    links: 0,
     users: 0,
     customDomains: 0,
     capi: 0,
@@ -81,6 +82,7 @@ const AdminOverviewPage = () => {
     try {
       const [
         pendingLinksRes,
+        linksRes,
         usersRes,
         customDomainsRes,
         capiRes,
@@ -88,20 +90,35 @@ const AdminOverviewPage = () => {
         cleanClicksRes,
       ] = await Promise.all([
         supabase.from('links').select('*', { count: 'exact', head: true }).eq('review_status', 'pending'),
+        supabase.from('links').select('*', { count: 'exact', head: true }).eq('status', 'active'),
         supabase
           .from('profiles')
           .select('*', { count: 'exact', head: true })
           .neq('email', 'hello@goodlink.ai'),
-        supabase.from('custom_domains').select('*', { count: 'exact', head: true }),
+        supabase.from('custom_domains').select('*', { count: 'exact', head: true }).eq('status', 'active'),
         supabase.from('pixels').select('*', { count: 'exact', head: true }),
         supabase.from('clicks').select('*', { count: 'exact', head: true }),
         supabase.from('clicks').select('*', { count: 'exact', head: true }).eq('verdict', 'clean'),
       ]);
 
+      const errors = [
+        pendingLinksRes.error,
+        linksRes.error,
+        usersRes.error,
+        customDomainsRes.error,
+        capiRes.error,
+        totalClicksRes.error,
+        cleanClicksRes.error,
+      ].filter(Boolean);
+      if (errors.length > 0) {
+        throw new Error(errors.map((e) => e.message).join(' | '));
+      }
+
       const totalClicks = totalClicksRes.count || 0;
       const cleanClicks = cleanClicksRes.count || 0;
       setOverviewStats({
         newLinks: pendingLinksRes.count || 0,
+        links: linksRes.count || 0,
         users: usersRes.count || 0,
         customDomains: customDomainsRes.count || 0,
         capi: capiRes.count || 0,
@@ -112,6 +129,7 @@ const AdminOverviewPage = () => {
       console.error('Error fetching admin overview stats:', err);
       setOverviewStats({
         newLinks: 0,
+        links: 0,
         users: 0,
         customDomains: 0,
         capi: 0,
@@ -326,6 +344,13 @@ const AdminOverviewPage = () => {
                 icon="group"
                 iconBgClass="bg-[#135bec]/10"
                 iconColorClass="text-[#135bec]"
+              />
+              <StatCard
+                title="Links"
+                value={overviewStats.links}
+                icon="link"
+                iconBgClass="bg-[#4a3dc4]/10"
+                iconColorClass="text-[#4a3dc4]"
               />
               <StatCard
                 title="Custom Domains"
