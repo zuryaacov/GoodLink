@@ -142,38 +142,73 @@ const DocsPage = () => {
                 How to Create Your GoodLink Account
               </h1>
               <p className="text-lg text-slate-500 mb-8 max-w-2xl">
-                Start here: create your account, then use the sections on the left to learn about workspaces, links,
-                domains, CAPI, and UTM presets.
+                Getting started with GoodLink is simple. You can join our community either by using your existing Google
+                account or by creating a traditional email-based account. Follow the steps below to set up your profile.
               </p>
               <div className="prose prose-slate prose-lg prose-li:text-slate-700 prose-p:text-slate-600 max-w-none">
-              <p>
-                Open the <strong>Auth</strong> page at <code>/login</code>. You can sign in with an existing account or
-                create a new one.
-              </p>
-              <h3>Create a new account</h3>
-              <ol>
-                <li>Choose <strong>Create Account</strong> (or equivalent).</li>
-                <li>Enter your full name, email, and password, then confirm the password.</li>
-                <li>Complete any security verification shown on the page.</li>
-                <li>Submit the form. After signup succeeds, you can sign in and use the dashboard.</li>
-              </ol>
-              <h3>Other options on the auth page</h3>
-              <ul>
-                <li>
-                  <strong>Sign in:</strong> email and password for returning users.
-                </li>
-                <li>
-                  <strong>Google (or other providers):</strong> if enabled, use the social button to sign up or sign in
-                  with your provider account.
-                </li>
-                <li>
-                  <strong>Forgot password:</strong> submit your email to receive a reset link.
-                </li>
-              </ul>
-              <p>
-                If you see a database or signup error, confirm your Supabase project is configured correctly (including
-                triggers that create your profile row for new users).
-              </p>
+                <h2>Option 1: Sign Up with Email and Password</h2>
+                <p>To create a dedicated GoodLink account, follow these steps:</p>
+                <h3>Enter Your Details</h3>
+                <p>
+                  Go to the Sign Up page and fill in the following information:
+                </p>
+                <ul>
+                  <li>
+                    <strong>Full Name:</strong> Enter your first and last name as you&apos;d like it to appear in your
+                    profile.
+                  </li>
+                  <li>
+                    <strong>Email Address:</strong> Provide a valid email address that you have access to.
+                  </li>
+                  <li>
+                    <strong>Password:</strong> Create a strong password and enter it twice to confirm.
+                  </li>
+                </ul>
+                <h3>Password Requirements</h3>
+                <p>For your security, your password must meet the following criteria:</p>
+                <ul>
+                  <li>At least 8 characters long.</li>
+                  <li>At least one uppercase letter (A-Z).</li>
+                  <li>At least one lowercase letter (a-z).</li>
+                  <li>At least one number (0-9).</li>
+                </ul>
+                <h3>Verify Your Email</h3>
+                <p>
+                  Once you click &quot;Create Account,&quot; we will send a confirmation link to your inbox.
+                </p>
+                <ul>
+                  <li>Open the email from GoodLink.</li>
+                  <li>Click the Verify Email Address button.</li>
+                </ul>
+                <p>
+                  <strong>Note:</strong> If you don&apos;t see the email within a few minutes, please check your Spam or
+                  Promotions folder.
+                </p>
+                <h3>Welcome Aboard</h3>
+                <p>
+                  After verification, you will be redirected to your dashboard to start building your first link !
+                </p>
+
+                <h2>Option 2: Sign Up with Google</h2>
+                <p>
+                  If you prefer a faster way to join without managing another password, you can use Single Sign-On
+                  (SSO):
+                </p>
+                <ol>
+                  <li>On the Sign Up page, click the &quot;Google&quot; button.</li>
+                  <li>Choose the Google account you wish to link with GoodLink.</li>
+                  <li>Confirm the permissions.</li>
+                </ol>
+                <p>
+                  <strong>Instant Access:</strong> Since your identity is already verified by Google, you won&apos;t
+                  need to wait for a verification email. You will be logged in immediately.
+                </p>
+
+                <h2>Need Help?</h2>
+                <p>
+                  If you encounter any issues during the registration process, please contact our support team at{' '}
+                  <a href="mailto:hello@goodlink.ai">hello@goodlink.ai</a>.
+                </p>
               </div>
             </section>
 
