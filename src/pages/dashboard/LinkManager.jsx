@@ -909,7 +909,7 @@ const LinkManager = () => {
                   ? handleCreateOption('link')
                   : setCreateMenuOpen((v) => !v)
               }
-              className={`flex items-center justify-center gap-2 ${isFoldersEnabled ? 'w-full sm:w-auto' : 'w-auto'} px-6 py-3 md:py-2.5 text-white font-bold rounded-xl transition-colors shadow-lg text-base md:text-sm bg-[#6358de] hover:bg-[#5348c7]`}
+              className={`flex items-center justify-center gap-2 ${isFoldersEnabled ? 'w-full sm:w-auto' : 'w-auto'} px-6 py-3 md:py-2.5 text-white font-bold rounded-xl transition-colors shadow-lg text-base md:text-sm bg-[#a855f7] hover:bg-[#5348c7]`}
             >
               <span className="material-symbols-outlined text-xl md:text-base">add</span>
               {createOptions.length === 1 ? 'New Link' : 'Create'}
@@ -1006,7 +1006,7 @@ const LinkManager = () => {
                     <path
                       d="M 1,1 H 60 L 75,16 H 299 V 223 H 1 Z"
                       fill="#FCFDFD"
-                      stroke="#6358de"
+                      stroke="#a855f7"
                       strokeWidth="1.5"
                       style={{
                         vectorEffect: 'non-scaling-stroke',
@@ -1021,12 +1021,12 @@ const LinkManager = () => {
                         <h3 className="text-2xl font-bold mb-1 group-hover:text-primary transition-colors">
                           {space.name}
                         </h3>
-                        <div className="flex items-center gap-2 text-[#6358de] text-xs font-bold uppercase tracking-widest opacity-80">
+                        <div className="flex items-center gap-2 text-[#a855f7] text-xs font-bold uppercase tracking-widest opacity-80">
                           <LayoutGrid size={14} />
                           <span>{kindLabel}</span>
                         </div>
                       </div>
-                      <div className="mr-12 text-[#6358de] transition-all">
+                      <div className="mr-12 text-[#a855f7] transition-all">
                         <Folder size={24} />
                       </div>
                     </div>
@@ -1115,7 +1115,7 @@ const LinkManager = () => {
       {directLinks.length === 0 &&
       childSpaces.length === 0 &&
       (!isFoldersEnabled || currentLevel === 0) ? (
-        <div className="bg-[#fcfdfd] border rounded-2xl p-12 text-center hover:shadow-card-mint transition-all border-[#6358de]/40 md:border-card-border md:hover:border-[#6358de]/40">
+        <div className="bg-[#fcfdfd] border rounded-2xl p-12 text-center hover:shadow-card-mint transition-all border-[#a855f7]/40 md:border-card-border md:hover:border-[#a855f7]/40">
           <span className="material-symbols-outlined text-6xl text-black mb-4">link</span>
           <h3 className="text-xl font-bold text-black mb-2">No Links or Workspaces Yet</h3>
           <p className="text-black mb-6">
@@ -1125,7 +1125,7 @@ const LinkManager = () => {
             <button
               type="button"
               onClick={() => navigate('/dashboard/links/new')}
-              className="px-6 py-3 bg-[#6358de] hover:bg-[#5348c7] text-white font-bold rounded-xl transition-all"
+              className="px-6 py-3 bg-[#a855f7] hover:bg-[#5348c7] text-white font-bold rounded-xl transition-all"
             >
               Create First Link
             </button>
@@ -1133,7 +1133,7 @@ const LinkManager = () => {
               <button
                 type="button"
                 onClick={() => openCreateSpaceModal('workspace')}
-                className="px-6 py-3 bg-white border border-[#6358de] text-[#6358de] font-bold rounded-xl transition-all hover:bg-[#f3f2ff]"
+                className="px-6 py-3 bg-white border border-[#a855f7] text-[#a855f7] font-bold rounded-xl transition-all hover:bg-[#f3f2ff]"
               >
                 Create First Workspace
               </button>

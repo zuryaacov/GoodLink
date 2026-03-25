@@ -741,7 +741,7 @@ const Step1FastTrack = ({
             checkingSlug && validatingButton !== 'pink' ? 'opacity-50 cursor-not-allowed' : ''
           }`}
           style={{
-            backgroundColor: '#6358de',
+            backgroundColor: '#a855f7',
           }}
           onMouseEnter={(e) => {
             if (!checkingSlug) {
@@ -750,7 +750,7 @@ const Step1FastTrack = ({
           }}
           onMouseLeave={(e) => {
             if (!checkingSlug) {
-              e.currentTarget.style.backgroundColor = '#6358de';
+              e.currentTarget.style.backgroundColor = '#a855f7';
             }
           }}
         >

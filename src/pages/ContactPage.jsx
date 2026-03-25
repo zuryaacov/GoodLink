@@ -64,21 +64,21 @@ const ContactPage = () => {
               <svg fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 <path
                   d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"
-                  stroke="#6358de"
+                  stroke="#a855f7"
                   strokeLinecap="round"
                   strokeLinejoin="round"
                   strokeWidth="3"
                 />
                 <path
                   d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"
-                  stroke="#6358de"
+                  stroke="#a855f7"
                   strokeLinecap="round"
                   strokeLinejoin="round"
                   strokeWidth="3"
                 />
               </svg>
             </div>
-            <span className="text-2xl font-black leading-tight tracking-tight text-[#6358de]">
+            <span className="text-2xl font-black leading-tight tracking-tight text-[#a855f7]">
               GoodLink
             </span>
           </Link>
@@ -100,7 +100,7 @@ const ContactPage = () => {
             <button
               type="button"
               onClick={() => setSent(false)}
-              className="mt-4 text-sm font-medium text-[#6358de] hover:underline"
+              className="mt-4 text-sm font-medium text-[#a855f7] hover:underline"
             >
               Send another message
             </button>
@@ -117,7 +117,7 @@ const ContactPage = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@example.com"
-                className="w-full px-4 py-3 rounded-lg border border-slate-200 bg-white text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#6358de] focus:border-transparent"
+                className="w-full px-4 py-3 rounded-lg border border-slate-200 bg-white text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#a855f7] focus:border-transparent"
                 disabled={loading}
                 autoComplete="email"
               />
@@ -132,7 +132,7 @@ const ContactPage = () => {
                 onChange={(e) => setMessage(e.target.value)}
                 placeholder="Your message..."
                 rows={6}
-                className="w-full px-4 py-3 rounded-lg border border-slate-200 bg-white text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#6358de] focus:border-transparent resize-y min-h-[140px]"
+                className="w-full px-4 py-3 rounded-lg border border-slate-200 bg-white text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#a855f7] focus:border-transparent resize-y min-h-[140px]"
                 disabled={loading}
               />
             </div>
@@ -144,7 +144,7 @@ const ContactPage = () => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full sm:w-auto px-8 py-4 rounded-lg bg-[#6358de] hover:bg-[#5348c7] text-white font-bold text-base transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+              className="w-full sm:w-auto px-8 py-4 rounded-lg bg-[#a855f7] hover:bg-[#5348c7] text-white font-bold text-base transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
             >
               {loading ? 'Sending...' : 'Send'}
             </button>

@@ -16,7 +16,7 @@ const Hero = ({ user }) => {
         >
           {/* Trial badge */}
           <motion.div
-            className="inline-flex items-center rounded-full bg-gradient-to-r from-[#6358de] to-[#7c6ee8] px-4 py-2 text-sm md:text-base font-semibold text-white shadow-lg shadow-[#6358de]/40"
+            className="inline-flex items-center rounded-full bg-gradient-to-r from-[#a855f7] to-[#7c6ee8] px-4 py-2 text-sm md:text-base font-semibold text-white shadow-lg shadow-[#a855f7]/40"
             animate={{ y: [0, -6, 0] }}
             transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
           >
@@ -29,7 +29,7 @@ const Hero = ({ user }) => {
             Short Links, Bot Protection,
             <br className="hidden sm:block" />
             <span>
-              <span className="text-[#6358de]">S2S Tracking</span> &amp; Great Analytics
+              <span className="text-[#a855f7]">S2S Tracking</span> &amp; Great Analytics
             </span>
           </h1>
 
@@ -43,21 +43,21 @@ const Hero = ({ user }) => {
             <div className="flex flex-col items-center">
               <Link
                 to="/login?mode=signup"
-                className="inline-flex h-14 md:h-16 min-w-[200px] md:min-w-[240px] items-center justify-center rounded-xl bg-[#6358de] hover:bg-[#5348c7] px-10 md:px-12 text-white text-base md:text-lg font-bold tracking-wide transition-all"
+                className="inline-flex h-14 md:h-16 min-w-[200px] md:min-w-[240px] items-center justify-center rounded-xl bg-[#a855f7] hover:bg-[#5348c7] px-10 md:px-12 text-white text-base md:text-lg font-bold tracking-wide transition-all"
               >
                 Start your 30-day free trial
               </Link>
               <div className="flex flex-wrap justify-center items-center gap-x-6 gap-y-2 mt-6">
                 <div className="flex items-center gap-2 text-base font-bold text-black">
-                  <CheckCircle2 size={20} className="text-[#6358de] flex-shrink-0" />
+                  <CheckCircle2 size={20} className="text-[#a855f7] flex-shrink-0" />
                   No credit card required
                 </div>
                 <div className="flex items-center gap-2 text-base font-bold text-black">
-                  <CheckCircle2 size={20} className="text-[#6358de] flex-shrink-0" />
+                  <CheckCircle2 size={20} className="text-[#a855f7] flex-shrink-0" />
                   Full access included
                 </div>
                 <div className="flex items-center gap-2 text-base font-bold text-black">
-                  <CheckCircle2 size={20} className="text-[#6358de] flex-shrink-0" />
+                  <CheckCircle2 size={20} className="text-[#a855f7] flex-shrink-0" />
                   Cancel anytime
                 </div>
               </div>

@@ -152,7 +152,7 @@ const CTASection = () => {
 
         {/* Pricing sub-heading: icon on top, then 3 lines – all centered */}
         <div className="flex justify-center">
-          <div className="flex flex-col items-center justify-center gap-1 text-center text-[#6358de] font-extrabold tracking-wide text-3xl md:text-5xl">
+          <div className="flex flex-col items-center justify-center gap-1 text-center text-[#a855f7] font-extrabold tracking-wide text-3xl md:text-5xl">
             <span className="text-3xl md:text-5xl">🎁</span>
             <span>Get 30-Day Free Trial</span>
             <span>
@@ -167,7 +167,7 @@ const CTASection = () => {
           <div className="flex justify-center mt-6">
             <Link
               to="/login?mode=signup"
-              className="inline-flex h-14 md:h-16 min-w-[200px] md:min-w-[240px] items-center justify-center rounded-xl bg-[#6358de] hover:bg-[#5348c7] px-10 md:px-12 text-white text-base md:text-lg font-bold tracking-wide transition-all"
+              className="inline-flex h-14 md:h-16 min-w-[200px] md:min-w-[240px] items-center justify-center rounded-xl bg-[#a855f7] hover:bg-[#5348c7] px-10 md:px-12 text-white text-base md:text-lg font-bold tracking-wide transition-all"
             >
               Start your 30-day free trial
             </Link>
@@ -188,12 +188,12 @@ const CTASection = () => {
               variants={itemVariants}
               className={`group relative flex flex-col h-full transition-all duration-300 ${
                 plan.highlighted
-                  ? 'bg-[#c7edb8] p-8 lg:p-10 xl:p-12 rounded-[2.5rem] shadow-[0_32px_64px_rgba(74,61,196,0.12)] scale-100 xl:scale-105 z-10 border-4 border-white hover:border-[#6358de]'
-                  : 'bg-[#f3f3f4] p-8 lg:p-10 rounded-[2rem] border border-[#c8c4d6]/20 hover:border-[#6358de]'
+                  ? 'bg-[#c7edb8] p-8 lg:p-10 xl:p-12 rounded-[2.5rem] shadow-[0_32px_64px_rgba(74,61,196,0.12)] scale-100 xl:scale-105 z-10 border-4 border-white hover:border-[#a855f7]'
+                  : 'bg-[#f3f3f4] p-8 lg:p-10 rounded-[2rem] border border-[#c8c4d6]/20 hover:border-[#a855f7]'
               }`}
             >
               {plan.highlighted && (
-                <span className="absolute -top-5 left-1/2 -translate-x-1/2 px-6 py-2 bg-[#6358de] text-white text-xs font-black rounded-full uppercase tracking-widest shadow-lg">
+                <span className="absolute -top-5 left-1/2 -translate-x-1/2 px-6 py-2 bg-[#a855f7] text-white text-xs font-black rounded-full uppercase tracking-widest shadow-lg">
                   Most Popular
                 </span>
               )}
@@ -248,7 +248,7 @@ const CTASection = () => {
                   className={`mb-10 w-full text-center inline-block active:scale-95 transition-all ${
                     plan.highlighted
                       ? plan.name === 'PRO' && !user
-                        ? 'py-5 rounded-full bg-[#6358de] text-white font-black text-lg shadow-xl shadow-[#4a3dc4]/30 hover:opacity-90 cursor-pointer'
+                        ? 'py-5 rounded-full bg-[#a855f7] text-white font-black text-lg shadow-xl shadow-[#4a3dc4]/30 hover:opacity-90 cursor-pointer'
                         : 'py-5 rounded-full bg-slate-300 text-slate-500 font-black text-lg cursor-not-allowed'
                       : plan.name === 'PRO' && !user
                         ? 'py-4 rounded-full border border-[#787585] text-[#5549d0] font-bold hover:bg-[#eeeeee] cursor-pointer'
@@ -276,7 +276,7 @@ const CTASection = () => {
                             isBlack
                               ? 'text-black'
                               : isPurple
-                                ? 'text-[#6358de]'
+                                ? 'text-[#a855f7]'
                                 : plan.highlighted
                                   ? 'text-[#032102]'
                                   : 'text-slate-700'

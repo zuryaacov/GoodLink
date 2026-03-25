@@ -17,7 +17,7 @@ export default {
         "primary-green": "#0b996f",
         "secondary-green": "#c0ffa5",
         accent: {
-          DEFAULT: "#6358de",
+          DEFAULT: "#a855f7",
           foreground: "hsl(var(--accent-foreground))",
         },
         "nav-bg": "#f9fff6",

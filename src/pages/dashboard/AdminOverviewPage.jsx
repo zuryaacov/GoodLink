@@ -26,7 +26,7 @@ const StatCard = ({
     type="button"
     onClick={onClick}
     className={`w-full text-left bg-card-bg border border-card-border rounded-2xl p-5 transition-all hover:shadow-card-mint ${
-      onClick ? 'cursor-pointer hover:border-[#6358de]' : 'cursor-default'
+      onClick ? 'cursor-pointer hover:border-[#a855f7]' : 'cursor-default'
     }`}
     disabled={!onClick}
   >
@@ -573,8 +573,8 @@ const AdminOverviewPage = () => {
                 title="New Links"
                 value={overviewStats.newLinks}
                 icon="link"
-                iconBgClass="bg-[#6358de]/10"
-                iconColorClass="text-[#6358de]"
+                iconBgClass="bg-[#a855f7]/10"
+                iconColorClass="text-[#a855f7]"
                 onClick={() => changeView('new-links')}
               />
               <StatCard
@@ -978,7 +978,7 @@ const AdminOverviewPage = () => {
                       type="button"
                       onClick={() => loginAsUser(u)}
                       disabled={impersonatingUserId === u.user_id}
-                      className="px-4 py-2.5 rounded-xl bg-[#6358de] text-white text-sm font-bold hover:bg-[#5348c7] disabled:opacity-60 transition-colors"
+                      className="px-4 py-2.5 rounded-xl bg-[#a855f7] text-white text-sm font-bold hover:bg-[#5348c7] disabled:opacity-60 transition-colors"
                     >
                       {impersonatingUserId === u.user_id ? 'Opening…' : 'Login as User'}
                     </button>

@@ -400,17 +400,17 @@ const CustomDomainsManager = () => {
               {normalizedPlan} plan
             </span>{' '}
             does not include custom domain management. Upgrade to&nbsp;
-            <span className="text-[#6358de] font-bold uppercase tracking-wider">
+            <span className="text-[#a855f7] font-bold uppercase tracking-wider">
               ADVANCED
             </span> or{' '}
-            <span className="text-[#6358de] font-bold uppercase tracking-wider">PRO</span> to
+            <span className="text-[#a855f7] font-bold uppercase tracking-wider">PRO</span> to
             connect your own domains and brand your links.
           </p>
 
           {/* Value props */}
           <div className="space-y-4 mb-10 text-left">
-            <div className="flex items-center gap-3 p-3 bg-white/80 rounded-xl border border-slate-200 hover:border-[#6358de]/40 transition-colors">
-              <Globe className="w-5 h-5 text-[#6358de]" />
+            <div className="flex items-center gap-3 p-3 bg-white/80 rounded-xl border border-slate-200 hover:border-[#a855f7]/40 transition-colors">
+              <Globe className="w-5 h-5 text-[#a855f7]" />
               <div>
                 <p className="font-semibold text-sm text-[#1b1b1b] italic">Brand Your Links</p>
                 <p className="text-xs text-[#1b1b1b]">
@@ -418,8 +418,8 @@ const CustomDomainsManager = () => {
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-3 p-3 bg-white/80 rounded-xl border border-slate-200 hover:border-[#6358de]/40 transition-colors">
-              <BarChart3 className="w-5 h-5 text-[#6358de]" />
+            <div className="flex items-center gap-3 p-3 bg-white/80 rounded-xl border border-slate-200 hover:border-[#a855f7]/40 transition-colors">
+              <BarChart3 className="w-5 h-5 text-[#a855f7]" />
               <div>
                 <p className="font-semibold text-sm text-[#1b1b1b] italic">Professional Appearance</p>
                 <p className="text-xs text-[#1b1b1b]">
@@ -434,7 +434,7 @@ const CustomDomainsManager = () => {
             onClick={() => {
               window.location.href = '/#pricing';
             }}
-            className="group relative w-full inline-flex items-center justify-center gap-2 bg-[#6358de] text-white font-bold py-3.5 px-8 rounded-2xl transition-all duration-300 hover:bg-[#5348c7] hover:scale-[1.02] active:scale-[0.98] shadow-xl shadow-[#6358de]/30"
+            className="group relative w-full inline-flex items-center justify-center gap-2 bg-[#a855f7] text-white font-bold py-3.5 px-8 rounded-2xl transition-all duration-300 hover:bg-[#5348c7] hover:scale-[1.02] active:scale-[0.98] shadow-xl shadow-[#a855f7]/30"
           >
             <Zap className="w-5 h-5" />
             <span>View Plans & Upgrade</span>
@@ -462,7 +462,7 @@ const CustomDomainsManager = () => {
         </div>
         <button
           onClick={() => navigate('/dashboard/domains/new')}
-          className="px-6 py-3 bg-[#6358de] hover:bg-[#5348c7] text-white font-bold rounded-xl transition-all shadow-lg shadow-[#6358de]/20 flex items-center gap-2 whitespace-nowrap"
+          className="px-6 py-3 bg-[#a855f7] hover:bg-[#5348c7] text-white font-bold rounded-xl transition-all shadow-lg shadow-[#a855f7]/20 flex items-center gap-2 whitespace-nowrap"
         >
           <span className="material-symbols-outlined">add</span>
           New Domain
@@ -504,7 +504,7 @@ const CustomDomainsManager = () => {
 
       {/* Domains List */}
       {domains.length === 0 ? (
-        <div className="bg-[#fcfdfd] border rounded-2xl p-12 text-center hover:shadow-card-mint transition-all border-[#6358de]/40 md:border-card-border md:hover:border-[#6358de]/40">
+        <div className="bg-[#fcfdfd] border rounded-2xl p-12 text-center hover:shadow-card-mint transition-all border-[#a855f7]/40 md:border-card-border md:hover:border-[#a855f7]/40">
           <span className="material-symbols-outlined text-6xl text-black mb-4">public</span>
           <h3 className="text-xl font-bold text-black mb-2">No Custom Domains Yet</h3>
           <p className="text-black mb-6">
@@ -512,7 +512,7 @@ const CustomDomainsManager = () => {
           </p>
           <button
             onClick={() => navigate('/dashboard/domains/new')}
-            className="px-6 py-3 bg-[#6358de] hover:bg-[#5348c7] text-white font-bold rounded-xl transition-all"
+            className="px-6 py-3 bg-[#a855f7] hover:bg-[#5348c7] text-white font-bold rounded-xl transition-all"
           >
             Create First Domain
           </button>
@@ -522,7 +522,7 @@ const CustomDomainsManager = () => {
           {domains.map((domain) => (
             <div
               key={domain.id}
-              className="bg-card-bg border rounded-2xl p-6 md:p-8 transition-all hover:shadow-card-mint flex flex-col gap-4 border-[#6358de]/40 md:border-card-border md:hover:border-[#6358de]/40"
+              className="bg-card-bg border rounded-2xl p-6 md:p-8 transition-all hover:shadow-card-mint flex flex-col gap-4 border-[#a855f7]/40 md:border-card-border md:hover:border-[#a855f7]/40"
             >
               {/* Domain Name, Status, Root only */}
               <div className="flex items-start justify-between gap-4">
@@ -640,7 +640,7 @@ const CustomDomainsManager = () => {
                       handleVerifyDNS(detailsModalDomain);
                       setDetailsModalDomain(null);
                     }}
-                    className="px-4 py-2 bg-[#6358de] hover:bg-[#5348c7] text-white font-bold rounded-xl transition-all shadow-lg shadow-[#6358de]/20 flex items-center justify-center gap-2 text-sm"
+                    className="px-4 py-2 bg-[#a855f7] hover:bg-[#5348c7] text-white font-bold rounded-xl transition-all shadow-lg shadow-[#a855f7]/20 flex items-center justify-center gap-2 text-sm"
                   >
                     <span className="material-symbols-outlined text-lg">verified</span>
                     Verify DNS
@@ -671,7 +671,7 @@ const CustomDomainsManager = () => {
                         type="button"
                         onClick={() => fetchDomainRecords(detailsModalDomain)}
                         disabled={!!dnsLoadingByDomainId[detailsModalDomain.id]}
-                        className="flex items-center gap-1 text-xs px-2.5 py-1.5 rounded-lg border border-slate-300 bg-white hover:bg-white hover:border-[#6358de] disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
+                        className="flex items-center gap-1 text-xs px-2.5 py-1.5 rounded-lg border border-slate-300 bg-white hover:bg-white hover:border-[#a855f7] disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
                       >
                         <span
                           className={`material-symbols-outlined text-sm ${dnsLoadingByDomainId[detailsModalDomain.id] ? 'animate-spin' : ''}`}

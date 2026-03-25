@@ -11,7 +11,7 @@ const STEPS = [
     badgeColor: 'text-[#10b981] bg-[#10b981]/10',
     title: 'Enter your',
     highlight: 'Domain',
-    highlightClass: 'bg-gradient-to-r from-[#6358de] to-[#7c6ee8] bg-clip-text text-transparent',
+    highlightClass: 'bg-gradient-to-r from-[#a855f7] to-[#7c6ee8] bg-clip-text text-transparent',
     subtitle: 'Your custom domain (e.g. mybrand.com).',
   },
   {
@@ -238,7 +238,7 @@ export default function DomainWizardOnePerPage({
                 <span
                   className={
                     currentStep?.highlightClass ||
-                    'bg-gradient-to-r from-[#6358de] to-[#7c6ee8] bg-clip-text text-transparent'
+                    'bg-gradient-to-r from-[#a855f7] to-[#7c6ee8] bg-clip-text text-transparent'
                   }
                 >
                   {currentStep?.highlight}
@@ -311,7 +311,7 @@ export default function DomainWizardOnePerPage({
                       type="button"
                       onClick={onRefreshDns}
                       disabled={isSubmitting}
-                      className="flex items-center gap-2 px-3 py-2 bg-white hover:bg-white text-[#1b1b1b] text-sm font-medium rounded-xl transition-colors border border-slate-300 hover:border-[#6358de]"
+                      className="flex items-center gap-2 px-3 py-2 bg-white hover:bg-white text-[#1b1b1b] text-sm font-medium rounded-xl transition-colors border border-slate-300 hover:border-[#a855f7]"
                     >
                       <span
                         className={`material-symbols-outlined text-lg ${isSubmitting ? 'animate-spin' : ''}`}
@@ -377,7 +377,7 @@ export default function DomainWizardOnePerPage({
             type="button"
             onClick={goNext}
             disabled={currentStep?.id === 'rootRedirect' && isSubmitting}
-            className="flex-1 flex items-center justify-center gap-3 py-5 rounded-2xl font-extrabold text-xl tracking-tight transition-all bg-[#6358de] hover:bg-[#5348c7] text-white disabled:opacity-60 disabled:cursor-not-allowed shadow-xl"
+            className="flex-1 flex items-center justify-center gap-3 py-5 rounded-2xl font-extrabold text-xl tracking-tight transition-all bg-[#a855f7] hover:bg-[#5348c7] text-white disabled:opacity-60 disabled:cursor-not-allowed shadow-xl"
           >
             {isSubmitting ? (
               <>

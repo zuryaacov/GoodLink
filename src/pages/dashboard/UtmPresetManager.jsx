@@ -307,17 +307,17 @@ const UtmPresetManager = () => {
               {normalizedPlan} plan
             </span>
             &nbsp;does not include UTM preset management. Upgrade to&nbsp;
-            <span className="text-[#6358de] font-bold uppercase tracking-wider">
+            <span className="text-[#a855f7] font-bold uppercase tracking-wider">
               ADVANCED
             </span> or{' '}
-            <span className="text-[#6358de] font-bold uppercase tracking-wider">PRO</span> to create
+            <span className="text-[#a855f7] font-bold uppercase tracking-wider">PRO</span> to create
             and manage UTM presets for your campaigns.
           </p>
           <button
             onClick={() => {
               window.location.href = '/#pricing';
             }}
-            className="w-full inline-flex items-center justify-center gap-2 bg-[#6358de] text-white font-bold py-3.5 px-8 rounded-2xl transition-all hover:bg-[#5348c7] shadow-xl shadow-[#6358de]/30"
+            className="w-full inline-flex items-center justify-center gap-2 bg-[#a855f7] text-white font-bold py-3.5 px-8 rounded-2xl transition-all hover:bg-[#5348c7] shadow-xl shadow-[#a855f7]/30"
           >
             View Plans & Upgrade
           </button>
@@ -337,7 +337,7 @@ const UtmPresetManager = () => {
         </div>
         <button
           onClick={handleNewPreset}
-          className="w-full sm:w-auto px-6 py-3 bg-[#6358de] hover:bg-[#5348c7] text-white font-bold rounded-xl transition-all shadow-lg shadow-[#6358de]/20 flex items-center justify-center gap-2"
+          className="w-full sm:w-auto px-6 py-3 bg-[#a855f7] hover:bg-[#5348c7] text-white font-bold rounded-xl transition-all shadow-lg shadow-[#a855f7]/20 flex items-center justify-center gap-2"
         >
           <span className="material-symbols-outlined">add</span>
           New UTM Preset
@@ -345,7 +345,7 @@ const UtmPresetManager = () => {
       </div>
 
       {presets.length === 0 ? (
-        <div className="bg-[#fcfdfd] border rounded-2xl p-12 text-center hover:shadow-card-mint transition-all border-[#6358de]/40 md:border-card-border md:hover:border-[#6358de]/40">
+        <div className="bg-[#fcfdfd] border rounded-2xl p-12 text-center hover:shadow-card-mint transition-all border-[#a855f7]/40 md:border-card-border md:hover:border-[#a855f7]/40">
           <span className="material-symbols-outlined text-6xl text-black mb-4">campaign</span>
           <h3 className="text-xl font-bold text-black mb-2">No UTM Presets Yet</h3>
           <p className="text-black mb-6">
@@ -353,7 +353,7 @@ const UtmPresetManager = () => {
           </p>
           <button
             onClick={handleNewPreset}
-            className="px-6 py-3 bg-[#6358de] hover:bg-[#5348c7] text-white font-bold rounded-xl transition-all"
+            className="px-6 py-3 bg-[#a855f7] hover:bg-[#5348c7] text-white font-bold rounded-xl transition-all"
           >
             Create First Preset
           </button>
@@ -371,7 +371,7 @@ const UtmPresetManager = () => {
             return (
               <div
                 key={preset.id}
-                className="bg-[#fcfdfd] border rounded-xl p-6 hover:shadow-card-mint transition-all border-[#6358de]/40 md:border-card-border md:hover:border-[#6358de]/40"
+                className="bg-[#fcfdfd] border rounded-xl p-6 hover:shadow-card-mint transition-all border-[#a855f7]/40 md:border-card-border md:hover:border-[#a855f7]/40"
               >
                 <div className="flex items-start justify-between gap-3 mb-4">
                   <div className="flex-1 min-w-0">
@@ -453,7 +453,7 @@ const UtmPresetManager = () => {
                           key={key}
                           className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 text-sm font-medium"
                         >
-                          <span className="font-semibold text-[#6358de]">{label}:</span>
+                          <span className="font-semibold text-[#a855f7]">{label}:</span>
                           <span className="text-[#1b1b1b]">{value}</span>
                         </span>
                       ))}

@@ -94,7 +94,7 @@ const HumanVsBotCard = ({ humanCount, botCount, unknownCount }) => {
         <div
           className="w-40 h-40 rounded-full flex items-center justify-center"
           style={{
-            background: `conic-gradient(#135bec 0% ${humanPct}%, #6358de ${humanPct}% ${humanPct + botPct}%, #374151 ${humanPct + botPct}% 100%)`,
+            background: `conic-gradient(#135bec 0% ${humanPct}%, #a855f7 ${humanPct}% ${humanPct + botPct}%, #374151 ${humanPct + botPct}% 100%)`,
           }}
         >
           <div className="w-[120px] h-[120px] bg-white rounded-full flex items-center justify-center">
@@ -111,7 +111,7 @@ const HumanVsBotCard = ({ humanCount, botCount, unknownCount }) => {
           <span className="text-xs text-[#1b1b1b]">Human ({humanCount})</span>
         </div>
         <div className="flex items-center gap-2">
-          <span className="w-3 h-3 rounded-full bg-[#6358de] shrink-0" />
+          <span className="w-3 h-3 rounded-full bg-[#a855f7] shrink-0" />
           <span className="text-xs text-[#1b1b1b]">Bot ({botCount})</span>
         </div>
         <div className="flex items-center gap-2">
@@ -125,7 +125,7 @@ const HumanVsBotCard = ({ humanCount, botCount, unknownCount }) => {
 
 const GeoProgressCard = ({ geographic }) => {
   const total = geographic.reduce((s, i) => s + i.value, 0);
-  const colors = ['#135bec', '#6358de', '#10b981', '#eab308'];
+  const colors = ['#135bec', '#a855f7', '#10b981', '#eab308'];
   return (
     <div className="bg-card-bg border border-card-border rounded-2xl p-6 transition-all hover:shadow-card-mint lg:col-span-2">
       <div className="w-full flex justify-between items-center mb-6">
@@ -460,8 +460,8 @@ const Analytics = () => {
           title="Unique Visitors"
           value={formatNumber(stats.uniqueVisitors)}
           icon="group"
-          iconBgClass="bg-[#6358de]/10"
-          iconColorClass="text-[#6358de]"
+          iconBgClass="bg-[#a855f7]/10"
+          iconColorClass="text-[#a855f7]"
         />
         <KPICard
           title="Bot Traffic"
@@ -590,7 +590,7 @@ const Analytics = () => {
                         <span
                           className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${
                             isBot
-                              ? 'bg-[#6358de]/10 text-[#6358de] border-[#6358de]/20'
+                              ? 'bg-[#a855f7]/10 text-[#a855f7] border-[#a855f7]/20'
                               : 'bg-[#135bec]/10 text-[#135bec] border-[#135bec]/20'
                           }`}
                         >

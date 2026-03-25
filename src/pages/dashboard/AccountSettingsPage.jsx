@@ -482,7 +482,7 @@ export default function AccountSettingsPage() {
                   <button
                     type="submit"
                     disabled={saving}
-                    className="bg-[#6358de] hover:bg-[#5348c7] text-white font-semibold py-3 px-8 rounded-xl transition-all shadow-[0_0_15px_rgba(99,88,222,0.3)] disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                    className="bg-[#a855f7] hover:bg-[#5348c7] text-white font-semibold py-3 px-8 rounded-xl transition-all shadow-[0_0_15px_rgba(99,88,222,0.3)] disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                   >
                     {saving && (
                       <span className="material-symbols-outlined animate-spin text-sm">
@@ -505,7 +505,7 @@ export default function AccountSettingsPage() {
                   className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider border ${
                     isCancelled
                       ? 'bg-amber-500/10 text-amber-600 border-amber-500/30'
-                      : 'bg-[#6358de]/10 text-[#6358de] border-[#6358de]/30'
+                      : 'bg-[#a855f7]/10 text-[#a855f7] border-[#a855f7]/30'
                   }`}
                 >
                   {isCancelled ? 'Cancelled' : isFreeTrial ? 'Free Trial' : `${currentPlanDisplay} Plan`}
@@ -540,11 +540,11 @@ export default function AccountSettingsPage() {
                 <button
                   type="button"
                   onClick={() => setShowCancelConfirmModal(true)}
-                  className="w-full group relative overflow-hidden rounded-xl bg-gradient-to-r from-[#6358de] to-[#7c6ee8] p-[1px]"
+                  className="w-full group relative overflow-hidden rounded-xl bg-gradient-to-r from-[#a855f7] to-[#7c6ee8] p-[1px]"
                 >
-                  <div className="absolute inset-0 bg-gradient-to-r from-[#6358de] to-[#7c6ee8] opacity-20 group-hover:opacity-40 transition-opacity" />
+                  <div className="absolute inset-0 bg-gradient-to-r from-[#a855f7] to-[#7c6ee8] opacity-20 group-hover:opacity-40 transition-opacity" />
                   <div className="relative w-full bg-white rounded-[11px] px-6 py-3 flex items-center justify-center gap-2 group-hover:bg-opacity-90 transition-colors">
-                    <span className="font-semibold text-[#6358de]">Cancel subscription</span>
+                    <span className="font-semibold text-[#a855f7]">Cancel subscription</span>
                   </div>
                 </button>
               )}
@@ -575,8 +575,8 @@ export default function AccountSettingsPage() {
                     animate={{ opacity: 1, y: 0 }}
                     className={`group relative flex flex-col h-full transition-all duration-300 ${
                       isFeaturedCard
-                        ? 'bg-[#c7edb8] p-8 lg:p-10 xl:p-12 rounded-[2.5rem] shadow-[0_32px_64px_rgba(74,61,196,0.12)] scale-100 xl:scale-105 z-10 border-4 border-white hover:border-[#6358de]'
-                        : 'bg-[#f3f3f4] p-8 lg:p-10 rounded-[2rem] border border-[#c8c4d6]/20 hover:border-[#6358de]'
+                        ? 'bg-[#c7edb8] p-8 lg:p-10 xl:p-12 rounded-[2.5rem] shadow-[0_32px_64px_rgba(74,61,196,0.12)] scale-100 xl:scale-105 z-10 border-4 border-white hover:border-[#a855f7]'
+                        : 'bg-[#f3f3f4] p-8 lg:p-10 rounded-[2rem] border border-[#c8c4d6]/20 hover:border-[#a855f7]'
                     }`}
                   >
                     {isCurrentPlan && (
@@ -631,7 +631,7 @@ export default function AccountSettingsPage() {
                           isFeaturedCard
                             ? isCurrentPlan
                               ? 'py-5 rounded-full bg-slate-300 text-slate-500 font-black text-lg cursor-not-allowed'
-                              : 'py-5 rounded-full bg-[#6358de] text-white font-black text-lg shadow-xl shadow-[#4a3dc4]/30 hover:opacity-90 cursor-pointer'
+                              : 'py-5 rounded-full bg-[#a855f7] text-white font-black text-lg shadow-xl shadow-[#4a3dc4]/30 hover:opacity-90 cursor-pointer'
                             : isCurrentPlan
                               ? 'py-4 rounded-full border border-[#787585] text-slate-500 font-bold cursor-not-allowed'
                               : 'py-4 rounded-full border border-[#787585] text-[#5549d0] font-bold hover:bg-[#eeeeee] cursor-pointer'
@@ -657,7 +657,7 @@ export default function AccountSettingsPage() {
                                   isBlack
                                     ? 'text-black'
                                     : isPurple
-                                      ? 'text-[#6358de]'
+                                      ? 'text-[#a855f7]'
                                       : isFeaturedCard
                                         ? 'text-[#032102]'
                                         : 'text-slate-700'
@@ -688,7 +688,7 @@ export default function AccountSettingsPage() {
             {!showPasswordChange ? (
               <button
                 onClick={() => setShowPasswordChange(true)}
-                className="flex items-center gap-2 bg-[#6358de] hover:bg-[#5348c7] text-white transition-colors border border-transparent rounded-lg px-4 py-2 font-semibold shadow-md shadow-[#6358de]/30"
+                className="flex items-center gap-2 bg-[#a855f7] hover:bg-[#5348c7] text-white transition-colors border border-transparent rounded-lg px-4 py-2 font-semibold shadow-md shadow-[#a855f7]/30"
               >
                 Change Password
               </button>
@@ -811,7 +811,7 @@ export default function AccountSettingsPage() {
                       newPassword !== confirmPassword ||
                       newPassword.length < 8
                     }
-                    className="bg-[#6358de] hover:bg-[#5348c7] text-white text-xs font-bold px-4 py-2 rounded-lg disabled:opacity-50 transition-colors"
+                    className="bg-[#a855f7] hover:bg-[#5348c7] text-white text-xs font-bold px-4 py-2 rounded-lg disabled:opacity-50 transition-colors"
                   >
                     Update Password
                   </button>

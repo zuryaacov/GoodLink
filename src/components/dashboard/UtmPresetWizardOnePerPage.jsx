@@ -215,7 +215,7 @@ const STEPS = [
     badgeColor: 'text-[#10b981] bg-[#10b981]/10',
     title: 'Name your',
     highlight: 'Preset',
-    highlightClass: 'bg-gradient-to-r from-[#6358de] to-[#7c6ee8] bg-clip-text text-transparent',
+    highlightClass: 'bg-gradient-to-r from-[#a855f7] to-[#7c6ee8] bg-clip-text text-transparent',
     subtitle: 'What should we call your UTM preset ?',
   },
   {
@@ -497,7 +497,7 @@ export default function UtmPresetWizardOnePerPage({ initialData, editingPresetId
                 <span
                   className={
                     currentStep?.highlightClass ||
-                    'bg-gradient-to-r from-[#6358de] to-[#7c6ee8] bg-clip-text text-transparent'
+                    'bg-gradient-to-r from-[#a855f7] to-[#7c6ee8] bg-clip-text text-transparent'
                   }
                 >
                   {currentStep?.highlight}
@@ -538,7 +538,7 @@ export default function UtmPresetWizardOnePerPage({ initialData, editingPresetId
                     onClick={() => handlePlatformSelect(p.id)}
                     className={`p-5 rounded-2xl border-2 text-left transition-all flex items-center gap-4 ${
                       platform === p.id
-                        ? 'border-[#6358de] bg-[#6358de]/5'
+                        ? 'border-[#a855f7] bg-[#a855f7]/5'
                         : 'border-slate-200 bg-white hover:border-slate-300'
                     }`}
                   >
@@ -605,7 +605,7 @@ export default function UtmPresetWizardOnePerPage({ initialData, editingPresetId
             type="button"
             onClick={goNext}
             disabled={loading}
-            className="flex-1 flex items-center justify-center gap-3 py-5 rounded-2xl font-extrabold text-xl tracking-tight transition-all bg-[#6358de] hover:bg-[#5348c7] text-white disabled:opacity-60 disabled:cursor-not-allowed shadow-xl"
+            className="flex-1 flex items-center justify-center gap-3 py-5 rounded-2xl font-extrabold text-xl tracking-tight transition-all bg-[#a855f7] hover:bg-[#5348c7] text-white disabled:opacity-60 disabled:cursor-not-allowed shadow-xl"
           >
             {loading ? (
               <span className="material-symbols-outlined animate-spin text-2xl">refresh</span>

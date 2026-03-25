@@ -97,21 +97,21 @@ const Navbar = () => {
             <svg fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
               <path
                 d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"
-                stroke="#6358de"
+                stroke="#a855f7"
                 strokeLinecap="round"
                 strokeLinejoin="round"
                 strokeWidth="3"
               ></path>
               <path
                 d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"
-                stroke="#6358de"
+                stroke="#a855f7"
                 strokeLinecap="round"
                 strokeLinejoin="round"
                 strokeWidth="3"
               ></path>
             </svg>
           </div>
-          <h2 className="text-3xl font-black leading-tight tracking-tight text-[#6358de]">
+          <h2 className="text-3xl font-black leading-tight tracking-tight text-[#a855f7]">
             GoodLink
           </h2>
         </Link>
@@ -142,7 +142,7 @@ const Navbar = () => {
               <>
                 <Link
                   to="/dashboard/links"
-                  className="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-[#6358de] hover:bg-[#5348c7] text-white text-sm font-bold leading-normal tracking-[0.015em] transition-colors"
+                  className="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-[#a855f7] hover:bg-[#5348c7] text-white text-sm font-bold leading-normal tracking-[0.015em] transition-colors"
                 >
                   <span className="truncate">Dashboard</span>
                 </Link>
@@ -156,7 +156,7 @@ const Navbar = () => {
             ) : (
               <Link
                 to="/login"
-                className="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-[#6358de] hover:bg-[#5348c7] text-white text-sm font-bold leading-normal tracking-[0.015em] transition-colors"
+                className="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-[#a855f7] hover:bg-[#5348c7] text-white text-sm font-bold leading-normal tracking-[0.015em] transition-colors"
               >
                 <span className="truncate">Login</span>
               </Link>
@@ -230,7 +230,7 @@ const Navbar = () => {
                   <Link
                     to="/login"
                     onClick={() => setIsOpen(false)}
-                    className="flex w-full cursor-pointer items-center justify-center rounded-lg h-12 bg-[#6358de] hover:bg-[#5348c7] text-white font-bold transition-colors"
+                    className="flex w-full cursor-pointer items-center justify-center rounded-lg h-12 bg-[#a855f7] hover:bg-[#5348c7] text-white font-bold transition-colors"
                   >
                     Login
                   </Link>

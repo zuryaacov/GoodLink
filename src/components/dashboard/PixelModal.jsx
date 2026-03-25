@@ -704,7 +704,7 @@ const PixelModal = ({ isOpen, onClose, initialData = null }) => {
                   disabled={isSubmitting}
                   className="px-6 py-2.5 text-sm text-white font-bold rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                   style={{
-                    backgroundColor: isSubmitting ? undefined : '#6358de',
+                    backgroundColor: isSubmitting ? undefined : '#a855f7',
                   }}
                   onMouseEnter={(e) => {
                     if (!isSubmitting) {
@@ -713,7 +713,7 @@ const PixelModal = ({ isOpen, onClose, initialData = null }) => {
                   }}
                   onMouseLeave={(e) => {
                     if (!isSubmitting) {
-                      e.currentTarget.style.backgroundColor = '#6358de';
+                      e.currentTarget.style.backgroundColor = '#a855f7';
                     }
                   }}
                 >

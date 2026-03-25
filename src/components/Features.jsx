@@ -63,7 +63,7 @@ const Features = () => {
           transition={{ duration: 0.6 }}
           className="flex flex-col items-center text-center gap-4 max-w-3xl mx-auto"
         >
-          <div className="inline-flex items-center rounded-full bg-[#6358de]/10 px-3 py-1 text-sm font-medium text-[#6358de] border border-[#6358de]/20">
+          <div className="inline-flex items-center rounded-full bg-[#a855f7]/10 px-3 py-1 text-sm font-medium text-[#a855f7] border border-[#a855f7]/20">
             Features
           </div>
           <h2 className="text-slate-900 dark:text-[#1b1b1b] tracking-tight text-3xl md:text-5xl font-black leading-tight">
@@ -86,9 +86,9 @@ const Features = () => {
             <motion.div
               key={index}
               variants={itemVariants}
-              className="group flex flex-col gap-5 rounded-2xl border border-white/10 dark:border-[#324467] bg-white/5 dark:bg-[#192233]/50 backdrop-blur-md p-8 md:p-10 shadow-sm hover:shadow-xl hover:border-[#6358de]/50 transition-all duration-300"
+              className="group flex flex-col gap-5 rounded-2xl border border-white/10 dark:border-[#324467] bg-white/5 dark:bg-[#192233]/50 backdrop-blur-md p-8 md:p-10 shadow-sm hover:shadow-xl hover:border-[#a855f7]/50 transition-all duration-300"
             >
-              <div className="flex h-14 w-14 md:h-16 md:w-16 items-center justify-center rounded-xl bg-[#6358de]/10 text-[#6358de] group-hover:bg-[#6358de] group-hover:text-white transition-colors">
+              <div className="flex h-14 w-14 md:h-16 md:w-16 items-center justify-center rounded-xl bg-[#a855f7]/10 text-[#a855f7] group-hover:bg-[#a855f7] group-hover:text-white transition-colors">
                 <span className="material-symbols-outlined text-4xl md:text-5xl">{feature.icon}</span>
               </div>
               <div className="flex flex-col gap-3">
@@ -103,7 +103,7 @@ const Features = () => {
                         return (
                           <>
                             {before}
-                            <span className="text-[#6358de] font-bold text-lg md:text-xl">
+                            <span className="text-[#a855f7] font-bold text-lg md:text-xl">
                               {feature.highlight}
                             </span>
                             {after}

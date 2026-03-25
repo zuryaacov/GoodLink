@@ -10,7 +10,7 @@ const AnalyticsSection = () => {
         <div className="flex justify-center">
           <div
             id="insights-heading"
-            className="inline-flex items-center rounded-full bg-[#6358de]/10 px-3 py-1 text-sm font-medium text-[#6358de] border border-[#6358de]/20"
+            className="inline-flex items-center rounded-full bg-[#a855f7]/10 px-3 py-1 text-sm font-medium text-[#a855f7] border border-[#a855f7]/20"
           >
             Insights
           </div>

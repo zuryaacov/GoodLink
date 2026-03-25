@@ -400,14 +400,14 @@ const PixelManager = () => {
               {normalizedPlan} plan
             </span>{' '}
             does not include CAPI tracking. Upgrade to&nbsp;
-            <span className="text-[#6358de] font-bold uppercase tracking-wider">PRO</span> to
+            <span className="text-[#a855f7] font-bold uppercase tracking-wider">PRO</span> to
             create, manage, and optimize CAPI profiles across all your campaigns.
           </p>
 
           {/* Value props */}
           <div className="space-y-4 mb-10 text-left">
             <div className="flex items-center gap-3 p-3 bg-white/80 rounded-xl border border-slate-200 hover:border-primary/40 transition-colors">
-              <Globe className="w-5 h-5 text-[#6358de]" />
+              <Globe className="w-5 h-5 text-[#a855f7]" />
               <div>
                 <p className="font-semibold text-sm text-[#1b1b1b] italic">Cross‑platform CAPI</p>
                 <p className="text-xs text-[#1b1b1b]">
@@ -416,7 +416,7 @@ const PixelManager = () => {
               </div>
             </div>
             <div className="flex items-center gap-3 p-3 bg-white/80 rounded-xl border border-slate-200 hover:border-primary/40 transition-colors">
-              <BarChart3 className="w-5 h-5 text-[#6358de]" />
+              <BarChart3 className="w-5 h-5 text-[#a855f7]" />
               <div>
                 <p className="font-semibold text-sm text-[#1b1b1b] italic">
                   Advanced Attribution & Optimization
@@ -433,7 +433,7 @@ const PixelManager = () => {
             onClick={() => {
               window.location.href = '/#pricing';
             }}
-            className="group relative w-full inline-flex items-center justify-center gap-2 bg-[#6358de] text-white font-bold py-3.5 px-8 rounded-2xl transition-all duration-300 hover:bg-[#5348c7] hover:scale-[1.02] active:scale-[0.98] shadow-xl shadow-[#6358de]/30"
+            className="group relative w-full inline-flex items-center justify-center gap-2 bg-[#a855f7] text-white font-bold py-3.5 px-8 rounded-2xl transition-all duration-300 hover:bg-[#5348c7] hover:scale-[1.02] active:scale-[0.98] shadow-xl shadow-[#a855f7]/30"
           >
             <Zap className="w-5 h-5" />
             <span>View Plans & Upgrade</span>
@@ -460,13 +460,13 @@ const PixelManager = () => {
           onClick={() => navigate('/dashboard/pixels/new')}
           className="flex items-center justify-center gap-2 w-full sm:w-auto px-6 py-3 md:py-2.5 text-white font-bold rounded-xl transition-colors shadow-lg text-base md:text-sm"
           style={{
-            backgroundColor: '#6358de',
+            backgroundColor: '#a855f7',
           }}
           onMouseEnter={(e) => {
             e.currentTarget.style.backgroundColor = '#5348c7';
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = '#6358de';
+            e.currentTarget.style.backgroundColor = '#a855f7';
           }}
         >
           <span className="material-symbols-outlined text-xl md:text-base">add</span>
@@ -476,7 +476,7 @@ const PixelManager = () => {
 
       {/* Pixels List */}
       {pixels.length === 0 ? (
-        <div className="bg-[#fcfdfd] border rounded-2xl p-12 text-center hover:shadow-card-mint transition-all border-[#6358de]/40 md:border-card-border md:hover:border-[#6358de]/40">
+        <div className="bg-[#fcfdfd] border rounded-2xl p-12 text-center hover:shadow-card-mint transition-all border-[#a855f7]/40 md:border-card-border md:hover:border-[#a855f7]/40">
           <span className="material-symbols-outlined text-6xl text-black mb-4">ads_click</span>
           <h3 className="text-xl font-bold text-black mb-2">No CAPI Profiles Yet</h3>
           <p className="text-black mb-6">
@@ -484,7 +484,7 @@ const PixelManager = () => {
           </p>
           <button
             onClick={() => navigate('/dashboard/pixels/new')}
-            className="px-6 py-3 bg-[#6358de] hover:bg-[#5348c7] text-white font-bold rounded-xl transition-all"
+            className="px-6 py-3 bg-[#a855f7] hover:bg-[#5348c7] text-white font-bold rounded-xl transition-all"
           >
             Create First CAPI
           </button>
@@ -494,7 +494,7 @@ const PixelManager = () => {
           {pixels.map((pixel) => (
             <div
               key={pixel.id}
-              className="bg-card-bg border rounded-xl p-5 transition-all hover:shadow-card-mint flex flex-col gap-4 border-[#6358de]/40 md:border-card-border md:hover:border-[#6358de]/40"
+              className="bg-card-bg border rounded-xl p-5 transition-all hover:shadow-card-mint flex flex-col gap-4 border-[#a855f7]/40 md:border-card-border md:hover:border-[#a855f7]/40"
             >
               {/* Header with Logo, Name & Actions menu */}
               <div className="flex items-start justify-between gap-3">

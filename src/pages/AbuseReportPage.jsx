@@ -204,21 +204,21 @@ const AbuseReportPage = () => {
               <svg fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 <path
                   d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"
-                  stroke="#6358de"
+                  stroke="#a855f7"
                   strokeLinecap="round"
                   strokeLinejoin="round"
                   strokeWidth="3"
                 />
                 <path
                   d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"
-                  stroke="#6358de"
+                  stroke="#a855f7"
                   strokeLinecap="round"
                   strokeLinejoin="round"
                   strokeWidth="3"
                 />
               </svg>
             </div>
-            <span className="text-2xl font-black leading-tight tracking-tight text-[#6358de]">
+            <span className="text-2xl font-black leading-tight tracking-tight text-[#a855f7]">
               GoodLink
             </span>
           </Link>
@@ -330,7 +330,7 @@ const AbuseReportPage = () => {
               <button
                 type="submit"
                 disabled={loading || !turnstileToken}
-                className="w-full md:w-auto px-6 py-3 rounded-xl bg-[#6358de] hover:bg-[#5348c7] disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold transition-colors"
+                className="w-full md:w-auto px-6 py-3 rounded-xl bg-[#a855f7] hover:bg-[#5348c7] disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold transition-colors"
               >
                 {loading ? 'Submitting…' : 'Submit report'}
               </button>
