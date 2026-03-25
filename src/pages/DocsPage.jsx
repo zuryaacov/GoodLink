@@ -272,7 +272,115 @@ const DocsPage = () => {
               </div>
             </section>
 
-            {DOC_SECTIONS.slice(1).map(({ id, title }) => (
+            <section id="workspaces" className="scroll-mt-32 not-prose mb-16 sm:mb-20">
+              <div className="max-w-[800px] mx-auto bg-white rounded-2xl shadow-[0_4px_6px_-1px_rgba(0,0,0,0.1)] border border-slate-100 p-6 sm:p-8 md:p-10 text-[#1f2937] leading-relaxed">
+                <h1 className="text-center text-[#a855f7] text-3xl sm:text-4xl md:text-[2.2rem] font-bold mb-5">
+                  Organizing Your Content: Workspaces, Campaigns, and Groups
+                </h1>
+
+                <p className="text-center text-[#6b7280] text-base sm:text-[1.1rem] mb-10 max-w-2xl mx-auto">
+                  To help you keep your links organized and your data clear, GoodLink offers a powerful hierarchical
+                  structure. Whether you are an individual creator, a marketing agency, or a business owner, these
+                  tools allow you to categorize your links perfectly.
+                </p>
+
+                <h2 className="text-[#a855f7] text-2xl sm:text-[1.6rem] font-bold border-b-2 border-[#d7fec8] pb-2 mb-6">
+                  The Hierarchy Explained
+                </h2>
+                <div className="border border-[#e5e7eb] rounded-xl p-5 sm:p-6 mb-8 bg-white">
+                  <div className="space-y-5">
+                    <div className="pl-5 border-l-4 border-[#a855f7]">
+                      <p className="text-[#a855f7] text-[1.1rem] font-bold mb-1">1. Workspaces</p>
+                      <p className="text-[#1f2937]">
+                        This is your top-level container. Use this for broad topics, different brands, or if you are an
+                        agency, use a separate Workspace for each client.
+                      </p>
+                    </div>
+                    <div className="pl-5 border-l-4 border-[#a855f7]">
+                      <p className="text-[#a855f7] text-[1.1rem] font-bold mb-1">2. Campaigns</p>
+                      <p className="text-[#1f2937]">
+                        Located inside a Workspace. Group your links by specific marketing goals, seasons, or product
+                        launches (for example, &quot;Summer Sale 2026&quot;).
+                      </p>
+                    </div>
+                    <div className="pl-5 border-l-4 border-[#a855f7]">
+                      <p className="text-[#a855f7] text-[1.1rem] font-bold mb-1">3. Groups</p>
+                      <p className="text-[#1f2937]">
+                        Located inside a Campaign. If you need to split your campaign into smaller segments, such as
+                        different social media platforms or ad sets, use Groups to keep them separated.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <h2 className="text-[#a855f7] text-2xl sm:text-[1.6rem] font-bold border-b-2 border-[#d7fec8] pb-2 mb-4">
+                  How to Create and Manage
+                </h2>
+                <p className="text-[#1f2937] mb-5">Setting up your structure is intuitive and takes only a few seconds:</p>
+
+                <div className="bg-[#f9fafb] rounded-xl p-5 sm:p-6 mb-8">
+                  <div className="space-y-4">
+                    {[
+                      {
+                        title: 'Navigate to Link Manager',
+                        text: 'From your dashboard, click on the "Link Manager" tab.',
+                      },
+                      {
+                        title: 'Create New',
+                        text: 'Click the "Create" button. Based on your current view, you will see options to create a New Workspace, New Campaign, or New Group.',
+                      },
+                      {
+                        title: 'Name Your Item',
+                        text: 'Once selected, a modal window will appear. Simply enter the desired name and click Create.',
+                      },
+                      {
+                        title: 'Add Links',
+                        text: 'You can now start adding links directly into your new container.',
+                      },
+                    ].map((step, i) => (
+                      <div key={step.title} className="flex items-start">
+                        <div className="bg-[#a855f7] text-white min-w-6 h-6 rounded-full flex items-center justify-center mr-3.5 text-xs font-bold">
+                          {i + 1}
+                        </div>
+                        <div className="text-[#1f2937]">
+                          <span className="font-bold">{step.title}:</span> {step.text}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <h2 className="text-[#a855f7] text-2xl sm:text-[1.6rem] font-bold border-b-2 border-[#d7fec8] pb-2 mb-4">
+                  Tracking Performance at a Glance
+                </h2>
+                <p className="text-[#1f2937] mb-5">
+                  Each Workspace, Campaign, and Group is displayed as a dedicated card on your screen. These cards
+                  provide instant insights without needing to click into each one.
+                </p>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-7">
+                  <div className="bg-[#d7fec8] rounded-lg p-4 text-center text-[0.95rem] text-[#1f2937]">
+                    <span className="block font-bold">Name</span>
+                    Easily identify the category.
+                  </div>
+                  <div className="bg-[#d7fec8] rounded-lg p-4 text-center text-[0.95rem] text-[#1f2937]">
+                    <span className="block font-bold">Link Count</span>
+                    See exactly how many links are stored inside.
+                  </div>
+                  <div className="bg-[#d7fec8] rounded-lg p-4 text-center text-[0.95rem] text-[#1f2937]">
+                    <span className="block font-bold">Total Clicks</span>
+                    View the aggregated number of clicks for all links within that specific container.
+                  </div>
+                </div>
+
+                <p className="mt-7 text-center italic text-[#6b7280]">
+                  This organization ensures that you spend less time searching for links and more time analyzing your
+                  success!
+                </p>
+              </div>
+            </section>
+
+            {DOC_SECTIONS.slice(2).map(({ id, title }) => (
               <section
                 key={id}
                 id={id}
