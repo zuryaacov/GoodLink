@@ -380,7 +380,150 @@ const DocsPage = () => {
               </div>
             </section>
 
-            {DOC_SECTIONS.slice(2).map(({ id, title }) => (
+            <section id="links" className="scroll-mt-32 not-prose mb-16 sm:mb-20">
+              <div className="max-w-[900px] mx-auto bg-white rounded-2xl shadow-[0_4px_6px_-1px_rgba(0,0,0,0.1)] border border-slate-100 p-6 sm:p-8 md:p-10 text-[#1f2937] leading-relaxed">
+                <h1 className="text-center text-[#a855f7] text-3xl sm:text-4xl md:text-[2.2rem] font-bold mb-10">
+                  Creating and Managing Links
+                </h1>
+                <p className="text-center text-[#6b7280] text-base sm:text-[1.05rem] mb-10 max-w-2xl mx-auto">
+                  Learn how to create links based on your subscription plan and maximize your marketing impact.
+                </p>
+
+                <section className="mb-10">
+                  <span className="inline-block px-3 py-1 rounded-full text-[0.85rem] font-bold uppercase tracking-wide bg-[#e2e8f0] text-[#475569] mb-4">
+                    Starter Plan
+                  </span>
+                  <h2 className="text-[#a855f7] text-2xl sm:text-[1.6rem] font-bold border-b-2 border-[#d7fec8] pb-2 mb-5">
+                    Basic Link Creation
+                  </h2>
+                  <div className="border border-[#e5e7eb] rounded-xl p-6 sm:p-8 bg-white">
+                    <p className="mb-5">
+                      On the <strong>Starter</strong> plan, you can quickly create essential tracking links directly from
+                      your dashboard.
+                    </p>
+                    <ul className="list-none p-0 m-0 space-y-3">
+                      {[
+                        <>
+                          <strong>Navigation:</strong> Go to &quot;Link Manager&quot; and click the <strong>New Link</strong>{' '}
+                          button.
+                        </>,
+                        <>
+                          <strong>Link Name:</strong> Give your link a recognizable name for internal tracking.
+                        </>,
+                        <>
+                          <strong>Target URL:</strong> The destination where the user should land.
+                        </>,
+                        <>
+                          <strong>Custom Slug:</strong> The unique name after the domain (for example, if you enter
+                          &quot;iphone&quot;, your link will be <em>glynk.to/iphone</em>).
+                        </>,
+                      ].map((content, i) => (
+                        <li
+                          key={i}
+                          className="relative pl-8 text-[#1f2937] before:content-['→'] before:absolute before:left-0 before:text-[#a855f7] before:font-bold"
+                        >
+                          {content}
+                        </li>
+                      ))}
+                    </ul>
+                    <p className="mt-5 text-sm italic text-[#6b7280]">
+                      Note: Workspaces, Campaigns and Groups are not available on the Starter plan.
+                    </p>
+                  </div>
+                </section>
+
+                <section className="mb-10">
+                  <span className="inline-block px-3 py-1 rounded-full text-[0.85rem] font-bold uppercase tracking-wide bg-[#fef9c3] text-[#854d0e] mb-4">
+                    Advanced Plan
+                  </span>
+                  <h2 className="text-[#a855f7] text-2xl sm:text-[1.6rem] font-bold border-b-2 border-[#d7fec8] pb-2 mb-5">
+                    Advanced Customization &amp; Security
+                  </h2>
+                  <div className="border border-[#e5e7eb] rounded-xl p-6 sm:p-8 bg-white">
+                    <ul className="list-none p-0 m-0 space-y-3">
+                      <li className="relative pl-8 text-[#1f2937] before:content-['→'] before:absolute before:left-0 before:text-[#a855f7] before:font-bold">
+                        <strong>Navigation:</strong> Go to &quot;Link Manager&quot;, click <strong>Create</strong>, and select{' '}
+                        <strong>New Link</strong>.
+                      </li>
+                      <li className="relative pl-8 text-[#1f2937] before:content-['→'] before:absolute before:left-0 before:text-[#a855f7] before:font-bold">
+                        <strong>Custom Domains:</strong> Choose between the default <em>glynk.to</em> or your own connected
+                        Custom Domain.
+                      </li>
+                      <li className="relative pl-8 text-[#1f2937] before:content-['→'] before:absolute before:left-0 before:text-[#a855f7] before:font-bold">
+                        <strong>Bot Protection:</strong> Protect your data integrity. If a click is identified as a bot,
+                        you can choose to:
+                        <ul className="mt-2 ml-4 list-disc text-[#6b7280] space-y-1">
+                          <li>Allow it to the Target URL</li>
+                          <li>Block the click entirely</li>
+                          <li>Redirect to a different URL</li>
+                        </ul>
+                      </li>
+                    </ul>
+                  </div>
+                </section>
+
+                <section className="mb-10">
+                  <span className="inline-block px-3 py-1 rounded-full text-[0.85rem] font-bold uppercase tracking-wide bg-[#d7fec8] text-[#166534] mb-4">
+                    Pro Plan
+                  </span>
+                  <h2 className="text-[#a855f7] text-2xl sm:text-[1.6rem] font-bold border-b-2 border-[#d7fec8] pb-2 mb-5">
+                    Professional Targeting &amp; Automation
+                  </h2>
+                  <div className="border border-[#e5e7eb] rounded-xl p-6 sm:p-8 bg-white">
+                    <p className="mb-5">
+                      The <strong>Pro</strong> plan includes everything in Advanced, plus high-end marketing tools:
+                    </p>
+                    <ul className="list-none p-0 m-0 space-y-3">
+                      <li className="relative pl-8 text-[#1f2937] before:content-['→'] before:absolute before:left-0 before:text-[#a855f7] before:font-bold">
+                        <strong>Geo-Targeting:</strong> Route users by country. For example, redirect French visitors to a
+                        French version of your site. You can add multiple routing rules.
+                      </li>
+                      <li className="relative pl-8 text-[#1f2937] before:content-['→'] before:absolute before:left-0 before:text-[#a855f7] before:font-bold">
+                        <strong>CAPI Select (Server-Side Tracking):</strong> When using a <strong>Custom Domain</strong>,
+                        you can automatically send conversion data (CAPI) directly to Facebook, Instagram, or TikTok
+                        servers.
+                      </li>
+                    </ul>
+                  </div>
+                </section>
+
+                <section className="mb-8">
+                  <h2 className="text-[#a855f7] text-2xl sm:text-[1.6rem] font-bold border-b-2 border-[#d7fec8] pb-2 mb-5">
+                    Link Management &amp; QR Codes
+                  </h2>
+                  <div className="border border-[#e5e7eb] rounded-xl p-6 sm:p-8 bg-white">
+                    <p className="mb-5">
+                      Every link created on GoodLink—regardless of your plan—comes with a{' '}
+                      <strong>built-in QR Code</strong> for offline marketing.
+                    </p>
+                    <div className="border border-dashed border-[#a855f7] rounded-lg p-5 mt-5 bg-[#fafafa]">
+                      <p className="font-bold text-[#a855f7] mb-2">What&apos;s inside your Link Card?</p>
+                      <ul className="mt-2.5 pl-5 list-disc text-[#1f2937] space-y-1">
+                        <li>
+                          <strong>Link Status:</strong> See if your link is Active, Paused, or Rejected.
+                        </li>
+                        <li>
+                          <strong>Quick Actions:</strong> Use the &quot;Quick Copy&quot; button for your short link or download
+                          the QR code.
+                        </li>
+                        <li>
+                          <strong>Analytics:</strong> View the real-time click count directly on the card.
+                        </li>
+                        <li>
+                          <strong>Details:</strong> View the Link Name and Redirect Address at a glance.
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                </section>
+
+                <div className="bg-[#d7fec8] rounded-xl py-5 px-4 text-center font-semibold text-[#1f2937] mt-8">
+                  ✨ Every link automatically generates a unique QR Code!
+                </div>
+              </div>
+            </section>
+
+            {DOC_SECTIONS.slice(3).map(({ id, title }) => (
               <section
                 key={id}
                 id={id}
