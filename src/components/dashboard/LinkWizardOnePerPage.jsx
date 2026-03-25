@@ -1142,7 +1142,7 @@ export default function LinkWizardOnePerPage({
                 <div className="flex flex-col min-h-0 flex-1">
                   {(formData.domain || 'glynk.to') === 'glynk.to' ? (
                     <p className="text-slate-600 text-[2rem] leading-relaxed">
-                      CAPI is only available when using a custom domain.
+                      CAPI is available only when using a custom domain.
                     </p>
                   ) : loadingPixels ? (
                     <p className="text-[#1b1b1b]">Loading CAPI...</p>

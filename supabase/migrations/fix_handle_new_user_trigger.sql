@@ -25,8 +25,10 @@ BEGIN
       NEW.raw_user_meta_data->>'name'
     ),
     'user'
-  )
-  ON CONFLICT (user_id) DO NOTHING;
+  );
+  RETURN NEW;
+EXCEPTION WHEN OTHERS THEN
+  RAISE LOG 'handle_new_user error: % %', SQLSTATE, SQLERRM;
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
