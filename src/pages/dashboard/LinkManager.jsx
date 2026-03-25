@@ -909,7 +909,7 @@ const LinkManager = () => {
                   ? handleCreateOption('link')
                   : setCreateMenuOpen((v) => !v)
               }
-              className={`flex items-center justify-center gap-2 ${isFoldersEnabled ? 'w-full sm:w-auto' : 'w-auto'} px-6 py-3 md:py-2.5 text-white font-bold rounded-xl transition-colors shadow-lg text-base md:text-sm bg-[#a855f7] hover:bg-[#5348c7]`}
+              className={`flex items-center justify-center gap-2 ${isFoldersEnabled ? 'w-full sm:w-auto' : 'w-auto'} px-6 py-3 md:py-2.5 text-white font-bold rounded-xl transition-colors shadow-lg text-base md:text-sm bg-[#a855f7] hover:bg-[#9333ea]`}
             >
               <span className="material-symbols-outlined text-xl md:text-base">add</span>
               {createOptions.length === 1 ? 'New Link' : 'Create'}
@@ -1012,7 +1012,7 @@ const LinkManager = () => {
                         vectorEffect: 'non-scaling-stroke',
                         shapeRendering: 'geometricPrecision',
                       }}
-                      className="transition-all duration-300 group-hover:stroke-[#5348c7] group-hover:fill-[#F4F7F6]"
+                      className="transition-all duration-300 group-hover:stroke-[#9333ea] group-hover:fill-[#F4F7F6]"
                     />
                   </svg>
                   <div className="relative z-10 flex flex-col min-h-[224px] p-6 pt-10">
@@ -1125,7 +1125,7 @@ const LinkManager = () => {
             <button
               type="button"
               onClick={() => navigate('/dashboard/links/new')}
-              className="px-6 py-3 bg-[#a855f7] hover:bg-[#5348c7] text-white font-bold rounded-xl transition-all"
+              className="px-6 py-3 bg-[#a855f7] hover:bg-[#9333ea] text-white font-bold rounded-xl transition-all"
             >
               Create First Link
             </button>

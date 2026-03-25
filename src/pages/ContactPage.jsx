@@ -144,7 +144,7 @@ const ContactPage = () => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full sm:w-auto px-8 py-4 rounded-lg bg-[#a855f7] hover:bg-[#5348c7] text-white font-bold text-base transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+              className="w-full sm:w-auto px-8 py-4 rounded-lg bg-[#a855f7] hover:bg-[#9333ea] text-white font-bold text-base transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
             >
               {loading ? 'Sending...' : 'Send'}
             </button>

@@ -1312,7 +1312,7 @@ export default function LinkWizardOnePerPage({
             type="button"
             onClick={goNext}
             disabled={validating || urlSafety.loading || (isLast && isSubmitting)}
-            className="flex-1 flex items-center justify-center gap-3 py-5 rounded-2xl font-extrabold text-xl tracking-tight transition-all active:scale-[0.98] shadow-xl bg-[#a855f7] hover:bg-[#5348c7] text-white disabled:opacity-60 disabled:cursor-not-allowed"
+            className="flex-1 flex items-center justify-center gap-3 py-5 rounded-2xl font-extrabold text-xl tracking-tight transition-all active:scale-[0.98] shadow-xl bg-[#a855f7] hover:bg-[#9333ea] text-white disabled:opacity-60 disabled:cursor-not-allowed"
           >
             {isLast && isSubmitting ? (
               <>

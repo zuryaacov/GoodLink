@@ -356,7 +356,7 @@ const Step3Security = ({ formData, updateFormData, onValidationRequest }) => {
                     {/* Delete Button - Top Right */}
                     <button
                       onClick={() => handleRemoveGeoRule(index)}
-                      className="absolute top-3 right-3 text-[#a855f7] hover:text-[#5348c7] transition-colors p-1.5"
+                      className="absolute top-3 right-3 text-[#a855f7] hover:text-[#9333ea] transition-colors p-1.5"
                       title="Delete rule"
                     >
                       <span className="material-symbols-outlined text-lg sm:text-xl">delete</span>
@@ -554,7 +554,7 @@ const Step3Security = ({ formData, updateFormData, onValidationRequest }) => {
                 <button
                   onClick={handleAddGeoRule}
                   disabled={!newGeoRule.country || !newGeoRule.url}
-                  className="flex-1 px-4 py-2.5 sm:py-3 bg-[#a855f7] hover:bg-[#5348c7] disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold rounded-xl transition-colors text-sm sm:text-base"
+                  className="flex-1 px-4 py-2.5 sm:py-3 bg-[#a855f7] hover:bg-[#9333ea] disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold rounded-xl transition-colors text-sm sm:text-base"
                 >
                   {editingRuleIndex !== null ? 'Update Rule' : 'Add Rule'}
                 </button>

@@ -142,7 +142,7 @@ const Navbar = () => {
               <>
                 <Link
                   to="/dashboard/links"
-                  className="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-[#a855f7] hover:bg-[#5348c7] text-white text-sm font-bold leading-normal tracking-[0.015em] transition-colors"
+                  className="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-[#a855f7] hover:bg-[#9333ea] text-white text-sm font-bold leading-normal tracking-[0.015em] transition-colors"
                 >
                   <span className="truncate">Dashboard</span>
                 </Link>
@@ -156,7 +156,7 @@ const Navbar = () => {
             ) : (
               <Link
                 to="/login"
-                className="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-[#a855f7] hover:bg-[#5348c7] text-white text-sm font-bold leading-normal tracking-[0.015em] transition-colors"
+                className="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-[#a855f7] hover:bg-[#9333ea] text-white text-sm font-bold leading-normal tracking-[0.015em] transition-colors"
               >
                 <span className="truncate">Login</span>
               </Link>
@@ -230,7 +230,7 @@ const Navbar = () => {
                   <Link
                     to="/login"
                     onClick={() => setIsOpen(false)}
-                    className="flex w-full cursor-pointer items-center justify-center rounded-lg h-12 bg-[#a855f7] hover:bg-[#5348c7] text-white font-bold transition-colors"
+                    className="flex w-full cursor-pointer items-center justify-center rounded-lg h-12 bg-[#a855f7] hover:bg-[#9333ea] text-white font-bold transition-colors"
                   >
                     Login
                   </Link>

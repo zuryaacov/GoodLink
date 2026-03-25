@@ -167,7 +167,7 @@ const CTASection = () => {
           <div className="flex justify-center mt-6">
             <Link
               to="/login?mode=signup"
-              className="inline-flex h-14 md:h-16 min-w-[200px] md:min-w-[240px] items-center justify-center rounded-xl bg-[#a855f7] hover:bg-[#5348c7] px-10 md:px-12 text-white text-base md:text-lg font-bold tracking-wide transition-all"
+              className="inline-flex h-14 md:h-16 min-w-[200px] md:min-w-[240px] items-center justify-center rounded-xl bg-[#a855f7] hover:bg-[#9333ea] px-10 md:px-12 text-white text-base md:text-lg font-bold tracking-wide transition-all"
             >
               Start your 30-day free trial
             </Link>
@@ -248,7 +248,7 @@ const CTASection = () => {
                   className={`mb-10 w-full text-center inline-block active:scale-95 transition-all ${
                     plan.highlighted
                       ? plan.name === 'PRO' && !user
-                        ? 'py-5 rounded-full bg-[#a855f7] text-white font-black text-lg shadow-xl shadow-[#4a3dc4]/30 hover:opacity-90 cursor-pointer'
+                        ? 'py-5 rounded-full bg-[#a855f7] text-white font-black text-lg shadow-xl shadow-[#a855f7]/30 hover:bg-[#9333ea] cursor-pointer transition-colors'
                         : 'py-5 rounded-full bg-slate-300 text-slate-500 font-black text-lg cursor-not-allowed'
                       : plan.name === 'PRO' && !user
                         ? 'py-4 rounded-full border border-[#787585] text-[#5549d0] font-bold hover:bg-[#eeeeee] cursor-pointer'

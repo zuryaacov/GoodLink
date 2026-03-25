@@ -978,7 +978,7 @@ const AdminOverviewPage = () => {
                       type="button"
                       onClick={() => loginAsUser(u)}
                       disabled={impersonatingUserId === u.user_id}
-                      className="px-4 py-2.5 rounded-xl bg-[#a855f7] text-white text-sm font-bold hover:bg-[#5348c7] disabled:opacity-60 transition-colors"
+                      className="px-4 py-2.5 rounded-xl bg-[#a855f7] text-white text-sm font-bold hover:bg-[#9333ea] disabled:opacity-60 transition-colors"
                     >
                       {impersonatingUserId === u.user_id ? 'Opening…' : 'Login as User'}
                     </button>

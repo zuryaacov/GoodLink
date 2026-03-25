@@ -330,7 +330,7 @@ const AbuseReportPage = () => {
               <button
                 type="submit"
                 disabled={loading || !turnstileToken}
-                className="w-full md:w-auto px-6 py-3 rounded-xl bg-[#a855f7] hover:bg-[#5348c7] disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold transition-colors"
+                className="w-full md:w-auto px-6 py-3 rounded-xl bg-[#a855f7] hover:bg-[#9333ea] disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold transition-colors"
               >
                 {loading ? 'Submitting…' : 'Submit report'}
               </button>

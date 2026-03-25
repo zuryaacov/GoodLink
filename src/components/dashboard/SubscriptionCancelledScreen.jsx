@@ -40,7 +40,7 @@ const SubscriptionCancelledScreen = () => {
         </p>
         <button
           onClick={() => navigate('/dashboard/settings')}
-          className="w-full inline-flex items-center justify-center gap-2 bg-[#a855f7] text-white font-bold py-3.5 px-8 rounded-2xl transition-all hover:bg-[#5348c7] shadow-xl shadow-[#a855f7]/30"
+          className="w-full inline-flex items-center justify-center gap-2 bg-[#a855f7] text-white font-bold py-3.5 px-8 rounded-2xl transition-all hover:bg-[#9333ea] shadow-xl shadow-[#a855f7]/30"
         >
           Renew in Account Settings
         </button>

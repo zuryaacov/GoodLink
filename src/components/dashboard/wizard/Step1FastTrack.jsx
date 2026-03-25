@@ -745,7 +745,7 @@ const Step1FastTrack = ({
           }}
           onMouseEnter={(e) => {
             if (!checkingSlug) {
-              e.currentTarget.style.backgroundColor = '#5348c7';
+              e.currentTarget.style.backgroundColor = '#9333ea';
             }
           }}
           onMouseLeave={(e) => {

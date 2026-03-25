@@ -434,7 +434,7 @@ const CustomDomainsManager = () => {
             onClick={() => {
               window.location.href = '/#pricing';
             }}
-            className="group relative w-full inline-flex items-center justify-center gap-2 bg-[#a855f7] text-white font-bold py-3.5 px-8 rounded-2xl transition-all duration-300 hover:bg-[#5348c7] hover:scale-[1.02] active:scale-[0.98] shadow-xl shadow-[#a855f7]/30"
+            className="group relative w-full inline-flex items-center justify-center gap-2 bg-[#a855f7] text-white font-bold py-3.5 px-8 rounded-2xl transition-all duration-300 hover:bg-[#9333ea] hover:scale-[1.02] active:scale-[0.98] shadow-xl shadow-[#a855f7]/30"
           >
             <Zap className="w-5 h-5" />
             <span>View Plans & Upgrade</span>
@@ -462,7 +462,7 @@ const CustomDomainsManager = () => {
         </div>
         <button
           onClick={() => navigate('/dashboard/domains/new')}
-          className="px-6 py-3 bg-[#a855f7] hover:bg-[#5348c7] text-white font-bold rounded-xl transition-all shadow-lg shadow-[#a855f7]/20 flex items-center gap-2 whitespace-nowrap"
+          className="px-6 py-3 bg-[#a855f7] hover:bg-[#9333ea] text-white font-bold rounded-xl transition-all shadow-lg shadow-[#a855f7]/20 flex items-center gap-2 whitespace-nowrap"
         >
           <span className="material-symbols-outlined">add</span>
           New Domain
@@ -512,7 +512,7 @@ const CustomDomainsManager = () => {
           </p>
           <button
             onClick={() => navigate('/dashboard/domains/new')}
-            className="px-6 py-3 bg-[#a855f7] hover:bg-[#5348c7] text-white font-bold rounded-xl transition-all"
+            className="px-6 py-3 bg-[#a855f7] hover:bg-[#9333ea] text-white font-bold rounded-xl transition-all"
           >
             Create First Domain
           </button>
@@ -640,7 +640,7 @@ const CustomDomainsManager = () => {
                       handleVerifyDNS(detailsModalDomain);
                       setDetailsModalDomain(null);
                     }}
-                    className="px-4 py-2 bg-[#a855f7] hover:bg-[#5348c7] text-white font-bold rounded-xl transition-all shadow-lg shadow-[#a855f7]/20 flex items-center justify-center gap-2 text-sm"
+                    className="px-4 py-2 bg-[#a855f7] hover:bg-[#9333ea] text-white font-bold rounded-xl transition-all shadow-lg shadow-[#a855f7]/20 flex items-center justify-center gap-2 text-sm"
                   >
                     <span className="material-symbols-outlined text-lg">verified</span>
                     Verify DNS

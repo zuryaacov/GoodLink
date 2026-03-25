@@ -710,7 +710,7 @@ const AuthPage = () => {
       <div className="relative z-10 w-full max-w-md flex flex-col items-center">
         <Logo />
 
-        <div className="w-full bg-white backdrop-blur-xl border border-[#d7fec8]/60 p-8 rounded-3xl shadow-2xl relative shadow-[0_0_40px_rgba(99,88,222,0.35)]">
+        <div className="w-full bg-white backdrop-blur-xl border border-[#d7fec8]/60 p-8 rounded-3xl shadow-2xl relative shadow-[0_0_40px_rgba(168,85,247,0.35)]">
           {planParam && (
             <div className="mb-4 p-3 bg-primary/10 border border-primary/30 rounded-lg text-center">
               <p className="text-sm text-primary font-bold">

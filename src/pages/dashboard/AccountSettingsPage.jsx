@@ -482,7 +482,7 @@ export default function AccountSettingsPage() {
                   <button
                     type="submit"
                     disabled={saving}
-                    className="bg-[#a855f7] hover:bg-[#5348c7] text-white font-semibold py-3 px-8 rounded-xl transition-all shadow-[0_0_15px_rgba(99,88,222,0.3)] disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                    className="bg-[#a855f7] hover:bg-[#9333ea] text-white font-semibold py-3 px-8 rounded-xl transition-all shadow-[0_0_15px_rgba(168,85,247,0.3)] disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                   >
                     {saving && (
                       <span className="material-symbols-outlined animate-spin text-sm">
@@ -631,7 +631,7 @@ export default function AccountSettingsPage() {
                           isFeaturedCard
                             ? isCurrentPlan
                               ? 'py-5 rounded-full bg-slate-300 text-slate-500 font-black text-lg cursor-not-allowed'
-                              : 'py-5 rounded-full bg-[#a855f7] text-white font-black text-lg shadow-xl shadow-[#4a3dc4]/30 hover:opacity-90 cursor-pointer'
+                              : 'py-5 rounded-full bg-[#a855f7] text-white font-black text-lg shadow-xl shadow-[#a855f7]/30 hover:bg-[#9333ea] cursor-pointer transition-colors'
                             : isCurrentPlan
                               ? 'py-4 rounded-full border border-[#787585] text-slate-500 font-bold cursor-not-allowed'
                               : 'py-4 rounded-full border border-[#787585] text-[#5549d0] font-bold hover:bg-[#eeeeee] cursor-pointer'
@@ -688,7 +688,7 @@ export default function AccountSettingsPage() {
             {!showPasswordChange ? (
               <button
                 onClick={() => setShowPasswordChange(true)}
-                className="flex items-center gap-2 bg-[#a855f7] hover:bg-[#5348c7] text-white transition-colors border border-transparent rounded-lg px-4 py-2 font-semibold shadow-md shadow-[#a855f7]/30"
+                className="flex items-center gap-2 bg-[#a855f7] hover:bg-[#9333ea] text-white transition-colors border border-transparent rounded-lg px-4 py-2 font-semibold shadow-md shadow-[#a855f7]/30"
               >
                 Change Password
               </button>
@@ -811,7 +811,7 @@ export default function AccountSettingsPage() {
                       newPassword !== confirmPassword ||
                       newPassword.length < 8
                     }
-                    className="bg-[#a855f7] hover:bg-[#5348c7] text-white text-xs font-bold px-4 py-2 rounded-lg disabled:opacity-50 transition-colors"
+                    className="bg-[#a855f7] hover:bg-[#9333ea] text-white text-xs font-bold px-4 py-2 rounded-lg disabled:opacity-50 transition-colors"
                   >
                     Update Password
                   </button>

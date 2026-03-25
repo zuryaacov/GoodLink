@@ -708,7 +708,7 @@ const PixelModal = ({ isOpen, onClose, initialData = null }) => {
                   }}
                   onMouseEnter={(e) => {
                     if (!isSubmitting) {
-                      e.currentTarget.style.backgroundColor = '#5348c7';
+                      e.currentTarget.style.backgroundColor = '#9333ea';
                     }
                   }}
                   onMouseLeave={(e) => {

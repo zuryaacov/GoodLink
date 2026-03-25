@@ -43,7 +43,7 @@ const Hero = ({ user }) => {
             <div className="flex flex-col items-center">
               <Link
                 to="/login?mode=signup"
-                className="inline-flex h-14 md:h-16 min-w-[200px] md:min-w-[240px] items-center justify-center rounded-xl bg-[#a855f7] hover:bg-[#5348c7] px-10 md:px-12 text-white text-base md:text-lg font-bold tracking-wide transition-all"
+                className="inline-flex h-14 md:h-16 min-w-[200px] md:min-w-[240px] items-center justify-center rounded-xl bg-[#a855f7] hover:bg-[#9333ea] px-10 md:px-12 text-white text-base md:text-lg font-bold tracking-wide transition-all"
               >
                 Start your 30-day free trial
               </Link>
