@@ -1,49 +1,28 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import {
-  BookOpen,
-  Compass,
-  Globe,
-  LayoutDashboard,
-  ChartNoAxesCombined,
+  UserCircle,
+  Layers,
   Link2,
-  WandSparkles,
-  Megaphone,
-  Radar,
   Globe2,
-  Settings,
-  ShieldCheck,
-  CircleHelp,
-  Lightbulb,
+  Radar,
+  Megaphone,
+  BookOpen,
 } from 'lucide-react';
 
-const DocsPage = () => {
-  const [activeSection, setActiveSection] = useState('intro');
+const DOC_SECTIONS = [
+  { id: 'create-account', title: 'Create Your GoodLink Account', Icon: UserCircle },
+  { id: 'workspaces', title: 'Workspaces, Campaigns and groups', Icon: Layers },
+  { id: 'links', title: 'Links', Icon: Link2 },
+  { id: 'custom-domains', title: 'Custom domains', Icon: Globe2 },
+  { id: 'capi', title: 'Capi (S2S Tracking)', Icon: Radar },
+  { id: 'utm-presets', title: 'UTM Presets', Icon: Megaphone },
+];
 
-  const sections = [
-    { id: 'intro', title: 'Introduction', icon: <BookOpen className="w-4 h-4" /> },
-    { id: 'quick-start', title: 'Quick Start', icon: <Compass className="w-4 h-4" /> },
-    { id: 'public-pages', title: 'Public Pages', icon: <Globe className="w-4 h-4" /> },
-    {
-      id: 'dashboard-navigation',
-      title: 'Dashboard Navigation',
-      icon: <LayoutDashboard className="w-4 h-4" />,
-    },
-    {
-      id: 'analytics-page',
-      title: 'Analytics Page',
-      icon: <ChartNoAxesCombined className="w-4 h-4" />,
-    },
-    { id: 'link-manager-page', title: 'Link Manager', icon: <Link2 className="w-4 h-4" /> },
-    { id: 'link-wizard', title: 'Link Wizard', icon: <WandSparkles className="w-4 h-4" /> },
-    { id: 'utm-presets', title: 'UTM Presets', icon: <Megaphone className="w-4 h-4" /> },
-    { id: 'capi-manager', title: 'CAPI Manager', icon: <Radar className="w-4 h-4" /> },
-    { id: 'domains-manager', title: 'Custom Domains', icon: <Globe2 className="w-4 h-4" /> },
-    { id: 'account-settings', title: 'Account Settings', icon: <Settings className="w-4 h-4" /> },
-    { id: 'admin-panel', title: 'Admin Panel', icon: <ShieldCheck className="w-4 h-4" /> },
-    { id: 'troubleshooting', title: 'Troubleshooting', icon: <CircleHelp className="w-4 h-4" /> },
-    { id: 'best-practices', title: 'Best Practices', icon: <Lightbulb className="w-4 h-4" /> },
-  ];
+const DocsPage = () => {
+  const [activeSection, setActiveSection] = useState('create-account');
+
+  const sectionIds = useMemo(() => DOC_SECTIONS.map((s) => s.id), []);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -52,18 +31,19 @@ const DocsPage = () => {
   useEffect(() => {
     const handleScroll = () => {
       const scrollPosition = window.scrollY + 150;
-      for (const section of [...sections].reverse()) {
-        const element = document.getElementById(section.id);
+      for (const id of [...sectionIds].reverse()) {
+        const element = document.getElementById(id);
         if (element && element.offsetTop <= scrollPosition) {
-          setActiveSection(section.id);
+          setActiveSection(id);
           break;
         }
       }
     };
 
     window.addEventListener('scroll', handleScroll);
+    handleScroll();
     return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  }, [sectionIds]);
 
   const scrollToSection = (id) => {
     const element = document.getElementById(id);
@@ -74,6 +54,28 @@ const DocsPage = () => {
       });
     }
   };
+
+  const NavButtons = ({ className = '' }) => (
+    <nav className={`space-y-1 ${className}`}>
+      {DOC_SECTIONS.map(({ id, title, Icon }) => (
+        <button
+          key={id}
+          type="button"
+          onClick={() => scrollToSection(id)}
+          className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-left transition-all duration-200 ${
+            activeSection === id
+              ? 'bg-slate-50 text-slate-900 shadow-sm'
+              : 'text-slate-500 hover:bg-slate-50/50 hover:text-slate-900'
+          }`}
+        >
+          <span className={activeSection === id ? 'text-[#00F59B]' : 'text-slate-300'}>
+            <Icon className="w-4 h-4 shrink-0" />
+          </span>
+          {title}
+        </button>
+      ))}
+    </nav>
+  );
 
   return (
     <div className="min-h-screen bg-white text-black">
@@ -114,327 +116,223 @@ const DocsPage = () => {
             <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-6 px-3">
               Table of Contents
             </p>
-            <nav className="space-y-1">
-              {sections.map((section) => (
-                <button
-                  key={section.id}
-                  type="button"
-                  onClick={() => scrollToSection(section.id)}
-                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
-                    activeSection === section.id
-                      ? 'bg-slate-50 text-slate-900 shadow-sm'
-                      : 'text-slate-500 hover:bg-slate-50/50 hover:text-slate-900'
-                  }`}
-                >
-                  <span className={activeSection === section.id ? 'text-[#00F59B]' : 'text-slate-300'}>
-                    {section.icon}
-                  </span>
-                  {section.title}
-                </button>
-              ))}
-            </nav>
+            <NavButtons />
           </div>
         </aside>
 
-        <article className="max-w-3xl prose prose-slate prose-lg prose-headings:scroll-mt-32 prose-li:text-slate-700 prose-p:text-slate-600">
-          <header id="intro" className="not-prose mb-16">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#00F59B]/10 text-[#001E22] text-xs font-bold mb-6">
-              <BookOpen className="w-3 h-3" />
-              PRODUCT DOCUMENTATION
-            </div>
-            <h1 className="text-5xl font-black tracking-tight text-slate-900 mb-4">GoodLink Docs</h1>
-            <p className="text-lg text-slate-500">
-              A complete, page-by-page and step-by-step guide to using GoodLink.
+        <div className="lg:col-span-1 min-w-0">
+          <div className="lg:hidden mb-10 p-4 rounded-2xl border border-slate-200 bg-slate-50/80">
+            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-3 px-1">
+              Jump to section
             </p>
-          </header>
+            <NavButtons />
+          </div>
 
-          <section id="quick-start">
-            <h2>Quick Start</h2>
-            <p>
-              New user? Follow this exact flow and you will create your first production-ready short link.
-            </p>
-            <ol>
-              <li>
-                Go to <code>/login</code> and sign in (or create an account).
-              </li>
-              <li>
-                Open <code>/dashboard/links</code> and click <strong>New Link</strong>.
-              </li>
-              <li>
-                Complete the Link Wizard from name to final review.
-              </li>
-              <li>
-                Copy your short URL and publish it in your ad or campaign.
-              </li>
-              <li>
-                Monitor performance in <code>/dashboard/analytics</code>.
-              </li>
-            </ol>
-          </section>
+          <article className="max-w-3xl prose prose-slate prose-lg prose-headings:scroll-mt-32 prose-li:text-slate-700 prose-p:text-slate-600">
+            <header className="not-prose mb-12">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#00F59B]/10 text-[#001E22] text-xs font-bold mb-6">
+                <BookOpen className="w-3 h-3" />
+                PRODUCT DOCUMENTATION
+              </div>
+              <p className="text-sm font-semibold text-slate-400 uppercase tracking-widest mb-2">GoodLink Docs</p>
+            </header>
 
-          <section id="public-pages">
-            <h2>Public Pages</h2>
-            <h3>Homepage (<code>/</code>)</h3>
-            <ul>
-              <li>Use it to understand product value, pricing, and navigation to login.</li>
-              <li>Primary action for most users: move to account creation or sign in.</li>
-            </ul>
-            <h3>Auth Page (<code>/login</code>)</h3>
-            <ul>
-              <li><strong>Sign In:</strong> email + password login.</li>
-              <li>
-                <strong>Create Account:</strong> full name, email, password, confirm password, and security verification.
-              </li>
-              <li><strong>Forgot Password:</strong> submit email to receive reset link.</li>
-            </ul>
-            <h3>Contact (<code>/contact</code>)</h3>
-            <ul>
-              <li>Submit support/business requests with your email and message.</li>
-            </ul>
-            <h3>Abuse / DMCA (<code>/abuse</code>)</h3>
-            <ul>
-              <li>Report abusive, spam, phishing, or copyright-violating links.</li>
-              <li>Provide reported URL, category, optional details, and contact email.</li>
-              <li>Complete security verification before submit.</li>
-            </ul>
-            <h3>Legal / Trust Pages</h3>
-            <ul>
-              <li><code>/terms</code> - Terms of Service</li>
-              <li><code>/privacy</code> - Privacy Policy</li>
-              <li><code>/subprocessors</code> - Subprocessors</li>
-              <li><code>/dpa</code> - DPA</li>
-            </ul>
-          </section>
+            <section id="create-account" className="scroll-mt-32 not-prose mb-16">
+              <h1 className="text-4xl sm:text-5xl font-black tracking-tight text-slate-900 mb-4">
+                How to Create Your GoodLink Account
+              </h1>
+              <p className="text-lg text-slate-500 mb-8 max-w-2xl">
+                Start here: create your account, then use the sections on the left to learn about workspaces, links,
+                domains, CAPI, and UTM presets.
+              </p>
+              <div className="prose prose-slate prose-lg prose-li:text-slate-700 prose-p:text-slate-600 max-w-none">
+              <p>
+                Open the <strong>Auth</strong> page at <code>/login</code>. You can sign in with an existing account or
+                create a new one.
+              </p>
+              <h3>Create a new account</h3>
+              <ol>
+                <li>Choose <strong>Create Account</strong> (or equivalent).</li>
+                <li>Enter your full name, email, and password, then confirm the password.</li>
+                <li>Complete any security verification shown on the page.</li>
+                <li>Submit the form. After signup succeeds, you can sign in and use the dashboard.</li>
+              </ol>
+              <h3>Other options on the auth page</h3>
+              <ul>
+                <li>
+                  <strong>Sign in:</strong> email and password for returning users.
+                </li>
+                <li>
+                  <strong>Google (or other providers):</strong> if enabled, use the social button to sign up or sign in
+                  with your provider account.
+                </li>
+                <li>
+                  <strong>Forgot password:</strong> submit your email to receive a reset link.
+                </li>
+              </ul>
+              <p>
+                If you see a database or signup error, confirm your Supabase project is configured correctly (including
+                triggers that create your profile row for new users).
+              </p>
+              </div>
+            </section>
 
-          <section id="dashboard-navigation">
-            <h2>Dashboard Navigation</h2>
-            <p>
-              After login, the left sidebar is your main control panel.
-            </p>
-            <ul>
-              <li><code>/dashboard</code> - analytics and traffic quality.</li>
-              <li><code>/dashboard/links</code> - create and manage links.</li>
-              <li><code>/dashboard/utm-presets</code> - reusable UTM templates.</li>
-              <li><code>/dashboard/pixels</code> - CAPI profiles and event setup.</li>
-              <li><code>/dashboard/domains</code> - custom domain and DNS status.</li>
-              <li><code>/dashboard/settings</code> - profile and subscription settings.</li>
-            </ul>
-          </section>
+            <section id="workspaces" className="scroll-mt-32">
+              <h2>Workspaces, Campaigns and groups</h2>
+              <p>
+                On supported plans, the Link Manager uses a <strong>hierarchy</strong> so you can organize many links
+                cleanly.
+              </p>
+              <ul>
+                <li>
+                  <strong>Workspace</strong> — top-level container (e.g. brand or client).
+                </li>
+                <li>
+                  <strong>Campaign</strong> — lives under a workspace (e.g. a specific promotion).
+                </li>
+                <li>
+                  <strong>Group</strong> — optional nested level under campaigns for finer grouping.
+                </li>
+              </ul>
+              <p>
+                Use the sidebar and folder navigation in <code>/dashboard/links</code> to switch workspace, open
+                campaigns, and drill into groups. This keeps reporting and day-to-day operations easier at scale.
+              </p>
+            </section>
 
-          <section id="analytics-page">
-            <h2>Analytics Page (<code>/dashboard</code>)</h2>
-            <h3>What each block means</h3>
-            <ul>
-              <li><strong>Total Clicks:</strong> all tracked clicks.</li>
-              <li><strong>Unique Visitors:</strong> deduplicated audience estimate.</li>
-              <li><strong>Bot Traffic:</strong> suspicious/automated click volume.</li>
-              <li><strong>Conversion Est.:</strong> modeled conversion signal.</li>
-              <li><strong>Human vs Bot:</strong> quality ratio view.</li>
-              <li><strong>Geographic Distribution:</strong> top countries and share.</li>
-              <li><strong>Traffic Log:</strong> click-level table with time, location, device, and status.</li>
-            </ul>
-            <h3>What to do here</h3>
-            <ul>
-              <li>Detect traffic anomalies (bot spikes, strange locations, low-quality devices).</li>
-              <li>Use <strong>More Information</strong> to inspect suspicious clicks.</li>
-              <li>Track trends by checking log pages regularly.</li>
-            </ul>
-          </section>
+            <section id="links" className="scroll-mt-32">
+              <h2>Links</h2>
+              <p>
+                <code>/dashboard/links</code> is where you create and manage short links. Use <strong>New Link</strong>{' '}
+                to open the Link Wizard.
+              </p>
+              <h3>Actions on each link</h3>
+              <ul>
+                <li>
+                  <strong>Edit</strong> — change configuration.
+                </li>
+                <li>
+                  <strong>Duplicate</strong> — copy settings for a new link.
+                </li>
+                <li>
+                  <strong>Analytics</strong> — open analytics filtered to that link.
+                </li>
+                <li>
+                  <strong>Details</strong> — view full link metadata (where available).
+                </li>
+                <li>
+                  <strong>Copy / QR</strong> — share the short URL or export a QR code.
+                </li>
+                <li>
+                  <strong>Delete</strong> — remove the link when you no longer need it.
+                </li>
+              </ul>
+              <h3>Link Wizard (overview)</h3>
+              <p>The wizard is plan-aware: simpler plans see fewer steps; higher tiers unlock more controls.</p>
+              <ul>
+                <li>
+                  <strong>Name</strong> — internal label; duplicate names may be blocked.
+                </li>
+                <li>
+                  <strong>Target URL</strong> — destination; validated automatically.
+                </li>
+                <li>
+                  <strong>Domain &amp; slug</strong> — choose host and path (custom domains on eligible plans).
+                </li>
+                <li>
+                  <strong>Bot protection</strong> — allow, block, or redirect bots (where enabled).
+                </li>
+                <li>
+                  <strong>Geo targeting</strong> — country-based routing (Pro, where enabled).
+                </li>
+                <li>
+                  <strong>CAPI</strong> — attach pixel profiles for server-side events (custom domain required where
+                  applicable).
+                </li>
+                <li>
+                  <strong>Review</strong> — confirm everything, then complete setup.
+                </li>
+              </ul>
+            </section>
 
-          <section id="link-manager-page">
-            <h2>Link Manager (<code>/dashboard/links</code>)</h2>
-            <p>
-              This is the operational center for all your short links.
-            </p>
-            <h3>Core actions on each link</h3>
-            <ul>
-              <li><strong>Edit:</strong> update configuration.</li>
-              <li><strong>Duplicate:</strong> clone settings for faster production.</li>
-              <li><strong>Analytics:</strong> open analytics filtered to this link.</li>
-              <li><strong>Pause/Active toggle:</strong> control serving status.</li>
-              <li><strong>Copy:</strong> copy short URL instantly.</li>
-              <li><strong>QR:</strong> open QR modal and export PNG/SVG.</li>
-              <li><strong>Delete:</strong> remove link from active list.</li>
-            </ul>
-            <h3>Hierarchy mode (plan-based)</h3>
-            <ul>
-              <li><strong>Workspace</strong> - top-level container.</li>
-              <li><strong>Campaign</strong> - grouped under a workspace.</li>
-              <li><strong>Group</strong> - nested level under campaigns.</li>
-            </ul>
-            <p>
-              Use hierarchy for cleaner reporting and easier operations at scale.
-            </p>
-          </section>
+            <section id="custom-domains" className="scroll-mt-32">
+              <h2>Custom domains</h2>
+              <p>
+                Manage branded domains at <code>/dashboard/domains</code>. Verified custom domains improve trust and are
+                required for some features (e.g. CAPI on certain setups).
+              </p>
+              <h3>Typical actions</h3>
+              <ul>
+                <li>Add a new domain</li>
+                <li>Set or edit root redirect</li>
+                <li>Open domain details and required DNS records</li>
+                <li>Refresh or re-check DNS verification</li>
+                <li>Remove a domain you no longer use</li>
+              </ul>
+              <h3>Domain wizard flow</h3>
+              <ol>
+                <li>
+                  <strong>Domain</strong> — enter the exact hostname you will use.
+                </li>
+                <li>
+                  <strong>Root redirect</strong> — optional default URL for the bare domain.
+                </li>
+                <li>
+                  <strong>DNS</strong> — add the records at your DNS host exactly as shown.
+                </li>
+                <li>
+                  <strong>Verify</strong> — wait for propagation, then verify. Retry if records are not live yet.
+                </li>
+              </ol>
+            </section>
 
-          <section id="link-wizard">
-            <h2>Link Wizard (<code>/dashboard/links/new</code>)</h2>
-            <p>
-              The wizard is plan-aware. Free/Starter sees a shorter flow; Advanced/Pro unlocks additional control steps.
-            </p>
-            <h3>Step 1: Name</h3>
-            <ul>
-              <li>Enter a clear internal name for this link.</li>
-              <li>Duplicate name checks run before you can continue.</li>
-            </ul>
-            <h3>Step 2: Target URL</h3>
-            <ul>
-              <li>Enter the final destination URL.</li>
-              <li>URL format and safety checks run automatically.</li>
-            </ul>
-            <h3>Step 3: Domain (Advanced/Pro)</h3>
-            <ul>
-              <li>Select a domain (default or custom).</li>
-              <li>Prefer verified custom domains for production traffic.</li>
-            </ul>
-            <h3>Step 4: Slug</h3>
-            <ul>
-              <li>Choose a readable slug (short path after the domain).</li>
-              <li>Availability validation helps prevent conflicts.</li>
-            </ul>
-            <h3>Step 5: Bot Protection (Advanced/Pro)</h3>
-            <ul>
-              <li><strong>Allow</strong> - normal handling.</li>
-              <li><strong>Block</strong> - block detected bots.</li>
-              <li><strong>Redirect</strong> - send bots to fallback URL.</li>
-            </ul>
-            <h3>Step 6: Geo Targeting (Pro)</h3>
-            <ul>
-              <li>Add country-based routing rules.</li>
-              <li>One rule per country, each with dedicated destination URL.</li>
-            </ul>
-            <h3>Step 7: CAPI Select (Pro)</h3>
-            <ul>
-              <li>Attach one or more CAPI profiles.</li>
-            </ul>
-            <h3>Step 8: Final Review</h3>
-            <ul>
-              <li>Validate full summary and click <strong>Complete Setup</strong>.</li>
-            </ul>
-          </section>
+            <section id="capi" className="scroll-mt-32">
+              <h2>Capi (S2S Tracking)</h2>
+              <p>
+                Server-side (CAPI) profiles live under <code>/dashboard/pixels</code>. Attach them to links so
+                conversion-related events can be sent from GoodLink to your ad platforms.
+              </p>
+              <h3>Manager page</h3>
+              <ul>
+                <li>Create, edit, pause, and remove CAPI profiles.</li>
+                <li>Each profile shows platform, pixel or measurement identifiers, and event configuration.</li>
+              </ul>
+              <h3>CAPI wizard (typical steps)</h3>
+              <ol>
+                <li>Name</li>
+                <li>Platform (e.g. Meta family, TikTok)</li>
+                <li>Pixel ID or measurement ID</li>
+                <li>Access token or secret (as required by the platform)</li>
+                <li>Event type or custom event name</li>
+              </ol>
+              <p>Validation rules depend on the platform. Follow on-screen errors if a step cannot proceed.</p>
+            </section>
 
-          <section id="utm-presets">
-            <h2>UTM Presets (<code>/dashboard/utm-presets</code>)</h2>
-            <h3>Manager page</h3>
-            <ul>
-              <li>Create, edit, copy, and delete reusable UTM templates.</li>
-              <li>Each preset card shows platform and generated query string.</li>
-            </ul>
-            <h3>UTM Preset Wizard steps</h3>
-            <ol>
-              <li>Name</li>
-              <li>Platform</li>
-              <li>Source</li>
-              <li>Medium</li>
-              <li>Campaign</li>
-              <li>Content</li>
-              <li>Term</li>
-            </ol>
-            <ul>
-              <li>Choices are platform-specific to reduce formatting errors.</li>
-              <li>Live preview shows exactly what your final query will look like.</li>
-            </ul>
-          </section>
-
-          <section id="capi-manager">
-            <h2>CAPI Manager (<code>/dashboard/pixels</code>)</h2>
-            <h3>Manager page</h3>
-            <ul>
-              <li>Create, edit, pause, and delete CAPI profiles.</li>
-              <li>Each card shows platform, pixel ID, and event setup.</li>
-            </ul>
-            <h3>CAPI Wizard steps</h3>
-            <ol>
-              <li>Name</li>
-              <li>Platform</li>
-              <li>Pixel ID / Measurement ID</li>
-              <li>CAPI token / secret</li>
-              <li>Event type (or custom event)</li>
-            </ol>
-            <ul>
-              <li>Validation is platform-specific and strict.</li>
-              <li>When selecting custom event, provide a clean event name.</li>
-            </ul>
-          </section>
-
-          <section id="domains-manager">
-            <h2>Custom Domains (<code>/dashboard/domains</code>)</h2>
-            <h3>Manager page</h3>
-            <ul>
-              <li>Add domain</li>
-              <li>Edit root redirect</li>
-              <li>Open domain details and DNS records</li>
-              <li>Refresh DNS records</li>
-              <li>Verify DNS status</li>
-              <li>Delete domain</li>
-            </ul>
-            <h3>Domain Wizard steps</h3>
-            <ol>
-              <li><strong>Domain</strong> - enter exact host to use.</li>
-              <li><strong>Root Redirect</strong> - optional default destination.</li>
-              <li><strong>DNS Setup</strong> - apply records at registrar.</li>
-              <li><strong>Verify</strong> - confirm propagation and activation.</li>
-            </ol>
-            <p>
-              DNS propagation may take time. If verification fails, wait and retry.
-            </p>
-          </section>
-
-          <section id="account-settings">
-            <h2>Account Settings (<code>/dashboard/settings</code>)</h2>
-            <ul>
-              <li>Update full name and timezone.</li>
-              <li>Change password with current-password verification.</li>
-              <li>Review plan usage counters (links, CAPI profiles, domains).</li>
-              <li>Manage subscription and plan upgrades.</li>
-            </ul>
-          </section>
-
-          <section id="admin-panel">
-            <h2>Admin Panel (<code>/dashboard/admin</code>)</h2>
-            <ul>
-              <li>View pending links requiring moderation.</li>
-              <li>Approve valid links.</li>
-              <li>Reject non-compliant links.</li>
-            </ul>
-          </section>
-
-          <section id="troubleshooting">
-            <h2>Troubleshooting</h2>
-            <h3>Cannot move to next step in a wizard</h3>
-            <ul>
-              <li>Check validation messages under the active input.</li>
-              <li>Ensure required fields are not empty.</li>
-              <li>Fix duplicate-name issues if shown.</li>
-            </ul>
-            <h3>Domain verification still pending</h3>
-            <ul>
-              <li>Confirm every DNS record exactly matches the required values.</li>
-              <li>Wait for DNS propagation and verify again.</li>
-            </ul>
-            <h3>Feature not visible</h3>
-            <ul>
-              <li>Some pages or options are plan-gated.</li>
-              <li>Check subscription state in Account Settings.</li>
-            </ul>
-          </section>
-
-          <section id="best-practices">
-            <h2>Best Practices</h2>
-            <ul>
-              <li>Use strict naming conventions for links, presets, and campaigns.</li>
-              <li>Reuse UTM presets instead of manual query typing.</li>
-              <li>Attach CAPI profiles to high-value conversion links.</li>
-              <li>Audit analytics regularly for traffic quality issues.</li>
-              <li>Use branded custom domains for trust and higher CTR.</li>
-              <li>Keep folder hierarchy simple and consistent.</li>
-            </ul>
-          </section>
-        </article>
+            <section id="utm-presets" className="scroll-mt-32">
+              <h2>UTM Presets</h2>
+              <p>
+                Reusable UTM templates live at <code>/dashboard/utm-presets</code>. They help you keep campaign
+                parameters consistent and avoid typos.
+              </p>
+              <h3>Manager</h3>
+              <ul>
+                <li>Create, edit, copy, and delete presets.</li>
+                <li>Cards usually show the platform and the generated query string preview.</li>
+              </ul>
+              <h3>Typical wizard steps</h3>
+              <ol>
+                <li>Name</li>
+                <li>Platform</li>
+                <li>Source, medium, campaign</li>
+                <li>Content and term (when needed)</li>
+              </ol>
+              <p>Platform-specific choices reduce formatting mistakes; use the live preview to confirm the final string.</p>
+            </section>
+          </article>
+        </div>
       </main>
     </div>
   );
 };
 
 export default DocsPage;
-
