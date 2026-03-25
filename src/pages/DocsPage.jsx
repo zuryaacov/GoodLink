@@ -1,9 +1,14 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { UserCircle, BookOpen } from 'lucide-react';
+import { UserCircle, Layers, Link2, Globe2, Radar, Megaphone, BookOpen } from 'lucide-react';
 
 const DOC_SECTIONS = [
   { id: 'create-account', title: 'Create Your GoodLink Account', Icon: UserCircle },
+  { id: 'workspaces', title: 'Workspaces, Campaigns and groups', Icon: Layers },
+  { id: 'links', title: 'Links', Icon: Link2 },
+  { id: 'custom-domains', title: 'Custom domains', Icon: Globe2 },
+  { id: 'capi', title: 'Capi (S2S Tracking)', Icon: Radar },
+  { id: 'utm-presets', title: 'UTM Presets', Icon: Megaphone },
 ];
 
 const DocsPage = () => {
@@ -97,37 +102,25 @@ const DocsPage = () => {
         </div>
       </header>
 
-      <main
-        className={`max-w-7xl mx-auto px-4 sm:px-6 py-12 sm:py-16 grid grid-cols-1 gap-10 lg:gap-16 ${
-          DOC_SECTIONS.length > 1 ? 'lg:grid-cols-[minmax(280px,320px)_1fr]' : ''
-        }`}
-      >
-        {DOC_SECTIONS.length > 1 && (
-          <aside className="hidden lg:block">
-            <div className="sticky top-32">
-              <p className="text-xs font-black uppercase tracking-widest text-slate-400 mb-6 px-3">
-                Table of Contents
-              </p>
-              <NavButtons />
-            </div>
-          </aside>
-        )}
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-12 sm:py-16 grid grid-cols-1 lg:grid-cols-[minmax(280px,320px)_1fr] gap-10 lg:gap-16">
+        <aside className="hidden lg:block">
+          <div className="sticky top-32">
+            <p className="text-xs font-black uppercase tracking-widest text-slate-400 mb-6 px-3">
+              Table of Contents
+            </p>
+            <NavButtons />
+          </div>
+        </aside>
 
         <div className="min-w-0">
-          {DOC_SECTIONS.length > 1 && (
-            <div className="lg:hidden mb-10 p-4 rounded-2xl border border-slate-200 bg-slate-50/80">
-              <p className="text-xs font-black uppercase tracking-widest text-slate-400 mb-3 px-1">
-                Jump to section
-              </p>
-              <NavButtons />
-            </div>
-          )}
+          <div className="lg:hidden mb-10 p-4 rounded-2xl border border-slate-200 bg-slate-50/80">
+            <p className="text-xs font-black uppercase tracking-widest text-slate-400 mb-3 px-1">
+              Jump to section
+            </p>
+            <NavButtons />
+          </div>
 
-          <article
-            className={`max-w-4xl prose prose-slate prose-base sm:prose-lg lg:prose-xl prose-headings:scroll-mt-32 prose-li:text-slate-700 prose-p:text-slate-600 prose-p:leading-relaxed prose-li:leading-relaxed [&_code]:text-[0.95em] ${
-              DOC_SECTIONS.length === 1 ? 'mx-auto' : ''
-            }`}
-          >
+          <article className="max-w-4xl prose prose-slate prose-base sm:prose-lg lg:prose-xl prose-headings:scroll-mt-32 prose-li:text-slate-700 prose-p:text-slate-600 prose-p:leading-relaxed prose-li:leading-relaxed [&_code]:text-[0.95em]">
             <header className="not-prose mb-10 sm:mb-12">
               <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#00F59B]/10 text-[#001E22] text-sm font-bold mb-6">
                 <BookOpen className="w-4 h-4" />
@@ -278,6 +271,15 @@ const DocsPage = () => {
                 </div>
               </div>
             </section>
+
+            {DOC_SECTIONS.slice(1).map(({ id, title }) => (
+              <section
+                key={id}
+                id={id}
+                className="not-prose scroll-mt-32 min-h-16"
+                aria-label={title}
+              />
+            ))}
           </article>
         </div>
       </main>
