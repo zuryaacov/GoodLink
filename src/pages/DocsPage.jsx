@@ -1,22 +1,9 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import {
-  UserCircle,
-  Layers,
-  Link2,
-  Globe2,
-  Radar,
-  Megaphone,
-  BookOpen,
-} from 'lucide-react';
+import { UserCircle, BookOpen } from 'lucide-react';
 
 const DOC_SECTIONS = [
   { id: 'create-account', title: 'Create Your GoodLink Account', Icon: UserCircle },
-  { id: 'workspaces', title: 'Workspaces, Campaigns and groups', Icon: Layers },
-  { id: 'links', title: 'Links', Icon: Link2 },
-  { id: 'custom-domains', title: 'Custom domains', Icon: Globe2 },
-  { id: 'capi', title: 'Capi (S2S Tracking)', Icon: Radar },
-  { id: 'utm-presets', title: 'UTM Presets', Icon: Megaphone },
 ];
 
 const DocsPage = () => {
@@ -110,25 +97,37 @@ const DocsPage = () => {
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-12 sm:py-16 grid grid-cols-1 lg:grid-cols-[minmax(280px,320px)_1fr] gap-10 lg:gap-16">
-        <aside className="hidden lg:block">
-          <div className="sticky top-32">
-            <p className="text-xs font-black uppercase tracking-widest text-slate-400 mb-6 px-3">
-              Table of Contents
-            </p>
-            <NavButtons />
-          </div>
-        </aside>
+      <main
+        className={`max-w-7xl mx-auto px-4 sm:px-6 py-12 sm:py-16 grid grid-cols-1 gap-10 lg:gap-16 ${
+          DOC_SECTIONS.length > 1 ? 'lg:grid-cols-[minmax(280px,320px)_1fr]' : ''
+        }`}
+      >
+        {DOC_SECTIONS.length > 1 && (
+          <aside className="hidden lg:block">
+            <div className="sticky top-32">
+              <p className="text-xs font-black uppercase tracking-widest text-slate-400 mb-6 px-3">
+                Table of Contents
+              </p>
+              <NavButtons />
+            </div>
+          </aside>
+        )}
 
-        <div className="lg:col-span-1 min-w-0">
-          <div className="lg:hidden mb-10 p-4 rounded-2xl border border-slate-200 bg-slate-50/80">
-            <p className="text-xs font-black uppercase tracking-widest text-slate-400 mb-3 px-1">
-              Jump to section
-            </p>
-            <NavButtons />
-          </div>
+        <div className="min-w-0">
+          {DOC_SECTIONS.length > 1 && (
+            <div className="lg:hidden mb-10 p-4 rounded-2xl border border-slate-200 bg-slate-50/80">
+              <p className="text-xs font-black uppercase tracking-widest text-slate-400 mb-3 px-1">
+                Jump to section
+              </p>
+              <NavButtons />
+            </div>
+          )}
 
-          <article className="max-w-4xl prose prose-slate prose-base sm:prose-lg lg:prose-xl prose-headings:scroll-mt-32 prose-li:text-slate-700 prose-p:text-slate-600 prose-p:leading-relaxed prose-li:leading-relaxed [&_code]:text-[0.95em]">
+          <article
+            className={`max-w-4xl prose prose-slate prose-base sm:prose-lg lg:prose-xl prose-headings:scroll-mt-32 prose-li:text-slate-700 prose-p:text-slate-600 prose-p:leading-relaxed prose-li:leading-relaxed [&_code]:text-[0.95em] ${
+              DOC_SECTIONS.length === 1 ? 'mx-auto' : ''
+            }`}
+          >
             <header className="not-prose mb-10 sm:mb-12">
               <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#00F59B]/10 text-[#001E22] text-sm font-bold mb-6">
                 <BookOpen className="w-4 h-4" />
@@ -278,158 +277,6 @@ const DocsPage = () => {
                   </p>
                 </div>
               </div>
-            </section>
-
-            <section id="workspaces" className="scroll-mt-32">
-              <h2>Workspaces, Campaigns and groups</h2>
-              <p>
-                On supported plans, the Link Manager uses a <strong>hierarchy</strong> so you can organize many links
-                cleanly.
-              </p>
-              <ul>
-                <li>
-                  <strong>Workspace</strong> — top-level container (e.g. brand or client).
-                </li>
-                <li>
-                  <strong>Campaign</strong> — lives under a workspace (e.g. a specific promotion).
-                </li>
-                <li>
-                  <strong>Group</strong> — optional nested level under campaigns for finer grouping.
-                </li>
-              </ul>
-              <p>
-                Use the sidebar and folder navigation in <code>/dashboard/links</code> to switch workspace, open
-                campaigns, and drill into groups. This keeps reporting and day-to-day operations easier at scale.
-              </p>
-            </section>
-
-            <section id="links" className="scroll-mt-32">
-              <h2>Links</h2>
-              <p>
-                <code>/dashboard/links</code> is where you create and manage short links. Use <strong>New Link</strong>{' '}
-                to open the Link Wizard.
-              </p>
-              <h3>Actions on each link</h3>
-              <ul>
-                <li>
-                  <strong>Edit</strong> — change configuration.
-                </li>
-                <li>
-                  <strong>Duplicate</strong> — copy settings for a new link.
-                </li>
-                <li>
-                  <strong>Analytics</strong> — open analytics filtered to that link.
-                </li>
-                <li>
-                  <strong>Details</strong> — view full link metadata (where available).
-                </li>
-                <li>
-                  <strong>Copy / QR</strong> — share the short URL or export a QR code.
-                </li>
-                <li>
-                  <strong>Delete</strong> — remove the link when you no longer need it.
-                </li>
-              </ul>
-              <h3>Link Wizard (overview)</h3>
-              <p>The wizard is plan-aware: simpler plans see fewer steps; higher tiers unlock more controls.</p>
-              <ul>
-                <li>
-                  <strong>Name</strong> — internal label; duplicate names may be blocked.
-                </li>
-                <li>
-                  <strong>Target URL</strong> — destination; validated automatically.
-                </li>
-                <li>
-                  <strong>Domain &amp; slug</strong> — choose host and path (custom domains on eligible plans).
-                </li>
-                <li>
-                  <strong>Bot protection</strong> — allow, block, or redirect bots (where enabled).
-                </li>
-                <li>
-                  <strong>Geo targeting</strong> — country-based routing (Pro, where enabled).
-                </li>
-                <li>
-                  <strong>CAPI</strong> — attach pixel profiles for server-side events (custom domain required where
-                  applicable).
-                </li>
-                <li>
-                  <strong>Review</strong> — confirm everything, then complete setup.
-                </li>
-              </ul>
-            </section>
-
-            <section id="custom-domains" className="scroll-mt-32">
-              <h2>Custom domains</h2>
-              <p>
-                Manage branded domains at <code>/dashboard/domains</code>. Verified custom domains improve trust and are
-                required for some features (e.g. CAPI on certain setups).
-              </p>
-              <h3>Typical actions</h3>
-              <ul>
-                <li>Add a new domain</li>
-                <li>Set or edit root redirect</li>
-                <li>Open domain details and required DNS records</li>
-                <li>Refresh or re-check DNS verification</li>
-                <li>Remove a domain you no longer use</li>
-              </ul>
-              <h3>Domain wizard flow</h3>
-              <ol>
-                <li>
-                  <strong>Domain</strong> — enter the exact hostname you will use.
-                </li>
-                <li>
-                  <strong>Root redirect</strong> — optional default URL for the bare domain.
-                </li>
-                <li>
-                  <strong>DNS</strong> — add the records at your DNS host exactly as shown.
-                </li>
-                <li>
-                  <strong>Verify</strong> — wait for propagation, then verify. Retry if records are not live yet.
-                </li>
-              </ol>
-            </section>
-
-            <section id="capi" className="scroll-mt-32">
-              <h2>Capi (S2S Tracking)</h2>
-              <p>
-                Server-side (CAPI) profiles live under <code>/dashboard/pixels</code>. Attach them to links so
-                conversion-related events can be sent from GoodLink to your ad platforms.
-              </p>
-              <h3>Manager page</h3>
-              <ul>
-                <li>Create, edit, pause, and remove CAPI profiles.</li>
-                <li>Each profile shows platform, pixel or measurement identifiers, and event configuration.</li>
-              </ul>
-              <h3>CAPI wizard (typical steps)</h3>
-              <ol>
-                <li>Name</li>
-                <li>Platform (e.g. Meta family, TikTok)</li>
-                <li>Pixel ID or measurement ID</li>
-                <li>Access token or secret (as required by the platform)</li>
-                <li>Event type or custom event name</li>
-              </ol>
-              <p>Validation rules depend on the platform. Follow on-screen errors if a step cannot proceed.</p>
-            </section>
-
-            <section id="utm-presets" className="scroll-mt-32">
-              <h2>UTM Presets</h2>
-              <p>
-                Reusable UTM templates live at <code>/dashboard/utm-presets</code>. They help you keep campaign
-                parameters consistent and avoid typos.
-              </p>
-              <h3>Manager</h3>
-              <ul>
-                <li>Create, edit, copy, and delete presets.</li>
-                <li>Cards usually show the platform and the generated query string preview.</li>
-              </ul>
-              <h3>Typical wizard steps</h3>
-              <ol>
-                <li>Name</li>
-                <li>Platform</li>
-                <li>Source, medium, campaign</li>
-                <li>Content and term (when needed)</li>
-              </ol>
-              <p>Platform-specific choices reduce formatting mistakes; use the live preview to confirm the final string.</p>
             </section>
           </article>
         </div>
