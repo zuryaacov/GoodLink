@@ -62,14 +62,14 @@ const DocsPage = () => {
           key={id}
           type="button"
           onClick={() => scrollToSection(id)}
-          className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-left transition-all duration-200 ${
+          className={`w-full flex items-center gap-3 px-3 py-3 rounded-xl text-base sm:text-[1.05rem] font-medium text-left transition-all duration-200 leading-snug ${
             activeSection === id
               ? 'bg-slate-50 text-slate-900 shadow-sm'
               : 'text-slate-500 hover:bg-slate-50/50 hover:text-slate-900'
           }`}
         >
           <span className={activeSection === id ? 'text-[#00F59B]' : 'text-slate-300'}>
-            <Icon className="w-4 h-4 shrink-0" />
+            <Icon className="w-5 h-5 shrink-0" />
           </span>
           {title}
         </button>
@@ -103,17 +103,17 @@ const DocsPage = () => {
                 />
               </svg>
             </div>
-            <span className="text-2xl font-black leading-tight tracking-tight text-[#a855f7]">
+            <span className="text-2xl sm:text-3xl font-black leading-tight tracking-tight text-[#a855f7]">
               GoodLink
             </span>
           </Link>
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-6 py-16 grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-16">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-12 sm:py-16 grid grid-cols-1 lg:grid-cols-[minmax(280px,320px)_1fr] gap-10 lg:gap-16">
         <aside className="hidden lg:block">
           <div className="sticky top-32">
-            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-6 px-3">
+            <p className="text-xs font-black uppercase tracking-widest text-slate-400 mb-6 px-3">
               Table of Contents
             </p>
             <NavButtons />
@@ -122,93 +122,161 @@ const DocsPage = () => {
 
         <div className="lg:col-span-1 min-w-0">
           <div className="lg:hidden mb-10 p-4 rounded-2xl border border-slate-200 bg-slate-50/80">
-            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-3 px-1">
+            <p className="text-xs font-black uppercase tracking-widest text-slate-400 mb-3 px-1">
               Jump to section
             </p>
             <NavButtons />
           </div>
 
-          <article className="max-w-3xl prose prose-slate prose-lg prose-headings:scroll-mt-32 prose-li:text-slate-700 prose-p:text-slate-600">
-            <header className="not-prose mb-12">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#00F59B]/10 text-[#001E22] text-xs font-bold mb-6">
-                <BookOpen className="w-3 h-3" />
+          <article className="max-w-4xl prose prose-slate prose-base sm:prose-lg lg:prose-xl prose-headings:scroll-mt-32 prose-li:text-slate-700 prose-p:text-slate-600 prose-p:leading-relaxed prose-li:leading-relaxed [&_code]:text-[0.95em]">
+            <header className="not-prose mb-10 sm:mb-12">
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#00F59B]/10 text-[#001E22] text-sm font-bold mb-6">
+                <BookOpen className="w-4 h-4" />
                 PRODUCT DOCUMENTATION
               </div>
-              <p className="text-sm font-semibold text-slate-400 uppercase tracking-widest mb-2">GoodLink Docs</p>
+              <p className="text-base sm:text-lg font-semibold text-slate-400 uppercase tracking-widest mb-2">
+                GoodLink Docs
+              </p>
             </header>
 
-            <section id="create-account" className="scroll-mt-32 not-prose mb-16">
-              <h1 className="text-4xl sm:text-5xl font-black tracking-tight text-slate-900 mb-4">
-                How to Create Your GoodLink Account
-              </h1>
-              <p className="text-lg text-slate-500 mb-8 max-w-2xl">
-                Getting started with GoodLink is simple. You can join our community either by using your existing Google
-                account or by creating a traditional email-based account. Follow the steps below to set up your profile.
-              </p>
-              <div className="prose prose-slate prose-lg prose-li:text-slate-700 prose-p:text-slate-600 max-w-none">
-                <h2>Option 1: Sign Up with Email and Password</h2>
-                <p>To create a dedicated GoodLink account, follow these steps:</p>
-                <h3>Enter Your Details</h3>
-                <p>
-                  Go to the Sign Up page and fill in the following information:
-                </p>
-                <ul>
-                  <li>
-                    <strong>Full Name:</strong> Enter your first and last name as you&apos;d like it to appear in your
-                    profile.
-                  </li>
-                  <li>
-                    <strong>Email Address:</strong> Provide a valid email address that you have access to.
-                  </li>
-                  <li>
-                    <strong>Password:</strong> Create a strong password and enter it twice to confirm.
-                  </li>
-                </ul>
-                <h3>Password Requirements</h3>
-                <p>For your security, your password must meet the following criteria:</p>
-                <ul>
-                  <li>At least 8 characters long.</li>
-                  <li>At least one uppercase letter (A-Z).</li>
-                  <li>At least one lowercase letter (a-z).</li>
-                  <li>At least one number (0-9).</li>
-                </ul>
-                <h3>Verify Your Email</h3>
-                <p>
-                  Once you click &quot;Create Account,&quot; we will send a confirmation link to your inbox.
-                </p>
-                <ul>
-                  <li>Open the email from GoodLink.</li>
-                  <li>Click the Verify Email Address button.</li>
-                </ul>
-                <p>
-                  <strong>Note:</strong> If you don&apos;t see the email within a few minutes, please check your Spam or
-                  Promotions folder.
-                </p>
-                <h3>Welcome Aboard</h3>
-                <p>
-                  After verification, you will be redirected to your dashboard to start building your first link !
+            <section id="create-account" className="scroll-mt-32 not-prose mb-16 sm:mb-20">
+              <div className="max-w-[800px] mx-auto bg-white rounded-2xl shadow-[0_4px_6px_-1px_rgba(0,0,0,0.1)] border border-slate-100 p-6 sm:p-8 md:p-10 text-[#1f2937] leading-relaxed">
+                <h1 className="text-center text-[#a855f7] text-3xl sm:text-4xl md:text-[2.5rem] font-bold mb-4">
+                  How to Create Your Account
+                </h1>
+                <p className="text-center text-[#6b7280] text-base sm:text-[1.1rem] mb-10 max-w-2xl mx-auto">
+                  Getting started with GoodLink is simple. You can join our community either by using your existing
+                  Google account or by creating a traditional email-based account. Follow the steps below to set up
+                  your profile.
                 </p>
 
-                <h2>Option 2: Sign Up with Google</h2>
-                <p>
-                  If you prefer a faster way to join without managing another password, you can use Single Sign-On
-                  (SSO):
-                </p>
-                <ol>
-                  <li>On the Sign Up page, click the &quot;Google&quot; button.</li>
-                  <li>Choose the Google account you wish to link with GoodLink.</li>
-                  <li>Confirm the permissions.</li>
-                </ol>
-                <p>
-                  <strong>Instant Access:</strong> Since your identity is already verified by Google, you won&apos;t
-                  need to wait for a verification email. You will be logged in immediately.
-                </p>
+                <div className="border-2 border-[#f3f4f6] rounded-xl p-5 sm:p-6 mb-8 transition-colors duration-200 hover:border-[#a855f7]">
+                  <h2 className="flex items-center gap-2.5 text-[#a855f7] text-xl sm:text-2xl font-bold mt-0 mb-4">
+                    <span className="text-[1.2rem] leading-none" aria-hidden>
+                      ✦
+                    </span>
+                    Option 1: Sign Up with Email and Password
+                  </h2>
+                  <p className="text-[#1f2937] mb-6">To create a dedicated GoodLink account, follow these steps:</p>
 
-                <h2>Need Help?</h2>
-                <p>
-                  If you encounter any issues during the registration process, please contact our support team at{' '}
-                  <a href="mailto:hello@goodlink.ai">hello@goodlink.ai</a>.
-                </p>
+                  <div className="space-y-5">
+                    <div className="relative pl-8">
+                      <span
+                        className="absolute left-0 top-2.5 w-2 h-2 rounded-full bg-[#a855f7]"
+                        aria-hidden
+                      />
+                      <p className="font-bold text-[#1f2937] text-[1.05rem] mb-1">1. Enter Your Details</p>
+                      <p className="text-[#6b7280]">Go to the Sign Up page and fill in the following information:</p>
+                      <ul className="text-[#6b7280] pl-5 mt-2 list-disc space-y-1">
+                        <li>
+                          <span className="font-semibold text-[#1f2937]">Full Name:</span> Your first and last name for
+                          your profile.
+                        </li>
+                        <li>
+                          <span className="font-semibold text-[#1f2937]">Email Address:</span> A valid email you have
+                          access to.
+                        </li>
+                        <li>
+                          <span className="font-semibold text-[#1f2937]">Password:</span> Create a strong password and
+                          enter it twice.
+                        </li>
+                      </ul>
+                    </div>
+
+                    <div className="relative pl-8">
+                      <span
+                        className="absolute left-0 top-2.5 w-2 h-2 rounded-full bg-[#a855f7]"
+                        aria-hidden
+                      />
+                      <p className="font-bold text-[#1f2937] text-[1.05rem] mb-2">2. Password Requirements</p>
+                      <div className="bg-[#d7fec8] rounded-lg p-5 text-[0.95rem] sm:text-base text-[#1f2937]">
+                        <p>For your security, your password must meet the following criteria:</p>
+                        <ul className="mt-2.5 pl-5 list-disc space-y-1">
+                          <li>At least 8 characters long</li>
+                          <li>At least one uppercase letter (A-Z)</li>
+                          <li>At least one lowercase letter (a-z)</li>
+                          <li>At least one number (0-9)</li>
+                        </ul>
+                      </div>
+                    </div>
+
+                    <div className="relative pl-8">
+                      <span
+                        className="absolute left-0 top-2.5 w-2 h-2 rounded-full bg-[#a855f7]"
+                        aria-hidden
+                      />
+                      <p className="font-bold text-[#1f2937] text-[1.05rem] mb-1">3. Verify Your Email</p>
+                      <p className="text-[#6b7280]">
+                        Once you click &quot;Create Account,&quot; we will send a confirmation link to your inbox.
+                      </p>
+                      <p className="italic text-[#6b7280] text-sm sm:text-[0.9rem] mt-2">
+                        Open the email from GoodLink and click the <span className="font-bold not-italic">Verify Email Address</span>{' '}
+                        button. If you don&apos;t see it, check your Spam folder.
+                      </p>
+                    </div>
+
+                    <div className="relative pl-8">
+                      <span
+                        className="absolute left-0 top-2.5 w-2 h-2 rounded-full bg-[#a855f7]"
+                        aria-hidden
+                      />
+                      <p className="font-bold text-[#1f2937] text-[1.05rem] mb-1">4. Welcome Aboard</p>
+                      <p className="text-[#6b7280]">
+                        After verification, you&apos;ll be redirected to your dashboard to build your first link!
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="border-2 border-[#f3f4f6] rounded-xl p-5 sm:p-6 mb-8 transition-colors duration-200 hover:border-[#a855f7]">
+                  <h2 className="flex items-center gap-2.5 text-[#a855f7] text-xl sm:text-2xl font-bold mt-0 mb-4">
+                    <span className="text-[1.2rem] leading-none" aria-hidden>
+                      ✦
+                    </span>
+                    Option 2: Sign Up with Google
+                  </h2>
+                  <p className="text-[#1f2937] mb-6">
+                    If you prefer a faster way to join without managing another password, you can use Single Sign-On
+                    (SSO):
+                  </p>
+                  <div className="space-y-5">
+                    <div className="relative pl-8">
+                      <span
+                        className="absolute left-0 top-2.5 w-2 h-2 rounded-full bg-[#a855f7]"
+                        aria-hidden
+                      />
+                      <p className="font-bold text-[#1f2937] text-[1.05rem] mb-1">1. Connect Account</p>
+                      <p className="text-[#6b7280]">
+                        On the Sign Up page, click the &quot;Google&quot; button and choose the account you wish to
+                        link.
+                      </p>
+                    </div>
+                    <div className="relative pl-8">
+                      <span
+                        className="absolute left-0 top-2.5 w-2 h-2 rounded-full bg-[#a855f7]"
+                        aria-hidden
+                      />
+                      <p className="font-bold text-[#1f2937] text-[1.05rem] mb-1">2. Instant Access</p>
+                      <p className="text-[#6b7280]">
+                        Since your identity is verified by Google, you won&apos;t need to wait for a verification email.
+                        You will be logged in immediately.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="text-center pt-6 sm:pt-8 mt-10 border-t border-[#eee]">
+                  <h3 className="text-lg sm:text-xl font-bold text-[#1f2937] mb-3">Need Help?</h3>
+                  <p className="text-[#6b7280] text-base sm:text-[1.05rem]">
+                    If you encounter any issues during registration, please contact our support team at{' '}
+                    <a
+                      href="mailto:hello@goodlink.ai"
+                      className="text-[#a855f7] font-bold no-underline hover:underline"
+                    >
+                      hello@goodlink.ai
+                    </a>
+                  </p>
+                </div>
               </div>
             </section>
 
