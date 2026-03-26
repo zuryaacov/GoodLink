@@ -167,6 +167,31 @@ const LinkManager = () => {
       .then(({ data }) => setDetailsPixelNames(data || []));
   }, [detailsLink]);
 
+  const getDetailsUrlStatus = (url) => {
+    if (!detailsLink || !url || !Array.isArray(detailsLink.urls_status)) return null;
+    const match = detailsLink.urls_status.find((item) => item?.url === url);
+    const raw = (match?.status || '').toLowerCase();
+    if (raw === 'active' || raw === 'approve') return 'active';
+    if (raw === 'rejected' || raw === 'reject') return 'rejected';
+    return null;
+  };
+
+  const urlStatusBadge = (status) => {
+    if (!status) return <span className="text-xs text-slate-500">No status</span>;
+    if (status === 'active') {
+      return (
+        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-[#0b996f]/15 text-[#0b996f]">
+          Active
+        </span>
+      );
+    }
+    return (
+      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-red-500/15 text-red-600">
+        Rejected
+      </span>
+    );
+  };
+
   const [deleteLinkModal, setDeleteLinkModal] = useState({
     isOpen: false,
     link: null,
@@ -1486,16 +1511,43 @@ const LinkManager = () => {
                     <span className="text-sm text-[#1b1b1b] break-all text-right max-w-[70%] font-mono">{value}</span>
                   </div>
                 ))}
-              <div className="flex items-start justify-between py-2 border-b border-gray-200">
-                <span className="text-xs font-medium text-[#1b1b1b] shrink-0 mr-4">Geo Rules</span>
-                <span className="text-sm text-[#1b1b1b] text-right">
-                  {detailsLink.geo_rules &&
-                  (Array.isArray(detailsLink.geo_rules)
-                    ? detailsLink.geo_rules.length > 0
-                    : Object.keys(detailsLink.geo_rules).length > 0)
-                    ? 'Yes'
-                    : 'No'}
-                </span>
+              <div className="py-2 border-b border-gray-200">
+                <span className="block text-xs font-medium text-[#1b1b1b] mb-2">URL Statuses</span>
+                <div className="space-y-2">
+                  {[
+                    { label: 'Short URL', url: detailsLink.short_url },
+                    { label: 'Target URL', url: detailsLink.target_url },
+                    { label: 'Fallback URL', url: detailsLink.fallback_url },
+                  ]
+                    .filter((item) => item.url)
+                    .map((item) => (
+                      <div key={`${item.label}-${item.url}`} className="flex items-start justify-between gap-4">
+                        <div className="min-w-0">
+                          <p className="text-[11px] font-semibold text-slate-600">{item.label}</p>
+                          <p className="text-xs text-[#1b1b1b] break-all font-mono">{item.url}</p>
+                        </div>
+                        <div className="shrink-0">{urlStatusBadge(getDetailsUrlStatus(item.url))}</div>
+                      </div>
+                    ))}
+                </div>
+              </div>
+              <div className="py-2 border-b border-gray-200">
+                <span className="block text-xs font-medium text-[#1b1b1b] mb-2">Geo Redirect</span>
+                {Array.isArray(detailsLink.geo_rules) && detailsLink.geo_rules.length > 0 ? (
+                  <div className="space-y-2">
+                    {detailsLink.geo_rules.map((rule, idx) => (
+                      <div key={`${rule.country || 'country'}-${idx}`} className="flex items-start justify-between gap-4">
+                        <div className="min-w-0">
+                          <p className="text-[11px] font-semibold text-slate-600">{rule.country || 'Country'}</p>
+                          <p className="text-xs text-[#1b1b1b] break-all font-mono">{rule.url || '—'}</p>
+                        </div>
+                        <div className="shrink-0">{urlStatusBadge(getDetailsUrlStatus(rule.url))}</div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <span className="text-xs text-slate-500">None</span>
+                )}
               </div>
               <div className="flex items-start justify-between py-2 border-b border-gray-200">
                 <span className="text-xs font-medium text-[#1b1b1b] shrink-0 mr-4">Pixels</span>
