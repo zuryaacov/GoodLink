@@ -523,14 +523,145 @@ const DocsPage = () => {
               </div>
             </section>
 
-            {DOC_SECTIONS.slice(3).map(({ id, title }) => (
-              <section
-                key={id}
-                id={id}
-                className="not-prose scroll-mt-32 min-h-16"
-                aria-label={title}
-              />
-            ))}
+            <section id="custom-domains" className="not-prose scroll-mt-32 min-h-16" aria-label="Custom domains" />
+
+            <section id="capi" className="scroll-mt-32 not-prose mb-16 sm:mb-20">
+              <div className="max-w-[900px] mx-auto bg-white rounded-2xl shadow-[0_4px_6px_-1px_rgba(0,0,0,0.1)] border border-slate-100 p-6 sm:p-8 md:p-10 text-[#1f2937] leading-relaxed">
+                <div className="text-center mb-2">
+                  <span className="inline-block bg-[#d7fec8] text-[#166534] px-3 py-1 rounded-full text-[0.85rem] font-bold uppercase tracking-wide">
+                    Pro Plan Only
+                  </span>
+                </div>
+                <h1 className="text-center text-[#a855f7] text-3xl sm:text-4xl md:text-[2.2rem] font-bold mb-2.5">
+                  CAPI (Conversions API) Setup Guide
+                </h1>
+                <p className="text-center text-[#6b7280] text-base sm:text-[1.05rem] mb-8 max-w-3xl mx-auto">
+                  Direct server-to-server tracking to improve attribution and bypass tracking limitations.
+                </p>
+
+                <div className="bg-[#fef2f2] border-2 border-[#dc2626] rounded-xl p-6 mb-8 text-[#991b1b]">
+                  <h4 className="m-0 mb-2.5 flex items-center text-xl font-extrabold">⚠️ CRITICAL REQUIREMENT</h4>
+                  <p className="text-[1.1rem] font-bold mb-2">Accuracy is mandatory.</p>
+                  <p className="m-0">
+                    You must ensure that the <strong>Pixel ID/Dataset ID</strong> and <strong>Access Token</strong>{' '}
+                    are entered with 100% precision. Incorrect information will cause CAPI transmissions to fail,
+                    resulting in a <strong>permanent loss of data</strong>. All configuration is the sole responsibility
+                    of the user. GoodLink is not liable for data loss due to incorrect setup.
+                  </p>
+                </div>
+
+                <h2 className="text-[#a855f7] text-2xl sm:text-[1.6rem] font-bold border-b-2 border-[#d7fec8] pb-2 mb-5">
+                  1. Creating a CAPI Profile
+                </h2>
+                <div className="border border-[#e5e7eb] rounded-xl p-6 sm:p-8 bg-white mb-6">
+                  <p>
+                    To begin, navigate to the <strong>CAPI Manager</strong> tab in your dashboard and click the{' '}
+                    <strong>New CAPI</strong> button.
+                  </p>
+                  <div className="mt-5 space-y-3">
+                    {[
+                      'Name your CAPI: Provide a friendly name for internal identification (e.g., "Main Facebook Dataset").',
+                      'Select Company: Choose the platform for this profile. Currently supported: Facebook, Instagram, and TikTok.',
+                      'Report ID: Enter your Dataset ID (for Meta) or Pixel ID (for TikTok).',
+                      'Report Token: Enter your CAPI Token (for Meta) or TikTok Events API Token.',
+                      'Event Type: Select the conversion event you wish to send (e.g., PageView, Purchase, Lead).',
+                    ].map((text, i) => (
+                      <p key={text} className="m-0">
+                        <strong>
+                          <span className="inline-flex items-center justify-center bg-[#a855f7] text-white w-7 h-7 rounded-full mr-2.5 text-sm">
+                            {i + 1}
+                          </span>
+                          {text.split(':')[0]}:
+                        </strong>{' '}
+                        {text.split(':').slice(1).join(':').trim()}
+                      </p>
+                    ))}
+                  </div>
+
+                  <div className="bg-[#f0fdf4] border-l-4 border-[#22c55e] rounded-md p-4 mt-5 text-[0.95rem]">
+                    <strong>Pro Tip:</strong> Once defined, you can attach these CAPI profiles to any link using a
+                    Custom Domain during the Add or Edit link process.
+                  </div>
+                </div>
+
+                <h2 className="text-[#a855f7] text-2xl sm:text-[1.6rem] font-bold border-b-2 border-[#d7fec8] pb-2 mb-5">
+                  2. Finding Your IDs &amp; Tokens
+                </h2>
+                <div className="border border-[#e5e7eb] rounded-xl p-6 sm:p-8 bg-white mb-6">
+                  <h3 className="text-xl mt-0 text-[#1f2937] border-l-4 border-[#a855f7] pl-2.5">Facebook &amp; Instagram (Meta)</h3>
+                  <div className="bg-[#f9fafb] p-5 rounded-lg my-4">
+                    <p>
+                      <strong className="text-[#a855f7]">How to find the Dataset ID:</strong> Go to <em>Meta Events Manager</em>{' '}
+                      → <em>Data Sources</em>. Select your Dataset/Pixel. The ID is displayed below the name or in the
+                      &quot;Settings&quot; tab.
+                    </p>
+                    <p>
+                      <strong className="text-[#a855f7]">How to find the CAPI Token:</strong>
+                    </p>
+                    <ol className="mt-2 ml-5 list-decimal">
+                      <li>In <em>Events Manager</em>, navigate to the <strong>Settings</strong> tab of your Dataset.</li>
+                      <li>Scroll to the <strong>Conversions API</strong> section.</li>
+                      <li>Click <strong>&quot;Generate access token&quot;</strong> and copy the string.</li>
+                    </ol>
+                  </div>
+
+                  <h3 className="text-xl mt-6 text-[#1f2937] border-l-4 border-[#a855f7] pl-2.5">TikTok</h3>
+                  <div className="bg-[#f9fafb] p-5 rounded-lg my-4">
+                    <p>
+                      <strong className="text-[#a855f7]">How to find the Pixel ID:</strong> Go to <em>TikTok Ads Manager</em>{' '}
+                      → <em>Assets</em> → <em>Events</em> → <em>Web Events</em>. Click &quot;Manage&quot; on your pixel.
+                      The ID is shown at the top of the interface.
+                    </p>
+                    <p>
+                      <strong className="text-[#a855f7]">How to find the Events API Token:</strong>
+                    </p>
+                    <ol className="mt-2 ml-5 list-decimal">
+                      <li>Inside your specific Pixel management page, go to the <strong>Settings</strong> tab.</li>
+                      <li>Scroll down to the <strong>Events API</strong> section.</li>
+                      <li>Click <strong>&quot;Generate Access Token&quot;</strong> and copy it.</li>
+                    </ol>
+                  </div>
+                </div>
+
+                <h2 className="text-[#a855f7] text-2xl sm:text-[1.6rem] font-bold border-b-2 border-[#d7fec8] pb-2 mb-5">
+                  3. CAPI Profile Management
+                </h2>
+                <div className="border border-[#e5e7eb] rounded-xl p-6 sm:p-8 bg-white">
+                  <p>
+                    Your <strong>CAPI Manager</strong> screen displays all your profiles as individual cards. Each card
+                    contains:
+                  </p>
+                  <ul className="text-[#6b7280] mt-3 list-disc ml-5 space-y-1">
+                    <li>
+                      <strong className="text-[#1f2937]">Profile Name:</strong> Your custom label.
+                    </li>
+                    <li>
+                      <strong className="text-[#1f2937]">Platform:</strong> The connected service (Facebook, Instagram, or
+                      TikTok).
+                    </li>
+                    <li>
+                      <strong className="text-[#1f2937]">Pixel/Dataset ID:</strong> The active tracking ID.
+                    </li>
+                    <li>
+                      <strong className="text-[#1f2937]">Event:</strong> The specific reported conversion event.
+                    </li>
+                    <li>
+                      <strong className="text-[#1f2937]">Status:</strong> You can toggle between{' '}
+                      <span className="inline-block px-2 py-0.5 rounded text-xs font-bold bg-[#dcfce7] text-[#166534]">
+                        Active
+                      </span>{' '}
+                      and{' '}
+                      <span className="inline-block px-2 py-0.5 rounded text-xs font-bold bg-[#fee2e2] text-[#991b1b]">
+                        Paused
+                      </span>
+                      . When paused, no data will be sent for this profile.
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </section>
+
+            <section id="utm-presets" className="not-prose scroll-mt-32 min-h-16" aria-label="UTM Presets" />
           </article>
         </div>
       </main>
