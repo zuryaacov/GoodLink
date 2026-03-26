@@ -180,7 +180,7 @@ const LinkManager = () => {
     if (status === 'active') {
       return (
         <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-[#0b996f]/15 text-[#0b996f]">
-          Active
+          Approve
         </span>
       );
     }
