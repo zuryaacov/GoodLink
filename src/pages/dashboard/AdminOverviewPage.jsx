@@ -432,6 +432,7 @@ const AdminOverviewPage = () => {
 
   const collectLinkUrls = (link) => {
     const urls = [];
+    if (link?.short_url) urls.push(link.short_url);
     if (link?.target_url) urls.push(link.target_url);
     if (link?.fallback_url) urls.push(link.fallback_url);
     if (Array.isArray(link?.geo_rules)) {
@@ -572,7 +573,7 @@ const AdminOverviewPage = () => {
         <button
           type="button"
           onClick={() => setUrlStatus(link.id, url, 'approve')}
-          className={`px-2.5 py-1 rounded-lg text-xs font-bold border transition-colors ${
+          className={`px-3.5 py-1.5 rounded-lg text-sm font-bold border transition-colors ${
             approveActive
               ? 'bg-[#0b996f]/15 border-[#0b996f] text-[#0b996f]'
               : 'border-slate-300 text-slate-700 hover:bg-slate-100'
@@ -583,7 +584,7 @@ const AdminOverviewPage = () => {
         <button
           type="button"
           onClick={() => setUrlStatus(link.id, url, 'reject')}
-          className={`px-2.5 py-1 rounded-lg text-xs font-bold border transition-colors ${
+          className={`px-3.5 py-1.5 rounded-lg text-sm font-bold border transition-colors ${
             rejectActive
               ? 'bg-red-500/15 border-red-500 text-red-600'
               : 'border-slate-300 text-slate-700 hover:bg-slate-100'
@@ -757,6 +758,7 @@ const AdminOverviewPage = () => {
                           >
                             {link.short_url}
                           </a>
+                          {link.short_url ? urlStatusActions(link, link.short_url) : null}
                         </div>
                         {urlBlock(link, 'Target URL', link.target_url, true)}
                         {urlBlock(link, 'Fallback / Redirect URL', link.fallback_url)}
