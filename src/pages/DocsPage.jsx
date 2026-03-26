@@ -133,7 +133,7 @@ const DocsPage = () => {
 
             <section id="create-account" className="scroll-mt-32 not-prose mb-16 sm:mb-20">
               <div className="max-w-[800px] mx-auto bg-white rounded-2xl shadow-[0_4px_6px_-1px_rgba(0,0,0,0.1)] border border-slate-100 p-6 sm:p-8 md:p-10 text-[#1f2937] leading-relaxed">
-                <h1 className="text-center text-[#a855f7] text-3xl sm:text-4xl md:text-[2.5rem] font-bold mb-4">
+                <h1 className="text-center text-[#1f2937] text-3xl sm:text-4xl md:text-[2.5rem] font-bold mb-4">
                   How to Create Your Account
                 </h1>
                 <p className="text-center text-[#6b7280] text-base sm:text-[1.1rem] mb-10 max-w-2xl mx-auto">
@@ -143,7 +143,7 @@ const DocsPage = () => {
                 </p>
 
                 <div className="border-2 border-[#f3f4f6] rounded-xl p-5 sm:p-6 mb-8 transition-colors duration-200 hover:border-[#a855f7]">
-                  <h2 className="flex items-center gap-2.5 text-[#a855f7] text-xl sm:text-2xl font-bold mt-0 mb-4">
+                  <h2 className="flex items-center gap-2.5 text-[#1f2937] text-xl sm:text-2xl font-bold mt-0 mb-4">
                     <span className="text-[1.2rem] leading-none" aria-hidden>
                       ✦
                     </span>
@@ -221,7 +221,7 @@ const DocsPage = () => {
                 </div>
 
                 <div className="border-2 border-[#f3f4f6] rounded-xl p-5 sm:p-6 mb-8 transition-colors duration-200 hover:border-[#a855f7]">
-                  <h2 className="flex items-center gap-2.5 text-[#a855f7] text-xl sm:text-2xl font-bold mt-0 mb-4">
+                  <h2 className="flex items-center gap-2.5 text-[#1f2937] text-xl sm:text-2xl font-bold mt-0 mb-4">
                     <span className="text-[1.2rem] leading-none" aria-hidden>
                       ✦
                     </span>
@@ -274,7 +274,7 @@ const DocsPage = () => {
 
             <section id="workspaces" className="scroll-mt-32 not-prose mb-16 sm:mb-20">
               <div className="max-w-[800px] mx-auto bg-white rounded-2xl shadow-[0_4px_6px_-1px_rgba(0,0,0,0.1)] border border-slate-100 p-6 sm:p-8 md:p-10 text-[#1f2937] leading-relaxed">
-                <h1 className="text-center text-[#a855f7] text-3xl sm:text-4xl md:text-[2.2rem] font-bold mb-5">
+                <h1 className="text-center text-[#1f2937] text-3xl sm:text-4xl md:text-[2.2rem] font-bold mb-5">
                   Organizing Your Content: Workspaces, Campaigns, and Groups
                 </h1>
 
@@ -284,7 +284,7 @@ const DocsPage = () => {
                   tools allow you to categorize your links perfectly.
                 </p>
 
-                <h2 className="text-[#a855f7] text-2xl sm:text-[1.6rem] font-bold border-b-2 border-[#d7fec8] pb-2 mb-6">
+                <h2 className="text-[#1f2937] text-2xl sm:text-[1.6rem] font-bold border-b-2 border-[#d7fec8] pb-2 mb-6">
                   The Hierarchy Explained
                 </h2>
                 <div className="border border-[#e5e7eb] rounded-xl p-5 sm:p-6 mb-8 bg-white">
@@ -313,7 +313,7 @@ const DocsPage = () => {
                   </div>
                 </div>
 
-                <h2 className="text-[#a855f7] text-2xl sm:text-[1.6rem] font-bold border-b-2 border-[#d7fec8] pb-2 mb-4">
+                <h2 className="text-[#1f2937] text-2xl sm:text-[1.6rem] font-bold border-b-2 border-[#d7fec8] pb-2 mb-4">
                   How to Create and Manage
                 </h2>
                 <p className="text-[#1f2937] mb-5">Setting up your structure is intuitive and takes only a few seconds:</p>
@@ -350,7 +350,7 @@ const DocsPage = () => {
                   </div>
                 </div>
 
-                <h2 className="text-[#a855f7] text-2xl sm:text-[1.6rem] font-bold border-b-2 border-[#d7fec8] pb-2 mb-4">
+                <h2 className="text-[#1f2937] text-2xl sm:text-[1.6rem] font-bold border-b-2 border-[#d7fec8] pb-2 mb-4">
                   Tracking Performance at a Glance
                 </h2>
                 <p className="text-[#1f2937] mb-5">
@@ -382,7 +382,7 @@ const DocsPage = () => {
 
             <section id="links" className="scroll-mt-32 not-prose mb-16 sm:mb-20">
               <div className="max-w-[900px] mx-auto bg-white rounded-2xl shadow-[0_4px_6px_-1px_rgba(0,0,0,0.1)] border border-slate-100 p-6 sm:p-8 md:p-10 text-[#1f2937] leading-relaxed">
-                <h1 className="text-center text-[#a855f7] text-3xl sm:text-4xl md:text-[2.2rem] font-bold mb-10">
+                <h1 className="text-center text-[#1f2937] text-3xl sm:text-4xl md:text-[2.2rem] font-bold mb-10">
                   Creating and Managing Links
                 </h1>
                 <p className="text-center text-[#6b7280] text-base sm:text-[1.05rem] mb-10 max-w-2xl mx-auto">
@@ -393,7 +393,7 @@ const DocsPage = () => {
                   <span className="inline-block px-3 py-1 rounded-full text-[0.85rem] font-bold uppercase tracking-wide bg-[#e2e8f0] text-[#475569] mb-4">
                     Starter Plan
                   </span>
-                  <h2 className="text-[#a855f7] text-2xl sm:text-[1.6rem] font-bold border-b-2 border-[#d7fec8] pb-2 mb-5">
+                  <h2 className="text-[#1f2937] text-2xl sm:text-[1.6rem] font-bold border-b-2 border-[#d7fec8] pb-2 mb-5">
                     Basic Link Creation
                   </h2>
                   <div className="border border-[#e5e7eb] rounded-xl p-6 sm:p-8 bg-white">
@@ -436,7 +436,7 @@ const DocsPage = () => {
                   <span className="inline-block px-3 py-1 rounded-full text-[0.85rem] font-bold uppercase tracking-wide bg-[#fef9c3] text-[#854d0e] mb-4">
                     Advanced Plan
                   </span>
-                  <h2 className="text-[#a855f7] text-2xl sm:text-[1.6rem] font-bold border-b-2 border-[#d7fec8] pb-2 mb-5">
+                  <h2 className="text-[#1f2937] text-2xl sm:text-[1.6rem] font-bold border-b-2 border-[#d7fec8] pb-2 mb-5">
                     Advanced Customization &amp; Security
                   </h2>
                   <div className="border border-[#e5e7eb] rounded-xl p-6 sm:p-8 bg-white">
@@ -466,7 +466,7 @@ const DocsPage = () => {
                   <span className="inline-block px-3 py-1 rounded-full text-[0.85rem] font-bold uppercase tracking-wide bg-[#d7fec8] text-[#166534] mb-4">
                     Pro Plan
                   </span>
-                  <h2 className="text-[#a855f7] text-2xl sm:text-[1.6rem] font-bold border-b-2 border-[#d7fec8] pb-2 mb-5">
+                  <h2 className="text-[#1f2937] text-2xl sm:text-[1.6rem] font-bold border-b-2 border-[#d7fec8] pb-2 mb-5">
                     Professional Targeting &amp; Automation
                   </h2>
                   <div className="border border-[#e5e7eb] rounded-xl p-6 sm:p-8 bg-white">
@@ -488,7 +488,7 @@ const DocsPage = () => {
                 </section>
 
                 <section className="mb-8">
-                  <h2 className="text-[#a855f7] text-2xl sm:text-[1.6rem] font-bold border-b-2 border-[#d7fec8] pb-2 mb-5">
+                  <h2 className="text-[#1f2937] text-2xl sm:text-[1.6rem] font-bold border-b-2 border-[#d7fec8] pb-2 mb-5">
                     Link Management &amp; QR Codes
                   </h2>
                   <div className="border border-[#e5e7eb] rounded-xl p-6 sm:p-8 bg-white">
@@ -530,7 +530,7 @@ const DocsPage = () => {
                     Advanced &amp; Pro Feature
                   </span>
                 </div>
-                <h1 className="text-center text-[#a855f7] text-3xl sm:text-4xl md:text-[2.2rem] font-bold mb-2.5">
+                <h1 className="text-center text-[#1f2937] text-3xl sm:text-4xl md:text-[2.2rem] font-bold mb-2.5">
                   Custom Domain Setup
                 </h1>
                 <p className="text-center text-[#6b7280] text-base sm:text-[1.05rem] mb-8 max-w-3xl mx-auto">
@@ -538,7 +538,7 @@ const DocsPage = () => {
                   features.
                 </p>
 
-                <h2 className="text-[#a855f7] text-2xl sm:text-[1.6rem] font-bold border-b-2 border-[#d7fec8] pb-2 mb-5">
+                <h2 className="text-[#1f2937] text-2xl sm:text-[1.6rem] font-bold border-b-2 border-[#d7fec8] pb-2 mb-5">
                   Phase 1: Getting Started
                 </h2>
                 <div className="border border-[#e5e7eb] rounded-xl p-6 sm:p-8 bg-white mb-6">
@@ -566,7 +566,7 @@ const DocsPage = () => {
                   </p>
                 </div>
 
-                <h2 className="text-[#a855f7] text-2xl sm:text-[1.6rem] font-bold border-b-2 border-[#d7fec8] pb-2 mb-5">
+                <h2 className="text-[#1f2937] text-2xl sm:text-[1.6rem] font-bold border-b-2 border-[#d7fec8] pb-2 mb-5">
                   Phase 2: DNS Configuration
                 </h2>
                 <div className="border border-[#e5e7eb] rounded-xl p-6 sm:p-8 bg-white mb-6">
@@ -614,7 +614,7 @@ const DocsPage = () => {
                   </div>
                 </div>
 
-                <h2 className="text-[#a855f7] text-2xl sm:text-[1.6rem] font-bold border-b-2 border-[#d7fec8] pb-2 mb-5">
+                <h2 className="text-[#1f2937] text-2xl sm:text-[1.6rem] font-bold border-b-2 border-[#d7fec8] pb-2 mb-5">
                   Phase 3: Verify &amp; Activate
                 </h2>
                 <div className="border border-[#e5e7eb] rounded-xl p-6 sm:p-8 bg-white mb-6">
@@ -642,7 +642,7 @@ const DocsPage = () => {
                   </ol>
                 </div>
 
-                <h2 className="text-[#a855f7] text-2xl sm:text-[1.6rem] font-bold border-b-2 border-[#d7fec8] pb-2 mb-5">
+                <h2 className="text-[#1f2937] text-2xl sm:text-[1.6rem] font-bold border-b-2 border-[#d7fec8] pb-2 mb-5">
                   Domain Status
                 </h2>
                 <div className="border border-[#e5e7eb] rounded-xl p-6 sm:p-8 bg-white">
@@ -672,7 +672,7 @@ const DocsPage = () => {
                     Pro Plan Only
                   </span>
                 </div>
-                <h1 className="text-center text-[#a855f7] text-3xl sm:text-4xl md:text-[2.2rem] font-bold mb-2.5">
+                <h1 className="text-center text-[#1f2937] text-3xl sm:text-4xl md:text-[2.2rem] font-bold mb-2.5">
                   CAPI (Conversions API) Setup Guide
                 </h1>
                 <p className="text-center text-[#6b7280] text-base sm:text-[1.05rem] mb-8 max-w-3xl mx-auto">
@@ -690,7 +690,7 @@ const DocsPage = () => {
                   </p>
                 </div>
 
-                <h2 className="text-[#a855f7] text-2xl sm:text-[1.6rem] font-bold border-b-2 border-[#d7fec8] pb-2 mb-5">
+                <h2 className="text-[#1f2937] text-2xl sm:text-[1.6rem] font-bold border-b-2 border-[#d7fec8] pb-2 mb-5">
                   1. Creating a CAPI Profile
                 </h2>
                 <div className="border border-[#e5e7eb] rounded-xl p-6 sm:p-8 bg-white mb-6">
@@ -724,7 +724,7 @@ const DocsPage = () => {
                   </div>
                 </div>
 
-                <h2 className="text-[#a855f7] text-2xl sm:text-[1.6rem] font-bold border-b-2 border-[#d7fec8] pb-2 mb-5">
+                <h2 className="text-[#1f2937] text-2xl sm:text-[1.6rem] font-bold border-b-2 border-[#d7fec8] pb-2 mb-5">
                   2. Finding Your IDs &amp; Tokens
                 </h2>
                 <div className="border border-[#e5e7eb] rounded-xl p-6 sm:p-8 bg-white mb-6">
@@ -763,7 +763,7 @@ const DocsPage = () => {
                   </div>
                 </div>
 
-                <h2 className="text-[#a855f7] text-2xl sm:text-[1.6rem] font-bold border-b-2 border-[#d7fec8] pb-2 mb-5">
+                <h2 className="text-[#1f2937] text-2xl sm:text-[1.6rem] font-bold border-b-2 border-[#d7fec8] pb-2 mb-5">
                   3. CAPI Profile Management
                 </h2>
                 <div className="border border-[#e5e7eb] rounded-xl p-6 sm:p-8 bg-white">
@@ -808,7 +808,7 @@ const DocsPage = () => {
                     Advanced &amp; Pro Feature
                   </span>
                 </div>
-                <h1 className="text-center text-[#a855f7] text-3xl sm:text-4xl md:text-[2.2rem] font-bold mb-2.5">
+                <h1 className="text-center text-[#1f2937] text-3xl sm:text-4xl md:text-[2.2rem] font-bold mb-2.5">
                   UTM Presets Manager
                 </h1>
 
@@ -822,7 +822,7 @@ const DocsPage = () => {
                   </p>
                 </div>
 
-                <h2 className="text-[#a855f7] text-2xl sm:text-[1.6rem] font-bold border-b-2 border-[#d7fec8] pb-2 mb-5">
+                <h2 className="text-[#1f2937] text-2xl sm:text-[1.6rem] font-bold border-b-2 border-[#d7fec8] pb-2 mb-5">
                   1. Creating a New UTM Preset
                 </h2>
                 <div className="border border-[#e5e7eb] rounded-xl p-6 sm:p-8 bg-white mb-6">
@@ -896,7 +896,7 @@ const DocsPage = () => {
                   </div>
                 </div>
 
-                <h2 className="text-[#a855f7] text-2xl sm:text-[1.6rem] font-bold border-b-2 border-[#d7fec8] pb-2 mb-5">
+                <h2 className="text-[#1f2937] text-2xl sm:text-[1.6rem] font-bold border-b-2 border-[#d7fec8] pb-2 mb-5">
                   2. Managing Your Presets
                 </h2>
                 <div className="border border-[#e5e7eb] rounded-xl p-6 sm:p-8 bg-white">
