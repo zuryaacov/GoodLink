@@ -801,7 +801,129 @@ const DocsPage = () => {
               </div>
             </section>
 
-            <section id="utm-presets" className="not-prose scroll-mt-32 min-h-16" aria-label="UTM Presets" />
+            <section id="utm-presets" className="scroll-mt-32 not-prose mb-16 sm:mb-20">
+              <div className="max-w-[900px] mx-auto bg-white rounded-2xl shadow-[0_4px_6px_-1px_rgba(0,0,0,0.1)] border border-slate-100 p-6 sm:p-8 md:p-10 text-[#1f2937] leading-relaxed">
+                <div className="text-center mb-2">
+                  <span className="inline-block bg-[#d7fec8] text-[#166534] px-3 py-1 rounded-full text-[0.85rem] font-bold uppercase tracking-wide">
+                    Advanced &amp; Pro Feature
+                  </span>
+                </div>
+                <h1 className="text-center text-[#a855f7] text-3xl sm:text-4xl md:text-[2.2rem] font-bold mb-2.5">
+                  UTM Presets Manager
+                </h1>
+
+                <div className="bg-[#d7fec8] border-l-[5px] border-[#a855f7] rounded-xl p-6 mb-8 text-[#166534]">
+                  <h3 className="mt-0 mb-2 text-[#1f2937] text-xl font-bold">Efficiency &amp; Accuracy</h3>
+                  <p className="mb-0 text-[1.05rem]">
+                    GoodLink provides <strong>UTM Presets</strong> as a specialized service to help you maintain
+                    consistency across all campaigns. Define your tracking parameters once, then easily copy the preset
+                    and apply it to your desired advertising platform. This ensures your tracking is set up{' '}
+                    <strong>quickly, easily, and without manual errors.</strong>
+                  </p>
+                </div>
+
+                <h2 className="text-[#a855f7] text-2xl sm:text-[1.6rem] font-bold border-b-2 border-[#d7fec8] pb-2 mb-5">
+                  1. Creating a New UTM Preset
+                </h2>
+                <div className="border border-[#e5e7eb] rounded-xl p-6 sm:p-8 bg-white mb-6">
+                  <p>
+                    Navigate to the <strong>UTM Preset</strong> tab in your dashboard and click the{' '}
+                    <strong>New UTM Preset</strong> button.
+                  </p>
+
+                  <div className="mt-6 space-y-6">
+                    <div>
+                      <div className="flex items-center font-bold mb-2">
+                        <span className="bg-[#a855f7] text-white w-7 h-7 rounded-full inline-flex items-center justify-center mr-3 text-sm">
+                          1
+                        </span>
+                        Name Your Preset
+                      </div>
+                      <p>
+                        Give your preset a clear, descriptive name (e.g., &quot;Meta Retargeting Campaign&quot;) to
+                        identify it later in your list.
+                      </p>
+                    </div>
+
+                    <div>
+                      <div className="flex items-center font-bold mb-2">
+                        <span className="bg-[#a855f7] text-white w-7 h-7 rounded-full inline-flex items-center justify-center mr-3 text-sm">
+                          2
+                        </span>
+                        Select Company
+                      </div>
+                      <p>Choose the advertising platform this preset will be used for:</p>
+                      <div className="mb-3 flex flex-wrap gap-2">
+                        <span className="inline-block bg-[#f3f4f6] border border-[#a855f7] px-2.5 py-1 rounded-md text-[0.85rem] font-semibold">
+                          Meta (FB/IG)
+                        </span>
+                        <span className="inline-block bg-[#f3f4f6] border border-[#e5e7eb] px-2.5 py-1 rounded-md text-[0.85rem] font-semibold">
+                          Google Ads
+                        </span>
+                        <span className="inline-block bg-[#f3f4f6] border border-[#e5e7eb] px-2.5 py-1 rounded-md text-[0.85rem] font-semibold">
+                          TikTok
+                        </span>
+                        <span className="inline-block bg-[#f3f4f6] border border-[#e5e7eb] px-2.5 py-1 rounded-md text-[0.85rem] font-semibold">
+                          Taboola
+                        </span>
+                        <span className="inline-block bg-[#f3f4f6] border border-[#e5e7eb] px-2.5 py-1 rounded-md text-[0.85rem] font-semibold">
+                          Outbrain
+                        </span>
+                        <span className="inline-block bg-[#f3f4f6] border border-[#e5e7eb] px-2.5 py-1 rounded-md text-[0.85rem] font-semibold">
+                          Snapchat
+                        </span>
+                      </div>
+                    </div>
+
+                    <div>
+                      <div className="flex items-center font-bold mb-2">
+                        <span className="bg-[#a855f7] text-white w-7 h-7 rounded-full inline-flex items-center justify-center mr-3 text-sm">
+                          3
+                        </span>
+                        Configure Tracking Parameters
+                      </div>
+                      <p>
+                        Define the values for each UTM tag (Source, Medium, Campaign, Content, Term). For each field,
+                        you can choose the <strong>Preset Type</strong>.
+                      </p>
+                      <p>
+                        <em>
+                          Example: Set <strong>utm_source=facebook_ads</strong> or{' '}
+                          <strong>utm_source=instagram_ads</strong> based on your Meta placement strategy.
+                        </em>
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <h2 className="text-[#a855f7] text-2xl sm:text-[1.6rem] font-bold border-b-2 border-[#d7fec8] pb-2 mb-5">
+                  2. Managing Your Presets
+                </h2>
+                <div className="border border-[#e5e7eb] rounded-xl p-6 sm:p-8 bg-white">
+                  <p>Every saved preset is displayed as a dedicated card in your Manager, showing:</p>
+                  <ul className="list-none p-0 space-y-3">
+                    <li className="relative pl-6 before:content-['✔'] before:absolute before:left-0 before:text-[#a855f7] before:font-bold">
+                      <strong>Preset Name &amp; Platform</strong> (e.g., Meta, Google Ads).
+                    </li>
+                    <li className="relative pl-6 before:content-['✔'] before:absolute before:left-0 before:text-[#a855f7] before:font-bold">
+                      <strong>Individual Parameter Mapping:</strong> See exactly what each tag represents.
+                    </li>
+                    <li className="relative pl-6 before:content-['✔'] before:absolute before:left-0 before:text-[#a855f7] before:font-bold">
+                      <strong>The Complete String:</strong> A full preview of the final URL suffix.
+                    </li>
+                  </ul>
+
+                  <div className="bg-[#1f2937] text-[#d7fec8] p-4 rounded-lg font-mono text-[0.9rem] break-all mt-4 leading-relaxed">
+                    utm_source=meta_ads&amp;utm_medium=social&amp;utm_campaign={"{campaign.id}"}&amp;utm_content={"{"}
+                    {"ad.id}"}&amp;utm_term={"{adset.name}"}
+                  </div>
+                  <span className="block mt-3 text-right text-[0.85rem] font-bold text-[#a855f7]">
+                    ✨ Click the <strong>&quot;Copy UTM preset&quot;</strong> button on the card to copy the entire
+                    string instantly!
+                  </span>
+                </div>
+              </div>
+            </section>
           </article>
         </div>
       </main>
