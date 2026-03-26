@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { isValidEmail } from '../lib/emailValidation';
@@ -9,10 +9,32 @@ const ContactPage = () => {
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
   const [error, setError] = useState(null);
+  const [turnstileToken, setTurnstileToken] = useState(null);
+  const [turnstileWidgetId, setTurnstileWidgetId] = useState(null);
+  const turnstileContainerRef = useRef(null);
 
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
+
+  useEffect(() => {
+    const siteKey = import.meta.env.VITE_TURNSTILE_SITE_KEY;
+    if (!siteKey || !turnstileContainerRef.current || !window.turnstile) return;
+    if (turnstileWidgetId) return;
+
+    try {
+      const id = window.turnstile.render(turnstileContainerRef.current, {
+        sitekey: siteKey,
+        theme: 'light',
+        callback: (token) => setTurnstileToken(token),
+        'expired-callback': () => setTurnstileToken(null),
+        'error-callback': () => setTurnstileToken(null),
+      });
+      setTurnstileWidgetId(id);
+    } catch {
+      setError('Could not initialize Cloudflare verification. Please refresh and try again.');
+    }
+  }, [turnstileWidgetId]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -33,6 +55,10 @@ const ContactPage = () => {
       setError('Please enter your message.');
       return;
     }
+    if (!turnstileToken) {
+      setError('Please complete the Cloudflare human verification.');
+      return;
+    }
 
     setLoading(true);
     try {
@@ -45,8 +71,16 @@ const ContactPage = () => {
       setSent(true);
       setEmail('');
       setMessage('');
+      setTurnstileToken(null);
+      if (window.turnstile && turnstileWidgetId) {
+        window.turnstile.reset(turnstileWidgetId);
+      }
     } catch (err) {
       setError(err.message || 'Something went wrong. Please try again.');
+      if (window.turnstile && turnstileWidgetId) {
+        window.turnstile.reset(turnstileWidgetId);
+      }
+      setTurnstileToken(null);
     } finally {
       setLoading(false);
     }
@@ -135,6 +169,14 @@ const ContactPage = () => {
                 className="w-full px-4 py-3 rounded-lg border border-slate-200 bg-white text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#a855f7] focus:border-transparent resize-y min-h-[140px]"
                 disabled={loading}
               />
+            </div>
+            <div>
+              <div ref={turnstileContainerRef} />
+              {!import.meta.env.VITE_TURNSTILE_SITE_KEY && (
+                <p className="text-xs text-amber-600 mt-2">
+                  Cloudflare Turnstile site key is missing.
+                </p>
+              )}
             </div>
             {error && (
               <p className="text-sm text-red-600" role="alert">

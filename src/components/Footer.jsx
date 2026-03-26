@@ -103,7 +103,7 @@ const Footer = () => {
               to="/contact"
               className="text-sm text-slate-500 dark:text-[#1b1b1b] hover:text-primary transition-colors"
             >
-              Contact
+              Contact Us
             </Link>
             <Link
               to="/docs"
