@@ -80,6 +80,7 @@ const AdminOverviewPage = () => {
   const [usersLoading, setUsersLoading] = useState(false);
   const [domainsLoading, setDomainsLoading] = useState(false);
   const [actionLoading, setActionLoading] = useState(null); // link id being approved/rejected
+  const [urlStatusesByLink, setUrlStatusesByLink] = useState({});
   const [impersonatingUserId, setImpersonatingUserId] = useState(null);
   const [selectedActiveLink, setSelectedActiveLink] = useState(null);
   const [selectedCapi, setSelectedCapi] = useState(null);
@@ -97,7 +98,7 @@ const AdminOverviewPage = () => {
       const { data, error } = await supabase
         .from('links')
         .select(
-          'id, name, short_url, target_url, fallback_url, geo_rules, created_at, user_id, domain, slug'
+          'id, name, short_url, target_url, fallback_url, geo_rules, created_at, user_id, domain, slug, urls_status'
         )
         .eq('review_status', 'pending')
         .order('created_at', { ascending: false });
@@ -429,14 +430,59 @@ const AdminOverviewPage = () => {
     }
   }, [activeView]);
 
+  const collectLinkUrls = (link) => {
+    const urls = [];
+    if (link?.target_url) urls.push(link.target_url);
+    if (link?.fallback_url) urls.push(link.fallback_url);
+    if (Array.isArray(link?.geo_rules)) {
+      link.geo_rules.forEach((rule) => {
+        if (rule?.url) urls.push(rule.url);
+      });
+    }
+    return [...new Set(urls.filter(Boolean))];
+  };
+
+  const getPersistedUrlStatus = (link, url) => {
+    if (!Array.isArray(link?.urls_status)) return null;
+    const match = link.urls_status.find((item) => item?.url === url);
+    return match?.status || null;
+  };
+
+  const getEffectiveUrlStatus = (link, url) =>
+    urlStatusesByLink[link.id]?.[url] || getPersistedUrlStatus(link, url) || null;
+
+  const setUrlStatus = (linkId, url, status) => {
+    setUrlStatusesByLink((prev) => ({
+      ...prev,
+      [linkId]: {
+        ...(prev[linkId] || {}),
+        [url]: status,
+      },
+    }));
+  };
+
   const setLinkStatus = async (link, action) => {
     const linkId = link.id;
     setActionLoading(linkId);
     try {
+      const linkUrls = collectLinkUrls(link);
+      const urls_status = linkUrls.map((url) => ({
+        url,
+        status:
+          urlStatusesByLink[linkId]?.[url] ||
+          getPersistedUrlStatus(link, url) ||
+          (action === 'active' ? 'approve' : 'reject'),
+      }));
+
       const payload =
         action === 'active'
-          ? { review_status: 'active', updated_at: new Date().toISOString() }
-          : { review_status: 'rejected', status: 'rejected', updated_at: new Date().toISOString() };
+          ? { review_status: 'active', urls_status, updated_at: new Date().toISOString() }
+          : {
+              review_status: 'rejected',
+              status: 'rejected',
+              urls_status,
+              updated_at: new Date().toISOString(),
+            };
       const { error } = await supabase.from('links').update(payload).eq('id', linkId);
 
       if (error) throw error;
@@ -450,6 +496,11 @@ const AdminOverviewPage = () => {
       }
 
       setPendingLinks((prev) => prev.filter((l) => l.id !== linkId));
+      setUrlStatusesByLink((prev) => {
+        const next = { ...prev };
+        delete next[linkId];
+        return next;
+      });
     } catch (err) {
       console.error('Error updating link status:', err);
     } finally {
@@ -512,7 +563,40 @@ const AdminOverviewPage = () => {
     }
   };
 
-  const geoRulesList = (geoRules) => {
+  const urlStatusActions = (link, url) => {
+    const status = getEffectiveUrlStatus(link, url);
+    const approveActive = status === 'approve';
+    const rejectActive = status === 'reject';
+    return (
+      <div className="mt-2 flex items-center gap-2">
+        <button
+          type="button"
+          onClick={() => setUrlStatus(link.id, url, 'approve')}
+          className={`px-2.5 py-1 rounded-lg text-xs font-bold border transition-colors ${
+            approveActive
+              ? 'bg-[#0b996f]/15 border-[#0b996f] text-[#0b996f]'
+              : 'border-slate-300 text-slate-700 hover:bg-slate-100'
+          }`}
+        >
+          Approve
+        </button>
+        <button
+          type="button"
+          onClick={() => setUrlStatus(link.id, url, 'reject')}
+          className={`px-2.5 py-1 rounded-lg text-xs font-bold border transition-colors ${
+            rejectActive
+              ? 'bg-red-500/15 border-red-500 text-red-600'
+              : 'border-slate-300 text-slate-700 hover:bg-slate-100'
+          }`}
+        >
+          Reject
+        </button>
+      </div>
+    );
+  };
+
+  const geoRulesList = (link) => {
+    const geoRules = link?.geo_rules;
     if (!Array.isArray(geoRules) || geoRules.length === 0) return null;
     return geoRules.map((rule, i) => (
       <div
@@ -530,11 +614,12 @@ const AdminOverviewPage = () => {
         >
           {rule.url}
         </a>
+        {rule.url ? urlStatusActions(link, rule.url) : null}
       </div>
     ));
   };
 
-  const urlBlock = (label, url, required = false) => {
+  const urlBlock = (link, label, url, required = false) => {
     if (!required && !url) return null;
     return (
       <div className="mt-3">
@@ -552,6 +637,7 @@ const AdminOverviewPage = () => {
         ) : (
           <span className="text-base font-medium text-slate-500">—</span>
         )}
+        {url ? urlStatusActions(link, url) : null}
       </div>
     );
   };
@@ -672,9 +758,9 @@ const AdminOverviewPage = () => {
                             {link.short_url}
                           </a>
                         </div>
-                        {urlBlock('Target URL', link.target_url, true)}
-                        {urlBlock('Fallback / Redirect URL', link.fallback_url)}
-                        {geoRulesList(link.geo_rules)}
+                        {urlBlock(link, 'Target URL', link.target_url, true)}
+                        {urlBlock(link, 'Fallback / Redirect URL', link.fallback_url)}
+                        {geoRulesList(link)}
                       </div>
                       <div className="flex items-center gap-2 shrink-0 pt-2 sm:pt-0 sm:pl-4 border-t border-slate-200 sm:border-t-0 sm:border-l sm:border-slate-200">
                         <button
