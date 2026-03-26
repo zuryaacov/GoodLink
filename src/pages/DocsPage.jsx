@@ -523,7 +523,147 @@ const DocsPage = () => {
               </div>
             </section>
 
-            <section id="custom-domains" className="not-prose scroll-mt-32 min-h-16" aria-label="Custom domains" />
+            <section id="custom-domains" className="scroll-mt-32 not-prose mb-16 sm:mb-20">
+              <div className="max-w-[900px] mx-auto bg-white rounded-2xl shadow-[0_4px_6px_-1px_rgba(0,0,0,0.1)] border border-slate-100 p-6 sm:p-8 md:p-10 text-[#1f2937] leading-relaxed">
+                <div className="text-center mb-2">
+                  <span className="inline-block bg-[#d7fec8] text-[#166534] px-3 py-1 rounded-full text-[0.85rem] font-bold uppercase tracking-wide">
+                    Advanced &amp; Pro Feature
+                  </span>
+                </div>
+                <h1 className="text-center text-[#a855f7] text-3xl sm:text-4xl md:text-[2.2rem] font-bold mb-2.5">
+                  Custom Domain Setup
+                </h1>
+                <p className="text-center text-[#6b7280] text-base sm:text-[1.05rem] mb-8 max-w-3xl mx-auto">
+                  Branding your links with your own domain improves trust, click-through rates, and enables CAPI
+                  features.
+                </p>
+
+                <h2 className="text-[#a855f7] text-2xl sm:text-[1.6rem] font-bold border-b-2 border-[#d7fec8] pb-2 mb-5">
+                  Phase 1: Getting Started
+                </h2>
+                <div className="border border-[#e5e7eb] rounded-xl p-6 sm:p-8 bg-white mb-6">
+                  <div className="bg-[#f9fafb] p-4 rounded-lg border-l-4 border-[#a855f7] mb-6 font-semibold">
+                    In the <strong>Custom Domains</strong> tab, click the <strong>New Domain</strong> button to begin.
+                  </div>
+
+                  <div className="flex items-center font-bold mb-2 text-[#1f2937]">
+                    <span className="bg-[#a855f7] text-white w-7 h-7 rounded-full inline-flex items-center justify-center mr-3 text-sm">
+                      1
+                    </span>
+                    Enter Your Domain
+                  </div>
+                  <p>Enter your custom domain name (e.g., <code>mybrand.com</code>) in the provided field.</p>
+
+                  <div className="flex items-center font-bold mb-2 mt-6 text-[#1f2937]">
+                    <span className="bg-[#a855f7] text-white w-7 h-7 rounded-full inline-flex items-center justify-center mr-3 text-sm">
+                      2
+                    </span>
+                    Root Redirect (Optional)
+                  </div>
+                  <p>
+                    Decide where to send visitors who open the domain without a specific slug or with an undefined slug
+                    (for example, when someone visits just <code>mybrand.com</code>).
+                  </p>
+                </div>
+
+                <h2 className="text-[#a855f7] text-2xl sm:text-[1.6rem] font-bold border-b-2 border-[#d7fec8] pb-2 mb-5">
+                  Phase 2: DNS Configuration
+                </h2>
+                <div className="border border-[#e5e7eb] rounded-xl p-6 sm:p-8 bg-white mb-6">
+                  <div className="flex items-center font-bold mb-2 text-[#1f2937]">
+                    <span className="bg-[#a855f7] text-white w-7 h-7 rounded-full inline-flex items-center justify-center mr-3 text-sm">
+                      3
+                    </span>
+                    Add Records to Your Registrar
+                  </div>
+                  <p>
+                    To connect your domain, you must add the required DNS records at your domain registrar. The system
+                    will provide you with both <strong>TXT</strong> and <strong>CNAME</strong> records.
+                  </p>
+                  <p>
+                    <strong>Important:</strong> You must set up records for both the root domain (without www) and the{' '}
+                    <code>www</code> version to ensure all traffic is correctly captured.
+                  </p>
+
+                  <div className="bg-[#f0f9ff] border-l-4 border-[#0ea5e9] p-5 rounded-lg mt-5">
+                    <h3 className="m-0 text-[1.1rem] font-bold">Practical Example: Namecheap</h3>
+                    <ol className="mt-3 ml-5 list-decimal space-y-1">
+                      <li>Login to your <strong>Namecheap</strong> account.</li>
+                      <li>
+                        Go to <strong>Domain List</strong> and click <strong>Manage</strong> next to your domain.
+                      </li>
+                      <li>
+                        Click the <strong>Advanced DNS</strong> tab.
+                      </li>
+                      <li>
+                        Click <strong>Add New Record</strong> for each record provided by GoodLink:
+                        <ul className="mt-2 ml-4 list-disc">
+                          <li>
+                            <strong>Type:</strong> Select CNAME or TXT.
+                          </li>
+                          <li>
+                            <strong>Host:</strong> Use <code>@</code> for root and <code>www</code> for the subdomain.
+                          </li>
+                          <li>
+                            <strong>Value:</strong> Paste the values from your GoodLink dashboard.
+                          </li>
+                        </ul>
+                      </li>
+                      <li>Save all changes.</li>
+                    </ol>
+                  </div>
+                </div>
+
+                <h2 className="text-[#a855f7] text-2xl sm:text-[1.6rem] font-bold border-b-2 border-[#d7fec8] pb-2 mb-5">
+                  Phase 3: Verify &amp; Activate
+                </h2>
+                <div className="border border-[#e5e7eb] rounded-xl p-6 sm:p-8 bg-white mb-6">
+                  <div className="flex items-center font-bold mb-2 text-[#1f2937]">
+                    <span className="bg-[#a855f7] text-white w-7 h-7 rounded-full inline-flex items-center justify-center mr-3 text-sm">
+                      4
+                    </span>
+                    Verify Configuration
+                  </div>
+                  <p>
+                    Click the <strong>Verify DNS Records</strong> button to confirm your setup. Note that DNS
+                    propagation may take a few minutes to several hours.
+                  </p>
+                  <p>If you prefer to wait, you can click <strong>Done</strong> to exit. You can always verify later:</p>
+                  <ol className="ml-5 list-decimal space-y-1">
+                    <li>
+                      Go to the <strong>Custom Domains</strong> dashboard.
+                    </li>
+                    <li>
+                      Click the <strong>Three Dots (⋮)</strong> on your domain card.
+                    </li>
+                    <li>
+                      Select <strong>Details</strong> to view DNS settings and the <strong>Verify</strong> button.
+                    </li>
+                  </ol>
+                </div>
+
+                <h2 className="text-[#a855f7] text-2xl sm:text-[1.6rem] font-bold border-b-2 border-[#d7fec8] pb-2 mb-5">
+                  Domain Status
+                </h2>
+                <div className="border border-[#e5e7eb] rounded-xl p-6 sm:p-8 bg-white">
+                  <p>The status on your domain card indicates your progress:</p>
+                  <ul className="list-disc ml-5 space-y-2">
+                    <li>
+                      <span className="px-2.5 py-0.5 rounded-xl text-xs font-bold uppercase bg-[#dcfce7] text-[#166534]">
+                        Active
+                      </span>{' '}
+                      - Domain is verified and ready for use.
+                    </li>
+                    <li>
+                      <span className="px-2.5 py-0.5 rounded-xl text-xs font-bold uppercase bg-[#fef3c7] text-[#92400e]">
+                        Pending
+                      </span>{' '}
+                      - DNS records are not yet detected or propagation is in progress.
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </section>
 
             <section id="capi" className="scroll-mt-32 not-prose mb-16 sm:mb-20">
               <div className="max-w-[900px] mx-auto bg-white rounded-2xl shadow-[0_4px_6px_-1px_rgba(0,0,0,0.1)] border border-slate-100 p-6 sm:p-8 md:p-10 text-[#1f2937] leading-relaxed">
