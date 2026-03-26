@@ -52,7 +52,7 @@ const relativeTime = (dateString) => {
   return date.toLocaleDateString('he-IL', { day: '2-digit', month: '2-digit', year: 'numeric' });
 };
 
-const TRAFFIC_PAGE_SIZE = 10;
+const TRAFFIC_PAGE_SIZE = 20;
 
 const KPICard = ({ title, value, change, trend, icon, iconBgClass, iconColorClass }) => (
   <div className="bg-card-bg border border-card-border rounded-2xl p-5 transition-all hover:shadow-card-mint">
@@ -509,6 +509,35 @@ const Analytics = () => {
             {loadingTrafficPage ? 'Refreshing...' : 'Refresh'}
           </button>
         </div>
+
+        {!loadingTrafficPage && trafficData.length > 0 && (
+          <div className="px-4 py-3 border-b border-slate-200 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+            <p className="text-xs text-[#1b1b1b]">
+              Showing {trafficStart}-{trafficEnd} of {formatNumber(trafficTotalCount)} logs
+            </p>
+            <div className="flex items-center justify-center gap-3">
+              <button
+                type="button"
+                onClick={() => setTrafficPage((page) => Math.max(page - 1, 1))}
+                disabled={trafficPage === 1}
+                className="px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-bold text-[#1b1b1b] transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:border-primary hover:bg-primary/10"
+              >
+                Previous
+              </button>
+              <span className="text-xs font-medium text-[#1b1b1b]">
+                Page {trafficPage} of {totalTrafficPages}
+              </span>
+              <button
+                type="button"
+                onClick={() => setTrafficPage((page) => Math.min(page + 1, totalTrafficPages))}
+                disabled={trafficPage >= totalTrafficPages}
+                className="px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-bold text-[#1b1b1b] transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:border-primary hover:bg-primary/10"
+              >
+                Next
+              </button>
+            </div>
+          </div>
+        )}
 
         <div className="overflow-x-auto">
           {loadingTrafficPage ? (
