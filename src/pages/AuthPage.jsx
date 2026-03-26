@@ -816,7 +816,7 @@ const AuthPage = () => {
                 <button
                   onClick={handleGoogleLogin}
                   disabled={loading}
-                  className="h-12 w-full bg-secondary-green/50 hover:bg-secondary-green/70 border border-primary/20 text-[#1b1b1b] font-bold rounded-xl flex items-center justify-center gap-3 transition-all disabled:opacity-50"
+                  className="h-12 w-full bg-secondary-green/50 hover:bg-[#c9f3b9] border border-primary/20 text-[#1b1b1b] font-bold rounded-xl flex items-center justify-center gap-3 transition-all disabled:opacity-50"
                 >
                   <svg className="size-5" viewBox="0 0 24 24">
                     <path
@@ -1020,7 +1020,7 @@ const AuthPage = () => {
                 <button
                   onClick={handleGoogleLogin}
                   disabled={loading}
-                  className="h-12 w-full bg-secondary-green/50 hover:bg-secondary-green/70 border border-primary/20 text-[#1b1b1b] font-bold rounded-xl flex items-center justify-center gap-3 transition-all disabled:opacity-50"
+                  className="h-12 w-full bg-secondary-green/50 hover:bg-[#c9f3b9] border border-primary/20 text-[#1b1b1b] font-bold rounded-xl flex items-center justify-center gap-3 transition-all disabled:opacity-50"
                 >
                   <svg className="size-5" viewBox="0 0 24 24">
                     <path
