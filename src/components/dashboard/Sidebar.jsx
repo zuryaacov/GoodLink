@@ -5,9 +5,9 @@ import { supabase } from '../../lib/supabase';
 const sidebarLinks = [
   { name: 'Link Manager', href: '/dashboard/links', icon: 'link' },
   { name: 'Analytics', href: '/dashboard', icon: 'insights' },
-  { name: 'UTM Preset', href: '/dashboard/utm-presets', icon: 'campaign' },
   { name: 'CAPI Manager', href: '/dashboard/pixels', icon: 'ads_click' },
   { name: 'Custom Domains', href: '/dashboard/domains', icon: 'public' },
+  { name: 'UTM Preset', href: '/dashboard/utm-presets', icon: 'campaign' },
   { name: 'Account Settings', href: '/dashboard/settings', icon: 'manage_accounts' },
 ];
 
