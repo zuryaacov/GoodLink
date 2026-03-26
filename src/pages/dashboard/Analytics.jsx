@@ -88,7 +88,7 @@ const HumanVsBotCard = ({ humanCount, botCount, unknownCount }) => {
   return (
     <div className="bg-card-bg border border-card-border rounded-2xl p-6 flex flex-col items-center transition-all hover:shadow-card-mint lg:col-span-1">
       <div className="w-full flex justify-between items-center mb-6">
-        <h3 className="text-sm font-bold text-[#1b1b1b]">Human vs. Bot Ratio</h3>
+        <h3 className="text-lg md:text-xl font-bold text-[#1b1b1b]">Human vs. Bot Ratio</h3>
       </div>
       <div className="relative mb-6">
         <div
@@ -129,7 +129,7 @@ const GeoProgressCard = ({ geographic }) => {
   return (
     <div className="bg-card-bg border border-card-border rounded-2xl p-6 transition-all hover:shadow-card-mint lg:col-span-2">
       <div className="w-full flex justify-between items-center mb-6">
-        <h3 className="text-sm font-bold text-[#1b1b1b]">Geographic Distribution (Top 15)</h3>
+        <h3 className="text-lg md:text-xl font-bold text-[#1b1b1b]">Geographic Distribution (Top 15)</h3>
       </div>
       <div className="space-y-5">
         {geographic.length === 0 ? (
@@ -498,7 +498,7 @@ const Analytics = () => {
       {/* Traffic Log */}
       <div className="bg-card-bg border border-card-border rounded-2xl flex flex-col transition-all hover:shadow-card-mint">
         <div className="p-6 border-b border-slate-200 flex items-center justify-between gap-3">
-          <h3 className="text-sm font-bold text-[#1b1b1b]">Traffic Log</h3>
+          <h3 className="text-lg md:text-xl font-bold text-[#1b1b1b]">Traffic Log</h3>
           <button
             type="button"
             onClick={fetchTrafficPage}
