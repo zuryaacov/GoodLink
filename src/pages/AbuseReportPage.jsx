@@ -21,40 +21,6 @@ function validateReportUrl(value) {
   return result;
 }
 
-const LEGAL_TEXT = `Abuse Reporting & Official DMCA Requirements
-
-Goodlink.ai takes security and intellectual property rights very seriously. If you encounter a link that violates our terms of service or legal requirements, please follow the guidelines below:
-
-A. General Abuse Reporting
-
-For reporting Phishing, Malware, Spam, or Deceptive Content, please use our automated Report Abuse form located below.
-Your report should include:
-
-The offending Goodlink.ai URL.
-
-The type of abuse detected.
-
-Any additional evidence or screenshots (if applicable).
-Reports are processed by our automated safety filters and reviewed by our security team within 24 hours.
-
-B. Official DMCA Takedown (Copyright Infringement)
-
-If you are a copyright owner or an agent thereof and believe that any content redirected by Goodlink.ai infringes upon your copyrights, you may submit a notification pursuant to the Digital Millennium Copyright Act ("DMCA") by providing our Copyright Agent with the following information in writing:
-
-Identification of the copyrighted work claimed to have been infringed.
-
-Identification of the Goodlink.ai link that is claimed to be infringing and information reasonably sufficient to permit Goodlink.ai to locate the material.
-
-Contact Information: Your address, telephone number, and an electronic mail address.
-
-A Good Faith Statement that use of the material in the manner complained of is not authorized by the copyright owner, its agent, or the law.
-
-A Statement of Accuracy: That the information in the notification is accurate, and under penalty of perjury, that you are authorized to act on behalf of the owner of an exclusive right that is allegedly infringed.
-
-Physical or Electronic Signature of a person authorized to act on behalf of the owner.
-
-All compliance notices can be sent to: hello@goodlink.ai`;
-
 const CATEGORIES = [
   { value: 'phishing', label: 'Phishing' },
   { value: 'spam', label: 'Spam' },
@@ -196,7 +162,7 @@ const AbuseReportPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-white text-black">
+    <div className="min-h-screen bg-[#f9fafb] text-[#1f2937]">
       <header className="sticky top-0 z-40 border-b border-slate-200 py-4 px-6 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80">
         <div className="max-w-3xl mx-auto flex items-center justify-center">
           <Link to="/" className="flex items-center gap-3 text-black transition-opacity hover:opacity-80 w-fit">
@@ -225,7 +191,7 @@ const AbuseReportPage = () => {
         </div>
       </header>
 
-      <main className="max-w-3xl mx-auto px-4 py-8 md:py-12">
+      <main className="max-w-[900px] mx-auto px-5 py-8 md:py-12">
         {success ? (
           <div className="flex flex-col items-center justify-center min-h-[60vh] text-center px-4">
             <div className="rounded-2xl bg-[#10b981]/20 border border-[#10b981]/40 p-10 md:p-14 max-w-xl w-full">
@@ -246,11 +212,107 @@ const AbuseReportPage = () => {
           </div>
         ) : (
           <>
-            <h1 className="text-2xl md:text-3xl font-bold mb-6 text-black">Abuse / DMCA Report</h1>
+            <div className="max-w-[900px] mx-auto mb-10 rounded-2xl bg-white p-8 md:p-10 shadow-md shadow-black/10">
+              <h1 className="text-center text-[#a855f7] text-[1.75rem] sm:text-[2.2rem] font-bold leading-tight mb-5">
+                Abuse Reporting &amp; DMCA
+              </h1>
 
-            <section className="mb-8 rounded-xl bg-white border border-slate-200 p-5 md:p-6 whitespace-pre-line text-sm md:text-base text-black leading-relaxed">
-              {LEGAL_TEXT}
-            </section>
+              <div className="bg-[#f3f4f6] p-6 md:p-[25px] rounded-xl mb-8 border-l-[5px] border-[#a855f7] font-medium leading-relaxed">
+                Goodlink.ai takes security and intellectual property rights very seriously. If you encounter a link
+                that violates our terms of service or legal requirements, please follow the guidelines below.
+              </div>
+
+              <h2 className="mt-10 text-[#a855f7] text-xl sm:text-[1.6rem] font-bold border-b-2 border-[#d7fec8] pb-2 mb-0 flex items-center">
+                <span className="mr-3 text-[1.4rem] shrink-0" aria-hidden>
+                  🛡️
+                </span>
+                A. General Abuse Reporting
+              </h2>
+              <div className="mt-6 border border-[#e5e7eb] rounded-xl p-6 md:p-8 mb-6 bg-white">
+                <p className="leading-relaxed">
+                  For reporting{' '}
+                  <strong>Phishing, Malware, Spam, or Deceptive Content</strong>, please use our automated Report
+                  Abuse form. Your report must include:
+                </p>
+                <ul className="list-none p-0 mt-4 space-y-3">
+                  {[
+                    'The offending Goodlink.ai URL.',
+                    'The type of abuse detected.',
+                    'Any additional evidence or screenshots (if applicable).',
+                  ].map((item) => (
+                    <li
+                      key={item}
+                      className="relative pl-8 before:content-['→'] before:absolute before:left-0 before:text-[#a855f7] before:font-bold"
+                    >
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+                <span className="block mt-2.5 text-sm text-[#6b7280] italic">
+                  Note: Reports are processed by our automated safety filters and reviewed by our security team within
+                  24 hours.
+                </span>
+              </div>
+
+              <h2 className="mt-10 text-[#a855f7] text-xl sm:text-[1.6rem] font-bold border-b-2 border-[#d7fec8] pb-2 mb-0 flex items-center">
+                <span className="mr-3 text-[1.4rem] shrink-0" aria-hidden>
+                  ⚖️
+                </span>
+                B. Official DMCA Takedown
+              </h2>
+              <div className="mt-6 border border-[#e5e7eb] rounded-xl p-6 md:p-8 mb-6 bg-white">
+                <span className="inline-block bg-[#fee2e2] text-[#991b1b] px-3 py-1 rounded-full text-sm font-bold mb-2.5">
+                  Copyright Infringement
+                </span>
+                <p className="leading-relaxed mt-2">
+                  If you believe content redirected by Goodlink.ai infringes upon your copyrights, you may submit a
+                  notification pursuant to the{' '}
+                  <strong>Digital Millennium Copyright Act (&quot;DMCA&quot;)</strong>. Please provide the following in
+                  writing:
+                </p>
+                <ul className="list-none p-0 mt-4 space-y-3">
+                  {[
+                    <>
+                      <strong>Work Identification:</strong> Clear identification of the copyrighted work claimed to
+                      have been infringed.
+                    </>,
+                    <>
+                      <strong>Link Identification:</strong> The specific Goodlink.ai link that is claimed to be
+                      infringing.
+                    </>,
+                    <>
+                      <strong>Contact Information:</strong> Your address, telephone number, and email address.
+                    </>,
+                    <>
+                      <strong>Good Faith Statement:</strong> A statement that the use of the material is not authorized
+                      by the owner, agent, or the law.
+                    </>,
+                    <>
+                      <strong>Statement of Accuracy:</strong> A statement that the information is accurate, under
+                      penalty of perjury.
+                    </>,
+                    <>
+                      <strong>Authorized Signature:</strong> A physical or electronic signature of a person
+                      authorized to act on behalf of the owner.
+                    </>,
+                  ].map((content, i) => (
+                    <li
+                      key={i}
+                      className="relative pl-8 before:content-['→'] before:absolute before:left-0 before:text-[#a855f7] before:font-bold"
+                    >
+                      {content}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              <div className="bg-[#d7fec8] p-5 rounded-[10px] text-center mt-8 text-[#166534] font-bold leading-relaxed">
+                All compliance notices and reports can be sent to: <br />
+                <a href="mailto:hello@goodlink.ai" className="text-[#a855f7] no-underline hover:underline">
+                  hello@goodlink.ai
+                </a>
+              </div>
+            </div>
 
             <form onSubmit={handleSubmit} className="space-y-5">
               {error && (
