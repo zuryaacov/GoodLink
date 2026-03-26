@@ -4,10 +4,10 @@ import { supabase } from '../../lib/supabase';
 
 const sidebarLinks = [
   { name: 'Link Manager', href: '/dashboard/links', icon: 'link' },
-  { name: 'Analytics', href: '/dashboard', icon: 'insights' },
-  { name: 'UTM Preset', href: '/dashboard/utm-presets', icon: 'campaign' },
   { name: 'Custom Domains', href: '/dashboard/domains', icon: 'public' },
   { name: 'CAPI Manager', href: '/dashboard/pixels', icon: 'ads_click' },
+  { name: 'UTM Preset', href: '/dashboard/utm-presets', icon: 'campaign' },
+  { name: 'Analytics', href: '/dashboard', icon: 'insights' },
   { name: 'Account Settings', href: '/dashboard/settings', icon: 'manage_accounts' },
 ];
 

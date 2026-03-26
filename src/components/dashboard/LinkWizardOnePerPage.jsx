@@ -316,7 +316,7 @@ export default function LinkWizardOnePerPage({
     }
   }, [totalSteps, stepIndex]);
 
-  // Fetch domains (FREE/START: default only; ADVANCED/PRO: fetch custom domains)
+  // Fetch domains (FREE/START: default only; ADVANCED/PRO: only active custom domains)
   useEffect(() => {
     const plan = (planType || '').toLowerCase();
     if (plan === 'free' || plan === 'start' || plan === 'starter') {
@@ -331,12 +331,11 @@ export default function LinkWizardOnePerPage({
           data: { user },
         } = await supabase.auth.getUser();
         if (!user) return;
-        // Include both active and pending (for testing: show pending in Select Domain)
         const { data: customDomains, error } = await supabase
           .from('custom_domains')
           .select('domain, status')
           .eq('user_id', user.id)
-          .in('status', ['active', 'pending']);
+          .eq('status', 'active');
         if (!error && customDomains?.length > 0) {
           const list = customDomains.map((d) => d.domain);
           const statusMap = {};
@@ -891,12 +890,7 @@ export default function LinkWizardOnePerPage({
               {/* Step: Domain */}
               {currentStep.id === 'domain' && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {uniqueDomains([
-                    // In edit mode, always show the link's current domain first so it
-                    // appears selected even before the async domains fetch completes
-                    ...(isEditMode && formData.domain ? [formData.domain] : []),
-                    ...domains,
-                  ]).map((d) => {
+                  {uniqueDomains(domains).map((d) => {
                     const isSelected = selectedDomain === d;
                     const status = domainStatuses[d];
                     const isPending = status === 'pending';
