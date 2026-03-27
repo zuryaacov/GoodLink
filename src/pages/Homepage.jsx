@@ -44,8 +44,11 @@ const Homepage = () => {
 
   return (
     <div className="relative flex min-h-screen w-full flex-col">
+      <a href="#main-content" className="skip-to-content">
+        Skip to main content
+      </a>
       <Navbar />
-      <main className="flex-1">
+      <main id="main-content" className="flex-1">
         <Hero user={user} />
         <Features />
         <AnalyticsSection />

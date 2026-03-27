@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../lib/supabase';
@@ -22,6 +22,8 @@ const Navbar = () => {
   const [user, setUser] = useState(null);
   const navigate = useNavigate();
   const location = useLocation();
+  const hamburgerRef = useRef(null);
+  const mobileMenuRef = useRef(null);
 
   useEffect(() => {
     // Get initial user
@@ -41,6 +43,20 @@ const Navbar = () => {
 
     return () => subscription.unsubscribe();
   }, [navigate]);
+
+  const closeMobileMenu = useCallback(() => {
+    setIsOpen(false);
+    hamburgerRef.current?.focus();
+  }, []);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') closeMobileMenu();
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, closeMobileMenu]);
 
   const handleLogout = async () => {
     // Always clear impersonation state on logout
@@ -93,7 +109,7 @@ const Navbar = () => {
           }}
           className="flex items-center gap-3 text-[#1b1b1b] transition-opacity hover:opacity-80 cursor-pointer"
         >
-          <div className="size-5 sm:size-8 text-primary flex-shrink-0">
+          <div className="size-5 sm:size-8 text-primary flex-shrink-0" aria-hidden="true">
             <svg fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
               <path
                 d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"
@@ -111,13 +127,13 @@ const Navbar = () => {
               ></path>
             </svg>
           </div>
-          <h2 className="text-3xl font-black leading-tight tracking-tight text-[#a855f7]">
+          <span className="text-3xl font-black leading-tight tracking-tight text-[#a855f7]">
             GoodLink
-          </h2>
+          </span>
         </Link>
 
         {/* Desktop Navigation */}
-        <div className="hidden md:flex flex-1 justify-center">
+        <nav aria-label="Main" className="hidden md:flex flex-1 justify-center">
           <div className="flex items-center gap-9">
             {navLinks.map((link) => (
               <a
@@ -133,7 +149,7 @@ const Navbar = () => {
               </a>
             ))}
           </div>
-        </div>
+        </nav>
 
         <div className="flex items-center gap-2">
           {/* Action Buttons - Hidden on mobile, shown in menu */}
@@ -163,20 +179,26 @@ const Navbar = () => {
             )}
           </div>
 
-          {/* Hamburger Menu Token */}
           <button
+            ref={hamburgerRef}
             onClick={() => setIsOpen(!isOpen)}
+            aria-expanded={isOpen}
+            aria-controls="mobile-menu"
+            aria-label={isOpen ? 'Close menu' : 'Open menu'}
             className="flex md:hidden items-center justify-center size-10 rounded-lg text-[#1b1b1b] hover:bg-black/5 transition-colors"
           >
-            <span className="material-symbols-outlined text-2xl">{isOpen ? 'close' : 'menu'}</span>
+            <span className="material-symbols-outlined text-2xl" aria-hidden="true">{isOpen ? 'close' : 'menu'}</span>
           </button>
         </div>
       </div>
 
-      {/* Mobile Menu Overlay with Smooth Animations */}
       <AnimatePresence mode="wait">
         {isOpen && (
           <motion.div
+            id="mobile-menu"
+            ref={mobileMenuRef}
+            role="region"
+            aria-label="Mobile navigation"
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
@@ -190,7 +212,7 @@ const Navbar = () => {
               transition={{ duration: 0.2, delay: 0.05 }}
               className="p-6 flex flex-col gap-6"
             >
-              <div className="flex flex-col gap-4">
+              <nav aria-label="Mobile" className="flex flex-col gap-4">
                 {navLinks.map((link) => (
                   <a
                     key={link.name}
@@ -204,23 +226,22 @@ const Navbar = () => {
                     {link.name}
                   </a>
                 ))}
-                {/* Mobile Dashboard Link when logged in */}
                 {user && (
                   <Link
                     to="/dashboard/links"
-                    onClick={() => setIsOpen(false)}
+                    onClick={closeMobileMenu}
                     className="text-[#1b1b1b] hover:text-primary transition-colors text-lg font-bold"
                   >
                     Dashboard
                   </Link>
                 )}
-              </div>
+              </nav>
               <div className="flex flex-col gap-3 pt-6 border-t border-primary/20">
                 {user ? (
                   <button
                     onClick={() => {
                       handleLogout();
-                      setIsOpen(false);
+                      closeMobileMenu();
                     }}
                     className="flex w-full cursor-pointer items-center justify-center rounded-lg h-12 bg-[#c0ffa5] hover:bg-[#b0ef95] text-[#1b1b1b] font-bold transition-colors"
                   >
@@ -229,7 +250,7 @@ const Navbar = () => {
                 ) : (
                   <Link
                     to="/login"
-                    onClick={() => setIsOpen(false)}
+                    onClick={closeMobileMenu}
                     className="flex w-full cursor-pointer items-center justify-center rounded-lg h-12 bg-[#a855f7] hover:bg-[#9333ea] text-white font-bold transition-colors"
                   >
                     Login

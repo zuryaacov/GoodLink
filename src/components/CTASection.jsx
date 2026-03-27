@@ -126,22 +126,22 @@ const CTASection = () => {
   return (
     <section
       id="pricing"
+      aria-labelledby="pricing-heading"
       className="scroll-mt-20 py-20 px-6 md:px-20 bg-white"
     >
       <div className="mx-auto max-w-[1440px] flex flex-col gap-16">
         {/* Headline */}
         <motion.div
-          id="pricing-heading"
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
           className="flex flex-col items-center text-center gap-4 max-w-3xl mx-auto"
         >
-          <div className="inline-flex items-center rounded-full bg-[#c0ffa5]/30 px-3 py-1 text-sm font-medium text-[#0b996f] border border-[#c0ffa5]/50">
+          <div className="inline-flex items-center rounded-full bg-[#c0ffa5]/30 px-3 py-1 text-sm font-medium text-[#047857] border border-[#c0ffa5]/50">
             Pricing
           </div>
-          <h2 className="text-slate-900 dark:text-[#1b1b1b] tracking-tight text-3xl md:text-5xl font-black leading-tight">
+          <h2 id="pricing-heading" className="text-slate-900 dark:text-[#1b1b1b] tracking-tight text-3xl md:text-5xl font-black leading-tight">
             Choose Your Plan
           </h2>
           <p className="text-slate-600 dark:text-[#1b1b1b] text-lg md:text-xl font-normal leading-relaxed">
@@ -267,6 +267,7 @@ const CTASection = () => {
                     return (
                       <li key={featureIndex} className="flex items-start gap-3">
                         <Check
+                          aria-hidden="true"
                           className={`w-5 h-5 mt-0.5 flex-shrink-0 ${
                             plan.highlighted ? 'text-[#032102]' : 'text-[#46673d]'
                           }`}
@@ -276,7 +277,7 @@ const CTASection = () => {
                             isBlack
                               ? 'text-black'
                               : isPurple
-                                ? 'text-[#a855f7]'
+                                ? 'text-[#7c3aed]'
                                 : plan.highlighted
                                   ? 'text-[#032102]'
                                   : 'text-slate-700'

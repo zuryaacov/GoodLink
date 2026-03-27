@@ -19,7 +19,7 @@ const Footer = () => {
               }}
               className="flex items-center gap-3 text-[#1b1b1b] transition-opacity hover:opacity-80 cursor-pointer"
             >
-              <div className="size-5 sm:size-8 text-primary flex-shrink-0">
+              <div className="size-5 sm:size-8 text-primary flex-shrink-0" aria-hidden="true">
                 <svg fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                   <path
                     d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"
@@ -37,38 +37,38 @@ const Footer = () => {
                   ></path>
                 </svg>
               </div>
-              <h2 className="text-3xl font-black leading-tight tracking-tight text-[#a855f7]">
+              <span className="text-3xl font-black leading-tight tracking-tight text-[#a855f7]">
                 GoodLink
-              </h2>
+              </span>
             </Link>
             <p className="text-sm text-slate-500 dark:text-[#1b1b1b] max-w-xs">
               The advanced link management platform for high-performance marketers. Track, optimize,
               and scale.
             </p>
           </div>
-          <div className="flex flex-col gap-4">
-            <h4 className="font-bold text-slate-900 dark:text-[#1b1b1b]">Product</h4>
-            <a
+          <nav aria-label="Product links" className="flex flex-col gap-4">
+            <h3 className="font-bold text-slate-900 dark:text-[#1b1b1b]">Product</h3>
+            <Link
+              to="/#features"
               className="text-sm text-slate-500 dark:text-[#1b1b1b] hover:text-primary transition-colors"
-              href="#"
             >
               Features
-            </a>
-            <a
+            </Link>
+            <Link
+              to="/#resources"
               className="text-sm text-slate-500 dark:text-[#1b1b1b] hover:text-primary transition-colors"
-              href="#"
             >
-              Resources
-            </a>
-            <a
+              Insights
+            </Link>
+            <Link
+              to="/#pricing"
               className="text-sm text-slate-500 dark:text-[#1b1b1b] hover:text-primary transition-colors"
-              href="#"
             >
               Pricing
-            </a>
-          </div>
-          <div className="flex flex-col gap-4">
-            <h4 className="font-bold text-slate-900 dark:text-[#1b1b1b]">Company</h4>
+            </Link>
+          </nav>
+          <nav aria-label="Company links" className="flex flex-col gap-4">
+            <h3 className="font-bold text-slate-900 dark:text-[#1b1b1b]">Company</h3>
             <Link
               to="/abuse"
               className="text-sm text-slate-500 dark:text-[#1b1b1b] hover:text-primary transition-colors"
@@ -111,15 +111,15 @@ const Footer = () => {
             >
               Docs
             </Link>
-          </div>
+          </nav>
         </div>
         <div className="mt-12 border-t border-slate-200 dark:border-slate-200 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
           <p className="text-sm text-slate-500 dark:text-[#1b1b1b]">
             © 2025 GoodLink.ai. All rights reserved.
           </p>
           <div className="flex gap-4">
-            <Link to="/contact" className="text-[#1b1b1b] hover:text-primary transition-colors">
-              <span className="material-symbols-outlined">mail</span>
+            <Link to="/contact" aria-label="Contact us via email" className="text-[#1b1b1b] hover:text-primary transition-colors">
+              <span className="material-symbols-outlined" aria-hidden="true">mail</span>
             </Link>
           </div>
         </div>

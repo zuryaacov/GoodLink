@@ -51,22 +51,22 @@ const Features = () => {
   return (
     <section
       id="features"
+      aria-labelledby="features-heading"
       className="scroll-mt-20 py-20 px-6 md:px-20 bg-white relative"
     >
       <div className="mx-auto max-w-[1200px] flex flex-col gap-16">
         {/* Headline for Features */}
         <motion.div
-          id="features-heading"
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
           className="flex flex-col items-center text-center gap-4 max-w-3xl mx-auto"
         >
-          <div className="inline-flex items-center rounded-full bg-[#a855f7]/10 px-3 py-1 text-sm font-medium text-[#a855f7] border border-[#a855f7]/20">
+          <div className="inline-flex items-center rounded-full bg-[#a855f7]/10 px-3 py-1 text-sm font-medium text-[#7c3aed] border border-[#a855f7]/20">
             Features
           </div>
-          <h2 className="text-slate-900 dark:text-[#1b1b1b] tracking-tight text-3xl md:text-5xl font-black leading-tight">
+          <h2 id="features-heading" className="text-slate-900 dark:text-[#1b1b1b] tracking-tight text-3xl md:text-5xl font-black leading-tight">
             Engineered for Performance
           </h2>
           <p className="text-slate-600 dark:text-[#1b1b1b] text-lg md:text-xl font-normal leading-relaxed">
@@ -88,7 +88,7 @@ const Features = () => {
               variants={itemVariants}
               className="group flex flex-col gap-5 rounded-2xl border border-white/10 dark:border-[#324467] bg-white/5 dark:bg-[#192233]/50 backdrop-blur-md p-8 md:p-10 shadow-sm hover:shadow-xl hover:border-[#a855f7]/50 transition-all duration-300"
             >
-              <div className="flex h-14 w-14 md:h-16 md:w-16 items-center justify-center rounded-xl bg-[#a855f7]/10 text-[#a855f7] group-hover:bg-[#a855f7] group-hover:text-white transition-colors">
+              <div className="flex h-14 w-14 md:h-16 md:w-16 items-center justify-center rounded-xl bg-[#a855f7]/10 text-[#a855f7] group-hover:bg-[#a855f7] group-hover:text-white transition-colors" aria-hidden="true">
                 <span className="material-symbols-outlined text-4xl md:text-5xl">{feature.icon}</span>
               </div>
               <div className="flex flex-col gap-3">
@@ -103,7 +103,7 @@ const Features = () => {
                         return (
                           <>
                             {before}
-                            <span className="text-[#a855f7] font-bold text-lg md:text-xl">
+                            <span className="text-[#7c3aed] font-bold text-lg md:text-xl">
                               {feature.highlight}
                             </span>
                             {after}

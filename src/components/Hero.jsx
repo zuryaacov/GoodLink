@@ -5,7 +5,7 @@ import { CheckCircle2 } from 'lucide-react';
 
 const Hero = ({ user }) => {
   return (
-    <section className="relative px-6 py-16 md:py-24 bg-[#d7fec8]">
+    <section aria-labelledby="hero-heading" className="relative px-6 py-16 md:py-24 bg-[#d7fec8]">
       <div className="mx-auto max-w-7xl flex flex-col items-center text-center">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -25,7 +25,7 @@ const Hero = ({ user }) => {
           </motion.div>
 
           {/* Main line */}
-          <h1 className="text-slate-900 text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-black leading-loose md:leading-[1.75] lg:leading-[2] xl:leading-[1.75] tracking-tight">
+          <h1 id="hero-heading" className="text-slate-900 text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-black leading-loose md:leading-[1.75] lg:leading-[2] xl:leading-[1.75] tracking-tight">
             Short Links, Bot Protection,
             <br className="hidden sm:block" />
             <span>
@@ -49,15 +49,15 @@ const Hero = ({ user }) => {
               </Link>
               <div className="flex flex-wrap justify-center items-center gap-x-6 gap-y-2 mt-6">
                 <div className="flex items-center gap-2 text-base font-bold text-black">
-                  <CheckCircle2 size={20} className="text-[#a855f7] flex-shrink-0" />
+                  <CheckCircle2 size={20} className="text-[#a855f7] flex-shrink-0" aria-hidden="true" />
                   No credit card required
                 </div>
                 <div className="flex items-center gap-2 text-base font-bold text-black">
-                  <CheckCircle2 size={20} className="text-[#a855f7] flex-shrink-0" />
+                  <CheckCircle2 size={20} className="text-[#a855f7] flex-shrink-0" aria-hidden="true" />
                   Full access included
                 </div>
                 <div className="flex items-center gap-2 text-base font-bold text-black">
-                  <CheckCircle2 size={20} className="text-[#a855f7] flex-shrink-0" />
+                  <CheckCircle2 size={20} className="text-[#a855f7] flex-shrink-0" aria-hidden="true" />
                   Cancel anytime
                 </div>
               </div>

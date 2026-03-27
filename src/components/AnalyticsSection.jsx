@@ -4,23 +4,22 @@ const AnalyticsSection = () => {
   return (
     <section
       id="resources"
+      aria-labelledby="insights-heading"
       className="scroll-mt-20 py-16 px-6 bg-white border-y border-slate-200"
     >
       <div className="mx-auto max-w-[1200px] flex flex-col gap-10">
         <div className="flex justify-center">
           <div
-            id="insights-heading"
-            className="inline-flex items-center rounded-full bg-[#a855f7]/10 px-3 py-1 text-sm font-medium text-[#a855f7] border border-[#a855f7]/20"
+            className="inline-flex items-center rounded-full bg-[#a855f7]/10 px-3 py-1 text-sm font-medium text-[#7c3aed] border border-[#a855f7]/20"
           >
             Insights
           </div>
         </div>
 
         <div className="flex flex-col lg:flex-row gap-12 items-center">
-          {/* Text Side */}
           <div className="flex-1 flex flex-col gap-6">
           <h2
-            id="resources-heading"
+            id="insights-heading"
             className="text-slate-900 dark:text-[#1b1b1b] text-3xl md:text-4xl font-bold leading-tight"
           >
             Analytics You Can Trust
@@ -31,19 +30,19 @@ const AnalyticsSection = () => {
           </p>
           <ul className="flex flex-col gap-4 mt-2">
             <li className="flex items-center gap-3">
-              <span className="material-symbols-outlined text-green-500">check</span>
+              <span className="material-symbols-outlined text-green-500" aria-hidden="true">check</span>
               <span className="text-slate-700 dark:text-slate-300 font-medium">
                 Click-level bot detection
               </span>
             </li>
             <li className="flex items-center gap-3">
-              <span className="material-symbols-outlined text-green-500">check</span>
+              <span className="material-symbols-outlined text-green-500" aria-hidden="true">check</span>
               <span className="text-slate-700 dark:text-slate-300 font-medium">
-                Bot filtering & exclusion
+                Bot filtering &amp; exclusion
               </span>
             </li>
             <li className="flex items-center gap-3">
-              <span className="material-symbols-outlined text-green-500">check</span>
+              <span className="material-symbols-outlined text-green-500" aria-hidden="true">check</span>
               <span className="text-slate-700 dark:text-slate-300 font-medium">
                 Exportable raw data logs
               </span>
@@ -62,7 +61,7 @@ const AnalyticsSection = () => {
                     1.2M <span className="text-lg font-normal text-slate-500">Clicks</span>
                   </p>
                   <div className="flex items-center gap-1 bg-green-500/10 px-2 py-1 rounded">
-                    <span className="material-symbols-outlined text-green-500 text-sm">
+                    <span className="material-symbols-outlined text-green-500 text-sm" aria-hidden="true">
                       trending_up
                     </span>
                     <p className="text-green-600 dark:text-green-400 text-sm font-bold">+12.5%</p>
@@ -76,6 +75,8 @@ const AnalyticsSection = () => {
                   className="w-full h-full overflow-visible"
                   preserveAspectRatio="none"
                   viewBox="0 0 478 150"
+                  role="img"
+                  aria-label="Line chart showing link click performance trend over the past week"
                 >
                   <defs>
                     <linearGradient id="chartGradient" x1="0" x2="0" y1="0" y2="1">
