@@ -608,9 +608,8 @@ const AuthPage = () => {
     };
 
     return (
-      <div className="mt-2 w-full">
-        {/* Strength bars */}
-        <div className="flex gap-1 mb-2">
+      <div id="password-strength" role="status" aria-live="polite" className="mt-2 w-full">
+        <div className="flex gap-1 mb-2" aria-hidden="true">
           {[1, 2, 3, 4].map((step) => (
             <div
               key={step}
@@ -679,7 +678,7 @@ const AuthPage = () => {
 
   const Logo = () => (
     <Link to="/" className="flex items-center gap-3 mb-8 transition-opacity hover:opacity-80">
-      <div className="size-5 sm:size-8 text-primary flex-shrink-0">
+      <div className="size-5 sm:size-8 text-primary flex-shrink-0" aria-hidden="true">
         <svg fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
           <path
             d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"
@@ -697,17 +696,19 @@ const AuthPage = () => {
           ></path>
         </svg>
       </div>
-      <h2 className="text-3xl font-black leading-tight tracking-tight text-[#a855f7]">GoodLink</h2>
+      <span className="text-3xl font-black leading-tight tracking-tight text-[#a855f7]">GoodLink</span>
     </Link>
   );
 
   return (
     <div className="min-h-screen w-full bg-[#d7fec8] flex flex-col items-center px-6 pt-10 md:pt-16 pb-12 relative overflow-hidden">
-      {/* Background Orbs */}
-      <div className="absolute top-[-10%] left-[-10%] size-96 bg-primary/10 blur-[120px] rounded-full"></div>
-      <div className="absolute bottom-[-10%] right-[-10%] size-96 bg-secondary-green/30 blur-[120px] rounded-full"></div>
+      <a href="#auth-main" className="skip-to-content">
+        Skip to main content
+      </a>
+      <div className="absolute top-[-10%] left-[-10%] size-96 bg-primary/10 blur-[120px] rounded-full" aria-hidden="true"></div>
+      <div className="absolute bottom-[-10%] right-[-10%] size-96 bg-secondary-green/30 blur-[120px] rounded-full" aria-hidden="true"></div>
 
-      <div className="relative z-10 w-full max-w-md flex flex-col items-center">
+      <main id="auth-main" className="relative z-10 w-full max-w-md flex flex-col items-center">
         <Logo />
 
         <div className="w-full bg-white backdrop-blur-xl border border-[#d7fec8]/60 p-8 rounded-3xl shadow-2xl relative shadow-[0_0_40px_rgba(168,85,247,0.35)]">
@@ -734,21 +735,22 @@ const AuthPage = () => {
                 </div>
 
                 {error && (
-                  <div className="bg-red-500/10 border border-red-500/20 text-red-500 text-sm p-3 rounded-lg text-center animate-in fade-in zoom-in duration-200">
+                  <div role="alert" className="bg-red-500/10 border border-red-500/20 text-red-500 text-sm p-3 rounded-lg text-center animate-in fade-in zoom-in duration-200">
                     {error}
                   </div>
                 )}
 
                 {message && (
-                  <div className="bg-green-500/10 border border-green-500/20 text-green-500 text-sm p-3 rounded-lg text-center animate-in fade-in zoom-in duration-200">
+                  <div role="status" className="bg-green-500/10 border border-green-500/20 text-green-700 text-sm p-3 rounded-lg text-center animate-in fade-in zoom-in duration-200">
                     {message}
                   </div>
                 )}
 
                 <form onSubmit={handleSubmit} className="flex flex-col gap-4">
                   <div className="flex flex-col gap-2">
-                    <label className="text-sm font-bold text-[#1b1b1b] ml-1">Email Address</label>
+                    <label htmlFor="login-email" className="text-sm font-bold text-[#1b1b1b] ml-1">Email Address</label>
                     <input
+                      id="login-email"
                       type="text"
                       inputMode="email"
                       autoComplete="email"
@@ -760,7 +762,7 @@ const AuthPage = () => {
                   </div>
                   <div className="flex flex-col gap-2">
                     <div className="flex justify-between items-center ml-1">
-                      <label className="text-sm font-bold text-[#1b1b1b]">Password</label>
+                      <label htmlFor="login-password" className="text-sm font-bold text-[#1b1b1b]">Password</label>
                       <button
                         type="button"
                         onClick={() => {
@@ -776,6 +778,7 @@ const AuthPage = () => {
                     </div>
                     <div className="relative">
                       <input
+                        id="login-password"
                         type={showPassword ? 'text' : 'password'}
                         placeholder="••••••••"
                         className="h-12 w-full bg-white border border-slate-200 rounded-xl px-4 pr-12 text-[#1b1b1b] focus:outline-none focus:border-primary transition-colors"
@@ -785,10 +788,10 @@ const AuthPage = () => {
                       <button
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
+                        aria-label={showPassword ? 'Hide password' : 'Show password'}
                         className="absolute right-3 top-1/2 -translate-y-1/2 text-[#10b981] hover:text-[#10b981]/80 transition-colors"
-                        tabIndex={-1}
                       >
-                        {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                        {showPassword ? <EyeOff size={20} aria-hidden="true" /> : <Eye size={20} aria-hidden="true" />}
                       </button>
                     </div>
                   </div>
@@ -798,9 +801,9 @@ const AuthPage = () => {
                     className="h-12 w-full bg-[#d7fec8] hover:bg-[#c9f3b9] text-[#1b1b1b] font-bold rounded-xl transition-all shadow-lg shadow-[#d7fec8]/40 mt-2 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                   >
                     {loading && (
-                      <div className="size-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                      <div className="size-4 border-2 border-white/30 border-t-white rounded-full animate-spin" aria-hidden="true"></div>
                     )}
-                    Sign In
+                    {loading ? 'Signing in…' : 'Sign In'}
                   </button>
                 </form>
 
@@ -818,7 +821,7 @@ const AuthPage = () => {
                   disabled={loading}
                   className="h-12 w-full bg-secondary-green/50 hover:bg-[#c9f3b9] border border-primary/20 text-[#1b1b1b] font-bold rounded-xl flex items-center justify-center gap-3 transition-all disabled:opacity-50"
                 >
-                  <svg className="size-5" viewBox="0 0 24 24">
+                  <svg className="size-5" viewBox="0 0 24 24" aria-hidden="true">
                     <path
                       d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
                       fill="#4285F4"
@@ -871,21 +874,22 @@ const AuthPage = () => {
                 </div>
 
                 {error && (
-                  <div className="bg-red-500/10 border border-red-500/20 text-red-500 text-sm p-3 rounded-lg text-center">
+                  <div role="alert" className="bg-red-500/10 border border-red-500/20 text-red-500 text-sm p-3 rounded-lg text-center">
                     {error}
                   </div>
                 )}
 
                 {message && view !== 'signup' && (
-                  <div className="bg-green-500/10 border border-green-500/20 text-green-500 text-sm p-3 rounded-lg text-center">
+                  <div role="status" className="bg-green-500/10 border border-green-500/20 text-green-700 text-sm p-3 rounded-lg text-center">
                     {message}
                   </div>
                 )}
 
                 <form onSubmit={handleSubmit} className="flex flex-col gap-4">
                   <div className="flex flex-col gap-2">
-                    <label className="text-sm font-bold text-[#1b1b1b] ml-1">Full Name</label>
+                    <label htmlFor="signup-name" className="text-sm font-bold text-[#1b1b1b] ml-1">Full Name</label>
                     <input
+                      id="signup-name"
                       type="text"
                       placeholder="Your full name"
                       autoComplete="name"
@@ -895,8 +899,9 @@ const AuthPage = () => {
                     />
                   </div>
                   <div className="flex flex-col gap-2">
-                    <label className="text-sm font-bold text-[#1b1b1b] ml-1">Email Address</label>
+                    <label htmlFor="signup-email" className="text-sm font-bold text-[#1b1b1b] ml-1">Email Address</label>
                     <input
+                      id="signup-email"
                       type="text"
                       inputMode="email"
                       autoComplete="email"
@@ -907,11 +912,13 @@ const AuthPage = () => {
                     />
                   </div>
                   <div className="flex flex-col gap-2">
-                    <label className="text-sm font-bold text-[#1b1b1b] ml-1">Password</label>
+                    <label htmlFor="signup-password" className="text-sm font-bold text-[#1b1b1b] ml-1">Password</label>
                     <div className="relative">
                       <input
+                        id="signup-password"
                         type={showPassword ? 'text' : 'password'}
                         placeholder="••••••••"
+                        aria-describedby="password-strength"
                         className="h-12 w-full bg-white border border-slate-200 rounded-xl px-4 pr-12 text-[#1b1b1b] focus:outline-none focus:border-primary transition-colors"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
@@ -919,20 +926,21 @@ const AuthPage = () => {
                       <button
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
+                        aria-label={showPassword ? 'Hide password' : 'Show password'}
                         className="absolute right-3 top-1/2 -translate-y-1/2 text-[#10b981] hover:text-[#10b981]/80 transition-colors"
-                        tabIndex={-1}
                       >
-                        {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                        {showPassword ? <EyeOff size={20} aria-hidden="true" /> : <Eye size={20} aria-hidden="true" />}
                       </button>
                     </div>
                     {view === 'signup' && <PasswordStrengthMeter password={password} />}
                   </div>
                   <div className="flex flex-col gap-2">
-                    <label className="text-sm font-bold text-[#1b1b1b] ml-1">
+                    <label htmlFor="signup-confirm-password" className="text-sm font-bold text-[#1b1b1b] ml-1">
                       Confirm Password
                     </label>
                     <div className="relative">
                       <input
+                        id="signup-confirm-password"
                         type={showConfirmPassword ? 'text' : 'password'}
                         placeholder="••••••••"
                         className="h-12 w-full bg-white border border-slate-200 rounded-xl px-4 pr-12 text-[#1b1b1b] focus:outline-none focus:border-primary transition-colors"
@@ -942,10 +950,10 @@ const AuthPage = () => {
                       <button
                         type="button"
                         onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                        aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
                         className="absolute right-3 top-1/2 -translate-y-1/2 text-[#10b981] hover:text-[#10b981]/80 transition-colors"
-                        tabIndex={-1}
                       >
-                        {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                        {showConfirmPassword ? <EyeOff size={20} aria-hidden="true" /> : <Eye size={20} aria-hidden="true" />}
                       </button>
                     </div>
                   </div>
@@ -1002,9 +1010,9 @@ const AuthPage = () => {
                     className="h-12 w-full bg-[#d7fec8] hover:bg-[#c9f3b9] text-[#1b1b1b] font-bold rounded-xl transition-all shadow-lg shadow-[#d7fec8]/40 mt-2 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                   >
                     {loading && (
-                      <div className="size-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                      <div className="size-4 border-2 border-white/30 border-t-white rounded-full animate-spin" aria-hidden="true"></div>
                     )}
-                    Create Account
+                    {loading ? 'Creating account…' : 'Create Account'}
                   </button>
                 </form>
 
@@ -1022,7 +1030,7 @@ const AuthPage = () => {
                   disabled={loading}
                   className="h-12 w-full bg-secondary-green/50 hover:bg-[#c9f3b9] border border-primary/20 text-[#1b1b1b] font-bold rounded-xl flex items-center justify-center gap-3 transition-all disabled:opacity-50"
                 >
-                  <svg className="size-5" viewBox="0 0 24 24">
+                  <svg className="size-5" viewBox="0 0 24 24" aria-hidden="true">
                     <path
                       d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
                       fill="#4285F4"
@@ -1075,21 +1083,22 @@ const AuthPage = () => {
                 </div>
 
                 {error && (
-                  <div className="bg-red-500/10 border border-red-500/20 text-red-500 text-sm p-3 rounded-lg text-center">
+                  <div role="alert" className="bg-red-500/10 border border-red-500/20 text-red-500 text-sm p-3 rounded-lg text-center">
                     {error}
                   </div>
                 )}
 
                 {message && (
-                  <div className="bg-green-500/10 border border-green-500/20 text-green-500 text-sm p-3 rounded-lg text-center">
+                  <div role="status" className="bg-green-500/10 border border-green-500/20 text-green-700 text-sm p-3 rounded-lg text-center">
                     {message}
                   </div>
                 )}
 
                 <form onSubmit={handleSubmit} className="flex flex-col gap-6">
                   <div className="flex flex-col gap-2">
-                    <label className="text-sm font-bold text-[#1b1b1b] ml-1">Email Address</label>
+                    <label htmlFor="forgot-email" className="text-sm font-bold text-[#1b1b1b] ml-1">Email Address</label>
                     <input
+                      id="forgot-email"
                       type="text"
                       inputMode="email"
                       autoComplete="email"
@@ -1105,9 +1114,9 @@ const AuthPage = () => {
                     className="h-12 w-full bg-[#d7fec8] hover:bg-[#c9f3b9] text-[#1b1b1b] font-bold rounded-xl transition-all shadow-lg shadow-[#d7fec8]/40 flex items-center justify-center gap-2"
                   >
                     {loading && (
-                      <div className="size-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                      <div className="size-4 border-2 border-white/30 border-t-white rounded-full animate-spin" aria-hidden="true"></div>
                     )}
-                    Send Link
+                    {loading ? 'Sending…' : 'Send Link'}
                   </button>
                 </form>
 
@@ -1120,7 +1129,7 @@ const AuthPage = () => {
                   }}
                   className="flex items-center justify-center gap-2 text-sm text-slate-500 hover:text-primary transition-colors group"
                 >
-                  <span className="material-symbols-outlined text-sm transition-transform group-hover:-translate-x-1">
+                  <span className="material-symbols-outlined text-sm transition-transform group-hover:-translate-x-1" aria-hidden="true">
                     arrow_back
                   </span>
                   Back to Login
@@ -1149,7 +1158,7 @@ const AuthPage = () => {
           </button>
           .
         </div>
-      </div>
+      </main>
       <Modal
         isOpen={!!legalModalType}
         onClose={() => setLegalModalType(null)}
