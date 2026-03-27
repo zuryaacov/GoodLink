@@ -163,7 +163,7 @@ const Sidebar = ({ className = '', onLinkClick }) => {
           to="/"
           className="flex items-center gap-3 text-[#1b1b1b] transition-opacity hover:opacity-80"
         >
-          <div className="size-5 sm:size-8 text-primary flex-shrink-0">
+          <div className="size-5 sm:size-8 text-primary flex-shrink-0" aria-hidden="true">
             <svg fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
               <path
                 d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"
@@ -181,13 +181,13 @@ const Sidebar = ({ className = '', onLinkClick }) => {
               ></path>
             </svg>
           </div>
-          <h2 className="text-3xl font-black leading-tight tracking-tight text-[#a855f7]">
+          <span className="text-3xl font-black leading-tight tracking-tight text-[#a855f7]">
             GoodLink
-          </h2>
+          </span>
         </Link>
       </div>
 
-      <nav className="flex-1 px-3 flex flex-col gap-1 overflow-y-auto">
+      <nav aria-label="Dashboard" className="flex-1 px-3 flex flex-col gap-1 overflow-y-auto">
         {[...sidebarLinks, ...(userRole === 'admin' ? [adminLink] : [])].map((link) => (
           <NavLink
             key={link.name}
@@ -207,7 +207,7 @@ const Sidebar = ({ className = '', onLinkClick }) => {
               }`;
             }}
           >
-            <span className="material-symbols-outlined text-[20px]">{link.icon}</span>
+            <span className="material-symbols-outlined text-[20px]" aria-hidden="true">{link.icon}</span>
             {link.name}
           </NavLink>
         ))}
@@ -215,14 +215,14 @@ const Sidebar = ({ className = '', onLinkClick }) => {
           onClick={handleLogout}
           className="lg:hidden flex items-center gap-3 px-3 py-3 rounded-xl text-base font-medium transition-all duration-200 text-slate-600 hover:text-[#1b1b1b] hover:bg-slate-100 w-full text-left"
         >
-          <span className="material-symbols-outlined text-[20px]">logout</span>
+          <span className="material-symbols-outlined text-[20px]" aria-hidden="true">logout</span>
           Logout
         </button>
       </nav>
 
       <div className="p-4 border-t border-slate-200 flex flex-col gap-2 hidden lg:block">
         <div className="flex items-center gap-3 px-3 py-2">
-          <div className="size-8 rounded-full bg-gradient-to-tr from-primary to-secondary-green flex items-center justify-center text-[#1b1b1b] font-bold text-xs">
+          <div className="size-8 rounded-full bg-gradient-to-tr from-primary to-secondary-green flex items-center justify-center text-[#1b1b1b] font-bold text-xs" aria-hidden="true">
             {getInitials(userName)}
           </div>
           <div className="flex flex-col flex-1 min-w-0">

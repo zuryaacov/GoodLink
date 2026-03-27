@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Outlet, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import Sidebar from '../components/dashboard/Sidebar';
@@ -7,8 +7,22 @@ import { supabase } from '../lib/supabase';
 const DashboardLayout = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [impersonationBanner, setImpersonationBanner] = useState(null);
+  const hamburgerRef = useRef(null);
 
-  // Ensure page starts at top on mount
+  const closeMobileMenu = useCallback(() => {
+    setIsMobileMenuOpen(false);
+    hamburgerRef.current?.focus();
+  }, []);
+
+  useEffect(() => {
+    if (!isMobileMenuOpen) return;
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') closeMobileMenu();
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [isMobileMenuOpen, closeMobileMenu]);
+
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
@@ -113,17 +127,18 @@ const DashboardLayout = () => {
 
   return (
     <div className="flex h-screen bg-white overflow-hidden">
-      {/* Desktop Sidebar */}
+      <a href="#dashboard-main" className="skip-to-content">
+        Skip to main content
+      </a>
+
       <div className="hidden lg:block fixed inset-y-0 left-0 z-50">
         <Sidebar className="w-64" />
       </div>
 
-      {/* Main Content Area */}
       <div className="flex-1 lg:ml-64 flex flex-col h-full overflow-hidden">
-        {/* Mobile Header */}
         <header className="lg:hidden h-16 bg-white border-b border-slate-200 flex items-center justify-between px-4 fixed top-0 left-0 right-0 z-40">
           <Link to="/" className="flex items-center gap-2">
-            <div className="size-5 sm:size-8 text-primary flex-shrink-0">
+            <div className="size-5 sm:size-8 text-primary flex-shrink-0" aria-hidden="true">
               <svg fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 <path
                   d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"
@@ -141,31 +156,41 @@ const DashboardLayout = () => {
                 ></path>
               </svg>
             </div>
-            <h2 className="text-xl font-black leading-tight tracking-tight text-[#a855f7]">
+            <span className="text-xl font-black leading-tight tracking-tight text-[#a855f7]">
               GoodLink
-            </h2>
+            </span>
           </Link>
 
-          <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className="text-[#1b1b1b] p-2">
-            <span className="material-symbols-outlined">{isMobileMenuOpen ? 'close' : 'menu'}</span>
+          <button
+            ref={hamburgerRef}
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            aria-expanded={isMobileMenuOpen}
+            aria-controls="mobile-dashboard-menu"
+            aria-label={isMobileMenuOpen ? 'Close menu' : 'Open menu'}
+            className="text-[#1b1b1b] p-2"
+          >
+            <span className="material-symbols-outlined" aria-hidden="true">{isMobileMenuOpen ? 'close' : 'menu'}</span>
           </button>
         </header>
 
-        {/* Mobile Sidebar Overlay with Smooth Animations */}
         <AnimatePresence>
           {isMobileMenuOpen && (
-            <div className="lg:hidden fixed inset-0 z-50">
-              {/* Backdrop */}
+            <div
+              id="mobile-dashboard-menu"
+              role="dialog"
+              aria-modal="true"
+              aria-label="Dashboard navigation"
+              className="lg:hidden fixed inset-0 z-50"
+            >
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.3 }}
                 className="absolute inset-0 bg-black/50 backdrop-blur-sm"
-                onClick={() => setIsMobileMenuOpen(false)}
+                onClick={closeMobileMenu}
               />
 
-              {/* Sidebar Container */}
               <motion.div
                 initial={{ x: '-100%' }}
                 animate={{ x: 0 }}
@@ -176,16 +201,17 @@ const DashboardLayout = () => {
                 <div className="flex justify-between items-center p-4 border-b border-slate-200 flex-shrink-0">
                   <span className="text-[#1b1b1b] font-bold ml-2">Menu</span>
                   <button
-                    onClick={() => setIsMobileMenuOpen(false)}
+                    onClick={closeMobileMenu}
+                    aria-label="Close menu"
                     className="text-slate-500 hover:text-[#1b1b1b]"
                   >
-                    <span className="material-symbols-outlined">close</span>
+                    <span className="material-symbols-outlined" aria-hidden="true">close</span>
                   </button>
                 </div>
                 <div className="flex-1 overflow-hidden">
                   <Sidebar
                     className="w-full h-full border-none pt-2"
-                    onLinkClick={() => setIsMobileMenuOpen(false)}
+                    onLinkClick={closeMobileMenu}
                   />
                 </div>
               </motion.div>
@@ -193,11 +219,11 @@ const DashboardLayout = () => {
           )}
         </AnimatePresence>
 
-        <main className="flex-1 p-4 lg:p-6 overflow-y-auto overflow-x-hidden w-full lg:pt-6 pt-20">
+        <main id="dashboard-main" className="flex-1 p-4 lg:p-6 overflow-y-auto overflow-x-hidden w-full lg:pt-6 pt-20">
           {impersonationBanner && (
-            <div className="mb-4 rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div role="alert" className="mb-4 rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
               <p className="text-sm sm:text-base font-semibold text-amber-900">
-                {'⚠️'} You are in impersonation mode ({impersonationBanner.targetEmail}).
+                <span aria-hidden="true">{'⚠️'} </span>You are in impersonation mode ({impersonationBanner.targetEmail}).
               </p>
               <button
                 type="button"
