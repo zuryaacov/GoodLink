@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Outlet, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import Sidebar from '../components/dashboard/Sidebar';
+import AccessibilityFooterRestore from '../components/accessibility/AccessibilityFooterRestore';
 import { supabase } from '../lib/supabase';
 
 const DashboardLayout = () => {
@@ -236,6 +237,15 @@ const DashboardLayout = () => {
           )}
           <Outlet />
         </main>
+        <footer
+          className="flex-shrink-0 border-t border-slate-200 bg-white py-2.5 px-4"
+          role="contentinfo"
+          aria-label="Dashboard footer"
+        >
+          <div className="flex justify-center">
+            <AccessibilityFooterRestore className="text-xs text-slate-500" />
+          </div>
+        </footer>
       </div>
     </div>
   );

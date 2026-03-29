@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import AccessibilityFooterRestore from './accessibility/AccessibilityFooterRestore';
 
 const Footer = () => {
   const location = useLocation();
@@ -117,11 +118,14 @@ const Footer = () => {
           <p className="text-sm text-slate-500 dark:text-[#1b1b1b]">
             © 2025 GoodLink.ai. All rights reserved.
           </p>
-          <div className="flex gap-4">
-            <Link to="/contact" aria-label="Contact us via email" className="text-[#1b1b1b] hover:text-primary transition-colors">
-              <span className="material-symbols-outlined" aria-hidden="true">mail</span>
-            </Link>
-          </div>
+          <nav aria-label="Footer utilities" className="flex flex-col sm:flex-row items-center gap-3 sm:gap-6">
+            <AccessibilityFooterRestore className="dark:text-slate-400" />
+            <div className="flex gap-4">
+              <Link to="/contact" aria-label="Contact us via email" className="text-[#1b1b1b] hover:text-primary transition-colors">
+                <span className="material-symbols-outlined" aria-hidden="true">mail</span>
+              </Link>
+            </div>
+          </nav>
         </div>
       </div>
     </footer>

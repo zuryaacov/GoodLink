@@ -5,6 +5,9 @@
 
 export const GL_ACC_STORAGE_KEY = 'goodlink-a11y-v1';
 
+/** Fired when preferences are updated programmatically (e.g. footer “show menu”). Detail: full prefs object. */
+export const GL_ACC_PREFS_CHANGED_EVENT = 'goodlink-a11y-prefs-changed';
+
 export const GL_ACC_DEFAULTS = {
   /** 100–200, percentage of root font size */
   fontScale: 100,
@@ -16,6 +19,8 @@ export const GL_ACC_DEFAULTS = {
   reduceMotion: false,
   bigCursor: false,
   readingGuide: false,
+  /** When true, the floating trigger is not shown (persisted). */
+  widgetHidden: false,
 };
 
 /**
@@ -63,6 +68,7 @@ function normalizePreferences(p) {
     reduceMotion: Boolean(p.reduceMotion),
     bigCursor: Boolean(p.bigCursor),
     readingGuide: Boolean(p.readingGuide),
+    widgetHidden: Boolean(p.widgetHidden),
   };
 }
 
@@ -75,20 +81,37 @@ export function applyAccessibilityPreferencesToDocument(prefs) {
   const body = document.body;
   if (!body) return;
 
-  const scale = prefs.fontScale / 100;
-  html.classList.toggle('gl-acc-font-scale', prefs.fontScale !== 100);
+  const normalized = normalizePreferences({ ...GL_ACC_DEFAULTS, ...prefs });
+  const { widgetHidden: _wh, ...rest } = normalized;
+  void _wh;
+
+  const scale = rest.fontScale / 100;
+  html.classList.toggle('gl-acc-font-scale', rest.fontScale !== 100);
   html.style.setProperty('--gl-acc-font-scale', String(scale));
 
-  body.classList.toggle('gl-acc-high-contrast', prefs.highContrast);
-  body.classList.toggle('gl-acc-grayscale', prefs.grayscale);
-  body.classList.toggle('gl-acc-highlight-links', prefs.highlightLinks);
-  body.classList.toggle('gl-acc-reduce-motion', prefs.reduceMotion);
-  body.classList.toggle('gl-acc-big-cursor', prefs.bigCursor);
-  body.classList.toggle('gl-acc-reading-guide-active', prefs.readingGuide);
+  body.classList.toggle('gl-acc-high-contrast', rest.highContrast);
+  body.classList.toggle('gl-acc-grayscale', rest.grayscale);
+  body.classList.toggle('gl-acc-highlight-links', rest.highlightLinks);
+  body.classList.toggle('gl-acc-reduce-motion', rest.reduceMotion);
+  body.classList.toggle('gl-acc-big-cursor', rest.bigCursor);
+  body.classList.toggle('gl-acc-reading-guide-active', rest.readingGuide);
 
   body.classList.remove('gl-acc-font-readable', 'gl-acc-font-dyslexia');
-  if (prefs.fontMode === 'sans') body.classList.add('gl-acc-font-readable');
-  if (prefs.fontMode === 'dyslexia') body.classList.add('gl-acc-font-dyslexia');
+  if (rest.fontMode === 'sans') body.classList.add('gl-acc-font-readable');
+  if (rest.fontMode === 'dyslexia') body.classList.add('gl-acc-font-dyslexia');
+}
+
+/**
+ * Clear widgetHidden and show the floating menu again. Dispatches {@link GL_ACC_PREFS_CHANGED_EVENT}.
+ */
+export function restoreAccessibilityWidgetVisibility() {
+  const current = loadAccessibilityPreferences();
+  const next = saveAccessibilityPreferences({ ...current, widgetHidden: false });
+  applyAccessibilityPreferencesToDocument(next);
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent(GL_ACC_PREFS_CHANGED_EVENT, { detail: next }));
+  }
+  return next;
 }
 
 /** Call early (e.g. main.jsx) to reduce flash before React mounts. */

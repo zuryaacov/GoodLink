@@ -5,6 +5,7 @@ import { Eye, EyeOff } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { isValidEmail } from '../lib/emailValidation';
 import Modal from '../components/common/Modal';
+import AccessibilityFooterRestore from '../components/accessibility/AccessibilityFooterRestore';
 import { TermsContent } from './TermsPage';
 import { PrivacyContent } from './PrivacyPage';
 
@@ -1157,6 +1158,9 @@ const AuthPage = () => {
             Privacy Policy
           </button>
           .
+        </div>
+        <div className="mt-4 flex justify-center w-full max-w-md">
+          <AccessibilityFooterRestore className="text-slate-600" />
         </div>
       </main>
       <Modal

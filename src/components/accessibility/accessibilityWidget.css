@@ -513,3 +513,41 @@ button.gl-acc-active {
   width: 100%;
   justify-content: center;
 }
+
+.gl-acc-hide-widget-row {
+  margin-top: 0.75rem;
+}
+
+.gl-acc-btn-outline {
+  width: 100%;
+  background: #ffffff;
+  border: 1px dashed #a855f7;
+  color: #6d28d9;
+}
+
+.gl-acc-btn-outline:hover {
+  background: #faf5ff;
+  border-style: solid;
+}
+
+.gl-acc-footer-restore {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: #64748b;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+.gl-acc-footer-restore:hover {
+  color: #a855f7;
+}
+
+.gl-acc-footer-restore:focus-visible {
+  outline: 2px solid #a855f7;
+  outline-offset: 2px;
+  border-radius: 2px;
+}

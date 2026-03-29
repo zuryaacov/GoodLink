@@ -5,11 +5,13 @@ import '@fontsource/opendyslexic/latin-400.css';
 import './accessibilityWidget.css';
 import {
   GL_ACC_DEFAULTS,
+  GL_ACC_PREFS_CHANGED_EVENT,
   GL_ACC_STORAGE_KEY,
   applyAccessibilityPreferencesToDocument,
   loadAccessibilityPreferences,
   saveAccessibilityPreferences,
 } from '../../lib/accessibilityPreferences';
+import { useToast } from '../common/ToastProvider.jsx';
 
 function getFocusableElements(container) {
   if (!container) return [];
@@ -29,6 +31,7 @@ export default function AccessibilityWidget() {
   const [mounted, setMounted] = useState(false);
   const [open, setOpen] = useState(false);
   const [prefs, setPrefs] = useState(() => loadAccessibilityPreferences());
+  const { showToast } = useToast();
 
   const triggerRef = useRef(null);
   const panelRef = useRef(null);
@@ -61,6 +64,14 @@ export default function AccessibilityWidget() {
     };
     window.addEventListener('storage', onStorage);
     return () => window.removeEventListener('storage', onStorage);
+  }, []);
+
+  useEffect(() => {
+    const onPrefsChanged = (e) => {
+      if (e?.detail) setPrefs(e.detail);
+    };
+    window.addEventListener(GL_ACC_PREFS_CHANGED_EVENT, onPrefsChanged);
+    return () => window.removeEventListener(GL_ACC_PREFS_CHANGED_EVENT, onPrefsChanged);
   }, []);
 
   useEffect(() => {
@@ -148,17 +159,37 @@ export default function AccessibilityWidget() {
     setPrefs((prev) => ({ ...prev, [key]: !prev[key] }));
   };
 
+  const hideFloatingWidget = () => {
+    setOpen(false);
+    setPrefs((prev) => ({ ...prev, widgetHidden: true }));
+    showToast({
+      type: 'success',
+      title: 'Accessibility menu hidden',
+      message:
+        'Your display settings stay active. To show the floating button again, scroll to the footer and choose “Show accessibility menu” (including on the login page).',
+      duration: 12000,
+    });
+  };
+
   if (!mounted) return null;
+
+  const showReadingGuide = prefs.readingGuide;
+  const showWidgetChrome = !prefs.widgetHidden;
+
+  if (!showReadingGuide && !showWidgetChrome) return null;
 
   const content = (
     <>
-      <div
-        ref={guideRef}
-        className="gl-acc-reading-guide-line"
-        aria-hidden="true"
-        style={{ top: 0 }}
-      />
+      {showReadingGuide && (
+        <div
+          ref={guideRef}
+          className="gl-acc-reading-guide-line"
+          aria-hidden="true"
+          style={{ top: 0 }}
+        />
+      )}
 
+      {showWidgetChrome && (
       <div className="gl-acc-widget-root">
         <button
           ref={triggerRef}
@@ -376,10 +407,26 @@ export default function AccessibilityWidget() {
                   Reset all settings
                 </button>
               </div>
+
+              <div className="gl-acc-hide-widget-row">
+                <button
+                  type="button"
+                  className="gl-acc-btn gl-acc-btn-outline gl-acc-hide-widget-btn"
+                  title="Removes the purple floating button. Restore it from the site footer: “Show accessibility menu”."
+                  aria-describedby={`${titleId}-hide-hint`}
+                  onClick={hideFloatingWidget}
+                >
+                  Hide floating button
+                </button>
+                <p id={`${titleId}-hide-hint`} className="gl-acc-panel-sub" style={{ marginTop: '0.5rem' }}>
+                  You can bring it back anytime from the page footer.
+                </p>
+              </div>
             </div>
           </>
         )}
       </div>
+      )}
     </>
   );
 
