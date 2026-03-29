@@ -54,31 +54,47 @@ const relativeTime = (dateString) => {
 
 const TRAFFIC_PAGE_SIZE = 20;
 
-const KPICard = ({ title, value, change, trend, icon, iconBgClass, iconColorClass }) => (
-  <div className="bg-card-bg border border-card-border rounded-2xl p-5 transition-all hover:shadow-card-mint">
-    <div className="flex justify-between items-start mb-4">
-      <div
-        className={`p-2 rounded-lg ${iconBgClass || 'bg-[#135bec]/10'} ${iconColorClass || 'text-[#135bec]'}`}
-      >
-        <span className="material-symbols-outlined text-[20px]">{icon}</span>
-      </div>
-      {change != null && change !== '' && (
-        <span
-          className={`flex items-center gap-0.5 text-[10px] font-bold px-2 py-0.5 rounded-full ${
-            trend === 'up' ? 'text-[#10b981] bg-[#10b981]/10' : 'text-red-500 bg-red-500/10'
-          }`}
+const KPICard = ({ title, value, change, trend, icon, iconBgClass, iconColorClass }) => {
+  const headingId = `kpi-${title
+    .replace(/[^a-z0-9]+/gi, '-')
+    .replace(/^-+|-+$/g, '')
+    .toLowerCase()}`;
+  return (
+    <article
+      className="bg-card-bg border border-card-border rounded-2xl p-5 transition-all hover:shadow-card-mint"
+      aria-labelledby={headingId}
+    >
+      <div className="flex justify-between items-start mb-4">
+        <div
+          className={`p-2 rounded-lg ${iconBgClass || 'bg-[#135bec]/10'} ${iconColorClass || 'text-[#135bec]'}`}
+          aria-hidden="true"
         >
-          <span className="material-symbols-outlined text-[12px]">trending_up</span>
-          {change}
-        </span>
-      )}
-    </div>
-    <div className="space-y-1">
-      <h3 className="text-[#1b1b1b] text-xs uppercase font-bold tracking-widest">{title}</h3>
-      <p className="text-3xl font-extrabold text-[#1b1b1b]">{value}</p>
-    </div>
-  </div>
-);
+          <span className="material-symbols-outlined text-[20px]">{icon}</span>
+        </div>
+        {change != null && change !== '' && (
+          <span
+            className={`flex items-center gap-0.5 text-[10px] font-bold px-2 py-0.5 rounded-full ${
+              trend === 'up'
+                ? 'text-emerald-800 bg-emerald-500/15'
+                : 'text-red-800 bg-red-500/15'
+            }`}
+          >
+            <span className="material-symbols-outlined text-[12px]" aria-hidden="true">
+              {trend === 'down' ? 'trending_down' : 'trending_up'}
+            </span>
+            {change}
+          </span>
+        )}
+      </div>
+      <div className="space-y-1">
+        <h3 id={headingId} className="text-[#1b1b1b] text-xs uppercase font-bold tracking-widest">
+          {title}
+        </h3>
+        <p className="text-3xl font-extrabold text-[#1b1b1b]">{value}</p>
+      </div>
+    </article>
+  );
+};
 
 const HumanVsBotCard = ({ humanCount, botCount, unknownCount }) => {
   const total = humanCount + botCount + unknownCount;
@@ -90,7 +106,11 @@ const HumanVsBotCard = ({ humanCount, botCount, unknownCount }) => {
       <div className="w-full flex justify-between items-center mb-6">
         <h3 className="text-lg md:text-xl font-bold text-[#1b1b1b]">Human vs. Bot Ratio</h3>
       </div>
-      <div className="relative mb-6">
+      <p className="sr-only">
+        Traffic split: {Math.round(humanPct)}% human ({humanCount} clicks), {Math.round(botPct)}% bot (
+        {botCount} clicks), {Math.round(unknownPct)}% unknown ({unknownCount} clicks).
+      </p>
+      <div className="relative mb-6" aria-hidden="true">
         <div
           className="w-40 h-40 rounded-full flex items-center justify-center"
           style={{
@@ -107,15 +127,15 @@ const HumanVsBotCard = ({ humanCount, botCount, unknownCount }) => {
       </div>
       <div className="w-full grid grid-cols-2 gap-4 mt-2">
         <div className="flex items-center gap-2">
-          <span className="w-3 h-3 rounded-full bg-[#135bec] shrink-0" />
+          <span className="w-3 h-3 rounded-full bg-[#135bec] shrink-0" aria-hidden="true" />
           <span className="text-xs text-[#1b1b1b]">Human ({humanCount})</span>
         </div>
         <div className="flex items-center gap-2">
-          <span className="w-3 h-3 rounded-full bg-[#a855f7] shrink-0" />
+          <span className="w-3 h-3 rounded-full bg-[#a855f7] shrink-0" aria-hidden="true" />
           <span className="text-xs text-[#1b1b1b]">Bot ({botCount})</span>
         </div>
         <div className="flex items-center gap-2">
-          <span className="w-3 h-3 rounded-full bg-gray-600 shrink-0" />
+          <span className="w-3 h-3 rounded-full bg-gray-600 shrink-0" aria-hidden="true" />
           <span className="text-xs text-[#1b1b1b]">Unknown ({unknownCount})</span>
         </div>
       </div>
@@ -144,13 +164,21 @@ const GeoProgressCard = ({ geographic }) => {
               <div key={item.name}>
                 <div className="flex justify-between text-xs mb-1">
                   <span className="flex items-center gap-2 text-[#1b1b1b] font-medium">
-                    {flag} {item.name}
+                    <span aria-hidden="true">{flag}</span>
+                    <span>{item.name}</span>
                   </span>
                   <span className="text-[#1b1b1b]">
                     {item.value} click{item.value !== 1 ? 's' : ''} ({pct}%)
                   </span>
                 </div>
-                <div className="h-2 bg-[#1f2937] rounded-full overflow-hidden">
+                <div
+                  className="h-2 bg-slate-200 rounded-full overflow-hidden"
+                  role="progressbar"
+                  aria-valuenow={pct}
+                  aria-valuemin={0}
+                  aria-valuemax={100}
+                  aria-label={`${item.name}: ${pct}% of tracked clicks`}
+                >
                   <div
                     className="h-full rounded-full transition-[width] duration-1000"
                     style={{ width: `${pct}%`, backgroundColor: colors[i % colors.length] }}
@@ -414,7 +442,15 @@ const Analytics = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-full">
-        <div className="text-[#1b1b1b]">Loading analytics...</div>
+        <div
+          className="text-[#1b1b1b]"
+          role="status"
+          aria-live="polite"
+          aria-busy="true"
+          aria-label="Loading analytics"
+        >
+          Loading analytics...
+        </div>
       </div>
     );
   }
@@ -461,7 +497,7 @@ const Analytics = () => {
           value={formatNumber(stats.uniqueVisitors)}
           icon="group"
           iconBgClass="bg-[#a855f7]/10"
-          iconColorClass="text-[#a855f7]"
+          iconColorClass="text-[#7c3aed]"
         />
         <KPICard
           title="Bot Traffic"
@@ -473,15 +509,15 @@ const Analytics = () => {
           }
           trend={stats.botDetected > 0 ? 'down' : 'up'}
           icon="smart_toy"
-          iconBgClass="bg-yellow-500/10"
-          iconColorClass="text-yellow-500"
+          iconBgClass="bg-amber-500/10"
+          iconColorClass="text-amber-900"
         />
         <KPICard
           title="Conversion Est."
           value={conversionEst}
           icon="attach_money"
-          iconBgClass="bg-[#10b981]/10"
-          iconColorClass="text-[#10b981]"
+          iconBgClass="bg-emerald-500/10"
+          iconColorClass="text-emerald-800"
         />
       </div>
 
@@ -503,9 +539,13 @@ const Analytics = () => {
             type="button"
             onClick={fetchTrafficPage}
             disabled={loadingTrafficPage}
+            aria-busy={loadingTrafficPage}
+            aria-label={loadingTrafficPage ? 'Refreshing traffic log' : 'Refresh traffic log'}
             className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-bold text-[#1b1b1b] hover:bg-slate-100 disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
           >
-            <span className="material-symbols-outlined text-[16px]">refresh</span>
+            <span className="material-symbols-outlined text-[16px]" aria-hidden="true">
+              refresh
+            </span>
             {loadingTrafficPage ? 'Refreshing...' : 'Refresh'}
           </button>
         </div>
@@ -515,11 +555,12 @@ const Analytics = () => {
             <p className="text-xs text-[#1b1b1b]">
               Showing {trafficStart}-{trafficEnd} of {formatNumber(trafficTotalCount)} logs
             </p>
-            <div className="flex items-center justify-center gap-3">
+            <nav className="flex items-center justify-center gap-3" aria-label="Traffic log pagination">
               <button
                 type="button"
                 onClick={() => setTrafficPage((page) => Math.max(page - 1, 1))}
                 disabled={trafficPage === 1}
+                aria-label="Previous page of traffic log"
                 className="px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-bold text-[#1b1b1b] transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:border-primary hover:bg-primary/10"
               >
                 Previous
@@ -531,22 +572,32 @@ const Analytics = () => {
                 type="button"
                 onClick={() => setTrafficPage((page) => Math.min(page + 1, totalTrafficPages))}
                 disabled={trafficPage >= totalTrafficPages}
+                aria-label="Next page of traffic log"
                 className="px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-bold text-[#1b1b1b] transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:border-primary hover:bg-primary/10"
               >
                 Next
               </button>
-            </div>
+            </nav>
           </div>
         )}
 
         <div className="overflow-x-auto">
           {loadingTrafficPage ? (
-            <div className="text-center py-12">
+            <div
+              className="text-center py-12"
+              role="status"
+              aria-live="polite"
+              aria-busy="true"
+              aria-label="Loading traffic log"
+            >
               <p className="text-[#1b1b1b] text-lg mb-2">Loading traffic log...</p>
             </div>
           ) : trafficData.length === 0 ? (
             <div className="text-center py-12">
-              <span className="material-symbols-outlined text-6xl text-[#1b1b1b] mb-4 block">
+              <span
+                className="material-symbols-outlined text-6xl text-[#1b1b1b] mb-4 block"
+                aria-hidden="true"
+              >
                 traffic
               </span>
               <p className="text-[#1b1b1b] text-lg mb-2">No traffic data yet</p>
@@ -556,22 +607,30 @@ const Analytics = () => {
             </div>
           ) : (
             <table className="w-full text-left text-sm">
+              <caption className="sr-only">
+                Paginated list of link clicks with URL, time, location, device, bot status, and detail action
+              </caption>
               <thead>
                 <tr className="text-[#1b1b1b] border-b border-slate-200 bg-slate-50">
-                  <th className="px-6 py-3 font-bold uppercase text-[10px] tracking-wider">
+                  <th scope="col" className="px-6 py-3 font-bold uppercase text-[10px] tracking-wider">
                     Full URL
                   </th>
-                  <th className="px-6 py-3 font-bold uppercase text-[10px] tracking-wider">Time</th>
-                  <th className="px-6 py-3 font-bold uppercase text-[10px] tracking-wider">
+                  <th scope="col" className="px-6 py-3 font-bold uppercase text-[10px] tracking-wider">
+                    Time
+                  </th>
+                  <th scope="col" className="px-6 py-3 font-bold uppercase text-[10px] tracking-wider">
                     Location
                   </th>
-                  <th className="px-6 py-3 font-bold uppercase text-[10px] tracking-wider">
+                  <th scope="col" className="px-6 py-3 font-bold uppercase text-[10px] tracking-wider">
                     Device / OS
                   </th>
-                  <th className="px-6 py-3 font-bold uppercase text-[10px] tracking-wider">
+                  <th scope="col" className="px-6 py-3 font-bold uppercase text-[10px] tracking-wider">
                     Status
                   </th>
-                  <th className="px-6 py-3 font-bold uppercase text-[10px] tracking-wider text-right">
+                  <th
+                    scope="col"
+                    className="px-6 py-3 font-bold uppercase text-[10px] tracking-wider text-right"
+                  >
                     Action
                   </th>
                 </tr>
@@ -599,13 +658,15 @@ const Analytics = () => {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className="flex items-center gap-2">
-                          <span className="text-lg">{flag}</span>
+                          <span className="text-lg" aria-hidden="true">
+                            {flag}
+                          </span>
                           <span className="text-[#1b1b1b] font-medium">{location}</span>
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center gap-2 text-[#1b1b1b]">
-                          <span className="material-symbols-outlined text-base">
+                          <span className="material-symbols-outlined text-base" aria-hidden="true">
                             {/(mobile|phone|iphone|android)/i.test(
                               click.device_type || click.user_agent || ''
                             )
@@ -619,8 +680,8 @@ const Analytics = () => {
                         <span
                           className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${
                             isBot
-                              ? 'bg-[#a855f7]/10 text-[#a855f7] border-[#a855f7]/20'
-                              : 'bg-[#135bec]/10 text-[#135bec] border-[#135bec]/20'
+                              ? 'bg-purple-100 text-purple-900 border-purple-200'
+                              : 'bg-blue-100 text-blue-900 border-blue-200'
                           }`}
                         >
                           {isBot ? 'Bot (Blocked)' : 'Human'}
@@ -630,6 +691,7 @@ const Analytics = () => {
                         <button
                           type="button"
                           onClick={() => handleExpandClick(click.id)}
+                          aria-label={`More information for click from ${location}, ${relativeTime(click.clicked_at || click.created_at)}`}
                           className="bg-transparent border border-slate-200 text-[#1b1b1b] hover:border-primary hover:text-[#1b1b1b] hover:bg-primary/10 px-3 py-1.5 rounded-lg text-xs font-bold transition-all"
                         >
                           More Information
@@ -648,11 +710,12 @@ const Analytics = () => {
             <p className="text-xs text-[#1b1b1b]">
               Showing {trafficStart}-{trafficEnd} of {formatNumber(trafficTotalCount)} logs
             </p>
-            <div className="flex items-center justify-center gap-3">
+            <nav className="flex items-center justify-center gap-3" aria-label="Traffic log pagination">
               <button
                 type="button"
                 onClick={() => setTrafficPage((page) => Math.max(page - 1, 1))}
                 disabled={trafficPage === 1}
+                aria-label="Previous page of traffic log"
                 className="px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-bold text-[#1b1b1b] transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:border-primary hover:bg-primary/10"
               >
                 Previous
@@ -664,11 +727,12 @@ const Analytics = () => {
                 type="button"
                 onClick={() => setTrafficPage((page) => Math.min(page + 1, totalTrafficPages))}
                 disabled={trafficPage >= totalTrafficPages}
+                aria-label="Next page of traffic log"
                 className="px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-bold text-[#1b1b1b] transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:border-primary hover:bg-primary/10"
               >
                 Next
               </button>
-            </div>
+            </nav>
           </div>
         )}
       </div>

@@ -10,7 +10,7 @@ const AnalyticsSection = () => {
       <div className="mx-auto max-w-[1200px] flex flex-col gap-10">
         <div className="flex justify-center">
           <div
-            className="inline-flex items-center rounded-full bg-[#a855f7]/10 px-3 py-1 text-sm font-medium text-[#7c3aed] border border-[#a855f7]/20"
+            className="inline-flex items-center rounded-full bg-[#a855f7]/10 px-3 py-1 text-sm font-semibold text-[#6d28d9] border border-[#a855f7]/30"
           >
             Insights
           </div>
@@ -30,19 +30,19 @@ const AnalyticsSection = () => {
           </p>
           <ul className="flex flex-col gap-4 mt-2">
             <li className="flex items-center gap-3">
-              <span className="material-symbols-outlined text-green-500" aria-hidden="true">check</span>
+              <span className="material-symbols-outlined text-green-700" aria-hidden="true">check</span>
               <span className="text-slate-700 dark:text-slate-300 font-medium">
                 Click-level bot detection
               </span>
             </li>
             <li className="flex items-center gap-3">
-              <span className="material-symbols-outlined text-green-500" aria-hidden="true">check</span>
+              <span className="material-symbols-outlined text-green-700" aria-hidden="true">check</span>
               <span className="text-slate-700 dark:text-slate-300 font-medium">
                 Bot filtering &amp; exclusion
               </span>
             </li>
             <li className="flex items-center gap-3">
-              <span className="material-symbols-outlined text-green-500" aria-hidden="true">check</span>
+              <span className="material-symbols-outlined text-green-700" aria-hidden="true">check</span>
               <span className="text-slate-700 dark:text-slate-300 font-medium">
                 Exportable raw data logs
               </span>
@@ -53,18 +53,18 @@ const AnalyticsSection = () => {
           <div className="flex-1 w-full">
             <div className="rounded-xl border border-slate-200 dark:border-slate-200 bg-white dark:bg-white p-6 shadow-2xl">
               <div className="flex flex-col gap-2 mb-6">
-                <p className="text-slate-500 dark:text-[#1b1b1b] text-sm font-medium uppercase tracking-wider">
+                <p className="text-slate-600 dark:text-[#1b1b1b] text-sm font-medium uppercase tracking-wider">
                   Link Click Performance
                 </p>
                 <div className="flex items-baseline justify-between">
                   <p className="text-slate-900 dark:text-[#1b1b1b] text-4xl font-bold tracking-tight">
-                    1.2M <span className="text-lg font-normal text-slate-500">Clicks</span>
+                    1.2M <span className="text-lg font-normal text-slate-600">Clicks</span>
                   </p>
                   <div className="flex items-center gap-1 bg-green-500/10 px-2 py-1 rounded">
-                    <span className="material-symbols-outlined text-green-500 text-sm" aria-hidden="true">
+                    <span className="material-symbols-outlined text-green-700 text-sm" aria-hidden="true">
                       trending_up
                     </span>
-                    <p className="text-green-600 dark:text-green-400 text-sm font-bold">+12.5%</p>
+                    <p className="text-green-800 dark:text-green-700 text-sm font-bold">+12.5%</p>
                   </div>
                 </div>
                 <p className="text-[#1b1b1b] text-sm">Last 30 Days</p>
