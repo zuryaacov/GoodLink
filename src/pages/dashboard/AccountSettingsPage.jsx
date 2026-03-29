@@ -333,9 +333,18 @@ export default function AccountSettingsPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-full text-[#1b1b1b]">
-        <span className="material-symbols-outlined animate-spin text-4xl text-[#135bec]">
-          refresh
-        </span>
+        <div
+          role="status"
+          aria-live="polite"
+          aria-busy="true"
+          aria-label="Loading account settings"
+          className="flex flex-col items-center gap-2"
+        >
+          <span className="material-symbols-outlined animate-spin text-4xl text-[#135bec]" aria-hidden="true">
+            refresh
+          </span>
+          <span className="text-sm">Loading settings...</span>
+        </div>
       </div>
     );
   }
@@ -406,16 +415,23 @@ export default function AccountSettingsPage() {
             {/* User Profile Card */}
             <div className="bg-card-bg border border-card-border rounded-2xl p-6 hover:shadow-card-mint transition-all">
               <h2 className="text-xl font-bold text-[#1b1b1b] mb-6 flex items-center gap-2">
-                <span className="material-symbols-outlined text-[#135bec]">person</span>
+                <span className="material-symbols-outlined text-[#135bec]" aria-hidden="true">
+                  person
+                </span>
                 Personal Information
               </h2>
 
-              <form onSubmit={handleUpdateProfile} className="space-y-6">
+              <form onSubmit={handleUpdateProfile} className="space-y-6" noValidate>
                 {/* Full Name */}
                 <div>
-                  <label className="block text-sm font-medium text-[#1b1b1b] mb-2">Full Name</label>
+                  <label htmlFor="account-full-name" className="block text-sm font-medium text-[#1b1b1b] mb-2">
+                    Full Name
+                  </label>
                   <input
+                    id="account-full-name"
+                    name="fullName"
                     type="text"
+                    autoComplete="name"
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
                     className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-[#1b1b1b] focus:outline-none focus:border-primary transition-all"
@@ -425,27 +441,38 @@ export default function AccountSettingsPage() {
 
                 {/* Email Address (read-only) */}
                 <div>
-                  <label className="block text-sm font-medium text-[#1b1b1b] mb-2">
+                  <label htmlFor="account-email" className="block text-sm font-medium text-[#1b1b1b] mb-2">
                     Email Address
                   </label>
                   <input
+                    id="account-email"
+                    name="email"
                     type="text"
                     inputMode="email"
                     autoComplete="email"
                     value={email}
                     disabled
+                    aria-describedby="account-email-hint"
                     className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-[#1b1b1b] opacity-60 cursor-not-allowed"
                     placeholder="name@example.com"
                   />
+                  <p id="account-email-hint" className="text-xs text-slate-600 mt-2">
+                    Email cannot be changed here. Contact support if you need to update it.
+                  </p>
                 </div>
 
                 {/* Timezone Selector */}
                 <div>
-                  <label className="block text-sm font-medium text-[#1b1b1b] mb-2">Timezone</label>
+                  <label htmlFor="account-timezone" className="block text-sm font-medium text-[#1b1b1b] mb-2">
+                    Timezone
+                  </label>
                   <div className="relative">
                     <select
+                      id="account-timezone"
+                      name="timezone"
                       value={timezone}
                       onChange={(e) => setTimezone(e.target.value)}
+                      aria-describedby="account-timezone-hint"
                       className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-[#1b1b1b] appearance-none focus:outline-none focus:border-primary transition-all cursor-pointer"
                     >
                       {COMMON_TIMEZONES.map((tz) => (
@@ -454,23 +481,30 @@ export default function AccountSettingsPage() {
                         </option>
                       ))}
                     </select>
-                    <span className="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-[#1b1b1b] pointer-events-none">
+                    <span
+                      className="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-[#1b1b1b] pointer-events-none"
+                      aria-hidden="true"
+                    >
                       expand_more
                     </span>
                   </div>
-                  <p className="text-xs text-slate-500 mt-2">
+                  <p id="account-timezone-hint" className="text-xs text-slate-600 mt-2">
                     Used for analytics reports and scheduled events.
                   </p>
                   <div className="mt-6 min-h-[2.5rem]">
                     {success && (
-                      <div className="text-green-400 text-sm flex items-center gap-2">
-                        <span className="material-symbols-outlined">check_circle</span>
+                      <div className="text-emerald-800 text-sm flex items-center gap-2" role="status">
+                        <span className="material-symbols-outlined" aria-hidden="true">
+                          check_circle
+                        </span>
                         {success}
                       </div>
                     )}
                     {error && (
-                      <div className="text-red-400 text-sm flex items-center gap-2">
-                        <span className="material-symbols-outlined">error</span>
+                      <div className="text-red-700 text-sm flex items-center gap-2" role="alert">
+                        <span className="material-symbols-outlined" aria-hidden="true">
+                          error
+                        </span>
                         {error}
                       </div>
                     )}
@@ -482,10 +516,11 @@ export default function AccountSettingsPage() {
                   <button
                     type="submit"
                     disabled={saving}
+                    aria-busy={saving}
                     className="bg-[#a855f7] hover:bg-[#9333ea] text-white font-semibold py-3 px-8 rounded-xl transition-all shadow-[0_0_15px_rgba(168,85,247,0.3)] disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                   >
                     {saving && (
-                      <span className="material-symbols-outlined animate-spin text-sm">
+                      <span className="material-symbols-outlined animate-spin text-sm" aria-hidden="true">
                         refresh
                       </span>
                     )}
@@ -504,8 +539,8 @@ export default function AccountSettingsPage() {
                 <span
                   className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider border ${
                     isCancelled
-                      ? 'bg-amber-500/10 text-amber-600 border-amber-500/30'
-                      : 'bg-[#a855f7]/10 text-[#a855f7] border-[#a855f7]/30'
+                      ? 'bg-amber-500/15 text-amber-900 border-amber-600/40'
+                      : 'bg-purple-100 text-[#6d28d9] border-purple-200'
                   }`}
                 >
                   {isCancelled ? 'Cancelled' : isFreeTrial ? 'Free Trial' : `${currentPlanDisplay} Plan`}
@@ -540,11 +575,15 @@ export default function AccountSettingsPage() {
                 <button
                   type="button"
                   onClick={() => setShowCancelConfirmModal(true)}
+                  aria-label="Cancel subscription"
                   className="w-full group relative overflow-hidden rounded-xl bg-gradient-to-r from-[#a855f7] to-[#7c6ee8] p-[1px]"
                 >
-                  <div className="absolute inset-0 bg-gradient-to-r from-[#a855f7] to-[#7c6ee8] opacity-20 group-hover:opacity-40 transition-opacity" />
+                  <div
+                    className="absolute inset-0 bg-gradient-to-r from-[#a855f7] to-[#7c6ee8] opacity-20 group-hover:opacity-40 transition-opacity"
+                    aria-hidden="true"
+                  />
                   <div className="relative w-full bg-white rounded-[11px] px-6 py-3 flex items-center justify-center gap-2 group-hover:bg-opacity-90 transition-colors">
-                    <span className="font-semibold text-[#a855f7]">Cancel subscription</span>
+                    <span className="font-semibold text-[#6d28d9]">Cancel subscription</span>
                   </div>
                 </button>
               )}
@@ -626,6 +665,11 @@ export default function AccountSettingsPage() {
                       <button
                         type="button"
                         disabled={isCurrentPlan}
+                        aria-label={
+                          isCurrentPlan
+                            ? `${plan.name}: your current plan`
+                            : `${buttonLabel} — ${plan.name} plan`
+                        }
                         onClick={() => !isCurrentPlan && openCheckout(plan)}
                         className={`mb-10 w-full text-center inline-block active:scale-95 transition-all ${
                           isFeaturedCard
@@ -651,13 +695,14 @@ export default function AccountSettingsPage() {
                                 className={`w-5 h-5 mt-0.5 flex-shrink-0 ${
                                   isFeaturedCard ? 'text-[#032102]' : 'text-[#46673d]'
                                 }`}
+                                aria-hidden="true"
                               />
                               <span
                                 className={`text-sm md:text-base font-semibold leading-relaxed ${
                                   isBlack
                                     ? 'text-black'
                                     : isPurple
-                                      ? 'text-[#a855f7]'
+                                      ? 'text-[#7c3aed]'
                                       : isFeaturedCard
                                         ? 'text-[#032102]'
                                         : 'text-slate-700'
@@ -681,40 +726,53 @@ export default function AccountSettingsPage() {
         {isEmailUser && (
           <div className="mt-12 bg-card-bg border border-card-border rounded-2xl p-6 hover:shadow-card-mint transition-all max-w-2xl">
             <h2 className="text-xl font-bold text-[#1b1b1b] mb-6 flex items-center gap-2">
-              <span className="material-symbols-outlined text-[#135bec]">lock</span>
+              <span className="material-symbols-outlined text-[#135bec]" aria-hidden="true">
+                lock
+              </span>
               Security
             </h2>
 
             {!showPasswordChange ? (
               <button
+                type="button"
                 onClick={() => setShowPasswordChange(true)}
                 className="flex items-center gap-2 bg-[#a855f7] hover:bg-[#9333ea] text-white transition-colors border border-transparent rounded-lg px-4 py-2 font-semibold shadow-md shadow-[#a855f7]/30"
               >
                 Change Password
               </button>
             ) : (
-              <div className="space-y-4 bg-white p-4 rounded-xl border border-slate-200">
-                <h3 className="text-[#1b1b1b] font-semibold mb-2">Change Password</h3>
+              <div
+                id="account-password-change-panel"
+                className="space-y-4 bg-white p-4 rounded-xl border border-slate-200"
+                role="region"
+                aria-labelledby="account-password-change-heading"
+              >
+                <h3 id="account-password-change-heading" className="text-[#1b1b1b] font-semibold mb-2">
+                  Change Password
+                </h3>
 
                 <div>
-                  <label className="block text-xs font-medium text-[#1b1b1b] mb-1">
+                  <label htmlFor="account-password-current" className="block text-xs font-medium text-[#1b1b1b] mb-1">
                     Current Password
                   </label>
                   <div className="relative flex items-center">
                     <input
+                      id="account-password-current"
                       type={showCurrentPassword ? 'text' : 'password'}
+                      autoComplete="current-password"
                       value={currentPassword}
                       onChange={(e) => setCurrentPassword(e.target.value)}
+                      aria-describedby={passwordError ? 'account-password-error' : undefined}
                       className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 pr-10 text-[#1b1b1b] text-sm focus:outline-none focus:border-primary"
                       placeholder="Enter your current password"
                     />
                     <button
                       type="button"
                       onClick={() => setShowCurrentPassword((v) => !v)}
-                      className="absolute right-2 p-1.5 text-slate-500 hover:text-[#1b1b1b] rounded transition-colors"
-                      aria-label={showCurrentPassword ? 'Hide password' : 'Show password'}
+                      className="absolute right-2 p-1.5 text-slate-600 hover:text-[#1b1b1b] rounded transition-colors"
+                      aria-label={showCurrentPassword ? 'Hide current password' : 'Show current password'}
                     >
-                      <span className="material-symbols-outlined text-lg">
+                      <span className="material-symbols-outlined text-lg" aria-hidden="true">
                         {showCurrentPassword ? 'visibility_off' : 'visibility'}
                       </span>
                     </button>
@@ -722,24 +780,31 @@ export default function AccountSettingsPage() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-medium text-[#1b1b1b] mb-1">
+                  <label htmlFor="account-password-new" className="block text-xs font-medium text-[#1b1b1b] mb-1">
                     New Password
                   </label>
                   <div className="relative flex items-center">
                     <input
+                      id="account-password-new"
                       type={showNewPassword ? 'text' : 'password'}
+                      autoComplete="new-password"
                       value={newPassword}
                       onChange={(e) => setNewPassword(e.target.value)}
+                      aria-describedby={
+                        [passwordError && 'account-password-error', confirmPassword && newPassword !== confirmPassword && 'account-password-mismatch']
+                          .filter(Boolean)
+                          .join(' ') || undefined
+                      }
                       className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 pr-10 text-[#1b1b1b] text-sm focus:outline-none focus:border-primary"
                       placeholder="Min. 8 characters"
                     />
                     <button
                       type="button"
                       onClick={() => setShowNewPassword((v) => !v)}
-                      className="absolute right-2 p-1.5 text-slate-500 hover:text-[#1b1b1b] rounded transition-colors"
-                      aria-label={showNewPassword ? 'Hide password' : 'Show password'}
+                      className="absolute right-2 p-1.5 text-slate-600 hover:text-[#1b1b1b] rounded transition-colors"
+                      aria-label={showNewPassword ? 'Hide new password' : 'Show new password'}
                     >
-                      <span className="material-symbols-outlined text-lg">
+                      <span className="material-symbols-outlined text-lg" aria-hidden="true">
                         {showNewPassword ? 'visibility_off' : 'visibility'}
                       </span>
                     </button>
@@ -747,43 +812,50 @@ export default function AccountSettingsPage() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-medium text-[#1b1b1b] mb-1">
+                  <label htmlFor="account-password-confirm" className="block text-xs font-medium text-[#1b1b1b] mb-1">
                     Confirm New Password
                   </label>
                   <div className="relative flex items-center">
                     <input
+                      id="account-password-confirm"
                       type={showConfirmPassword ? 'text' : 'password'}
+                      autoComplete="new-password"
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
+                      aria-invalid={Boolean(confirmPassword && newPassword !== confirmPassword)}
+                      aria-describedby={
+                        [passwordError && 'account-password-error', confirmPassword && newPassword !== confirmPassword && 'account-password-mismatch']
+                          .filter(Boolean)
+                          .join(' ') || undefined
+                      }
                       className={`w-full bg-white border border-slate-200 rounded-lg px-3 py-2 pr-10 text-[#1b1b1b] text-sm focus:outline-none focus:border-primary ${
-                        confirmPassword && newPassword !== confirmPassword ? 'border-red-500' : ''
+                        confirmPassword && newPassword !== confirmPassword ? 'border-red-600' : ''
                       }`}
                       placeholder="Retype password"
                     />
                     <button
                       type="button"
                       onClick={() => setShowConfirmPassword((v) => !v)}
-                      className="absolute right-2 p-1.5 text-slate-500 hover:text-[#1b1b1b] rounded transition-colors"
-                      aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
+                      className="absolute right-2 p-1.5 text-slate-600 hover:text-[#1b1b1b] rounded transition-colors"
+                      aria-label={showConfirmPassword ? 'Hide password confirmation' : 'Show password confirmation'}
                     >
-                      <span className="material-symbols-outlined text-lg">
+                      <span className="material-symbols-outlined text-lg" aria-hidden="true">
                         {showConfirmPassword ? 'visibility_off' : 'visibility'}
                       </span>
                     </button>
                   </div>
                   {confirmPassword && newPassword !== confirmPassword && (
-                    <p className="text-red-400 text-xs mt-1">Passwords do not match</p>
-                  )}
-                  {passwordError && (
-                    <p className="text-red-400 text-xs mt-1">{passwordError}</p>
+                    <p id="account-password-mismatch" className="text-red-700 text-xs mt-1" role="alert">
+                      Passwords do not match
+                    </p>
                   )}
                 </div>
 
-                <div className="min-h-[24px] mt-1">
-                  {passwordError && (
-                    <p className="text-red-400 text-xs mt-1">{passwordError}</p>
-                  )}
-                </div>
+                {passwordError && (
+                  <p id="account-password-error" className="text-red-700 text-xs" role="alert">
+                    {passwordError}
+                  </p>
+                )}
 
                 <div className="flex justify-end gap-2 pt-2">
                   <button
@@ -798,7 +870,8 @@ export default function AccountSettingsPage() {
                       setShowNewPassword(false);
                       setShowConfirmPassword(false);
                     }}
-                    className="text-[#1b1b1b] hover:text-[#1b1b1b] text-xs px-3 py-2"
+                    className="text-[#1b1b1b] hover:text-[#1b1b1b] text-xs px-3 py-2 rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-[#a855f7] focus-visible:ring-offset-2"
+                    aria-label="Cancel changing password"
                   >
                     Cancel
                   </button>
@@ -811,9 +884,10 @@ export default function AccountSettingsPage() {
                       newPassword !== confirmPassword ||
                       newPassword.length < 8
                     }
+                    aria-busy={saving}
                     className="bg-[#a855f7] hover:bg-[#9333ea] text-white text-xs font-bold px-4 py-2 rounded-lg disabled:opacity-50 transition-colors"
                   >
-                    Update Password
+                    {saving ? 'Updating...' : 'Update Password'}
                   </button>
                 </div>
               </div>
