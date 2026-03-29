@@ -5,6 +5,10 @@ import * as Sentry from '@sentry/react'
 import './index.css'
 import App from './App.jsx'
 import { ToastProvider } from './components/common/ToastProvider.jsx'
+import AccessibilityWidget from './components/accessibility/AccessibilityWidget.jsx'
+import { hydrateAccessibilityFromStorage } from './lib/accessibilityPreferences.js'
+
+hydrateAccessibilityFromStorage()
 
 // Initialize Sentry
 Sentry.init({
@@ -25,6 +29,7 @@ createRoot(document.getElementById('root')).render(
     <BrowserRouter>
       <ToastProvider>
         <App />
+        <AccessibilityWidget />
       </ToastProvider>
     </BrowserRouter>
   </StrictMode>,

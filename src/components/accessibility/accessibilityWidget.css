@@ -1,0 +1,515 @@
+/**
+ * GoodLink Accessibility Widget + global a11y modes.
+ * All selectors prefixed with .gl-acc- to avoid collisions.
+ * OpenDyslexic @font-face is loaded via `@fontsource/opendyslexic` in the React entry.
+ */
+
+/* —— Root text scale (100%–200%) —— */
+html.gl-acc-font-scale {
+  /* Percentage relative to browser default root size */
+  font-size: calc(100% * var(--gl-acc-font-scale, 1));
+}
+
+/* —— Readable sans (stack) —— */
+body.gl-acc-font-readable,
+body.gl-acc-font-readable * {
+  font-family:
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    'Segoe UI',
+    Roboto,
+    'Helvetica Neue',
+    Arial,
+    sans-serif !important;
+}
+
+/* —— Dyslexia-friendly —— */
+body.gl-acc-font-dyslexia,
+body.gl-acc-font-dyslexia * {
+  font-family: 'OpenDyslexic', ui-sans-serif, system-ui, sans-serif !important;
+}
+
+/* Material / icon fonts: keep glyphs */
+body.gl-acc-font-dyslexia .material-symbols-outlined,
+body.gl-acc-font-readable .material-symbols-outlined {
+  font-family: 'Material Symbols Outlined' !important;
+}
+
+/* —— High contrast —— */
+body.gl-acc-high-contrast,
+body.gl-acc-high-contrast * {
+  background-color: #000000 !important;
+  color: #ffff00 !important;
+  -webkit-text-fill-color: #ffff00 !important;
+  border-color: #ffffff !important;
+  box-shadow: none !important;
+  text-shadow: none !important;
+}
+
+body.gl-acc-high-contrast img,
+body.gl-acc-high-contrast video,
+body.gl-acc-high-contrast svg:not(.gl-acc-widget-root svg),
+body.gl-acc-high-contrast canvas,
+body.gl-acc-high-contrast iframe {
+  filter: contrast(1.15) brightness(1.08);
+}
+
+body.gl-acc-high-contrast .gl-acc-widget-root {
+  background: #0a0a0a !important;
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+  border: 2px solid #a855f7 !important;
+}
+
+body.gl-acc-high-contrast .gl-acc-widget-root * {
+  background-color: transparent !important;
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+  border-color: rgba(255, 255, 255, 0.35) !important;
+}
+
+body.gl-acc-high-contrast .gl-acc-widget-root .gl-acc-btn-primary {
+  background: #a855f7 !important;
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+
+body.gl-acc-high-contrast .gl-acc-widget-root .gl-acc-active,
+body.gl-acc-high-contrast .gl-acc-widget-root [aria-pressed='true'] {
+  background: #d7fec8 !important;
+  color: #0a0a0a !important;
+  -webkit-text-fill-color: #0a0a0a !important;
+}
+
+/* —— Grayscale: app shell only (#root); widget is a direct child of body —— */
+body.gl-acc-grayscale:not(.gl-acc-high-contrast) #root {
+  filter: grayscale(100%);
+}
+
+/* —— Highlight links & buttons (exclude floating widget controls) —— */
+body.gl-acc-highlight-links a,
+body.gl-acc-highlight-links button,
+body.gl-acc-highlight-links [role='button'] {
+  outline: 3px solid #a855f7 !important;
+  outline-offset: 2px !important;
+  text-decoration: underline !important;
+  text-decoration-thickness: 0.2em !important;
+  text-underline-offset: 0.2em !important;
+}
+
+body.gl-acc-highlight-links .gl-acc-widget-root a,
+body.gl-acc-highlight-links .gl-acc-widget-root button,
+body.gl-acc-highlight-links .gl-acc-widget-root [role='button'] {
+  outline: none !important;
+  text-decoration: none !important;
+}
+
+body.gl-acc-highlight-links .gl-acc-widget-root button:focus-visible,
+body.gl-acc-highlight-links .gl-acc-widget-root [role='button']:focus-visible {
+  outline: 3px solid #a855f7 !important;
+  outline-offset: 2px !important;
+}
+
+body.gl-acc-high-contrast.gl-acc-highlight-links a,
+body.gl-acc-high-contrast.gl-acc-highlight-links button,
+body.gl-acc-high-contrast.gl-acc-highlight-links [role='button'] {
+  outline-color: #ffffff !important;
+}
+
+body.gl-acc-high-contrast.gl-acc-highlight-links .gl-acc-widget-root button:focus-visible,
+body.gl-acc-high-contrast.gl-acc-highlight-links .gl-acc-widget-root [role='button']:focus-visible {
+  outline-color: #ffff00 !important;
+}
+
+/* —— Reduced motion —— */
+body.gl-acc-reduce-motion,
+body.gl-acc-reduce-motion *:not(.gl-acc-reading-guide-line),
+body.gl-acc-reduce-motion *::before,
+body.gl-acc-reduce-motion *::after {
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.001ms !important;
+  transition-delay: 0s !important;
+  scroll-behavior: auto !important;
+}
+
+/* —— Big cursor —— */
+body.gl-acc-big-cursor,
+body.gl-acc-big-cursor * {
+  cursor:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Ccircle cx='20' cy='20' r='14' fill='none' stroke='%23000' stroke-width='3' opacity='0.85'/%3E%3Ccircle cx='20' cy='20' r='3' fill='%23a855f7'/%3E%3C/svg%3E")
+      20 20,
+    crosshair !important;
+}
+
+body.gl-acc-high-contrast.gl-acc-big-cursor,
+body.gl-acc-high-contrast.gl-acc-big-cursor * {
+  cursor:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Ccircle cx='20' cy='20' r='14' fill='none' stroke='%23ffff00' stroke-width='3'/%3E%3Ccircle cx='20' cy='20' r='3' fill='%23fff'/%3E%3C/svg%3E")
+      20 20,
+    crosshair !important;
+}
+
+/* —— Reading guide line —— */
+.gl-acc-reading-guide-line {
+  position: fixed;
+  left: 0;
+  right: 0;
+  height: 4px;
+  margin-top: -2px;
+  background: #a855f7;
+  opacity: 0.85;
+  pointer-events: none;
+  z-index: 2147483640;
+  display: none;
+  border-radius: 2px;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.6);
+}
+
+body.gl-acc-reading-guide-active .gl-acc-reading-guide-line {
+  display: block;
+}
+
+body.gl-acc-high-contrast .gl-acc-reading-guide-line {
+  background: #ffff00;
+  box-shadow: 0 0 0 1px #000;
+}
+
+/* —— Widget shell —— */
+.gl-acc-widget-root {
+  position: fixed;
+  bottom: 1.25rem;
+  right: 1.25rem;
+  left: auto;
+  z-index: 2147483646;
+  font-family: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  font-size: 1rem;
+  line-height: 1.4;
+  -webkit-font-smoothing: antialiased;
+}
+
+@media (max-width: 640px) {
+  .gl-acc-widget-root {
+    bottom: 1rem;
+    right: 1rem;
+    left: 1rem;
+  }
+}
+
+.gl-acc-widget-trigger {
+  width: 3.25rem;
+  height: 3.25rem;
+  border-radius: 9999px;
+  border: 2px solid #7c3aed;
+  background: #a855f7;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow:
+    0 4px 14px rgba(168, 85, 247, 0.45),
+    0 0 0 2px #ffffff;
+  transition:
+    transform 0.15s ease,
+    background 0.15s ease;
+}
+
+.gl-acc-widget-trigger:hover {
+  background: #9333ea;
+  transform: scale(1.05);
+}
+
+.gl-acc-widget-trigger:focus {
+  outline: none;
+}
+
+.gl-acc-widget-trigger:focus-visible {
+  outline: 3px solid #d7fec8;
+  outline-offset: 3px;
+}
+
+.gl-acc-widget-trigger[aria-expanded='true'] {
+  background: #7c3aed;
+  box-shadow:
+    0 0 0 3px #d7fec8,
+    0 4px 14px rgba(168, 85, 247, 0.5);
+}
+
+.gl-acc-widget-trigger svg {
+  width: 1.65rem;
+  height: 1.65rem;
+  flex-shrink: 0;
+}
+
+/* Panel */
+.gl-acc-panel-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.35);
+  z-index: 2147483644;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+}
+
+.gl-acc-panel {
+  position: fixed;
+  z-index: 2147483645;
+  bottom: 5.5rem;
+  right: 1.25rem;
+  width: min(100vw - 2rem, 22rem);
+  max-height: min(calc(100dvh - 6rem), 32rem);
+  overflow-y: auto;
+  background: #ffffff;
+  border-radius: 1rem;
+  border: 1px solid rgba(168, 85, 247, 0.35);
+  box-shadow:
+    0 25px 50px -12px rgba(0, 0, 0, 0.25),
+    0 0 0 1px rgba(168, 85, 247, 0.15);
+  padding: 1rem 1.125rem 1.125rem;
+  text-align: left;
+}
+
+@media (max-width: 640px) {
+  .gl-acc-panel {
+    bottom: 5rem;
+    right: 1rem;
+    left: 1rem;
+    width: auto;
+    max-height: min(75dvh, 28rem);
+  }
+}
+
+.gl-acc-panel-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+}
+
+.gl-acc-panel-title {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #1b1b1b;
+}
+
+.gl-acc-panel-sub {
+  margin: 0.25rem 0 0;
+  font-size: 0.75rem;
+  color: #475569;
+}
+
+.gl-acc-close {
+  flex-shrink: 0;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 0.5rem;
+  border: 1px solid #e2e8f0;
+  background: #f8fafc;
+  color: #1b1b1b;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  line-height: 1;
+}
+
+.gl-acc-close:hover {
+  background: #d7fec8;
+  border-color: #a855f7;
+}
+
+.gl-acc-close:focus-visible {
+  outline: 2px solid #a855f7;
+  outline-offset: 2px;
+}
+
+.gl-acc-section {
+  margin-top: 0.875rem;
+}
+
+.gl-acc-section-label {
+  display: block;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #64748b;
+  margin-bottom: 0.5rem;
+}
+
+.gl-acc-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.gl-acc-btn {
+  border-radius: 0.625rem;
+  border: 1px solid #e2e8f0;
+  background: #f8fafc;
+  color: #1b1b1b;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  padding: 0.5rem 0.75rem;
+  cursor: pointer;
+  min-height: 2.5rem;
+}
+
+.gl-acc-btn:hover {
+  border-color: #a855f7;
+  background: #faf5ff;
+}
+
+.gl-acc-btn:focus-visible {
+  outline: 2px solid #a855f7;
+  outline-offset: 2px;
+}
+
+.gl-acc-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.gl-acc-btn-primary {
+  background: #a855f7;
+  border-color: #9333ea;
+  color: #ffffff;
+}
+
+.gl-acc-btn-primary:hover {
+  background: #9333ea;
+}
+
+.gl-acc-active,
+button.gl-acc-active {
+  background: #d7fec8 !important;
+  border-color: #16a34a !important;
+  color: #14532d !important;
+}
+
+.gl-acc-font-value {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: #7c3aed;
+  min-width: 3.25rem;
+  text-align: center;
+}
+
+.gl-acc-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  width: 100%;
+  text-align: left;
+  padding: 0.625rem 0.75rem;
+  border-radius: 0.625rem;
+  border: 1px solid #e2e8f0;
+  background: #ffffff;
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #1b1b1b;
+  min-height: 2.75rem;
+}
+
+.gl-acc-toggle:hover {
+  border-color: #a855f7;
+  background: #faf5ff;
+}
+
+.gl-acc-toggle:focus-visible {
+  outline: 2px solid #a855f7;
+  outline-offset: 2px;
+}
+
+.gl-acc-toggle-track {
+  width: 2.75rem;
+  height: 1.5rem;
+  border-radius: 9999px;
+  background: #cbd5e1;
+  flex-shrink: 0;
+  position: relative;
+  transition: background 0.15s ease;
+}
+
+.gl-acc-toggle[aria-pressed='true'] .gl-acc-toggle-track {
+  background: #d7fec8;
+  border: 2px solid #a855f7;
+}
+
+.gl-acc-toggle-knob {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: calc(1.5rem - 6px);
+  height: calc(1.5rem - 6px);
+  border-radius: 9999px;
+  background: #ffffff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  transition: transform 0.15s ease;
+}
+
+.gl-acc-toggle[aria-pressed='true'] .gl-acc-toggle-knob {
+  transform: translateX(1.2rem);
+  background: #a855f7;
+}
+
+.gl-acc-segment {
+  display: flex;
+  border-radius: 0.625rem;
+  overflow: hidden;
+  border: 1px solid #e2e8f0;
+}
+
+.gl-acc-segment button {
+  flex: 1;
+  border: none;
+  background: #f8fafc;
+  color: #1b1b1b;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.55rem 0.35rem;
+  cursor: pointer;
+  min-height: 2.5rem;
+}
+
+.gl-acc-segment button:not(:last-child) {
+  border-right: 1px solid #e2e8f0;
+}
+
+.gl-acc-segment button:hover {
+  background: #faf5ff;
+}
+
+.gl-acc-segment button[aria-pressed='true'],
+.gl-acc-segment button.gl-acc-segment-active {
+  background: #d7fec8;
+  color: #14532d;
+}
+
+.gl-acc-segment button:focus-visible {
+  z-index: 1;
+  outline: 2px solid #a855f7;
+  outline-offset: -2px;
+}
+
+.gl-acc-reset-row {
+  margin-top: 1rem;
+  padding-top: 0.875rem;
+  border-top: 1px solid rgba(15, 23, 42, 0.08);
+}
+
+.gl-acc-reset-row .gl-acc-btn {
+  width: 100%;
+  justify-content: center;
+}
