@@ -47,6 +47,7 @@ function getPlatformLogo(platform) {
             height="20"
             fill="white"
             xmlns="http://www.w3.org/2000/svg"
+            aria-hidden="true"
           >
             <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
           </svg>
@@ -62,6 +63,7 @@ function getPlatformLogo(platform) {
               height="18"
               fill="white"
               xmlns="http://www.w3.org/2000/svg"
+              aria-hidden="true"
             >
               <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z" />
             </svg>
@@ -77,6 +79,7 @@ function getPlatformLogo(platform) {
             height="20"
             fill="white"
             xmlns="http://www.w3.org/2000/svg"
+            aria-hidden="true"
           >
             <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z" />
           </svg>
@@ -85,7 +88,7 @@ function getPlatformLogo(platform) {
     case 'google':
       return (
         <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center flex-shrink-0">
-          <svg viewBox="0 0 24 24" width="20" height="20" xmlns="http://www.w3.org/2000/svg">
+          <svg viewBox="0 0 24 24" width="20" height="20" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
             <path
               d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
               fill="#4285F4"
@@ -114,6 +117,7 @@ function getPlatformLogo(platform) {
             height="20"
             fill="black"
             xmlns="http://www.w3.org/2000/svg"
+            aria-hidden="true"
           >
             <path d="M12 2.979c-2.32 0-4.085 1.705-4.085 4.084 0 .393.048.775.14 1.144-.816.143-1.632.39-2.222.95-.29.274-.467.575-.544.896-.062.257-.04.516.066.764.123.284.348.513.626.657.34.175.71.258 1.05.28l.19.012c.07.004.143.007.222.01l.013.25c.012.247.025.513.04.79v.117c0 .633.435.986.974 1.15.54.164 1.25.164 1.83.164.083 0 .167 0 .252-.002l.144 1.15c.08.647.284.974.606 1.15.32.176.716.216 1.08.216h1.22c.365 0 .76-.04 1.08-.216.32-.176.526-.503.606-1.15l.144-1.15c.085.002.169.002.252.002.58 0 1.29 0 1.83-.164.54-.164.975-.517.975-1.15v-.117c.015-.277.026-.543.04-.79l.012-.25c.08-.003.153-.006.223-.01l.19-.012c.34-.022.71-.105 1.05-.28.278-.144.503-.373.626-.657.106-.248.128-.507.066-.764-.077-.321-.254-.622-.544-.896-.59-.56-1.406-.807-2.222-.95.093-.369.14-.75.14-1.144 0-2.379-1.765-4.084-4.085-4.084z" />
           </svg>
@@ -767,7 +771,14 @@ export default function LinkWizardOnePerPage({
   return (
     <div className="flex flex-col flex-1 min-h-0">
       {/* Progress bar */}
-      <div className="h-1 bg-slate-200 flex-shrink-0">
+      <div
+        className="h-1 bg-slate-200 flex-shrink-0"
+        role="progressbar"
+        aria-valuenow={stepIndex + 1}
+        aria-valuemin={1}
+        aria-valuemax={totalSteps}
+        aria-label={`Step ${stepIndex + 1} of ${totalSteps}`}
+      >
         <div
           className="h-full bg-[#135bec] transition-all duration-500 shadow-[0_0_10px_#135bec]"
           style={{ width: `${progressPct}%` }}
@@ -813,7 +824,7 @@ export default function LinkWizardOnePerPage({
                     {currentStep.highlight}
                   </span>
                 </h1>
-                <p className="text-gray-400 font-medium text-2xl">{currentStep.subtitle}</p>
+                <p className="text-gray-500 font-medium text-2xl">{currentStep.subtitle}</p>
               </div>
 
               {/* Step: Name */}
@@ -829,17 +840,19 @@ export default function LinkWizardOnePerPage({
                         setNameError(null);
                       }}
                       placeholder="e.g. Black Friday Promo"
+                      aria-label="Link name"
+                      aria-describedby={nameError ? 'name-error' : undefined}
                       className="w-full bg-transparent py-5 px-6 text-xl outline-none border-none text-[#1b1b1b] placeholder-slate-500"
                     />
                   </div>
                   {/* Reserve space for error / helper text so layout doesn't jump */}
                   <div className="min-h-[32px] mt-1 space-y-1">
                     {nameError && (
-                      <p className="text-red-400 text-sm px-1">{nameError}</p>
+                      <p id="name-error" className="text-red-500 text-sm px-1" role="alert">{nameError}</p>
                     )}
                     {!nameError && validating && (
-                      <p className="text-[#1b1b1b] text-xs px-1 flex items-center gap-2">
-                        <span className="material-symbols-outlined animate-spin text-sm">
+                      <p className="text-[#1b1b1b] text-xs px-1 flex items-center gap-2" role="status">
+                        <span className="material-symbols-outlined animate-spin text-sm" aria-hidden="true">
                           refresh
                         </span>
                         Checking...
@@ -863,23 +876,25 @@ export default function LinkWizardOnePerPage({
                       }}
                       placeholder="https://..."
                       autoFocus
+                      aria-label="Target URL"
+                      aria-describedby={urlError ? 'url-error' : undefined}
                       className="w-full bg-transparent py-5 px-6 text-xl outline-none border-none text-[#1b1b1b] placeholder-slate-500"
                     />
                   </div>
                   {/* Reserve space for URL error / safety text to avoid layout jumps */}
                   <div className="min-h-[32px] mt-1 space-y-1">
-                    {urlError && <p className="text-red-400 text-sm">{urlError}</p>}
+                    {urlError && <p id="url-error" className="text-red-500 text-sm" role="alert">{urlError}</p>}
                     {!urlError && urlSafety.loading && (
-                      <p className="text-[#1b1b1b] text-xs flex items-center gap-2">
-                        <span className="material-symbols-outlined animate-spin text-sm">
+                      <p className="text-[#1b1b1b] text-xs flex items-center gap-2" role="status">
+                        <span className="material-symbols-outlined animate-spin text-sm" aria-hidden="true">
                           refresh
                         </span>
                         Scanning for safety...
                       </p>
                     )}
                     {!urlError && !urlSafety.loading && urlSafety.isSafe === true && (
-                      <p className="text-green-400 text-xs flex items-center gap-1">
-                        <span className="material-symbols-outlined text-sm">verified</span>
+                      <p className="text-green-700 text-xs flex items-center gap-1" role="status">
+                        <span className="material-symbols-outlined text-sm" aria-hidden="true">verified</span>
                         Secure link
                       </p>
                     )}
@@ -902,6 +917,7 @@ export default function LinkWizardOnePerPage({
                           updateFormData('domain', d);
                           if (d === 'glynk.to') updateFormData('selectedPixels', []);
                         }}
+                        aria-pressed={isSelected}
                         className={`p-6 rounded-2xl border-2 text-left transition-all ${
                           isSelected
                             ? 'border-[#a855f7] bg-[#a855f7]/5 shadow-[0_0_20px_rgba(255,16,240,0.2)]'
@@ -939,14 +955,16 @@ export default function LinkWizardOnePerPage({
                       }}
                       placeholder="my-deal"
                       autoFocus
+                      aria-label="Custom slug"
+                      aria-describedby={slugError ? 'slug-error' : undefined}
                       className="flex-1 bg-transparent py-5 px-3 text-xl outline-none font-semibold border-none text-[#1b1b1b] placeholder-slate-500"
                     />
                   </div>
                   <div className="min-h-[32px] mt-1 space-y-1">
-                    {slugError && <p className="text-red-400 text-sm">{slugError}</p>}
+                    {slugError && <p id="slug-error" className="text-red-500 text-sm" role="alert">{slugError}</p>}
                     {!slugError && validating && (
-                      <p className="text-[#1b1b1b] text-xs flex items-center gap-2">
-                        <span className="material-symbols-outlined animate-spin text-sm">
+                      <p className="text-[#1b1b1b] text-xs flex items-center gap-2" role="status">
+                        <span className="material-symbols-outlined animate-spin text-sm" aria-hidden="true">
                           refresh
                         </span>
                         Checking availability...
@@ -967,10 +985,11 @@ export default function LinkWizardOnePerPage({
                           key={opt.value}
                           type="button"
                           onClick={() => updateFormData('botAction', opt.value)}
+                          aria-pressed={isSelected}
                           className={`p-4 rounded-xl border-2 font-bold transition-all ${
                             isSelected
                               ? 'border-[#a855f7] bg-[#a855f7]/5 shadow-[0_0_20px_rgba(255,16,240,0.2)] text-[#1b1b1b]'
-                              : 'border-slate-200 bg-white text-slate-300 hover:border-[#324467]'
+                              : 'border-slate-200 bg-white text-slate-500 hover:border-[#324467]'
                           }`}
                         >
                           {opt.label}
@@ -980,11 +999,12 @@ export default function LinkWizardOnePerPage({
                   </div>
                   {formData.botAction === 'redirect' && (
                     <div className="pt-2">
-                      <p className="text-xs text-gray-500 mb-2 uppercase font-bold tracking-widest">
+                      <label htmlFor="bot-fallback-url" className="text-xs text-gray-500 mb-2 uppercase font-bold tracking-widest block">
                         Redirect Bots to
-                      </p>
+                      </label>
                       <div className="rounded-xl bg-white border-2 border-slate-200 focus-within:border-[#135bec] transition-all">
                         <input
+                          id="bot-fallback-url"
                           ref={botFallbackUrlInputRef}
                           type="url"
                           value={formData.fallbackUrl || ''}
@@ -994,12 +1014,13 @@ export default function LinkWizardOnePerPage({
                           }}
                           placeholder="https://google.com"
                           autoFocus
+                          aria-describedby={fallbackUrlError ? 'fallback-url-error' : undefined}
                           className="w-full bg-transparent py-4 px-4 outline-none border-none text-[#1b1b1b] placeholder-slate-500"
                         />
                       </div>
                       <div className="min-h-[24px] mt-1">
                         {fallbackUrlError && (
-                          <p className="text-red-400 text-sm">{fallbackUrlError}</p>
+                          <p id="fallback-url-error" className="text-red-500 text-sm" role="alert">{fallbackUrlError}</p>
                         )}
                       </div>
                     </div>
@@ -1024,7 +1045,7 @@ export default function LinkWizardOnePerPage({
                             <button
                               type="button"
                               onClick={() => beginEditGeoRule(idx)}
-                              className="text-left text-sm text-gray-400 truncate hover:text-[#135bec] underline-offset-2 hover:underline"
+                              className="text-left text-sm text-gray-500 truncate hover:text-[#135bec] underline-offset-2 hover:underline"
                             >
                               {rule.url}
                             </button>
@@ -1035,16 +1056,18 @@ export default function LinkWizardOnePerPage({
                               onClick={() => beginEditGeoRule(idx)}
                               className="text-slate-500 hover:text-[#135bec] p-1"
                               title="Edit rule"
+                              aria-label={`Edit geo rule for ${getCountryName(rule.country)}`}
                             >
-                              <span className="material-symbols-outlined text-lg">edit</span>
+                              <span className="material-symbols-outlined text-lg" aria-hidden="true">edit</span>
                             </button>
                             <button
                               type="button"
                               onClick={() => removeGeoRule(idx)}
                               className="text-red-500 hover:text-red-400 p-1"
                               title="Delete rule"
+                              aria-label={`Delete geo rule for ${getCountryName(rule.country)}`}
                             >
-                              <span className="material-symbols-outlined text-lg">delete</span>
+                              <span className="material-symbols-outlined text-lg" aria-hidden="true">delete</span>
                             </button>
                           </div>
                         </div>
@@ -1057,20 +1080,22 @@ export default function LinkWizardOnePerPage({
                       onClick={() => setShowGeoForm(true)}
                       className="w-full flex items-center justify-center gap-2 p-4 rounded-xl border-2 border-dashed border-slate-200 text-[#1b1b1b] hover:border-[#135bec] hover:text-[#1b1b1b] transition-all"
                     >
-                      <span className="material-symbols-outlined">add</span>
+                      <span className="material-symbols-outlined" aria-hidden="true">add</span>
                       Add geo rule
                     </button>
                   ) : (
                     <div className="p-4 bg-white border-2 border-slate-200 rounded-2xl space-y-4">
                       <div>
-                        <label className="text-xs font-bold text-gray-500 uppercase block mb-2">
+                        <label htmlFor="geo-country" className="text-xs font-bold text-gray-500 uppercase block mb-2">
                           If Country is
                         </label>
                         <select
+                          id="geo-country"
                           value={newGeoRule.country}
                           onChange={(e) =>
                             setNewGeoRule((r) => ({ ...r, country: e.target.value }))
                           }
+                          aria-describedby={geoRuleErrors.country ? 'geo-country-error' : undefined}
                           className="w-full bg-white border border-slate-200 rounded-xl p-4 text-[#1b1b1b] outline-none focus:border-[#135bec]"
                         >
                           <option value="">Select...</option>
@@ -1082,26 +1107,28 @@ export default function LinkWizardOnePerPage({
                         </select>
                         <div className="min-h-[20px] mt-1">
                           {geoRuleErrors.country && (
-                            <p className="text-red-400 text-sm">{geoRuleErrors.country}</p>
+                            <p id="geo-country-error" className="text-red-500 text-sm" role="alert">{geoRuleErrors.country}</p>
                           )}
                         </div>
                       </div>
                       <div>
-                        <label className="text-xs font-bold text-gray-500 uppercase block mb-2">
+                        <label htmlFor="geo-url" className="text-xs font-bold text-gray-500 uppercase block mb-2">
                           Then go to URL
                         </label>
                         <input
+                          id="geo-url"
                           ref={geoThenUrlInputRef}
                           type="url"
                           value={newGeoRule.url}
                           onChange={(e) => setNewGeoRule((r) => ({ ...r, url: e.target.value.toLowerCase() }))}
                           placeholder="https://..."
                           autoFocus
+                          aria-describedby={geoRuleErrors.url ? 'geo-url-error' : undefined}
                           className="w-full bg-white border border-slate-200 rounded-xl p-4 text-[#1b1b1b] outline-none focus:border-[#135bec]"
                         />
                         <div className="min-h-[20px] mt-1">
                           {geoRuleErrors.url && (
-                            <p className="text-red-400 text-sm">{geoRuleErrors.url}</p>
+                            <p id="geo-url-error" className="text-red-500 text-sm" role="alert">{geoRuleErrors.url}</p>
                           )}
                         </div>
                       </div>
@@ -1160,6 +1187,7 @@ export default function LinkWizardOnePerPage({
                             key={pixel.id}
                             type="button"
                             onClick={() => togglePixel(pixel.id)}
+                            aria-pressed={isSelected}
                             className={`w-full flex items-center justify-between p-4 rounded-2xl border-2 transition-all ${
                               isSelected
                                 ? 'border-[#a855f7] bg-[#a855f7]/5'
@@ -1167,13 +1195,13 @@ export default function LinkWizardOnePerPage({
                             }`}
                           >
                             <div className="flex items-center gap-4">
-                              {getPlatformLogo(pixel.platform)}
+                              <div aria-hidden="true">{getPlatformLogo(pixel.platform)}</div>
                               <div className="text-left">
                                 <div className="font-bold text-[#1b1b1b]">{pixel.name}</div>
                                 <div className="text-[10px] text-gray-500 uppercase">{name}</div>
                               </div>
                             </div>
-                            <div className={isSelected ? 'text-[#a855f7]' : 'text-gray-600'}>
+                            <div className={isSelected ? 'text-[#a855f7]' : 'text-gray-600'} aria-hidden="true">
                               <span className="material-symbols-outlined text-xl">
                                 {isSelected ? 'check_circle' : 'circle'}
                               </span>
@@ -1202,13 +1230,13 @@ export default function LinkWizardOnePerPage({
                   Step {totalSteps} of {totalSteps}
                 </span>
               </div>
-              <div className="w-20 h-20 bg-[#10b981]/20 text-[#10b981] rounded-full flex items-center justify-center mx-auto border-4 border-[#10b981]/10">
+              <div className="w-20 h-20 bg-[#10b981]/20 text-[#10b981] rounded-full flex items-center justify-center mx-auto border-4 border-[#10b981]/10" aria-hidden="true">
                 <span className="material-symbols-outlined text-4xl">check</span>
               </div>
               <h1 className="text-3xl sm:text-4xl font-extrabold text-[#1b1b1b]">
                 Final <span className="text-[#10b981]">Launch</span>
               </h1>
-              <p className="text-gray-400 font-medium text-2xl">
+              <p className="text-gray-500 font-medium text-2xl">
                 Review your GoodLink configuration below.
               </p>
 
@@ -1232,7 +1260,7 @@ export default function LinkWizardOnePerPage({
                     Destination
                   </span>
                   <span
-                    className="text-xs text-gray-400 truncate max-w-[180px]"
+                    className="text-xs text-gray-500 truncate max-w-[180px]"
                     title={formData.targetUrl}
                   >
                     {formData.targetUrl || '—'}
@@ -1242,7 +1270,7 @@ export default function LinkWizardOnePerPage({
                   <span className="text-gray-500 text-[10px] font-bold uppercase tracking-widest">
                     Bot Action
                   </span>
-                  <span className="font-bold text-yellow-500 text-xs uppercase">
+                  <span className="font-bold text-yellow-700 text-xs uppercase">
                     {formData.botAction === 'redirect'
                       ? 'Redirect'
                       : formData.botAction === 'block'
@@ -1254,7 +1282,7 @@ export default function LinkWizardOnePerPage({
                   <span className="text-gray-500 text-[10px] font-bold uppercase tracking-widest">
                     Geo Rules
                   </span>
-                  <span className="font-bold text-orange-500 text-xs">
+                  <span className="font-bold text-orange-700 text-xs">
                     {(formData.geoRules || []).length} rule(s)
                   </span>
                 </div>
@@ -1262,7 +1290,7 @@ export default function LinkWizardOnePerPage({
                   <span className="text-gray-500 text-[10px] font-bold uppercase tracking-widest">
                     Tracking
                   </span>
-                  <span className="font-bold text-purple-500 text-xs text-right max-w-[180px]">
+                  <span className="font-bold text-purple-700 text-xs text-right max-w-[180px]">
                     {(formData.selectedPixels || []).length
                       ? `${formData.selectedPixels.length} CAPI profile(s)`
                       : 'None'}
@@ -1278,7 +1306,7 @@ export default function LinkWizardOnePerPage({
                     <div className="flex flex-col items-center gap-2">
                       <img
                         src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&bgcolor=FFFFFF&data=${encodeURIComponent(`https://${selectedDomain}/${formData.slug}`)}`}
-                        alt="QR Code"
+                        alt={`QR Code for https://${selectedDomain}/${formData.slug}`}
                         className="w-[180px] h-[180px] rounded-xl border border-slate-200 bg-white p-2"
                       />
                     </div>
@@ -1296,11 +1324,12 @@ export default function LinkWizardOnePerPage({
           <button
             type="button"
             onClick={goBack}
+            aria-label="Previous step"
             className={`flex items-center justify-center p-5 rounded-2xl border border-slate-200 font-bold text-gray-400 hover:bg-slate-200 hover:text-[#1b1b1b] transition-all active:scale-90 ${
               isFirst ? 'invisible' : ''
             }`}
           >
-            <span className="material-symbols-outlined text-2xl">chevron_left</span>
+            <span className="material-symbols-outlined text-2xl" aria-hidden="true">chevron_left</span>
           </button>
           <button
             type="button"
@@ -1310,13 +1339,13 @@ export default function LinkWizardOnePerPage({
           >
             {isLast && isSubmitting ? (
               <>
-                <span className="material-symbols-outlined text-2xl animate-spin">refresh</span>
+                <span className="material-symbols-outlined text-2xl animate-spin" aria-hidden="true">refresh</span>
                 <span>Saving...</span>
               </>
             ) : (
               <>
                 <span>{isLast ? 'Complete Setup' : 'Next Step'}</span>
-                <span className="material-symbols-outlined text-2xl">
+                <span className="material-symbols-outlined text-2xl" aria-hidden="true">
                   {isLast ? 'rocket_launch' : 'arrow_forward'}
                 </span>
               </>
