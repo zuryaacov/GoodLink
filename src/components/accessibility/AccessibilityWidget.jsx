@@ -166,7 +166,7 @@ export default function AccessibilityWidget() {
       type: 'success',
       title: 'Accessibility menu hidden',
       message:
-        'Your display settings stay active. To show the floating button again, scroll to the footer and choose “Show accessibility menu” (including on the login page).',
+        'Your display settings stay active. To show the floating button again, go to the GoodLink homepage and choose “Show accessibility menu” in the footer.',
       duration: 12000,
     });
   };
@@ -412,14 +412,14 @@ export default function AccessibilityWidget() {
                 <button
                   type="button"
                   className="gl-acc-btn gl-acc-btn-outline gl-acc-hide-widget-btn"
-                  title="Removes the purple floating button. Restore it from the site footer: “Show accessibility menu”."
+                  title="Removes the purple floating button. Restore it from the GoodLink homepage footer: “Show accessibility menu”."
                   aria-describedby={`${titleId}-hide-hint`}
                   onClick={hideFloatingWidget}
                 >
                   Hide floating button
                 </button>
                 <p id={`${titleId}-hide-hint`} className="gl-acc-panel-sub" style={{ marginTop: '0.5rem' }}>
-                  You can bring it back anytime from the page footer.
+                  You can bring it back anytime from the Homepage footer.
                 </p>
               </div>
             </div>

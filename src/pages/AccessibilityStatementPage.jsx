@@ -125,9 +125,8 @@ export default function AccessibilityStatementPage() {
                 floating button&quot; within the menu.
               </li>
               <li>
-                <b>Restoring the Widget:</b> To restore it, click the <b>&quot;Show accessibility menu&quot;</b>{' '}
-                link in our website footer (also available in the dashboard footer and on the login page when the
-                button is hidden).
+                <b>Restoring the Widget:</b> To restore it, open the <b>GoodLink homepage</b> and click the{' '}
+                <b>&quot;Show accessibility menu&quot;</b> link in the Homepage footer.
               </li>
             </ul>
           </div>
