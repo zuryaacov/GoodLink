@@ -15,6 +15,13 @@
   outline-offset: 2px;
 }
 
+/* Form inputs have their own border-based focus styles — remove the outline */
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: none;
+}
+
 /* Skip-to-content link (visually hidden until focused) */
 .skip-to-content {
   position: absolute;
