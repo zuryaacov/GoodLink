@@ -1,6 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { NavLink, useNavigate, useLocation, Link } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
+import AccessibilityFooterRestore from '../accessibility/AccessibilityFooterRestore';
+import {
+  GL_ACC_PREFS_CHANGED_EVENT,
+  GL_ACC_STORAGE_KEY,
+  loadAccessibilityPreferences,
+} from '../../lib/accessibilityPreferences';
 
 const sidebarLinks = [
   { name: 'Link Manager', href: '/dashboard/links', icon: 'link' },
@@ -21,6 +27,32 @@ const Sidebar = ({ className = '', onLinkClick }) => {
   const [subscriptionStatus, setSubscriptionStatus] = useState(null);
   const [customerPortalUrl, setCustomerPortalUrl] = useState(null);
   const [userRole, setUserRole] = useState('user');
+  const [widgetHidden, setWidgetHidden] = useState(() => {
+    try {
+      return Boolean(loadAccessibilityPreferences().widgetHidden);
+    } catch {
+      return false;
+    }
+  });
+
+  useEffect(() => {
+    const syncWidgetHidden = () => {
+      try {
+        setWidgetHidden(Boolean(loadAccessibilityPreferences().widgetHidden));
+      } catch {
+        setWidgetHidden(false);
+      }
+    };
+    const onStorage = (e) => {
+      if (e.key === GL_ACC_STORAGE_KEY) syncWidgetHidden();
+    };
+    window.addEventListener('storage', onStorage);
+    window.addEventListener(GL_ACC_PREFS_CHANGED_EVENT, syncWidgetHidden);
+    return () => {
+      window.removeEventListener('storage', onStorage);
+      window.removeEventListener(GL_ACC_PREFS_CHANGED_EVENT, syncWidgetHidden);
+    };
+  }, []);
 
   useEffect(() => {
     const fetchUserInfo = async () => {
@@ -219,6 +251,15 @@ const Sidebar = ({ className = '', onLinkClick }) => {
           Logout
         </button>
       </nav>
+
+      {widgetHidden && (
+        <div className="px-3 py-2 shrink-0 border-t border-slate-200 lg:border-t-0 lg:px-4 lg:pb-2 lg:pt-1">
+          <AccessibilityFooterRestore
+            onAfterClick={onLinkClick}
+            className="!text-xs !font-medium text-slate-600 hover:text-[#a855f7] text-left !no-underline hover:!underline block w-full"
+          />
+        </div>
+      )}
 
       <div className="p-4 border-t border-slate-200 flex flex-col gap-2 hidden lg:block">
         <div className="flex items-center gap-3 px-3 py-2">

@@ -4,12 +4,15 @@ import { restoreAccessibilityWidgetVisibility } from '../../lib/accessibilityPre
 /**
  * Subtle control to bring back the floating accessibility menu after it was hidden.
  */
-export default function AccessibilityFooterRestore({ className = '' }) {
+export default function AccessibilityFooterRestore({ className = '', onAfterClick }) {
   const merged = ['gl-acc-footer-restore', className].filter(Boolean).join(' ').trim();
   return (
     <button
       type="button"
-      onClick={() => restoreAccessibilityWidgetVisibility()}
+      onClick={() => {
+        restoreAccessibilityWidgetVisibility();
+        onAfterClick?.();
+      }}
       className={merged}
     >
       Show accessibility menu
