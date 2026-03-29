@@ -42,6 +42,15 @@ const PixelManager = () => {
     fetchPixels();
   }, []);
 
+  useEffect(() => {
+    if (!openMenuPixelId) return;
+    const onKeyDown = (e) => {
+      if (e.key === 'Escape') setOpenMenuPixelId(null);
+    };
+    document.addEventListener('keydown', onKeyDown);
+    return () => document.removeEventListener('keydown', onKeyDown);
+  }, [openMenuPixelId]);
+
   // Show toast after returning from CAPI builder (create/update)
   useEffect(() => {
     if (location.state && location.state.toast) {
@@ -240,6 +249,7 @@ const PixelManager = () => {
                 height="18"
                 fill="white"
                 xmlns="http://www.w3.org/2000/svg"
+                aria-hidden="true"
               >
                 <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z" />
               </svg>
@@ -256,6 +266,7 @@ const PixelManager = () => {
               height="20"
               fill="white"
               xmlns="http://www.w3.org/2000/svg"
+              aria-hidden="true"
             >
               <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z" />
             </svg>
@@ -265,7 +276,7 @@ const PixelManager = () => {
         // Google Ads logo from simpleicons.org (using Google logo as base)
         return (
           <div className="w-10 h-10 rounded-lg bg-white flex items-center justify-center">
-            <svg viewBox="0 0 24 24" width="20" height="20" xmlns="http://www.w3.org/2000/svg">
+            <svg viewBox="0 0 24 24" width="20" height="20" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
               <path
                 d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
                 fill="#4285F4"
@@ -346,9 +357,9 @@ const PixelManager = () => {
 
   if (loading) {
     return (
-      <div className="flex flex-col gap-8 w-full h-full items-center justify-center">
+      <div className="flex flex-col gap-8 w-full h-full items-center justify-center" role="status">
         <div className="text-center py-12">
-          <span className="material-symbols-outlined text-4xl text-slate-600 animate-spin">
+          <span className="material-symbols-outlined text-4xl text-slate-600 animate-spin" aria-hidden="true">
             refresh
           </span>
           <p className="text-[#1b1b1b] mt-4">Loading CAPI...</p>
@@ -366,7 +377,7 @@ const PixelManager = () => {
     return (
       <div className="relative min-h-[480px] w-full flex items-center justify-center p-6 overflow-hidden bg-card-bg rounded-2xl border border-dashed border-card-border">
         {/* Background mock layout */}
-        <div className="absolute inset-0 opacity-[0.18] blur-[3px] pointer-events-none select-none p-6">
+        <div className="absolute inset-0 opacity-[0.18] blur-[3px] pointer-events-none select-none p-6" aria-hidden="true">
           <div className="max-w-5xl mx-auto space-y-6">
             <div className="h-10 bg-[#141b2e] rounded-md w-1/3 mb-8" />
             <div className="grid grid-cols-3 gap-4">
@@ -407,7 +418,7 @@ const PixelManager = () => {
           {/* Value props */}
           <div className="space-y-4 mb-10 text-left">
             <div className="flex items-center gap-3 p-3 bg-white/80 rounded-xl border border-slate-200 hover:border-primary/40 transition-colors">
-              <Globe className="w-5 h-5 text-[#a855f7]" />
+              <Globe className="w-5 h-5 text-[#a855f7]" aria-hidden="true" />
               <div>
                 <p className="font-semibold text-sm text-[#1b1b1b] italic">Cross‑platform CAPI</p>
                 <p className="text-xs text-[#1b1b1b]">
@@ -416,7 +427,7 @@ const PixelManager = () => {
               </div>
             </div>
             <div className="flex items-center gap-3 p-3 bg-white/80 rounded-xl border border-slate-200 hover:border-primary/40 transition-colors">
-              <BarChart3 className="w-5 h-5 text-[#a855f7]" />
+              <BarChart3 className="w-5 h-5 text-[#a855f7]" aria-hidden="true" />
               <div>
                 <p className="font-semibold text-sm text-[#1b1b1b] italic">
                   Advanced Attribution & Optimization
@@ -469,7 +480,7 @@ const PixelManager = () => {
             e.currentTarget.style.backgroundColor = '#a855f7';
           }}
         >
-          <span className="material-symbols-outlined text-xl md:text-base">add</span>
+          <span className="material-symbols-outlined text-xl md:text-base" aria-hidden="true">add</span>
           New CAPI
         </button>
       </div>
@@ -477,7 +488,7 @@ const PixelManager = () => {
       {/* Pixels List */}
       {pixels.length === 0 ? (
         <div className="bg-[#fcfdfd] border rounded-2xl p-12 text-center hover:shadow-card-mint transition-all border-[#a855f7]/40 md:border-card-border md:hover:border-[#a855f7]/40">
-          <span className="material-symbols-outlined text-6xl text-black mb-4">ads_click</span>
+          <span className="material-symbols-outlined text-6xl text-black mb-4" aria-hidden="true">ads_click</span>
           <h3 className="text-xl font-bold text-black mb-2">No CAPI Profiles Yet</h3>
           <p className="text-black mb-6">
             Create your first CAPI profile to start tracking your conversions
@@ -499,7 +510,7 @@ const PixelManager = () => {
               {/* Header with Logo, Name & Actions menu */}
               <div className="flex items-start justify-between gap-3">
                 <div className="flex items-start gap-3 min-w-0 flex-1">
-                  {getPlatformLogo(pixel.platform)}
+                  <div aria-hidden="true">{getPlatformLogo(pixel.platform)}</div>
                   <div className="flex-1 min-w-0">
                     <h3 className="text-4xl font-bold text-[#1b1b1b] break-words line-clamp-2">
                       {pixel.name}
@@ -519,18 +530,25 @@ const PixelManager = () => {
                     }}
                     className="p-2 rounded-lg bg-white border border-slate-200 text-slate-700 hover:text-[#1b1b1b] transition-colors"
                     aria-label="Actions menu"
+                    aria-expanded={openMenuPixelId === pixel.id}
+                    aria-haspopup="true"
                   >
-                    <span className="material-symbols-outlined text-base">more_vert</span>
+                    <span className="material-symbols-outlined text-base" aria-hidden="true">more_vert</span>
                   </button>
                   {openMenuPixelId === pixel.id && (
                     <>
                       <div
                         className="fixed inset-0 z-10"
                         onClick={() => setOpenMenuPixelId(null)}
-                        aria-hidden
+                        aria-hidden="true"
                       />
-                      <div className="absolute right-0 mt-2 w-40 bg-white border border-slate-200 rounded-xl shadow-2xl z-20 overflow-hidden min-w-max">
+                      <div
+                        role="menu"
+                        aria-label="CAPI profile actions"
+                        className="absolute right-0 mt-2 w-40 bg-white border border-slate-200 rounded-xl shadow-2xl z-20 overflow-hidden min-w-max"
+                      >
                         <button
+                          role="menuitem"
                           type="button"
                           onClick={() => {
                             setOpenMenuPixelId(null);
@@ -538,10 +556,11 @@ const PixelManager = () => {
                           }}
                           className="w-full px-4 py-3 text-left text-[#1b1b1b] hover:bg-white/5 transition-colors flex items-center gap-3 text-sm"
                         >
-                          <span className="material-symbols-outlined text-base">edit</span>
+                          <span className="material-symbols-outlined text-base" aria-hidden="true">edit</span>
                           Edit
                         </button>
                         <button
+                          role="menuitem"
                           type="button"
                           onClick={() => {
                             setOpenMenuPixelId(null);
@@ -552,9 +571,9 @@ const PixelManager = () => {
                               isLoading: false,
                             });
                           }}
-                          className="w-full px-4 py-3 text-left text-red-400 hover:bg-red-400/10 transition-colors flex items-center gap-3 text-sm"
+                          className="w-full px-4 py-3 text-left text-red-500 hover:bg-red-400/10 transition-colors flex items-center gap-3 text-sm"
                         >
-                          <span className="material-symbols-outlined text-base">delete</span>
+                          <span className="material-symbols-outlined text-base" aria-hidden="true">delete</span>
                           Delete
                         </button>
                       </div>
@@ -584,9 +603,9 @@ const PixelManager = () => {
                     Tracking URL / Suffix: Copy and paste the following into your Taboola campaign
                     &quot;Suffix&quot; field
                   </p>
-                  <p className="text-slate-300 font-mono break-all">
+                  <p className="text-slate-600 font-mono break-all">
                     www.domain.com/slug
-                    <span className="text-green-400">?tglid=&#123;ctoken&#125;</span>
+                    <span className="text-green-700">?tglid=&#123;ctoken&#125;</span>
                   </p>
                 </div>
               )}
@@ -598,9 +617,9 @@ const PixelManager = () => {
                     Outbrain Tracking Setup Tracking URL / Suffix: Copy and paste the following into
                     your Outbrain campaign &quot;Suffix&quot; field
                   </p>
-                  <p className="text-slate-300 font-mono break-all">
+                  <p className="text-slate-600 font-mono break-all">
                     www.domain.com/slug
-                    <span className="text-green-400">?oglid=&#123;ob_click_id&#125;</span>
+                    <span className="text-green-700">?oglid=&#123;ob_click_id&#125;</span>
                   </p>
                 </div>
               )}
@@ -608,11 +627,13 @@ const PixelManager = () => {
               {/* Status (toggle only – actions moved to 3-dots menu) */}
               <div className="flex items-center gap-2 pt-2 border-t border-slate-200">
                 <button
+                  type="button"
                   onClick={() => handleToggleStatus(pixel.id, pixel.status || 'active')}
                   className={`relative w-12 h-6 rounded-full transition-colors flex-shrink-0 ${
                     pixel.status === 'active' ? 'bg-[#00F59B]' : 'bg-slate-200'
                   }`}
                   aria-label="Toggle CAPI status"
+                  aria-pressed={pixel.status === 'active'}
                   title={
                     pixel.status === 'active'
                       ? 'Active - Click to pause'
@@ -623,6 +644,7 @@ const PixelManager = () => {
                     className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform ${
                       pixel.status === 'active' ? 'translate-x-6' : 'translate-x-0'
                     }`}
+                    aria-hidden="true"
                   />
                 </button>
                 <span className="text-sm text-[#1b1b1b] font-medium">

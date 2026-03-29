@@ -18,6 +18,7 @@ const getPlatformLogo = (platform) => {
             height="24"
             fill="white"
             xmlns="http://www.w3.org/2000/svg"
+            aria-hidden="true"
           >
             <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
           </svg>
@@ -35,6 +36,7 @@ const getPlatformLogo = (platform) => {
               height="20"
               fill="white"
               xmlns="http://www.w3.org/2000/svg"
+              aria-hidden="true"
             >
               <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z" />
             </svg>
@@ -44,7 +46,7 @@ const getPlatformLogo = (platform) => {
     case 'google':
       return (
         <div className={`${w} bg-white`}>
-          <svg viewBox="0 0 24 24" width="24" height="24" xmlns="http://www.w3.org/2000/svg">
+          <svg viewBox="0 0 24 24" width="24" height="24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
             <path
               d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
               fill="#4285F4"
@@ -73,6 +75,7 @@ const getPlatformLogo = (platform) => {
             height="24"
             fill="white"
             xmlns="http://www.w3.org/2000/svg"
+            aria-hidden="true"
           >
             <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z" />
           </svg>
@@ -257,7 +260,7 @@ const STEPS = [
   {
     id: 'pixelId',
     badge: 'Tracking',
-    badgeColor: 'text-blue-400 bg-blue-400/10',
+    badgeColor: 'text-blue-700 bg-blue-400/10',
     title: 'Enter',
     highlight: 'Pixel ID',
     highlightClass: 'bg-gradient-to-r from-[#135bec] to-[#42a5f5] bg-clip-text text-transparent',
@@ -266,10 +269,10 @@ const STEPS = [
   {
     id: 'capiToken',
     badge: 'CAPI',
-    badgeColor: 'text-purple-500 bg-purple-500/10',
+    badgeColor: 'text-purple-700 bg-purple-500/10',
     title: 'CAPI',
     highlight: 'Token',
-    highlightClass: 'text-purple-500',
+    highlightClass: 'text-purple-700',
     subtitle: 'Your token so we can send CAPI events.',
   },
   {
@@ -515,7 +518,14 @@ export default function PixelWizardOnePerPage({ initialData, editingPixelId, onS
 
   return (
     <div className="flex flex-col flex-1 min-h-0">
-      <div className="h-1 bg-slate-200 flex-shrink-0">
+      <div
+        className="h-1 bg-slate-200 flex-shrink-0"
+        role="progressbar"
+        aria-valuenow={stepIndex + 1}
+        aria-valuemin={1}
+        aria-valuemax={totalSteps}
+        aria-label={`Step ${stepIndex + 1} of ${totalSteps}`}
+      >
         <div
           className="h-full bg-[#135bec] transition-all duration-500 shadow-[0_0_10px_#135bec]"
           style={{ width: `${progressPct}%` }}
@@ -527,7 +537,7 @@ export default function PixelWizardOnePerPage({ initialData, editingPixelId, onS
       />
       <div className="flex-1 min-h-0 flex flex-col justify-center px-6 pb-32 pt-8 max-w-2xl mx-auto w-full relative z-10">
         {error && (
-          <div className="mb-4 p-4 bg-red-500/10 border border-red-500/20 text-red-400 rounded-xl text-sm">
+          <div className="mb-4 p-4 bg-red-500/10 border border-red-500/20 text-red-600 rounded-xl text-sm" role="alert">
             {error}
           </div>
         )}
@@ -577,12 +587,14 @@ export default function PixelWizardOnePerPage({ initialData, editingPixelId, onS
                       setFieldErrors((prev) => ({ ...prev, name: null }));
                     }}
                     placeholder="e.g. FB - Main Account"
+                    aria-label="CAPI profile name"
+                    aria-describedby={fieldErrors.name ? 'capi-name-error' : undefined}
                     className="w-full bg-transparent py-5 px-6 text-xl outline-none border-none text-[#1b1b1b] placeholder-slate-500"
                   />
                 </div>
                 <div className="min-h-[24px] mt-1">
                   {fieldErrors.name && (
-                    <p className="text-red-400 text-sm">{fieldErrors.name}</p>
+                    <p id="capi-name-error" className="text-red-500 text-sm" role="alert">{fieldErrors.name}</p>
                   )}
                 </div>
               </>
@@ -595,13 +607,14 @@ export default function PixelWizardOnePerPage({ initialData, editingPixelId, onS
                     key={p.value}
                     type="button"
                     onClick={() => setPlatform(p.value)}
+                    aria-pressed={formData.platform === p.value}
                     className={`p-5 rounded-2xl border-2 text-left transition-all flex items-center gap-4 ${
                       formData.platform === p.value
                         ? 'border-[#a855f7] bg-[#a855f7]/5'
                         : 'border-slate-200 bg-white hover:border-slate-300'
                     }`}
                   >
-                    {getPlatformLogo(p.value)}
+                    <div aria-hidden="true">{getPlatformLogo(p.value)}</div>
                     <span className="font-bold text-[#1b1b1b]">{p.label}</span>
                   </button>
                 ))}
@@ -626,6 +639,8 @@ export default function PixelWizardOnePerPage({ initialData, editingPixelId, onS
                       setFieldErrors((prev) => ({ ...prev, pixelId: null }));
                     }}
                     placeholder={currentPlatform?.placeholder}
+                    aria-label={getPixelIdLabel(formData.platform)}
+                    aria-describedby={fieldErrors.pixelId ? 'capi-pixel-id-error' : undefined}
                     className="w-full bg-transparent py-5 px-6 text-xl outline-none border-none text-[#1b1b1b] placeholder-slate-500 font-mono"
                       autoFocus
                   />
@@ -633,7 +648,7 @@ export default function PixelWizardOnePerPage({ initialData, editingPixelId, onS
                 <p className="text-slate-500 text-xs mt-1">{currentPlatform?.placeholder}</p>
                 <div className="min-h-[20px] mt-1">
                   {fieldErrors.pixelId && (
-                    <p className="text-red-400 text-sm">{fieldErrors.pixelId}</p>
+                    <p id="capi-pixel-id-error" className="text-red-500 text-sm" role="alert">{fieldErrors.pixelId}</p>
                   )}
                 </div>
               </div>
@@ -651,13 +666,15 @@ export default function PixelWizardOnePerPage({ initialData, editingPixelId, onS
                     }}
                     placeholder={getCapiTokenPlaceholder(formData.platform)}
                     rows={4}
+                    aria-label={getCapiTokenLabel(formData.platform)}
+                    aria-describedby={fieldErrors.capiToken ? 'capi-token-error' : undefined}
                     className="w-full bg-transparent py-4 px-6 text-base outline-none border-none text-[#1b1b1b] placeholder-slate-500 font-mono resize-y"
                     autoFocus
                   />
                 </div>
                 <div className="min-h-[20px] mt-1">
                   {fieldErrors.capiToken && (
-                    <p className="text-red-400 text-sm">{fieldErrors.capiToken}</p>
+                    <p id="capi-token-error" className="text-red-500 text-sm" role="alert">{fieldErrors.capiToken}</p>
                   )}
                 </div>
               </div>
@@ -702,6 +719,10 @@ export default function PixelWizardOnePerPage({ initialData, editingPixelId, onS
                             customEventName: e.target.value === 'custom' ? p.customEventName : '',
                           }))
                         }
+                        aria-label="Conversion event type"
+                        aria-describedby={
+                          fieldErrors.customEventName ? 'capi-custom-event-error' : undefined
+                        }
                         className="w-full bg-transparent py-5 px-6 text-lg outline-none border-none text-[#1b1b1b] appearance-none cursor-pointer"
                       >
                         {availableEvents.map((ev) => (
@@ -728,13 +749,15 @@ export default function PixelWizardOnePerPage({ initialData, editingPixelId, onS
                             setFieldErrors((prev) => ({ ...prev, customEventName: null }));
                           }}
                           placeholder="e.g. High_Quality_User"
+                          aria-label="Custom event name"
+                          aria-describedby={fieldErrors.customEventName ? 'capi-custom-event-error' : undefined}
                           className="w-full bg-transparent py-5 px-6 text-xl outline-none border-none text-[#1b1b1b] placeholder-slate-500"
                         />
                       </div>
                     )}
                     <div className="min-h-[20px] mt-1">
                       {fieldErrors.customEventName && (
-                        <p className="text-red-400 text-sm">
+                        <p id="capi-custom-event-error" className="text-red-500 text-sm" role="alert">
                           {fieldErrors.customEventName}
                         </p>
                       )}
@@ -752,22 +775,27 @@ export default function PixelWizardOnePerPage({ initialData, editingPixelId, onS
           <button
             type="button"
             onClick={goBack}
+            aria-label="Previous step"
             className={`flex items-center justify-center p-5 rounded-2xl border border-slate-200 font-bold text-gray-400 hover:bg-slate-200 hover:text-[#1b1b1b] transition-all ${isFirst ? 'invisible' : ''}`}
           >
-            <span className="material-symbols-outlined text-2xl">chevron_left</span>
+            <span className="material-symbols-outlined text-2xl" aria-hidden="true">chevron_left</span>
           </button>
           <button
             type="button"
             onClick={goNext}
             disabled={loading}
+            aria-busy={loading}
             className="flex-1 flex items-center justify-center gap-3 py-5 rounded-2xl font-extrabold text-xl tracking-tight transition-all bg-[#a855f7] hover:bg-[#9333ea] text-white disabled:opacity-60 disabled:cursor-not-allowed shadow-xl"
           >
             {loading ? (
-              <span className="material-symbols-outlined animate-spin text-2xl">refresh</span>
+              <>
+                <span className="material-symbols-outlined animate-spin text-2xl" aria-hidden="true">refresh</span>
+                <span>Saving...</span>
+              </>
             ) : (
               <>
                 <span>{isLast ? (isEdit ? 'Update CAPI' : 'Create CAPI') : 'Next Step'}</span>
-                <span className="material-symbols-outlined text-2xl">
+                <span className="material-symbols-outlined text-2xl" aria-hidden="true">
                   {isLast ? 'check_circle' : 'arrow_forward'}
                 </span>
               </>
