@@ -37,6 +37,8 @@ export default function AccessibilityWidget() {
   const panelRef = useRef(null);
   const guideRef = useRef(null);
   const prevFocusRef = useRef(null);
+  /** Tracks widgetHidden so we can broadcast to Sidebar in the same tab (storage omits same-tab updates). */
+  const prevWidgetHiddenRef = useRef(undefined);
 
   const titleId = useId();
   const panelId = 'gl-acc-accessibility-menu-panel';
@@ -46,8 +48,17 @@ export default function AccessibilityWidget() {
   }, []);
 
   useEffect(() => {
-    applyAccessibilityPreferencesToDocument(prefs);
-    saveAccessibilityPreferences(prefs);
+    const saved = saveAccessibilityPreferences(prefs);
+    applyAccessibilityPreferencesToDocument(saved);
+
+    if (prevWidgetHiddenRef.current === undefined) {
+      prevWidgetHiddenRef.current = saved.widgetHidden;
+      return;
+    }
+    if (prevWidgetHiddenRef.current !== saved.widgetHidden) {
+      prevWidgetHiddenRef.current = saved.widgetHidden;
+      window.dispatchEvent(new CustomEvent(GL_ACC_PREFS_CHANGED_EVENT, { detail: saved }));
+    }
   }, [prefs]);
 
   useEffect(() => {
