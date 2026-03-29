@@ -9,6 +9,7 @@ import SubprocessorsPage from './pages/SubprocessorsPage';
 import DpaPage from './pages/DpaPage';
 import ContactPage from './pages/ContactPage';
 import DocsPage from './pages/DocsPage';
+import AccessibilityStatementPage from './pages/AccessibilityStatementPage';
 import DashboardLayout from './layouts/DashboardLayout';
 import Analytics from './pages/dashboard/Analytics';
 import LinkManager from './pages/dashboard/LinkManager';
@@ -100,6 +101,7 @@ function App() {
       <Route path="/dpa" element={<DpaPage />} />
       <Route path="/contact" element={<ContactPage />} />
       <Route path="/docs" element={<DocsPage />} />
+      <Route path="/accessibility" element={<AccessibilityStatementPage />} />
 
       {/* Dashboard Routes */}
       <Route
