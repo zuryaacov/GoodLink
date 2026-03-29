@@ -243,12 +243,18 @@ function buildClickRecord(request, rayId, ip, slug, domain, userAgent, verdict, 
         id: crypto.randomUUID(),
         ray_id: rayId,
 
-        // Link data
+        // Link data — prefer DB domain/slug so clicks match links.* (e.g. custom domains stored as www.* while request host strips www)
         link_id: linkData?.id || null,
         user_id: linkData?.user_id || null,
         target_url: linkData?.target_url || null,
-        slug: slug || "root",
-        domain: domain,
+        slug:
+            linkData?.slug != null && String(linkData.slug).trim() !== ""
+                ? String(linkData.slug).trim().toLowerCase()
+                : slug || "root",
+        domain:
+            linkData?.domain != null && String(linkData.domain).trim() !== ""
+                ? String(linkData.domain).trim().toLowerCase()
+                : String(domain || "").toLowerCase(),
 
         // Visitor data
         ip_address: ip,

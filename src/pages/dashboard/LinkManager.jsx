@@ -50,7 +50,14 @@ const LinkManager = () => {
   const [spaces, setSpaces] = useState([]);
   const [currentSpaceId, setCurrentSpaceId] = useState(null);
   const [presetsMap, setPresetsMap] = useState({}); // Map of preset ID to preset data
-  const [clickCountsMap, setClickCountsMap] = useState({}); // key: domain/slug -> count
+  const [clickCountsMap, setClickCountsMap] = useState({}); // key: domain/slug -> count (clicks without link_id)
+  const [clickCountsByLinkId, setClickCountsByLinkId] = useState({}); // link_id -> count
+
+  const getLinkClickDisplayCount = useCallback(
+    (link) =>
+      (clickCountsByLinkId[link.id] ?? 0) + (clickCountsMap[linkClickKey(link)] ?? 0),
+    [clickCountsByLinkId, clickCountsMap]
+  );
   const [loading, setLoading] = useState(true);
   const [createMenuOpen, setCreateMenuOpen] = useState(false);
   const [openSpaceMenuId, setOpenSpaceMenuId] = useState(null);
@@ -279,17 +286,22 @@ const LinkManager = () => {
 
       setPresetsMap(presetsDataMap);
 
-      // Fetch click counts per link (clicks match by domain + slug)
+      // Fetch click counts: by link_id when present (authoritative), else domain/slug for legacy rows
       const { data: clicksData, error: clicksError } = await supabase
         .from('clicks')
-        .select('domain, slug')
+        .select('domain, slug, link_id')
         .eq('user_id', user.id);
 
       const counts = {};
+      const byLinkId = {};
       if (!clicksError && clicksData) {
         clicksData.forEach((c) => {
-          const key = `${c.domain ?? ''}/${c.slug ?? ''}`;
-          counts[key] = (counts[key] || 0) + 1;
+          if (c.link_id) {
+            byLinkId[c.link_id] = (byLinkId[c.link_id] || 0) + 1;
+          } else {
+            const key = `${c.domain ?? ''}/${c.slug ?? ''}`;
+            counts[key] = (counts[key] || 0) + 1;
+          }
         });
       }
 
@@ -314,6 +326,7 @@ const LinkManager = () => {
 
       setSpaces(spacesData);
       setClickCountsMap(counts);
+      setClickCountsByLinkId(byLinkId);
       setLinks(linksData || []);
     } catch (error) {
       console.error('Error fetching links:', error);
@@ -397,7 +410,7 @@ const LinkManager = () => {
     const ids = [spaceId, ...getDescendantIds(spaceId)];
     const idsSet = new Set(ids);
     const scoped = links.filter((l) => idsSet.has(l.space_id || null));
-    const clicks = scoped.reduce((sum, link) => sum + (clickCountsMap[linkClickKey(link)] ?? 0), 0);
+    const clicks = scoped.reduce((sum, link) => sum + getLinkClickDisplayCount(link), 0);
     return { linksCount: scoped.length, clicks };
   };
 
@@ -1228,7 +1241,7 @@ const LinkManager = () => {
                   }
                   onAnalytics={(linkForAnalytics) =>
                     navigate(
-                      `/dashboard/analytics?domain=${encodeURIComponent(linkForAnalytics.domain || '')}&slug=${encodeURIComponent(linkForAnalytics.slug || '')}`
+                      `/dashboard/analytics?link_id=${encodeURIComponent(linkForAnalytics.id)}&domain=${encodeURIComponent(linkForAnalytics.domain || '')}&slug=${encodeURIComponent(linkForAnalytics.slug || '')}`
                     )
                   }
                   onMove={isFoldersEnabled ? openMoveModal : null}
@@ -1322,9 +1335,7 @@ const LinkManager = () => {
                   >
                     <span className="material-symbols-outlined text-base" aria-hidden="true">bar_chart</span>
                     <span className="text-xs font-bold">
-                      {new Intl.NumberFormat('en-US').format(
-                        clickCountsMap[linkClickKey(link)] ?? 0
-                      )}{' '}
+                      {new Intl.NumberFormat('en-US').format(getLinkClickDisplayCount(link))}{' '}
                       Clicks
                     </span>
                   </div>

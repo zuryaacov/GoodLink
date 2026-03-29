@@ -196,11 +196,15 @@ const GeoProgressCard = ({ geographic }) => {
 const Analytics = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const linkIdRaw = searchParams.get('link_id');
+  const linkId = linkIdRaw && linkIdRaw.trim() !== '' ? linkIdRaw.trim() : null;
   const linkDomain = searchParams.get('domain');
   const linkSlug = searchParams.get('slug');
-  const isSingleLink = Boolean(
+  const isSingleLinkById = Boolean(linkId);
+  const isSingleLinkByDomainSlug = Boolean(
     linkDomain != null && linkSlug != null && linkDomain !== '' && linkSlug !== ''
   );
+  const isSingleLink = isSingleLinkById || isSingleLinkByDomainSlug;
 
   const [loading, setLoading] = useState(true);
   const [linkName, setLinkName] = useState('');
@@ -224,10 +228,22 @@ const Analytics = () => {
 
   useEffect(() => {
     fetchStats();
-  }, [linkDomain, linkSlug]);
+  }, [linkId, linkDomain, linkSlug]);
 
   useEffect(() => {
-    if (!isSingleLink) { setLinkName(''); return; }
+    if (!isSingleLink) {
+      setLinkName('');
+      return;
+    }
+    if (linkId) {
+      supabase
+        .from('links')
+        .select('name')
+        .eq('id', linkId)
+        .maybeSingle()
+        .then(({ data }) => setLinkName(data?.name || ''));
+      return;
+    }
     supabase
       .from('links')
       .select('name')
@@ -235,15 +251,15 @@ const Analytics = () => {
       .eq('slug', linkSlug)
       .maybeSingle()
       .then(({ data }) => setLinkName(data?.name || ''));
-  }, [linkDomain, linkSlug]);
+  }, [linkId, linkDomain, linkSlug, isSingleLink]);
 
   useEffect(() => {
     setTrafficPage(1);
-  }, [linkDomain, linkSlug]);
+  }, [linkId, linkDomain, linkSlug]);
 
   useEffect(() => {
     fetchTrafficPage();
-  }, [linkDomain, linkSlug, trafficPage]);
+  }, [linkId, linkDomain, linkSlug, trafficPage]);
 
   const fetchStats = async () => {
     try {
@@ -261,7 +277,11 @@ const Analytics = () => {
         .eq('user_id', user.id)
         .order('clicked_at', { ascending: false });
       if (isSingleLink) {
-        query = query.eq('domain', linkDomain).eq('slug', linkSlug);
+        if (linkId) {
+          query = query.eq('link_id', linkId);
+        } else {
+          query = query.eq('domain', linkDomain).eq('slug', linkSlug);
+        }
       }
       const { data: allClicks, error: clicksError } = await query;
 
@@ -360,7 +380,11 @@ const Analytics = () => {
         .range(from, to);
 
       if (isSingleLink) {
-        query = query.eq('domain', linkDomain).eq('slug', linkSlug);
+        if (linkId) {
+          query = query.eq('link_id', linkId);
+        } else {
+          query = query.eq('domain', linkDomain).eq('slug', linkSlug);
+        }
       }
 
       const { data, count, error } = await query;
@@ -455,7 +479,8 @@ const Analytics = () => {
     );
   }
 
-  const singleLinkUrl = isSingleLink ? `https://${linkDomain}/${linkSlug}` : null;
+  const singleLinkUrl =
+    isSingleLink && linkDomain && linkSlug ? `https://${linkDomain}/${linkSlug}` : null;
 
   return (
     <div className="flex flex-col gap-6 max-w-7xl mx-auto">
