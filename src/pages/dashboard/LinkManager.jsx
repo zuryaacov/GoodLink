@@ -10,11 +10,11 @@ import QRCode from 'qrcode-svg';
 import qrCodeIcon from '../../assets/qr-code-icon.svg';
 
 const PLATFORMS = {
-  meta: { name: 'Meta (FB/IG)', colorClass: 'text-blue-400 bg-blue-400/10' },
-  google: { name: 'Google Ads', colorClass: 'text-emerald-400 bg-emerald-400/10' },
-  tiktok: { name: 'TikTok Ads', colorClass: 'text-pink-400 bg-pink-400/10' },
-  taboola: { name: 'Taboola', colorClass: 'text-orange-400 bg-orange-400/10' },
-  outbrain: { name: 'Outbrain', colorClass: 'text-indigo-400 bg-indigo-400/10' },
+  meta: { name: 'Meta (FB/IG)', colorClass: 'text-blue-700 bg-blue-400/10' },
+  google: { name: 'Google Ads', colorClass: 'text-emerald-700 bg-emerald-400/10' },
+  tiktok: { name: 'TikTok Ads', colorClass: 'text-pink-700 bg-pink-400/10' },
+  taboola: { name: 'Taboola', colorClass: 'text-orange-700 bg-orange-400/10' },
+  outbrain: { name: 'Outbrain', colorClass: 'text-indigo-700 bg-indigo-400/10' },
 };
 
 const linkClickKey = (link) => `${link.domain ?? ''}/${link.slug ?? ''}`;
@@ -179,7 +179,7 @@ const LinkManager = () => {
   const urlStatusBadge = (status) => {
     if (status === 'active') {
       return (
-        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-[#0b996f]/15 text-[#0b996f]">
+        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-[#047857]/15 text-[#047857]">
           Approved
         </span>
       );
@@ -206,6 +206,18 @@ const LinkManager = () => {
     const querySpaceId = searchParams.get('space_id') || null;
     setCurrentSpaceId((prev) => (prev === querySpaceId ? prev : querySpaceId));
   }, [searchParams]);
+
+  useEffect(() => {
+    if (!createMenuOpen && !openSpaceMenuId) return;
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        if (createMenuOpen) setCreateMenuOpen(false);
+        if (openSpaceMenuId) setOpenSpaceMenuId(null);
+      }
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [createMenuOpen, openSpaceMenuId]);
 
   const fetchData = async () => {
     try {
@@ -719,7 +731,7 @@ const LinkManager = () => {
         const element = document.getElementById(copyBtnId);
         if (element) {
           const originalText = element.innerHTML;
-          element.innerHTML = '<span class="material-symbols-outlined text-base">check</span>';
+          element.innerHTML = '<span class="material-symbols-outlined text-base" aria-hidden="true">check</span>';
           setTimeout(() => {
             element.innerHTML = originalText;
           }, 1000);
@@ -786,7 +798,7 @@ const LinkManager = () => {
               {/* Preset URL */}
               <div className="flex items-start gap-2 min-w-0">
                 <span
-                  className="font-mono text-base font-bold text-emerald-400 flex-1 min-w-0 break-all whitespace-normal"
+                  className="font-mono text-base font-bold text-emerald-600 flex-1 min-w-0 break-all whitespace-normal"
                   title={presetUrl}
                   style={{ fontWeight: '700' }}
                 >
@@ -797,8 +809,9 @@ const LinkManager = () => {
                   onClick={() => handleCopy(presetUrl, copyBtnId)}
                   className="text-[#1b1b1b] hover:text-primary transition-colors p-1.5 rounded flex-shrink-0 mt-0.5"
                   title="Copy Preset URL"
+                  aria-label="Copy preset URL"
                 >
-                  <span className="material-symbols-outlined text-base">content_copy</span>
+                  <span className="material-symbols-outlined text-base" aria-hidden="true">content_copy</span>
                 </button>
               </div>
             </div>
@@ -853,9 +866,9 @@ const LinkManager = () => {
 
   if (loading) {
     return (
-      <div className="flex flex-col gap-8 w-full h-full items-center justify-center">
+      <div className="flex flex-col gap-8 w-full h-full items-center justify-center" role="status">
         <div className="text-center py-12">
-          <span className="material-symbols-outlined text-4xl text-slate-600 animate-spin">
+          <span className="material-symbols-outlined text-4xl text-slate-600 animate-spin" aria-hidden="true">
             refresh
           </span>
           <p className="text-[#1b1b1b] mt-4">Loading links...</p>
@@ -888,7 +901,7 @@ const LinkManager = () => {
         }
       >
         {isFoldersEnabled && (
-          <div className="pointer-events-none absolute inset-x-0 -top-20 h-20 lg:-top-6 lg:h-6 bg-white"></div>
+          <div className="pointer-events-none absolute inset-x-0 -top-20 h-20 lg:-top-6 lg:h-6 bg-white" aria-hidden="true"></div>
         )}
         <div
           className={
@@ -916,7 +929,7 @@ const LinkManager = () => {
                   }`}
                   aria-label={showBackArrow ? 'Back' : 'Home'}
                 >
-                  <span className="material-symbols-outlined text-2xl">
+                  <span className="material-symbols-outlined text-2xl" aria-hidden="true">
                     {showBackArrow ? 'chevron_left' : 'home'}
                   </span>
                 </button>
@@ -934,8 +947,11 @@ const LinkManager = () => {
                   : setCreateMenuOpen((v) => !v)
               }
               className={`flex items-center justify-center gap-2 ${isFoldersEnabled ? 'w-full sm:w-auto' : 'w-auto'} px-6 py-3 md:py-2.5 text-white font-bold rounded-xl transition-colors shadow-lg text-base md:text-sm bg-[#a855f7] hover:bg-[#9333ea]`}
+              {...(createOptions.length > 1
+                ? { 'aria-expanded': createMenuOpen, 'aria-haspopup': 'true' }
+                : {})}
             >
-              <span className="material-symbols-outlined text-xl md:text-base">add</span>
+              <span className="material-symbols-outlined text-xl md:text-base" aria-hidden="true">add</span>
               {createOptions.length === 1 ? 'New Link' : 'Create'}
             </button>
             {createMenuOpen && createOptions.length > 1 && (
@@ -961,18 +977,18 @@ const LinkManager = () => {
           </div>
         </div>
         {isFoldersEnabled && (
-          <div className="flex flex-wrap items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-700">
+          <nav aria-label="Breadcrumb" className="flex flex-wrap items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-700">
             <button
               type="button"
               onClick={() => goToSpace(null)}
               className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 transition-colors"
             >
-              <span className="material-symbols-outlined text-sm">home</span>
+              <span className="material-symbols-outlined text-sm" aria-hidden="true">home</span>
               Root
             </button>
             {breadcrumbs.map((b) => (
               <React.Fragment key={b.id}>
-                <ChevronRight size={12} className="text-slate-500" />
+                <ChevronRight size={12} className="text-slate-500" aria-hidden="true" />
                 <button
                   type="button"
                   onClick={() => goToSpace(b.id)}
@@ -982,7 +998,7 @@ const LinkManager = () => {
                 </button>
               </React.Fragment>
             ))}
-          </div>
+          </nav>
         )}
       </div>
 
@@ -1024,7 +1040,7 @@ const LinkManager = () => {
                     viewBox="0 0 300 224"
                     preserveAspectRatio="none"
                     fill="none"
-                    aria-hidden
+                    aria-hidden="true"
                     style={{ shapeRendering: 'geometricPrecision' }}
                   >
                     <path
@@ -1046,11 +1062,11 @@ const LinkManager = () => {
                           {space.name}
                         </h3>
                         <div className="flex items-center gap-2 text-[#a855f7] text-xs font-bold uppercase tracking-widest opacity-80">
-                          <LayoutGrid size={14} />
+                          <LayoutGrid size={14} aria-hidden="true" />
                           <span>{kindLabel}</span>
                         </div>
                       </div>
-                      <div className="mr-12 text-[#a855f7] transition-all">
+                      <div className="mr-12 text-[#a855f7] transition-all" aria-hidden="true">
                         <Folder size={24} />
                       </div>
                     </div>
@@ -1063,8 +1079,10 @@ const LinkManager = () => {
                         }}
                         className="p-2 rounded-lg bg-white border border-slate-200 text-slate-700 hover:text-[#1b1b1b] hover:border-primary/40 transition-colors"
                         aria-label="Space actions"
+                        aria-expanded={openSpaceMenuId === space.id}
+                        aria-haspopup="true"
                       >
-                        <span className="material-symbols-outlined text-base">more_vert</span>
+                        <span className="material-symbols-outlined text-base" aria-hidden="true">more_vert</span>
                       </button>
                       {openSpaceMenuId === space.id && (
                         <div
@@ -1103,7 +1121,7 @@ const LinkManager = () => {
                         {new Intl.NumberFormat('en-US').format(stats.linksCount)} Links Inside
                       </div>
                       <div className="flex items-center gap-2 text-xs font-bold text-[#1b1b1b]">
-                        <div className="w-2 h-2 rounded-full bg-[#00F2B5] animate-pulse shadow-[0_0_8px_#00F2B5]"></div>
+                        <div className="w-2 h-2 rounded-full bg-[#00F2B5] animate-pulse shadow-[0_0_8px_#00F2B5]" aria-hidden="true"></div>
                         Active
                       </div>
                     </div>
@@ -1140,7 +1158,7 @@ const LinkManager = () => {
       childSpaces.length === 0 &&
       (!isFoldersEnabled || currentLevel === 0) ? (
         <div className="bg-[#fcfdfd] border rounded-2xl p-12 text-center hover:shadow-card-mint transition-all border-[#a855f7]/40 md:border-card-border md:hover:border-[#a855f7]/40">
-          <span className="material-symbols-outlined text-6xl text-black mb-4">link</span>
+          <span className="material-symbols-outlined text-6xl text-black mb-4" aria-hidden="true">link</span>
           <h3 className="text-xl font-bold text-black mb-2">No Links or Workspaces Yet</h3>
           <p className="text-black mb-6">
             Create your first link or workspace to start organizing your tracking.
@@ -1193,7 +1211,7 @@ const LinkManager = () => {
                       {truncateText(link.target_url, 60)}
                     </p>
                   </div>
-                  <div className="mr-12 text-[#0b996f] -rotate-3 transition-all">
+                  <div className="mr-12 text-[#0b996f] -rotate-3 transition-all" aria-hidden="true">
                     <LinkIcon size={24} />
                   </div>
                 </div>
@@ -1237,8 +1255,9 @@ const LinkManager = () => {
                       onClick={() => handleCopy(link.short_url)}
                       className="copy-btn p-2 bg-white hover:bg-slate-200 text-slate-700 rounded-lg transition-all flex-shrink-0 active:scale-90 border border-slate-200"
                       title="Copy to clipboard"
+                      aria-label="Copy short link to clipboard"
                     >
-                      <span className="material-symbols-outlined text-base">content_copy</span>
+                      <span className="material-symbols-outlined text-base" aria-hidden="true">content_copy</span>
                     </button>
                   </div>
                 </div>
@@ -1273,12 +1292,12 @@ const LinkManager = () => {
                     onClick={() => setQrModal({ isOpen: true, link })}
                     className="relative p-2 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-lg transition-all active:scale-90 flex items-center justify-center"
                     title="Open QR Code"
+                    aria-label="Open QR Code"
                   >
-                    <img src={qrCodeIcon} alt="QR Code" className="w-9 h-9 opacity-90" />
-                    <span className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                    <img src={qrCodeIcon} alt="" className="w-9 h-9 opacity-90" aria-hidden="true" />
+                    <span className="absolute inset-0 flex items-center justify-center pointer-events-none" aria-hidden="true">
                       <span
                         className="flex items-center justify-center w-[18px] h-[18px] rounded-full bg-white text-[#1b1b1b] shadow-[0_2px_6px_rgba(0,0,0,0.15)]"
-                        aria-hidden
                       >
                         <svg
                           width="10"
@@ -1301,7 +1320,7 @@ const LinkManager = () => {
                   <div
                     className={`flex items-center gap-2 ${isActive ? 'text-gray-500' : 'text-gray-600'}`}
                   >
-                    <span className="material-symbols-outlined text-base">bar_chart</span>
+                    <span className="material-symbols-outlined text-base" aria-hidden="true">bar_chart</span>
                     <span className="text-xs font-bold">
                       {new Intl.NumberFormat('en-US').format(
                         clickCountsMap[linkClickKey(link)] ?? 0
@@ -1330,7 +1349,7 @@ const LinkManager = () => {
             <div className="flex flex-col items-center gap-2 sm:gap-4 p-0 sm:p-2 w-full min-w-0">
               <img
                 src={`https://api.qrserver.com/v1/create-qr-code/?size=400x400&bgcolor=FFFFFF&data=${encodeURIComponent(qrModal.link.short_url || '')}`}
-                alt="QR Code"
+                alt={`QR Code for ${qrModal.link.short_url || 'link'}`}
                 className="w-full max-w-[200px] sm:max-w-[280px] md:max-w-[360px] h-auto rounded-xl border border-slate-200 bg-white p-1.5 sm:p-2"
               />
               <p className="text-[#1b1b1b] text-xs sm:text-sm font-mono break-all text-center max-w-full min-w-0 px-1">
@@ -1342,7 +1361,7 @@ const LinkManager = () => {
                   onClick={() => handleDownloadQrPng(qrModal.link.short_url)}
                   className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-slate-200 hover:bg-slate-300 text-[#1b1b1b] text-sm font-medium transition-colors"
                 >
-                  <span className="material-symbols-outlined text-base">download</span>
+                  <span className="material-symbols-outlined text-base" aria-hidden="true">download</span>
                   Download PNG
                 </button>
                 <button
@@ -1350,7 +1369,7 @@ const LinkManager = () => {
                   onClick={() => handleDownloadQrSvg(qrModal.link.short_url)}
                   className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-slate-200 hover:bg-slate-300 text-[#1b1b1b] text-sm font-medium transition-colors"
                 >
-                  <span className="material-symbols-outlined text-base">download</span>
+                  <span className="material-symbols-outlined text-base" aria-hidden="true">download</span>
                   Download SVG
                 </button>
                 <button
@@ -1358,7 +1377,7 @@ const LinkManager = () => {
                   onClick={() => handleCopyQrSvg(qrModal.link.short_url)}
                   className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-slate-200 hover:bg-slate-300 text-[#1b1b1b] text-sm font-medium transition-colors"
                 >
-                  <span className="material-symbols-outlined text-base">content_copy</span>
+                  <span className="material-symbols-outlined text-base" aria-hidden="true">content_copy</span>
                   {qrCopyStatus || 'Copy SVG code'}
                 </button>
               </div>
@@ -1404,7 +1423,7 @@ const LinkManager = () => {
                   const isActive = moveModal.selectedSpaceId === space.id;
                   return (
                     <React.Fragment key={space.id}>
-                      <ChevronRight size={12} className="text-[#1b1b1b]" />
+                      <ChevronRight size={12} className="text-[#1b1b1b]" aria-hidden="true" />
                       <button
                         type="button"
                         onClick={() =>
@@ -1468,7 +1487,7 @@ const LinkManager = () => {
               )}
             </div>
 
-            {moveModal.error ? <p className="text-sm text-red-500">{moveModal.error}</p> : null}
+            {moveModal.error ? <p className="text-sm text-red-500" role="alert">{moveModal.error}</p> : null}
           </div>
         }
       />
@@ -1620,9 +1639,10 @@ const LinkManager = () => {
               autoFocus
               className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm"
               placeholder={`Enter ${spaceModal.kind ? KIND_LABEL[spaceModal.kind] : 'item'} name`}
+              aria-label={`${spaceModal.kind ? KIND_LABEL[spaceModal.kind] : 'Item'} name`}
             />
             <div className="min-h-[20px]">
-              {spaceModal.error ? <p className="text-sm text-red-500">{spaceModal.error}</p> : null}
+              {spaceModal.error ? <p className="text-sm text-red-500" role="alert">{spaceModal.error}</p> : null}
             </div>
           </div>
         }
@@ -1644,10 +1664,23 @@ const LinkActionsMenu = ({
   hoverBorderClass = 'hover:border-primary/40',
 }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const triggerRef = useRef(null);
+  const menuRef = useRef(null);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        setIsOpen(false);
+        triggerRef.current?.focus();
+      }
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen]);
 
   const handleDuplicate = () => {
     setIsOpen(false);
-    // Call the parent's onDuplicate handler to open the wizard
     if (onDuplicate) {
       onDuplicate(link);
     }
@@ -1656,77 +1689,91 @@ const LinkActionsMenu = ({
   return (
     <div className={`z-10 ${className}`}>
       <button
+        ref={triggerRef}
         onClick={() => setIsOpen(!isOpen)}
         className={`p-2 rounded-lg bg-white border border-slate-200 text-slate-700 hover:text-[#1b1b1b] ${hoverBorderClass} transition-colors`}
         aria-label="Actions menu"
+        aria-expanded={isOpen}
+        aria-haspopup="true"
       >
-        <span className="material-symbols-outlined text-base">more_vert</span>
+        <span className="material-symbols-outlined text-base" aria-hidden="true">more_vert</span>
       </button>
 
       {isOpen && (
         <>
           <div className="fixed inset-0 z-10" onClick={() => setIsOpen(false)} />
-          <div className="absolute right-0 mt-2 w-48 bg-white border border-slate-200 rounded-xl shadow-2xl z-20 overflow-hidden min-w-max">
+          <div
+            ref={menuRef}
+            role="menu"
+            aria-label="Link actions"
+            className="absolute right-0 mt-2 w-48 bg-white border border-slate-200 rounded-xl shadow-2xl z-20 overflow-hidden min-w-max"
+          >
             <button
+              role="menuitem"
               onClick={() => {
                 setIsOpen(false);
                 if (onDetails) onDetails(link);
               }}
               className="w-full px-4 py-3 text-left text-[#1b1b1b] hover:bg-white/5 transition-colors flex items-center gap-3 text-sm"
             >
-              <span className="material-symbols-outlined text-base">info</span>
+              <span className="material-symbols-outlined text-base" aria-hidden="true">info</span>
               Details
             </button>
             <button
+              role="menuitem"
               onClick={() => {
                 setIsOpen(false);
                 onEdit(link);
               }}
               className="w-full px-4 py-3 text-left text-[#1b1b1b] hover:bg-white/5 transition-colors flex items-center gap-3 text-sm"
             >
-              <span className="material-symbols-outlined text-base">edit</span>
+              <span className="material-symbols-outlined text-base" aria-hidden="true">edit</span>
               Edit
             </button>
             <button
+              role="menuitem"
               onClick={() => {
                 setIsOpen(false);
                 if (onAnalytics) onAnalytics(link);
               }}
               className="w-full px-4 py-3 text-left text-[#1b1b1b] hover:bg-white/5 transition-colors flex items-center gap-3 text-sm"
             >
-              <span className="material-symbols-outlined text-base">insights</span>
+              <span className="material-symbols-outlined text-base" aria-hidden="true">insights</span>
               Analytics
             </button>
             <button
+              role="menuitem"
               onClick={() => {
                 setIsOpen(false);
                 handleDuplicate();
               }}
               className="w-full px-4 py-3 text-left text-[#1b1b1b] hover:bg-white/5 transition-colors flex items-center gap-3 text-sm"
             >
-              <span className="material-symbols-outlined text-base">content_copy</span>
+              <span className="material-symbols-outlined text-base" aria-hidden="true">content_copy</span>
               Duplicate
             </button>
             {onMove && (
               <button
+                role="menuitem"
                 onClick={() => {
                   setIsOpen(false);
                   onMove(link);
                 }}
                 className="w-full px-4 py-3 text-left text-[#1b1b1b] hover:bg-white/5 transition-colors flex items-center gap-3 text-sm"
               >
-                <span className="material-symbols-outlined text-base">drive_file_move</span>
+                <span className="material-symbols-outlined text-base" aria-hidden="true">drive_file_move</span>
                 Move
               </button>
             )}
             <button
+              role="menuitem"
               onClick={() => {
                 setIsOpen(false);
                 if (onDeleteClick) onDeleteClick(link);
               }}
               className="w-full px-4 py-3 text-left text-red-400 hover:bg-red-400/10 transition-colors flex items-center gap-3 text-sm"
             >
-              <span className="material-symbols-outlined text-base">delete</span>
+              <span className="material-symbols-outlined text-base" aria-hidden="true">delete</span>
               Delete
             </button>
           </div>
