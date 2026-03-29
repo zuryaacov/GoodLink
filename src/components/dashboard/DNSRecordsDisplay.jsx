@@ -58,15 +58,16 @@ const DNSRecordsDisplay = ({ records, domain }) => {
     <button
       onClick={() => handleCopy(value, fieldName)}
       className={`px-3 py-1.5 bg-slate-200 hover:bg-slate-300 text-[#1b1b1b] text-xs font-medium rounded-lg transition-colors flex items-center gap-2 ${className}`}
+      aria-label={copiedField === fieldName ? 'Copied' : 'Copy to clipboard'}
     >
       {copiedField === fieldName ? (
         <>
-          <span className="material-symbols-outlined text-sm">check</span>
+          <span className="material-symbols-outlined text-sm" aria-hidden="true">check</span>
           Copied
         </>
       ) : (
         <>
-          <span className="material-symbols-outlined text-sm">content_copy</span>
+          <span className="material-symbols-outlined text-sm" aria-hidden="true">content_copy</span>
           Copy
         </>
       )}
@@ -137,7 +138,7 @@ const DNSRecordsDisplay = ({ records, domain }) => {
           className="bg-white/50 border border-dashed border-slate-200 rounded-xl p-6 text-center"
         >
           <div className="flex flex-col items-center gap-3">
-            <span className="material-symbols-outlined text-primary animate-pulse text-3xl">
+            <span className="material-symbols-outlined text-primary animate-pulse text-3xl" aria-hidden="true">
               pending
             </span>
             <div>

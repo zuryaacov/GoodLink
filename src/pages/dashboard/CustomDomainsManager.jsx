@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Lock, Zap, ArrowRight, Globe, BarChart3 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
@@ -53,6 +53,15 @@ const CustomDomainsManager = () => {
       navigate(location.pathname, { replace: true });
     }
   }, [location.state, location.pathname, navigate, showToast]);
+
+  useEffect(() => {
+    if (!openMenuDomainId) return;
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') setOpenMenuDomainId(null);
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [openMenuDomainId]);
 
   const fetchDomainRecords = async (domain) => {
     if (!domain?.cloudflare_hostname_id) return;
@@ -311,9 +320,9 @@ const CustomDomainsManager = () => {
       case 'active':
         return 'bg-green-500/20 text-black border-green-500/30';
       case 'pending':
-        return 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30';
+        return 'bg-yellow-500/20 text-yellow-700 border-yellow-500/30';
       case 'error':
-        return 'bg-red-500/20 text-red-400 border-red-500/30';
+        return 'bg-red-500/20 text-red-700 border-red-500/30';
       default:
         return 'bg-slate-200 text-[#1b1b1b] border-slate-500/30';
     }
@@ -349,7 +358,7 @@ const CustomDomainsManager = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-full">
+      <div className="flex items-center justify-center h-full" role="status">
         <div className="text-[#1b1b1b]">Loading domains...</div>
       </div>
     );
@@ -366,7 +375,7 @@ const CustomDomainsManager = () => {
     return (
       <div className="relative min-h-[480px] w-full flex items-center justify-center p-6 overflow-hidden bg-card-bg rounded-2xl border border-dashed border-card-border">
         {/* Background mock layout */}
-        <div className="absolute inset-0 opacity-[0.18] blur-[3px] pointer-events-none select-none p-6">
+        <div className="absolute inset-0 opacity-[0.18] blur-[3px] pointer-events-none select-none p-6" aria-hidden="true">
           <div className="max-w-5xl mx-auto space-y-6">
             <div className="h-10 bg-[#141b2e] rounded-md w-1/3 mb-8" />
             <div className="grid grid-cols-2 gap-4">
@@ -381,7 +390,7 @@ const CustomDomainsManager = () => {
         {/* Main card */}
         <div className="relative z-10 max-w-xl w-full bg-white/90 backdrop-blur-xl border border-slate-200 shadow-2xl rounded-3xl p-8 md:p-10 text-center">
           {/* Icon */}
-          <div className="mb-6 flex justify-center">
+          <div className="mb-6 flex justify-center" aria-hidden="true">
             <div className="relative">
               <div className="absolute inset-0 bg-[#c0ffa5] blur-2xl opacity-25 animate-pulse" />
               <div className="relative bg-gradient-to-br from-[#c0ffa5] to-[#c0ffa5] p-4 rounded-2xl shadow-lg shadow-[#c0ffa5]/40">
@@ -410,7 +419,7 @@ const CustomDomainsManager = () => {
           {/* Value props */}
           <div className="space-y-4 mb-10 text-left">
             <div className="flex items-center gap-3 p-3 bg-white/80 rounded-xl border border-slate-200 hover:border-[#a855f7]/40 transition-colors">
-              <Globe className="w-5 h-5 text-[#a855f7]" />
+              <Globe className="w-5 h-5 text-[#a855f7]" aria-hidden="true" />
               <div>
                 <p className="font-semibold text-sm text-[#1b1b1b] italic">Brand Your Links</p>
                 <p className="text-xs text-[#1b1b1b]">
@@ -419,7 +428,7 @@ const CustomDomainsManager = () => {
               </div>
             </div>
             <div className="flex items-center gap-3 p-3 bg-white/80 rounded-xl border border-slate-200 hover:border-[#a855f7]/40 transition-colors">
-              <BarChart3 className="w-5 h-5 text-[#a855f7]" />
+              <BarChart3 className="w-5 h-5 text-[#a855f7]" aria-hidden="true" />
               <div>
                 <p className="font-semibold text-sm text-[#1b1b1b] italic">Professional Appearance</p>
                 <p className="text-xs text-[#1b1b1b]">
@@ -436,9 +445,9 @@ const CustomDomainsManager = () => {
             }}
             className="group relative w-full inline-flex items-center justify-center gap-2 bg-[#a855f7] text-white font-bold py-3.5 px-8 rounded-2xl transition-all duration-300 hover:bg-[#9333ea] hover:scale-[1.02] active:scale-[0.98] shadow-xl shadow-[#a855f7]/30"
           >
-            <Zap className="w-5 h-5" />
+            <Zap className="w-5 h-5" aria-hidden="true" />
             <span>View Plans & Upgrade</span>
-            <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
+            <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" aria-hidden="true" />
           </button>
 
           <p className="mt-5 text-xs text-[#1b1b1b]">
@@ -464,7 +473,7 @@ const CustomDomainsManager = () => {
           onClick={() => navigate('/dashboard/domains/new')}
           className="px-6 py-3 bg-[#a855f7] hover:bg-[#9333ea] text-white font-bold rounded-xl transition-all shadow-lg shadow-[#a855f7]/20 flex items-center gap-2 whitespace-nowrap"
         >
-          <span className="material-symbols-outlined">add</span>
+          <span className="material-symbols-outlined" aria-hidden="true">add</span>
           New Domain
         </button>
       </div>
@@ -505,7 +514,7 @@ const CustomDomainsManager = () => {
       {/* Domains List */}
       {domains.length === 0 ? (
         <div className="bg-[#fcfdfd] border rounded-2xl p-12 text-center hover:shadow-card-mint transition-all border-[#a855f7]/40 md:border-card-border md:hover:border-[#a855f7]/40">
-          <span className="material-symbols-outlined text-6xl text-black mb-4">public</span>
+          <span className="material-symbols-outlined text-6xl text-black mb-4" aria-hidden="true">public</span>
           <h3 className="text-xl font-bold text-black mb-2">No Custom Domains Yet</h3>
           <p className="text-black mb-6">
             Create your first custom domain to brand your links
@@ -536,14 +545,14 @@ const CustomDomainsManager = () => {
                   <div
                     className={`inline-flex items-center self-start gap-1.5 px-3 py-1 rounded-lg border text-xs font-bold tracking-wider ${getStatusColor(domain.status)}`}
                   >
-                    <span className={`material-symbols-outlined text-base ${domain.status === 'active' ? 'text-green-400' : ''}`}>
+                    <span className={`material-symbols-outlined text-base ${domain.status === 'active' ? 'text-green-700' : ''}`} aria-hidden="true">
                       {getStatusIcon(domain.status)}
                     </span>
                     <span>{domain.status ? domain.status.charAt(0).toUpperCase() + domain.status.slice(1).toLowerCase() : ''}</span>
                   </div>
                   {domain.root_redirect && (
                     <div className="flex items-center gap-2 text-[#1b1b1b] text-sm mt-1">
-                      <span className="material-symbols-outlined text-sm">
+                      <span className="material-symbols-outlined text-sm" aria-hidden="true">
                         subdirectory_arrow_right
                       </span>
                       <span className="text-slate-500">Root:</span>
@@ -569,18 +578,25 @@ const CustomDomainsManager = () => {
                     }}
                     className="p-2 rounded-lg bg-white border border-slate-200 text-slate-700 hover:text-[#1b1b1b] transition-colors"
                     aria-label="Actions menu"
+                    aria-expanded={openMenuDomainId === domain.id}
+                    aria-haspopup="true"
                   >
-                    <span className="material-symbols-outlined text-base">more_vert</span>
+                    <span className="material-symbols-outlined text-base" aria-hidden="true">more_vert</span>
                   </button>
                   {openMenuDomainId === domain.id && (
                     <>
                       <div
                         className="fixed inset-0 z-10"
                         onClick={() => setOpenMenuDomainId(null)}
-                        aria-hidden
+                        aria-hidden="true"
                       />
-                      <div className="absolute right-0 mt-2 w-48 bg-white border border-slate-200 rounded-xl shadow-2xl z-20 overflow-hidden min-w-max">
+                      <div
+                        role="menu"
+                        aria-label="Domain actions"
+                        className="absolute right-0 mt-2 w-48 bg-white border border-slate-200 rounded-xl shadow-2xl z-20 overflow-hidden min-w-max"
+                      >
                         <button
+                          role="menuitem"
                           type="button"
                           onClick={() => {
                             setOpenMenuDomainId(null);
@@ -588,10 +604,11 @@ const CustomDomainsManager = () => {
                           }}
                           className="w-full px-4 py-3 text-left text-[#1b1b1b] hover:bg-white/5 transition-colors flex items-center gap-3 text-sm"
                         >
-                          <span className="material-symbols-outlined text-base">info</span>
+                          <span className="material-symbols-outlined text-base" aria-hidden="true">info</span>
                           Details
                         </button>
                         <button
+                          role="menuitem"
                           type="button"
                           onClick={() => {
                             setOpenMenuDomainId(null);
@@ -599,18 +616,19 @@ const CustomDomainsManager = () => {
                           }}
                           className="w-full px-4 py-3 text-left text-[#1b1b1b] hover:bg-white/5 transition-colors flex items-center gap-3 text-sm"
                         >
-                          <span className="material-symbols-outlined text-base">edit</span>
+                          <span className="material-symbols-outlined text-base" aria-hidden="true">edit</span>
                           Edit Root
                         </button>
                         <button
+                          role="menuitem"
                           type="button"
                           onClick={() => {
                             setOpenMenuDomainId(null);
                             handleDeleteClick(domain.id, domain.domain);
                           }}
-                          className="w-full px-4 py-3 text-left text-red-400 hover:bg-red-400/10 transition-colors flex items-center gap-3 text-sm"
+                          className="w-full px-4 py-3 text-left text-red-500 hover:bg-red-400/10 transition-colors flex items-center gap-3 text-sm"
                         >
-                          <span className="material-symbols-outlined text-base">delete</span>
+                          <span className="material-symbols-outlined text-base" aria-hidden="true">delete</span>
                           Delete
                         </button>
                       </div>
@@ -642,7 +660,7 @@ const CustomDomainsManager = () => {
                     }}
                     className="px-4 py-2 bg-[#a855f7] hover:bg-[#9333ea] text-white font-bold rounded-xl transition-all shadow-lg shadow-[#a855f7]/20 flex items-center justify-center gap-2 text-sm"
                   >
-                    <span className="material-symbols-outlined text-lg">verified</span>
+                    <span className="material-symbols-outlined text-lg" aria-hidden="true">verified</span>
                     Verify DNS
                   </button>
                 </div>
@@ -652,7 +670,7 @@ const CustomDomainsManager = () => {
               <div className="space-y-4">
                 <div className="flex items-center justify-between gap-2 text-slate-500">
                   <div className="flex items-center gap-2">
-                    <span className="material-symbols-outlined text-sm">dns</span>
+                    <span className="material-symbols-outlined text-sm" aria-hidden="true">dns</span>
                     <p className="text-xs uppercase tracking-widest font-black">
                       DNS Configuration Required
                     </p>
@@ -675,6 +693,7 @@ const CustomDomainsManager = () => {
                       >
                         <span
                           className={`material-symbols-outlined text-sm ${dnsLoadingByDomainId[detailsModalDomain.id] ? 'animate-spin' : ''}`}
+                          aria-hidden="true"
                         >
                           refresh
                         </span>
@@ -716,7 +735,7 @@ const CustomDomainsManager = () => {
                           <div className="grid grid-cols-1 gap-4">
                             <div className="space-y-2">
                               <div className="flex items-center gap-2">
-                                <span className="material-symbols-outlined text-slate-500 text-sm">label</span>
+                                <span className="material-symbols-outlined text-slate-500 text-sm" aria-hidden="true">label</span>
                                 <span className="text-[10px] uppercase font-black text-slate-600 tracking-[0.2em]">
                                   Host / Name
                                 </span>
@@ -730,14 +749,15 @@ const CustomDomainsManager = () => {
                                   onClick={() => navigator.clipboard.writeText(record.host || record.name)}
                                   className="w-10 h-10 flex items-center justify-center bg-white hover:bg-slate-100 text-[#1b1b1b] rounded-lg border border-slate-200 transition-all"
                                   title="Copy Host"
+                                  aria-label="Copy host value"
                                 >
-                                  <span className="material-symbols-outlined text-xl">content_copy</span>
+                                  <span className="material-symbols-outlined text-xl" aria-hidden="true">content_copy</span>
                                 </button>
                               </div>
                             </div>
                             <div className="space-y-2">
                               <div className="flex items-center gap-2">
-                                <span className="material-symbols-outlined text-slate-500 text-sm">shortcut</span>
+                                <span className="material-symbols-outlined text-slate-500 text-sm" aria-hidden="true">shortcut</span>
                                 <span className="text-[10px] uppercase font-black text-slate-600 tracking-[0.2em]">
                                   Target Value
                                 </span>
@@ -751,8 +771,9 @@ const CustomDomainsManager = () => {
                                   onClick={() => navigator.clipboard.writeText(record.value)}
                                   className="w-10 h-10 flex items-center justify-center bg-white hover:bg-slate-100 text-[#1b1b1b] rounded-lg border border-slate-200 transition-all flex-shrink-0"
                                   title="Copy Value"
+                                  aria-label="Copy target value"
                                 >
-                                  <span className="material-symbols-outlined text-xl">content_copy</span>
+                                  <span className="material-symbols-outlined text-xl" aria-hidden="true">content_copy</span>
                                 </button>
                               </div>
                             </div>
@@ -767,9 +788,9 @@ const CustomDomainsManager = () => {
               {/* Last Verified */}
               {detailsModalDomain.verified_at && (
                 <div className="pt-4 border-t border-slate-200 text-[11px] md:text-sm text-slate-500 flex items-center gap-2">
-                  <span className="material-symbols-outlined text-lg">calendar_today</span>
+                  <span className="material-symbols-outlined text-lg" aria-hidden="true">calendar_today</span>
                   <span className="font-semibold uppercase tracking-wide">Last Verified:</span>
-                  <span className="text-slate-300">
+                  <span className="text-slate-600">
                     {new Date(detailsModalDomain.verified_at).toLocaleString()}
                   </span>
                 </div>

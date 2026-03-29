@@ -197,7 +197,14 @@ export default function DomainWizardOnePerPage({
 
   return (
     <div className="flex flex-col flex-1 min-h-0">
-      <div className="h-1 bg-slate-200 flex-shrink-0">
+      <div
+        className="h-1 bg-slate-200 flex-shrink-0"
+        role="progressbar"
+        aria-valuenow={stepIndex + 1}
+        aria-valuemin={1}
+        aria-valuemax={totalSteps}
+        aria-label={`Step ${stepIndex + 1} of ${totalSteps}`}
+      >
         <div
           className="h-full bg-[#135bec] transition-all duration-500 shadow-[0_0_10px_#135bec]"
           style={{ width: `${progressPct}%` }}
@@ -209,7 +216,7 @@ export default function DomainWizardOnePerPage({
       />
       <div className="flex-1 min-h-0 flex flex-col justify-center px-6 pb-32 pt-8 max-w-2xl mx-auto w-full relative z-10">
         {((errorToShow && currentStep.id !== 'rootRedirect') || verifyError) && (
-          <div className="mb-4 p-4 bg-red-500/10 border border-red-500/20 text-red-400 rounded-xl text-sm">
+          <div className="mb-4 p-4 bg-red-500/10 border border-red-500/20 text-red-600 rounded-xl text-sm" role="alert">
             {currentStep.id === 'verify' ? verifyError : errorToShow}
           </div>
         )}
@@ -244,7 +251,7 @@ export default function DomainWizardOnePerPage({
                   {currentStep?.highlight}
                 </span>
               </h1>
-              <p className="text-gray-400 font-medium text-2xl">{currentStep?.subtitle}</p>
+              <p className="text-gray-500 font-medium text-2xl">{currentStep?.subtitle}</p>
             </div>
 
             {currentStep?.id === 'domain' && (
@@ -260,6 +267,8 @@ export default function DomainWizardOnePerPage({
                     }}
                     placeholder="mybrand.com"
                     disabled={!!isEdit}
+                    aria-label="Domain name"
+                    aria-describedby={fieldErrors.domain ? 'domain-error' : undefined}
                     className="w-full bg-transparent py-5 px-6 text-xl outline-none border-none text-[#1b1b1b] placeholder-slate-500 disabled:opacity-60"
                   />
                 </div>
@@ -268,7 +277,7 @@ export default function DomainWizardOnePerPage({
                 </p>
                 <div className="min-h-[20px] mt-1">
                   {fieldErrors.domain && (
-                    <p className="text-red-400 text-sm">{fieldErrors.domain}</p>
+                    <p id="domain-error" className="text-red-500 text-sm" role="alert">{fieldErrors.domain}</p>
                   )}
                 </div>
               </div>
@@ -286,6 +295,8 @@ export default function DomainWizardOnePerPage({
                       setFieldErrors((prev) => ({ ...prev, rootRedirect: null }));
                     }}
                     placeholder="https://example.com"
+                    aria-label="Root redirect URL"
+                    aria-describedby={fieldErrors.rootRedirect || rootRedirectError ? 'root-redirect-error' : undefined}
                     className="w-full bg-transparent py-5 px-6 text-xl outline-none border-none text-[#1b1b1b] placeholder-slate-500"
                     autoFocus
                   />
@@ -295,7 +306,7 @@ export default function DomainWizardOnePerPage({
                 </p>
                 <div className="min-h-[20px] mt-1">
                   {(fieldErrors.rootRedirect || rootRedirectError) && (
-                    <p className="text-red-400 text-sm">
+                    <p id="root-redirect-error" className="text-red-500 text-sm" role="alert">
                       {fieldErrors.rootRedirect || rootRedirectError}
                     </p>
                   )}
@@ -315,6 +326,7 @@ export default function DomainWizardOnePerPage({
                     >
                       <span
                         className={`material-symbols-outlined text-lg ${isSubmitting ? 'animate-spin' : ''}`}
+                        aria-hidden="true"
                       >
                         refresh
                       </span>
@@ -346,14 +358,14 @@ export default function DomainWizardOnePerPage({
                 >
                   {isVerifying ? (
                     <>
-                      <span className="material-symbols-outlined animate-spin text-2xl">
+                      <span className="material-symbols-outlined animate-spin text-2xl" aria-hidden="true">
                         refresh
                       </span>
                       Verifying...
                     </>
                   ) : (
                     <>
-                      <span className="material-symbols-outlined text-2xl">verified</span>
+                      <span className="material-symbols-outlined text-2xl" aria-hidden="true">verified</span>
                       Verify DNS Records
                     </>
                   )}
@@ -369,9 +381,10 @@ export default function DomainWizardOnePerPage({
           <button
             type="button"
             onClick={goBack}
+            aria-label="Previous step"
             className={`flex items-center justify-center p-5 rounded-2xl border border-slate-200 font-bold text-gray-400 hover:bg-slate-200 hover:text-[#1b1b1b] transition-all ${isFirst ? 'invisible' : ''}`}
           >
-            <span className="material-symbols-outlined text-2xl">chevron_left</span>
+            <span className="material-symbols-outlined text-2xl" aria-hidden="true">chevron_left</span>
           </button>
           <button
             type="button"
@@ -381,7 +394,7 @@ export default function DomainWizardOnePerPage({
           >
             {isSubmitting ? (
               <>
-                <span className="material-symbols-outlined animate-spin text-2xl">refresh</span>
+                <span className="material-symbols-outlined animate-spin text-2xl" aria-hidden="true">refresh</span>
                 {currentStep?.id === 'rootRedirect'
                   ? isEdit
                     ? 'Updating...'
@@ -391,17 +404,17 @@ export default function DomainWizardOnePerPage({
             ) : currentStep?.id === 'verify' ? (
               <>
                 <span>Done</span>
-                <span className="material-symbols-outlined text-2xl">arrow_forward</span>
+                <span className="material-symbols-outlined text-2xl" aria-hidden="true">arrow_forward</span>
               </>
             ) : isEdit && currentStep?.id === 'rootRedirect' ? (
               <>
                 <span>Update Root Redirect</span>
-                <span className="material-symbols-outlined text-2xl">check</span>
+                <span className="material-symbols-outlined text-2xl" aria-hidden="true">check</span>
               </>
             ) : (
               <>
                 <span>Next Step</span>
-                <span className="material-symbols-outlined text-2xl">arrow_forward</span>
+                <span className="material-symbols-outlined text-2xl" aria-hidden="true">arrow_forward</span>
               </>
             )}
           </button>
