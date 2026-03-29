@@ -132,8 +132,14 @@ const UtmPresetBuilderPage = () => {
   if (initialLoading || (id && !initialData)) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
-        <div className="text-center">
-          <span className="material-symbols-outlined text-4xl text-slate-600 animate-spin">
+        <div
+          className="text-center"
+          role="status"
+          aria-busy="true"
+          aria-live="polite"
+          aria-label="Loading UTM preset"
+        >
+          <span className="material-symbols-outlined text-4xl text-slate-600 animate-spin" aria-hidden="true">
             refresh
           </span>
           <p className="text-[#1b1b1b] mt-4">Loading...</p>
@@ -147,10 +153,12 @@ const UtmPresetBuilderPage = () => {
       <div className="flex-shrink-0 z-10 bg-white border-b border-slate-200 px-4 py-4">
         <div className="max-w-4xl mx-auto flex items-center gap-4">
           <button
+            type="button"
             onClick={() => navigate('/dashboard/utm-presets')}
             className="p-2 text-[#1b1b1b] hover:text-[#1b1b1b] hover:bg-white/5 rounded-lg transition-colors"
+            aria-label="Back to UTM presets"
           >
-            <ArrowLeft size={24} />
+            <ArrowLeft size={24} aria-hidden className="block" />
           </button>
           <h1 className="text-xl font-bold text-[#1b1b1b]">
             {id ? 'Edit UTM Preset' : 'Create New UTM Preset'}

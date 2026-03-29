@@ -16,6 +16,7 @@ const getPlatformLogo = (platform) => {
             height="24"
             fill="white"
             xmlns="http://www.w3.org/2000/svg"
+            aria-hidden="true"
           >
             <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
           </svg>
@@ -42,7 +43,7 @@ const getPlatformLogo = (platform) => {
     case 'google':
       return (
         <div className={`${w} bg-white flex items-center justify-center`}>
-          <svg viewBox="0 0 24 24" width="24" height="24" xmlns="http://www.w3.org/2000/svg">
+          <svg viewBox="0 0 24 24" width="24" height="24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
             <path
               d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
               fill="#4285F4"
@@ -71,6 +72,7 @@ const getPlatformLogo = (platform) => {
             height="24"
             fill="white"
             xmlns="http://www.w3.org/2000/svg"
+            aria-hidden="true"
           >
             <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z" />
           </svg>
@@ -101,6 +103,7 @@ const getPlatformLogo = (platform) => {
             height="24"
             fill="black"
             xmlns="http://www.w3.org/2000/svg"
+            aria-hidden="true"
           >
             <path d="M12 2.979c-2.32 0-4.085 1.705-4.085 4.084 0 .393.048.775.14 1.144-.816.143-1.632.39-2.222.95-.29.274-.467.575-.544.896-.062.257-.04.516.066.764.123.284.348.513.626.657.34.175.71.258 1.05.28l.19.012c.07.004.143.007.222.01l.013.25c.012.247.025.513.04.79v.117c0 .633.435.986.974 1.15.54.164 1.25.164 1.83.164.083 0 .167 0 .252-.002l.144 1.15c.08.647.284.974.606 1.15.32.176.716.216 1.08.216h1.22c.365 0 .76-.04 1.08-.216.32-.176.526-.503.606-1.15l.144-1.15c.085.002.169.002.252.002.58 0 1.29 0 1.83-.164.54-.164.975-.517.975-1.15v-.117c.015-.277.026-.543.04-.79l.012-.25c.08-.003.153-.006.223-.01l.19-.012c.34-.022.71-.105 1.05-.28.278-.144.503-.373.626-.657.106-.248.128-.507.066-.764-.077-.321-.254-.622-.544-.896-.59-.56-1.406-.807-2.222-.95.093-.369.14-.75.14-1.144 0-2.379-1.765-4.084-4.085-4.084z" />
           </svg>
@@ -194,18 +197,18 @@ const UTM_STEPS = [
     key: 'utm_source',
     highlightClass: 'bg-gradient-to-r from-[#135bec] to-[#42a5f5] bg-clip-text text-transparent',
   },
-  { id: 'medium', label: 'Medium', key: 'utm_medium', highlightClass: 'text-purple-400' },
-  { id: 'campaign', label: 'Campaign', key: 'utm_campaign', highlightClass: 'text-yellow-500' },
-  { id: 'content', label: 'Content', key: 'utm_content', highlightClass: 'text-emerald-400' },
-  { id: 'term', label: 'Term', key: 'utm_term', highlightClass: 'text-orange-500' },
+  { id: 'medium', label: 'Medium', key: 'utm_medium', highlightClass: 'text-purple-700' },
+  { id: 'campaign', label: 'Campaign', key: 'utm_campaign', highlightClass: 'text-yellow-700' },
+  { id: 'content', label: 'Content', key: 'utm_content', highlightClass: 'text-emerald-700' },
+  { id: 'term', label: 'Term', key: 'utm_term', highlightClass: 'text-orange-700' },
 ];
 
 const PARAM_COLORS = {
-  utm_source: 'text-blue-400',
-  utm_medium: 'text-purple-400',
-  utm_campaign: 'text-yellow-400',
-  utm_content: 'text-emerald-400',
-  utm_term: 'text-orange-400',
+  utm_source: 'text-blue-700',
+  utm_medium: 'text-purple-700',
+  utm_campaign: 'text-yellow-700',
+  utm_content: 'text-emerald-700',
+  utm_term: 'text-orange-700',
 };
 
 const STEPS = [
@@ -239,37 +242,37 @@ const STEPS = [
   {
     id: 'medium',
     badge: 'UTM',
-    badgeColor: 'text-purple-400 bg-purple-400/10',
+    badgeColor: 'text-purple-700 bg-purple-400/10',
     title: 'Select',
     highlight: 'Medium',
-    highlightClass: 'text-purple-400',
+    highlightClass: 'text-purple-700',
     subtitle: 'Marketing medium (e.g. cpc, email).',
   },
   {
     id: 'campaign',
     badge: 'UTM',
-    badgeColor: 'text-yellow-500 bg-yellow-500/10',
+    badgeColor: 'text-yellow-700 bg-yellow-500/10',
     title: 'Select',
     highlight: 'Campaign',
-    highlightClass: 'text-yellow-500',
+    highlightClass: 'text-yellow-700',
     subtitle: 'Campaign name or dynamic value.',
   },
   {
     id: 'content',
     badge: 'UTM',
-    badgeColor: 'text-emerald-400 bg-emerald-400/10',
+    badgeColor: 'text-emerald-700 bg-emerald-400/10',
     title: 'Select',
     highlight: 'Content',
-    highlightClass: 'text-emerald-400',
+    highlightClass: 'text-emerald-700',
     subtitle: 'Ad content or variation.',
   },
   {
     id: 'term',
     badge: 'UTM',
-    badgeColor: 'text-orange-500 bg-orange-500/10',
+    badgeColor: 'text-orange-700 bg-orange-500/10',
     title: 'Select',
     highlight: 'Term',
-    highlightClass: 'text-orange-500',
+    highlightClass: 'text-orange-700',
     subtitle: 'Paid search keyword or term.',
   },
 ];
@@ -424,17 +427,17 @@ export default function UtmPresetWizardOnePerPage({ initialData, editingPresetId
       <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2">
         Preview Query String
       </p>
-      <div className="font-mono text-sm break-all text-slate-300" dir="ltr">
+      <div className="font-mono text-sm break-all text-slate-700" dir="ltr">
         {previewQuery ? (
           <>
-            <span className="text-slate-500">? </span>
+            <span className="text-slate-600">? </span>
             {Object.entries(params).map(([key, value]) => {
               if (!value) return null;
               const filtered = Object.entries(params).filter(([, v]) => v);
               const idx = filtered.findIndex(([k]) => k === key);
               return (
                 <span key={key}>
-                  <span className={PARAM_COLORS[key] || 'text-slate-300'}>
+                  <span className={PARAM_COLORS[key] || 'text-slate-700'}>
                     {key}=
                     <span
                       className={value.includes('{') || value.includes('__') ? 'underline' : ''}
@@ -468,7 +471,7 @@ export default function UtmPresetWizardOnePerPage({ initialData, editingPresetId
       />
       <div className="flex-1 min-h-0 flex flex-col justify-center px-6 pb-32 pt-8 max-w-2xl mx-auto w-full relative z-10">
         {error && (
-          <div className="mb-4 p-4 bg-red-500/10 border border-red-500/20 text-red-400 rounded-xl text-sm">
+          <div className="mb-4 p-4 bg-red-500/10 border border-red-500/20 text-red-600 rounded-xl text-sm" role="alert">
             {error}
           </div>
         )}
@@ -503,7 +506,7 @@ export default function UtmPresetWizardOnePerPage({ initialData, editingPresetId
                   {currentStep?.highlight}
                 </span>
               </h1>
-              <p className="text-gray-400 font-medium text-2xl">{currentStep?.subtitle}</p>
+              <p className="text-gray-500 font-medium text-2xl">{currentStep?.subtitle}</p>
             </div>
 
             {currentStep?.id === 'name' && (
@@ -518,12 +521,14 @@ export default function UtmPresetWizardOnePerPage({ initialData, editingPresetId
                       setFieldErrors((prev) => ({ ...prev, name: null }));
                     }}
                     placeholder="e.g. Summer Campaign Meta"
+                    aria-label="UTM preset name"
+                    aria-describedby={fieldErrors.name ? 'utm-preset-name-error' : undefined}
                     className="w-full bg-transparent py-5 px-6 text-xl outline-none border-none text-[#1b1b1b] placeholder-slate-500"
                   />
                 </div>
                 <div className="min-h-[24px] mt-1">
                   {fieldErrors.name && (
-                    <p className="text-red-400 text-sm">{fieldErrors.name}</p>
+                    <p id="utm-preset-name-error" className="text-red-500 text-sm" role="alert">{fieldErrors.name}</p>
                   )}
                 </div>
               </>
@@ -536,13 +541,14 @@ export default function UtmPresetWizardOnePerPage({ initialData, editingPresetId
                     key={p.id}
                     type="button"
                     onClick={() => handlePlatformSelect(p.id)}
+                    aria-pressed={platform === p.id}
                     className={`p-5 rounded-2xl border-2 text-left transition-all flex items-center gap-4 ${
                       platform === p.id
                         ? 'border-[#a855f7] bg-[#a855f7]/5'
                         : 'border-slate-200 bg-white hover:border-slate-300'
                     }`}
                   >
-                    {getPlatformLogo(p.id)}
+                    <div aria-hidden="true">{getPlatformLogo(p.id)}</div>
                     <span className="font-bold text-[#1b1b1b]">{p.name}</span>
                   </button>
                 ))}
@@ -565,6 +571,8 @@ export default function UtmPresetWizardOnePerPage({ initialData, editingPresetId
                               key={option}
                               type="button"
                               onClick={() => handleChipClick(utmStep.key, option)}
+                              aria-pressed={isSelected}
+                              aria-label={`${utmStep.label}: ${option}`}
                               className={`px-4 py-2.5 rounded-xl text-sm font-bold transition-all border-2 ${
                                 isSelected
                                   ? 'border-primary bg-primary/10 text-[#1b1b1b]'
@@ -597,22 +605,27 @@ export default function UtmPresetWizardOnePerPage({ initialData, editingPresetId
           <button
             type="button"
             onClick={goBack}
+            aria-label="Previous step"
             className={`flex items-center justify-center p-5 rounded-2xl border border-slate-200 font-bold text-gray-400 hover:bg-slate-200 hover:text-[#1b1b1b] transition-all ${isFirst ? 'invisible' : ''}`}
           >
-            <span className="material-symbols-outlined text-2xl">chevron_left</span>
+            <span className="material-symbols-outlined text-2xl" aria-hidden="true">chevron_left</span>
           </button>
           <button
             type="button"
             onClick={goNext}
             disabled={loading}
+            aria-busy={loading}
             className="flex-1 flex items-center justify-center gap-3 py-5 rounded-2xl font-extrabold text-xl tracking-tight transition-all bg-[#a855f7] hover:bg-[#9333ea] text-white disabled:opacity-60 disabled:cursor-not-allowed shadow-xl"
           >
             {loading ? (
-              <span className="material-symbols-outlined animate-spin text-2xl">refresh</span>
+              <>
+                <span className="material-symbols-outlined animate-spin text-2xl" aria-hidden="true">refresh</span>
+                <span>Saving...</span>
+              </>
             ) : (
               <>
                 <span>{isLast ? (isEdit ? 'Update Preset' : 'Create Preset') : 'Next Step'}</span>
-                <span className="material-symbols-outlined text-2xl">
+                <span className="material-symbols-outlined text-2xl" aria-hidden="true">
                   {isLast ? 'check_circle' : 'arrow_forward'}
                 </span>
               </>

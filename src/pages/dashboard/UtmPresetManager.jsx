@@ -8,12 +8,12 @@ import { Copy } from 'lucide-react';
 import { useToast } from '../../components/common/ToastProvider.jsx';
 
 const PLATFORMS = {
-  meta: { name: 'Meta (FB/IG)', colorClass: 'text-blue-400 bg-blue-400/10' },
-  google: { name: 'Google Ads', colorClass: 'text-emerald-400 bg-emerald-400/10' },
-  tiktok: { name: 'TikTok Ads', colorClass: 'text-pink-400 bg-pink-400/10' },
-  taboola: { name: 'Taboola', colorClass: 'text-orange-400 bg-orange-400/10' },
-  outbrain: { name: 'Outbrain', colorClass: 'text-indigo-400 bg-indigo-400/10' },
-  snapchat: { name: 'Snapchat', colorClass: 'text-yellow-400 bg-yellow-400/10' },
+  meta: { name: 'Meta (FB/IG)', colorClass: 'text-blue-700 bg-blue-400/10' },
+  google: { name: 'Google Ads', colorClass: 'text-emerald-700 bg-emerald-400/10' },
+  tiktok: { name: 'TikTok Ads', colorClass: 'text-pink-700 bg-pink-400/10' },
+  taboola: { name: 'Taboola', colorClass: 'text-orange-700 bg-orange-400/10' },
+  outbrain: { name: 'Outbrain', colorClass: 'text-indigo-700 bg-indigo-400/10' },
+  snapchat: { name: 'Snapchat', colorClass: 'text-yellow-800 bg-yellow-400/10' },
 };
 
 const UtmPresetManager = () => {
@@ -51,6 +51,15 @@ const UtmPresetManager = () => {
       navigate(location.pathname, { replace: true });
     }
   }, [location.state, location.pathname, navigate, showToast]);
+
+  useEffect(() => {
+    if (!openMenuPresetId) return;
+    const onKeyDown = (e) => {
+      if (e.key === 'Escape') setOpenMenuPresetId(null);
+    };
+    document.addEventListener('keydown', onKeyDown);
+    return () => document.removeEventListener('keydown', onKeyDown);
+  }, [openMenuPresetId]);
 
   const fetchPlanAndPresets = async () => {
     try {
@@ -154,8 +163,8 @@ const UtmPresetManager = () => {
   const renderQueryString = (str) => {
     return str.split('&').map((segment, i) => (
       <span key={i}>
-        {i > 0 && <span className="font-bold text-[#7e8896]">&</span>}
-        <span className="font-bold text-[#7e8896]">{segment}</span>
+        {i > 0 && <span className="font-bold text-slate-600">&</span>}
+        <span className="font-bold text-slate-600">{segment}</span>
       </span>
     ));
   };
@@ -259,9 +268,9 @@ const UtmPresetManager = () => {
 
   if (loading) {
     return (
-      <div className="flex flex-col gap-8 w-full h-full items-center justify-center">
+      <div className="flex flex-col gap-8 w-full h-full items-center justify-center" role="status">
         <div className="text-center py-12">
-          <span className="material-symbols-outlined text-4xl text-slate-600 animate-spin">
+          <span className="material-symbols-outlined text-4xl text-slate-600 animate-spin" aria-hidden="true">
             refresh
           </span>
           <p className="text-[#1b1b1b] mt-4">Loading UTM presets...</p>
@@ -290,7 +299,7 @@ const UtmPresetManager = () => {
           </div>
         </div>
         <div className="relative z-10 max-w-xl w-full bg-white/90 backdrop-blur-xl border border-slate-200 shadow-2xl rounded-3xl p-8 md:p-10 text-center">
-          <div className="mb-6 flex justify-center">
+          <div className="mb-6 flex justify-center" aria-hidden="true">
             <div className="relative">
               <div className="absolute inset-0 bg-[#c0ffa5] blur-2xl opacity-25 animate-pulse" />
               <div className="relative bg-gradient-to-br from-[#c0ffa5] to-[#c0ffa5] p-4 rounded-2xl shadow-lg shadow-[#c0ffa5]/40">
@@ -339,14 +348,14 @@ const UtmPresetManager = () => {
           onClick={handleNewPreset}
           className="w-full sm:w-auto px-6 py-3 bg-[#a855f7] hover:bg-[#9333ea] text-white font-bold rounded-xl transition-all shadow-lg shadow-[#a855f7]/20 flex items-center justify-center gap-2"
         >
-          <span className="material-symbols-outlined">add</span>
+          <span className="material-symbols-outlined" aria-hidden="true">add</span>
           New UTM Preset
         </button>
       </div>
 
       {presets.length === 0 ? (
         <div className="bg-[#fcfdfd] border rounded-2xl p-12 text-center hover:shadow-card-mint transition-all border-[#a855f7]/40 md:border-card-border md:hover:border-[#a855f7]/40">
-          <span className="material-symbols-outlined text-6xl text-black mb-4">campaign</span>
+          <span className="material-symbols-outlined text-6xl text-black mb-4" aria-hidden="true">campaign</span>
           <h3 className="text-xl font-bold text-black mb-2">No UTM Presets Yet</h3>
           <p className="text-black mb-6">
             Create your first UTM preset to start tracking your campaigns
@@ -383,7 +392,7 @@ const UtmPresetManager = () => {
                         {platform.name}
                       </span>
                       {preset.status === 'pending' && (
-                        <span className="inline-block px-2 py-1 rounded-lg text-xs font-bold text-amber-400 bg-amber-400/10">
+                        <span className="inline-block px-2 py-1 rounded-lg text-xs font-bold text-amber-800 bg-amber-400/10">
                           Pending
                         </span>
                       )}
@@ -398,18 +407,25 @@ const UtmPresetManager = () => {
                       }}
                       className="p-2 rounded-lg bg-white border border-slate-200 text-slate-700 hover:text-[#1b1b1b] transition-colors"
                       aria-label="Actions menu"
+                      aria-expanded={openMenuPresetId === preset.id}
+                      aria-haspopup="true"
                     >
-                      <span className="material-symbols-outlined text-base">more_vert</span>
+                      <span className="material-symbols-outlined text-base" aria-hidden="true">more_vert</span>
                     </button>
                     {openMenuPresetId === preset.id && (
                       <>
                         <div
                           className="fixed inset-0 z-10"
                           onClick={() => setOpenMenuPresetId(null)}
-                          aria-hidden
+                          aria-hidden="true"
                         />
-                        <div className="absolute right-0 mt-2 w-40 bg-white border border-slate-200 rounded-xl shadow-2xl z-20 overflow-hidden min-w-max">
+                        <div
+                          role="menu"
+                          aria-label="UTM preset actions"
+                          className="absolute right-0 mt-2 w-40 bg-white border border-slate-200 rounded-xl shadow-2xl z-20 overflow-hidden min-w-max"
+                        >
                           <button
+                            role="menuitem"
                             type="button"
                             onClick={() => {
                               setOpenMenuPresetId(null);
@@ -417,18 +433,19 @@ const UtmPresetManager = () => {
                             }}
                             className="w-full px-4 py-3 text-left text-[#1b1b1b] hover:bg-white/5 transition-colors flex items-center gap-3 text-sm"
                           >
-                            <span className="material-symbols-outlined text-base">edit</span>
+                            <span className="material-symbols-outlined text-base" aria-hidden="true">edit</span>
                             Edit
                           </button>
                           <button
+                            role="menuitem"
                             type="button"
                             onClick={() => {
                               setOpenMenuPresetId(null);
                               handleDelete(preset);
                             }}
-                            className="w-full px-4 py-3 text-left text-red-400 hover:bg-red-400/10 transition-colors flex items-center gap-3 text-sm"
+                            className="w-full px-4 py-3 text-left text-red-500 hover:bg-red-400/10 transition-colors flex items-center gap-3 text-sm"
                           >
-                            <span className="material-symbols-outlined text-base">delete</span>
+                            <span className="material-symbols-outlined text-base" aria-hidden="true">delete</span>
                             Delete
                           </button>
                         </div>
@@ -461,11 +478,11 @@ const UtmPresetManager = () => {
 
                   {/* Full UTM string below */}
                   {queryString ? (
-                    <div className="text-base font-mono font-bold break-all bg-white border border-slate-200 p-3 rounded-lg text-[#7e8896]">
+                    <div className="text-base font-mono font-bold break-all bg-white border border-slate-200 p-3 rounded-lg text-slate-600">
                       {renderQueryString(queryString)}
                     </div>
                   ) : (
-                    <div className="text-xs text-[#7e8896] font-bold italic p-3 rounded-lg bg-white border border-slate-200">
+                    <div className="text-xs text-slate-600 font-bold italic p-3 rounded-lg bg-white border border-slate-200">
                       No UTM parameters set
                     </div>
                   )}
@@ -473,17 +490,19 @@ const UtmPresetManager = () => {
 
                 <div className="flex gap-2">
                   <button
+                    type="button"
                     onClick={() => handleCopy(preset)}
                     className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-slate-200 hover:bg-slate-300 text-black rounded-lg transition-colors text-sm font-bold"
+                    aria-label={copiedId === preset.id ? 'Copied to clipboard' : `Copy UTM preset ${preset.name}`}
                   >
                     {copiedId === preset.id ? (
                       <>
-                        <span className="material-symbols-outlined text-sm">check</span>
+                        <span className="material-symbols-outlined text-sm" aria-hidden="true">check</span>
                         Copied!
                       </>
                     ) : (
                       <>
-                        <Copy size={16} />
+                        <Copy size={16} aria-hidden="true" />
                         Copy UTM Preset
                       </>
                     )}
