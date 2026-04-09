@@ -71,7 +71,7 @@ const CTASection = () => {
         'UTM Presets',
         'Advanced Analytics',
       ],
-      highlighted: true,
+      highlighted: false,
       checkoutUrl:
         'https://goodlink.lemonsqueezy.com/checkout/buy/81876116-924c-44f7-b61c-f4a8a93e83f1?embed=1',
       buttonText: 'Go Advanced',
@@ -94,7 +94,7 @@ const CTASection = () => {
         'Pro Analytics',
         'Expedited Support',
       ],
-      highlighted: false,
+      highlighted: true,
       checkoutUrl:
         'https://goodlink.lemonsqueezy.com/checkout/buy/924daf77-b7b3-405d-a94a-2ad2cc476da4?embed=1',
       buttonText: 'Go Pro',
@@ -190,11 +190,17 @@ const CTASection = () => {
                 plan.highlighted
                   ? 'bg-[#c7edb8] p-8 lg:p-10 xl:p-12 rounded-[2.5rem] shadow-[0_32px_64px_rgba(74,61,196,0.12)] scale-100 xl:scale-105 z-10 border-4 border-white hover:border-[#a855f7]'
                   : 'bg-[#f3f3f4] p-8 lg:p-10 rounded-[2rem] border border-[#c8c4d6]/20 hover:border-[#a855f7]'
+              } ${
+                plan.name === 'PRO'
+                  ? 'order-1 md:order-3'
+                  : plan.name === 'ADVANCED'
+                    ? 'order-2 md:order-2'
+                    : 'order-3 md:order-1'
               }`}
             >
               {plan.highlighted && (
                 <span className="absolute -top-5 left-1/2 -translate-x-1/2 px-6 py-2 bg-[#a855f7] text-white text-xs font-black rounded-full uppercase tracking-widest shadow-lg">
-                  Most Popular
+                  30-Day Free Trial
                 </span>
               )}
 
@@ -207,7 +213,7 @@ const CTASection = () => {
                         : 'text-2xl font-bold text-slate-900'
                     }`}
                   >
-                    {plan.highlighted ? 'ADVANCED' : plan.name}
+                    {plan.name}
                   </h3>
                   <p
                     className={`text-sm ${
@@ -239,23 +245,23 @@ const CTASection = () => {
 
                 <button
                   type="button"
-                  disabled={plan.name !== 'PRO' || !!user}
+                  disabled={!!user}
                   onClick={(e) => {
                     e.preventDefault();
-                    if (plan.name !== 'PRO' || user) return;
+                    if (user) return;
                     navigate('/login?mode=signup');
                   }}
                   className={`mb-10 w-full text-center inline-block active:scale-95 transition-all ${
                     plan.highlighted
-                      ? plan.name === 'PRO' && !user
+                      ? !user
                         ? 'py-5 rounded-full bg-[#a855f7] text-white font-black text-lg shadow-xl shadow-[#a855f7]/30 hover:bg-[#9333ea] cursor-pointer transition-colors'
                         : 'py-5 rounded-full bg-slate-300 text-slate-500 font-black text-lg cursor-not-allowed'
-                      : plan.name === 'PRO' && !user
+                      : !user
                         ? 'py-4 rounded-full border border-[#787585] text-[#5549d0] font-bold hover:bg-[#eeeeee] cursor-pointer'
                         : 'py-4 rounded-full border border-[#787585] text-[#5549d0] font-bold cursor-not-allowed'
                   }`}
                 >
-                  {plan.name === 'PRO' ? '30-Day Free Trial' : plan.buttonText}
+                  {user ? plan.buttonText : 'Start with Pro Trial'}
                 </button>
 
                 <ul className="space-y-6 mb-2 flex-grow">
