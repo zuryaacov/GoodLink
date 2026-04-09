@@ -186,7 +186,7 @@ const AbuseReportPage = () => {
               </svg>
             </div>
             */}
-            <span className="text-2xl font-black leading-tight tracking-tight text-black">
+            <span className="text-2xl font-black leading-tight tracking-tight text-inherit">
               GoodLink
             </span>
           </Link>

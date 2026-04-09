@@ -215,7 +215,7 @@ const Sidebar = ({ className = '', onLinkClick }) => {
             </svg>
           </div>
           */}
-          <span className="text-3xl font-black leading-tight tracking-tight text-black">
+          <span className="text-3xl font-black leading-tight tracking-tight text-inherit">
             GoodLink
           </span>
         </Link>

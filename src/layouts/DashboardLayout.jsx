@@ -158,7 +158,7 @@ const DashboardLayout = () => {
               </svg>
             </div>
             */}
-            <span className="text-xl font-black leading-tight tracking-tight text-black">
+            <span className="text-xl font-black leading-tight tracking-tight text-inherit">
               GoodLink
             </span>
           </Link>
