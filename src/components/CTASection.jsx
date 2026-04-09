@@ -180,7 +180,7 @@ const CTASection = () => {
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true }}
-          className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8 xl:gap-10 items-stretch"
+          className="grid grid-cols-1 xl:grid-cols-3 gap-8 xl:gap-10 items-stretch"
         >
           {plans.map((plan) => (
             <motion.div
@@ -257,11 +257,11 @@ const CTASection = () => {
                         ? 'py-5 rounded-full bg-[#a855f7] text-white font-black text-lg shadow-xl shadow-[#a855f7]/30 hover:bg-[#9333ea] cursor-pointer transition-colors'
                         : 'py-5 rounded-full bg-slate-300 text-slate-500 font-black text-lg cursor-not-allowed'
                       : !user
-                        ? 'py-4 rounded-full border border-[#787585] text-[#5549d0] font-bold hover:bg-[#eeeeee] cursor-pointer'
+                        ? 'py-4 rounded-full border border-[#787585] text-[#5549d0] font-bold hover:bg-[#d7fec8] cursor-pointer'
                         : 'py-4 rounded-full border border-[#787585] text-[#5549d0] font-bold cursor-not-allowed'
                   }`}
                 >
-                  {user ? plan.buttonText : 'Start with Pro Trial'}
+                  {user ? plan.buttonText : plan.name === 'PRO' ? 'Free 30-day Trial' : 'Start with Pro Trial'}
                 </button>
 
                 <ul className="space-y-6 mb-2 flex-grow">
