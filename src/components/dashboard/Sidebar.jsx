@@ -195,6 +195,7 @@ const Sidebar = ({ className = '', onLinkClick }) => {
           to="/"
           className="flex items-center gap-3 text-[#1b1b1b] transition-opacity hover:opacity-80"
         >
+          {/* Link-shape icon hidden by request (kept in code, do not delete)
           <div className="size-5 sm:size-8 text-primary flex-shrink-0" aria-hidden="true">
             <svg fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
               <path
@@ -213,6 +214,7 @@ const Sidebar = ({ className = '', onLinkClick }) => {
               ></path>
             </svg>
           </div>
+          */}
           <span className="text-3xl font-black leading-tight tracking-tight text-[#a855f7]">
             GoodLink
           </span>

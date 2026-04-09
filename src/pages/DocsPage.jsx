@@ -77,6 +77,7 @@ const DocsPage = () => {
             to="/"
             className="flex items-center gap-3 text-black transition-opacity hover:opacity-80 w-fit"
           >
+            {/* Link-shape icon hidden by request (kept in code, do not delete)
             <div className="size-5 sm:size-7 text-primary flex-shrink-0">
               <svg fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 <path
@@ -95,6 +96,7 @@ const DocsPage = () => {
                 />
               </svg>
             </div>
+            */}
             <span className="text-2xl sm:text-3xl font-black leading-tight tracking-tight text-[#a855f7]">
               GoodLink
             </span>
