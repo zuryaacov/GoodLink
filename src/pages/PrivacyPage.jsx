@@ -298,7 +298,7 @@ const PrivacyPage = () => {
         <div className="max-w-3xl mx-auto flex items-center justify-center">
           <Link
             to="/"
-            className="flex items-center gap-3 text-black transition-opacity hover:opacity-80 w-fit"
+            className="flex items-center gap-3 text-black transition-colors hover:text-[#0b996f] w-fit"
           >
             {/* Link-shape icon hidden by request (kept in code, do not delete)
             <div className="size-5 sm:size-7 text-primary flex-shrink-0">
@@ -320,7 +320,7 @@ const PrivacyPage = () => {
               </svg>
             </div>
             */}
-            <span className="text-2xl font-black leading-tight tracking-tight text-[#a855f7]">
+            <span className="text-2xl font-black leading-tight tracking-tight text-black">
               GoodLink
             </span>
           </Link>

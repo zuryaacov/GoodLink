@@ -165,7 +165,7 @@ const AbuseReportPage = () => {
     <div className="min-h-screen bg-[#f9fafb] text-[#1f2937]">
       <header className="sticky top-0 z-40 border-b border-slate-200 py-4 px-6 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80">
         <div className="max-w-3xl mx-auto flex items-center justify-center">
-          <Link to="/" className="flex items-center gap-3 text-black transition-opacity hover:opacity-80 w-fit">
+          <Link to="/" className="flex items-center gap-3 text-black transition-colors hover:text-[#0b996f] w-fit">
             {/* Link-shape icon hidden by request (kept in code, do not delete)
             <div className="size-5 sm:size-7 text-primary flex-shrink-0">
               <svg fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -186,7 +186,7 @@ const AbuseReportPage = () => {
               </svg>
             </div>
             */}
-            <span className="text-2xl font-black leading-tight tracking-tight text-[#a855f7]">
+            <span className="text-2xl font-black leading-tight tracking-tight text-black">
               GoodLink
             </span>
           </Link>

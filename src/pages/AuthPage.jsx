@@ -677,7 +677,7 @@ const AuthPage = () => {
   };
 
   const Logo = () => (
-    <Link to="/" className="flex items-center gap-3 mb-8 transition-opacity hover:opacity-80">
+    <Link to="/" className="flex items-center gap-3 mb-8 transition-colors hover:text-[#0b996f]">
       {/* Link-shape icon hidden by request (kept in code, do not delete)
       <div className="size-5 sm:size-8 text-primary flex-shrink-0" aria-hidden="true">
         <svg fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -698,7 +698,7 @@ const AuthPage = () => {
         </svg>
       </div>
       */}
-      <span className="text-3xl font-black leading-tight tracking-tight text-[#a855f7]">GoodLink</span>
+      <span className="text-3xl font-black leading-tight tracking-tight text-black">GoodLink</span>
     </Link>
   );
 

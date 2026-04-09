@@ -137,7 +137,7 @@ const DashboardLayout = () => {
 
       <div className="flex-1 lg:ml-64 flex flex-col h-full overflow-hidden">
         <header className="lg:hidden h-16 bg-white border-b border-slate-200 flex items-center justify-between px-4 fixed top-0 left-0 right-0 z-40">
-          <Link to="/" className="flex items-center gap-2">
+          <Link to="/" className="flex items-center gap-2 transition-colors hover:text-[#0b996f]">
             {/* Link-shape icon hidden by request (kept in code, do not delete)
             <div className="size-5 sm:size-8 text-primary flex-shrink-0" aria-hidden="true">
               <svg fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -158,7 +158,7 @@ const DashboardLayout = () => {
               </svg>
             </div>
             */}
-            <span className="text-xl font-black leading-tight tracking-tight text-[#a855f7]">
+            <span className="text-xl font-black leading-tight tracking-tight text-black">
               GoodLink
             </span>
           </Link>
