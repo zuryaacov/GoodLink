@@ -29,7 +29,7 @@ const Hero = ({ user }) => {
             id="hero-heading"
             className="text-slate-900 text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-black leading-loose md:leading-[1.75] lg:leading-[2] xl:leading-[1.75] tracking-tight"
           >
-            Short Links, Bot Protection1,
+            Short Links, Bot Protection,
             <br className="hidden sm:block" />
             <span>
               <span className="text-[#a855f7]">S2S Tracking</span> &amp; Great Analytics
