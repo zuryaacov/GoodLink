@@ -116,7 +116,7 @@ describe('AccountSettingsPage basic rendering', () => {
 });
 
 describe('AccountSettingsPage – subscription states (free_trial, cancelled)', () => {
-  it('when subscription_status is free_trial: hides pricing Plans section and Cancel subscription button', async () => {
+  it('when subscription_status is free_trial: shows pricing Plans section, marks PRO as recommended, and hides Cancel subscription button', async () => {
     settingsMockConfig.subscriptionStatus = 'free_trial';
     renderAccountSettings();
 
@@ -125,8 +125,9 @@ describe('AccountSettingsPage – subscription states (free_trial, cancelled)', 
       expect(screen.getByText(/Free Trial/i)).toBeInTheDocument();
     });
 
-    // Pricing cards section is hidden for free_trial
-    expect(screen.queryByRole('heading', { name: /^Plans$/i })).not.toBeInTheDocument();
+    // Pricing cards section is shown for free_trial
+    expect(screen.getByRole('heading', { name: /^Plans$/i })).toBeInTheDocument();
+    expect(screen.getByText(/Recommended/i)).toBeInTheDocument();
     // Cancel subscription button is hidden when free_trial
     expect(screen.queryByText(/Cancel subscription/i)).not.toBeInTheDocument();
   });
@@ -184,6 +185,27 @@ describe('AccountSettingsPage – plan change flow', () => {
     await waitFor(() => {
       expect(windowOpenSpy).toHaveBeenCalledWith(
         'https://portal.lemonsqueezy.com/subscription/update',
+        '_blank',
+        'noopener,noreferrer'
+      );
+    });
+
+    windowOpenSpy.mockRestore();
+  });
+
+  it('opens fresh checkout URL when lemon_squeezy_subscription_data is empty', async () => {
+    settingsMockConfig.subscriptionData = null;
+    const windowOpenSpy = vi.spyOn(window, 'open').mockImplementation(() => null);
+    renderAccountSettings();
+
+    const switchPlanButton = await screen.findByRole('button', {
+      name: /Switch to this plan — STARTER plan/i,
+    });
+    fireEvent.click(switchPlanButton);
+
+    await waitFor(() => {
+      expect(windowOpenSpy).toHaveBeenCalledWith(
+        'https://goodlink.lemonsqueezy.com/checkout/buy/54a3e3e3-3618-4922-bce6-a0617252f1ae?checkout[email]=user%40example.com&checkout[custom][user_id]=user-1&embed=1',
         '_blank',
         'noopener,noreferrer'
       );

@@ -370,27 +370,24 @@ export default function AccountSettingsPage() {
   const currentPlanPrice = currentPlanKey === 'starter' ? 5 : currentPlanKey === 'advanced' ? 10 : currentPlanKey === 'pro' ? 20 : 0;
   const planKeyFromName = (name) => name === 'STARTER' ? 'starter' : name === 'ADVANCED' ? 'advanced' : 'pro';
   const subscriptionData = profile?.lemon_squeezy_subscription_data;
-  const updatePaymentMethodUrl =
-    (typeof subscriptionData === 'string'
-      ? (() => {
-          try {
-            return JSON.parse(subscriptionData);
-          } catch {
-            return null;
-          }
-        })()
-      : subscriptionData)?.data?.attributes?.urls?.customer_portal_update_subscription;
+  const parsedSubscriptionData = typeof subscriptionData === 'string'
+    ? (() => {
+        try {
+          return JSON.parse(subscriptionData);
+        } catch {
+          return null;
+        }
+      })()
+    : subscriptionData;
+  const hasSubscriptionData = parsedSubscriptionData != null;
+  const updateSubscriptionUrl = parsedSubscriptionData?.data?.attributes?.urls?.customer_portal_update_subscription;
   const hasActivePaidSubscription = !isCancelled && !isFreeTrial && currentPlanKey != null;
 
   const openCheckout = (plan) => {
     if (!user) return;
 
-    if (hasActivePaidSubscription) {
-      if (updatePaymentMethodUrl) {
-        window.open(updatePaymentMethodUrl, '_blank', 'noopener,noreferrer');
-        return;
-      }
-      setError('Subscription management link is unavailable. Please contact support.');
+    if (hasActivePaidSubscription && hasSubscriptionData && updateSubscriptionUrl) {
+      window.open(updateSubscriptionUrl, '_blank', 'noopener,noreferrer');
       return;
     }
 
@@ -606,16 +603,16 @@ export default function AccountSettingsPage() {
 
         {/* Pricing cards (same layout and styling as homepage CTASection).
             Temporarily hidden for users on a 30-day free trial. */}
-        {!isFreeTrial && (
-          <div className="mt-12">
-            <h2 className="text-2xl font-bold text-[#1b1b1b] dark:text-[#1b1b1b] mb-6">Plans</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8 xl:gap-10 items-stretch">
-              {SETTINGS_PLANS.map((plan) => {
+        <div className="mt-12">
+          <h2 className="text-2xl font-bold text-[#1b1b1b] dark:text-[#1b1b1b] mb-6">Plans</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8 xl:gap-10 items-stretch">
+            {SETTINGS_PLANS.map((plan) => {
               const planKey = planKeyFromName(plan.name);
               const isCurrentPlan = currentPlanKey != null && planKey === currentPlanKey;
+              const isRecommendedForTrial = isFreeTrial && planKey === 'pro';
               const planPriceNum = plan.priceNum;
               const isDowngrade = currentPlanKey && planPriceNum < currentPlanPrice;
-              const isFeaturedCard = isCurrentPlan;
+              const isFeaturedCard = isCurrentPlan || isRecommendedForTrial;
               let buttonLabel = plan.buttonText;
               if (isCurrentPlan) buttonLabel = 'Your current plan';
               else if (isDowngrade) buttonLabel = 'Switch to this plan';
@@ -631,11 +628,11 @@ export default function AccountSettingsPage() {
                         : 'bg-[#f3f3f4] p-8 lg:p-10 rounded-[2rem] border border-[#c8c4d6]/20 hover:border-[#a855f7]'
                     }`}
                   >
-                    {isCurrentPlan && (
+                    {(isCurrentPlan || isRecommendedForTrial) && (
                       <span
                         className="absolute -top-5 left-1/2 -translate-x-1/2 px-6 py-2 text-white text-xs font-black rounded-full uppercase tracking-widest shadow-lg bg-[#0b996f]"
                       >
-                        Current Plan
+                        {isCurrentPlan ? 'Current Plan' : 'Recommended'}
                       </span>
                     )}
                     <div className="flex flex-col h-full">
@@ -730,10 +727,9 @@ export default function AccountSettingsPage() {
                     </div>
                   </motion.div>
                 );
-              })}
-            </div>
+            })}
           </div>
-        )}
+        </div>
 
         {/* Security (below Pricing) - Only for Email+Password Users */}
         {isEmailUser && (
