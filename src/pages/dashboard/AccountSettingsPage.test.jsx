@@ -7,6 +7,15 @@ import AccountSettingsPage from './AccountSettingsPage.jsx';
 // Configurable profile for subscription_status (free_trial, cancelled, active)
 const settingsMockConfig = {
   subscriptionStatus: 'active',
+  subscriptionData: {
+    data: {
+      attributes: {
+        urls: {
+          update_payment_method: 'https://portal.lemonsqueezy.com/subscription/update-payment',
+        },
+      },
+    },
+  },
 };
 const profileUpdateMock = vi.fn(() => ({
   eq: vi.fn(() => Promise.resolve({ error: null })),
@@ -44,6 +53,7 @@ vi.mock('../../lib/supabase', () => {
                       plan_type: 'pro',
                       subscription_status: settingsMockConfig.subscriptionStatus,
                       lemon_squeezy_customer_portal_url: 'https://portal.lemonsqueezy.com/billing',
+                      lemon_squeezy_subscription_data: settingsMockConfig.subscriptionData,
                       timezone: 'UTC',
                     },
                     error: null,
@@ -68,6 +78,15 @@ vi.mock('../../components/common/ToastProvider.jsx', () => ({
 
 beforeEach(() => {
   settingsMockConfig.subscriptionStatus = 'active';
+  settingsMockConfig.subscriptionData = {
+    data: {
+      attributes: {
+        urls: {
+          update_payment_method: 'https://portal.lemonsqueezy.com/subscription/update-payment',
+        },
+      },
+    },
+  };
   profileUpdateMock.mockClear();
 });
 
@@ -148,6 +167,28 @@ describe('AccountSettingsPage – cancel flow', () => {
     });
 
     expect(profileUpdateMock).not.toHaveBeenCalled();
+    windowOpenSpy.mockRestore();
+  });
+});
+
+describe('AccountSettingsPage – plan change flow', () => {
+  it('opens update_payment_method URL for users with active paid subscription', async () => {
+    const windowOpenSpy = vi.spyOn(window, 'open').mockImplementation(() => null);
+    renderAccountSettings();
+
+    const switchPlanButton = await screen.findByRole('button', {
+      name: /Switch to this plan — STARTER plan/i,
+    });
+    fireEvent.click(switchPlanButton);
+
+    await waitFor(() => {
+      expect(windowOpenSpy).toHaveBeenCalledWith(
+        'https://portal.lemonsqueezy.com/subscription/update-payment',
+        '_blank',
+        'noopener,noreferrer'
+      );
+    });
+
     windowOpenSpy.mockRestore();
   });
 });

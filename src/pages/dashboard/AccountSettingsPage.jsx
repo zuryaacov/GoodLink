@@ -369,9 +369,31 @@ export default function AccountSettingsPage() {
             : null;
   const currentPlanPrice = currentPlanKey === 'starter' ? 5 : currentPlanKey === 'advanced' ? 10 : currentPlanKey === 'pro' ? 20 : 0;
   const planKeyFromName = (name) => name === 'STARTER' ? 'starter' : name === 'ADVANCED' ? 'advanced' : 'pro';
+  const subscriptionData = profile?.lemon_squeezy_subscription_data;
+  const updatePaymentMethodUrl =
+    (typeof subscriptionData === 'string'
+      ? (() => {
+          try {
+            return JSON.parse(subscriptionData);
+          } catch {
+            return null;
+          }
+        })()
+      : subscriptionData)?.data?.attributes?.urls?.update_payment_method;
+  const hasActivePaidSubscription = !isCancelled && !isFreeTrial && currentPlanKey != null;
 
   const openCheckout = (plan) => {
     if (!user) return;
+
+    if (hasActivePaidSubscription) {
+      if (updatePaymentMethodUrl) {
+        window.open(updatePaymentMethodUrl, '_blank', 'noopener,noreferrer');
+        return;
+      }
+      setError('Subscription management link is unavailable. Please contact support.');
+      return;
+    }
+
     const baseUrl = plan.checkoutUrl.split('?')[0];
     const q = [];
     const emailToUse = (profile?.email || user.email || '').trim();
