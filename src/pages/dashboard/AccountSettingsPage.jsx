@@ -299,32 +299,23 @@ export default function AccountSettingsPage() {
     setSaving(true);
     setError(null);
     try {
-      const { error: updateError } = await supabase
-        .from('profiles')
-        .update({
-          subscription_status: 'cancelled',
-          subscription_cancelled_at: new Date().toISOString(),
-        })
-        .eq('id', user.id);
-      if (updateError) throw updateError;
-      setShowCancelConfirmModal(false);
-      setSuccess('Subscription marked as canceled.');
-      setTimeout(() => setSuccess(null), 5000);
-      showToast({
-        type: 'success',
-        title: 'Subscription cancelled',
-        message: 'Your subscription has been marked as cancelled.',
-      });
-      fetchUserData();
-
-      // If user is on a paid plan (not free trial / free), also open Lemon Squeezy customer portal
       const isFreePlan = currentPlan === 'free';
       if (!isFreeTrial && !isFreePlan && portalUrl) {
+        setShowCancelConfirmModal(false);
         window.open(portalUrl, '_blank', 'noopener,noreferrer');
+        setSuccess('Opened billing portal. Your status will update after Lemon Squeezy confirms cancellation.');
+        setTimeout(() => setSuccess(null), 5000);
+        showToast({
+          type: 'success',
+          title: 'Continue in billing portal',
+          message: 'Complete the cancellation there. Your status updates after confirmation from Lemon Squeezy.',
+        });
+      } else {
+        throw new Error('Billing portal is unavailable. Please contact support to cancel your subscription.');
       }
     } catch (err) {
       console.error(err);
-      setError(err.message || 'Failed to update subscription.');
+      setError(err.message || 'Failed to start cancellation process.');
     } finally {
       setSaving(false);
     }

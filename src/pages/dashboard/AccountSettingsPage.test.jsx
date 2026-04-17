@@ -1,6 +1,6 @@
 import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter, Routes, Route } from 'react-router-dom';
 import AccountSettingsPage from './AccountSettingsPage.jsx';
 
@@ -8,6 +8,9 @@ import AccountSettingsPage from './AccountSettingsPage.jsx';
 const settingsMockConfig = {
   subscriptionStatus: 'active',
 };
+const profileUpdateMock = vi.fn(() => ({
+  eq: vi.fn(() => Promise.resolve({ error: null })),
+}));
 
 vi.mock('../../lib/supabase', () => {
   const countChain = {
@@ -40,6 +43,7 @@ vi.mock('../../lib/supabase', () => {
                       full_name: 'Test User',
                       plan_type: 'pro',
                       subscription_status: settingsMockConfig.subscriptionStatus,
+                      lemon_squeezy_customer_portal_url: 'https://portal.lemonsqueezy.com/billing',
                       timezone: 'UTC',
                     },
                     error: null,
@@ -47,9 +51,7 @@ vi.mock('../../lib/supabase', () => {
                 ),
               })),
             })),
-            update: vi.fn(() => ({
-              eq: vi.fn(() => Promise.resolve({ error: null })),
-            })),
+            update: profileUpdateMock,
           };
         }
         return countChain;
@@ -66,6 +68,7 @@ vi.mock('../../components/common/ToastProvider.jsx', () => ({
 
 beforeEach(() => {
   settingsMockConfig.subscriptionStatus = 'active';
+  profileUpdateMock.mockClear();
 });
 
 function renderAccountSettings() {
@@ -119,5 +122,32 @@ describe('AccountSettingsPage – subscription states (free_trial, cancelled)', 
     });
 
     expect(screen.queryByText(/Cancel subscription/i)).not.toBeInTheDocument();
+  });
+});
+
+describe('AccountSettingsPage – cancel flow', () => {
+  it('opens Lemon Squeezy portal without updating subscription status locally', async () => {
+    const windowOpenSpy = vi.spyOn(window, 'open').mockImplementation(() => null);
+    renderAccountSettings();
+
+    const cancelSubscriptionButton = await screen.findByRole('button', {
+      name: /Cancel subscription/i,
+    });
+
+    fireEvent.click(cancelSubscriptionButton);
+
+    const confirmButton = await screen.findByRole('button', { name: /^Confirm$/i });
+    fireEvent.click(confirmButton);
+
+    await waitFor(() => {
+      expect(windowOpenSpy).toHaveBeenCalledWith(
+        'https://portal.lemonsqueezy.com/billing',
+        '_blank',
+        'noopener,noreferrer'
+      );
+    });
+
+    expect(profileUpdateMock).not.toHaveBeenCalled();
+    windowOpenSpy.mockRestore();
   });
 });
