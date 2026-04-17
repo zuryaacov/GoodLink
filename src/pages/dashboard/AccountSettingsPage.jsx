@@ -379,7 +379,7 @@ export default function AccountSettingsPage() {
             return null;
           }
         })()
-      : subscriptionData)?.data?.attributes?.urls?.update_payment_method;
+      : subscriptionData)?.data?.attributes?.urls?.customer_portal_update_subscription;
   const hasActivePaidSubscription = !isCancelled && !isFreeTrial && currentPlanKey != null;
 
   const openCheckout = (plan) => {

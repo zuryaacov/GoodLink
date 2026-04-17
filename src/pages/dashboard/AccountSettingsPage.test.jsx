@@ -11,7 +11,7 @@ const settingsMockConfig = {
     data: {
       attributes: {
         urls: {
-          update_payment_method: 'https://portal.lemonsqueezy.com/subscription/update-payment',
+          customer_portal_update_subscription: 'https://portal.lemonsqueezy.com/subscription/update',
         },
       },
     },
@@ -82,7 +82,7 @@ beforeEach(() => {
     data: {
       attributes: {
         urls: {
-          update_payment_method: 'https://portal.lemonsqueezy.com/subscription/update-payment',
+          customer_portal_update_subscription: 'https://portal.lemonsqueezy.com/subscription/update',
         },
       },
     },
@@ -172,7 +172,7 @@ describe('AccountSettingsPage – cancel flow', () => {
 });
 
 describe('AccountSettingsPage – plan change flow', () => {
-  it('opens update_payment_method URL for users with active paid subscription', async () => {
+  it('opens customer_portal_update_subscription URL for users with active paid subscription', async () => {
     const windowOpenSpy = vi.spyOn(window, 'open').mockImplementation(() => null);
     renderAccountSettings();
 
@@ -183,7 +183,7 @@ describe('AccountSettingsPage – plan change flow', () => {
 
     await waitFor(() => {
       expect(windowOpenSpy).toHaveBeenCalledWith(
-        'https://portal.lemonsqueezy.com/subscription/update-payment',
+        'https://portal.lemonsqueezy.com/subscription/update',
         '_blank',
         'noopener,noreferrer'
       );
