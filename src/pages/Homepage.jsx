@@ -50,9 +50,9 @@ const Homepage = () => {
       <Navbar />
       <main id="main-content" className="flex-1">
         <Hero user={user} />
+        <CTASection />
         <Features />
         <AnalyticsSection />
-        <CTASection />
       </main>
       <Footer />
     </div>
