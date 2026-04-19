@@ -141,13 +141,15 @@ const CTASection = () => {
           <div className="inline-flex items-center rounded-full bg-[#c0ffa5]/30 px-3 py-1 text-sm font-medium text-[#047857] border border-[#c0ffa5]/50">
             Pricing
           </div>
-          <h2 id="pricing-heading" className="text-slate-900 dark:text-[#1b1b1b] tracking-tight text-3xl md:text-5xl font-black leading-tight">
-            Choose Your Plan
-          </h2>
-          <p className="text-slate-600 dark:text-[#1b1b1b] text-lg md:text-xl font-normal leading-relaxed">
-            Flexible pricing designed to scale with your business. Start with a low-cost entry plan,
-            upgrade when you're ready.
-          </p>
+          {/*
+            <h2 id="pricing-heading" className="text-slate-900 dark:text-[#1b1b1b] tracking-tight text-3xl md:text-5xl font-black leading-tight">
+              Choose Your Plan
+            </h2>
+            <p className="text-slate-600 dark:text-[#1b1b1b] text-lg md:text-xl font-normal leading-relaxed">
+              Flexible pricing designed to scale with your business. Start with a low-cost entry plan,
+              upgrade when you're ready.
+            </p>
+          */}
         </motion.div>
 
         {/* Pricing sub-heading: icon on top, then 3 lines – all centered */}
