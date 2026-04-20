@@ -123,15 +123,15 @@ async function getActiveCustomDomainOwner(env, domainCandidates) {
 
     for (const candidate of domainCandidates) {
         try {
-            const res = await fetch(
-                `${env.SUPABASE_URL}/rest/v1/custom_domains?domain=eq.${encodeURIComponent(candidate)}&status=eq.active&select=user_id,domain&limit=1`,
-                {
-                    headers: {
-                        "apikey": env.SUPABASE_SERVICE_ROLE_KEY,
-                        "Authorization": `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}`
-                    }
+            // Match domain rows that are usable for routing (not soft-deleted).
+            // Many domains stay `pending` until DNS is verified, but traffic still hits the hostname.
+            const filter = `domain=eq.${encodeURIComponent(candidate)}&status=not.eq.deleted&select=user_id,domain,status&limit=1`;
+            const res = await fetch(`${env.SUPABASE_URL}/rest/v1/custom_domains?${filter}`, {
+                headers: {
+                    "apikey": env.SUPABASE_SERVICE_ROLE_KEY,
+                    "Authorization": `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}`
                 }
-            );
+            });
             if (!res.ok) continue;
             const rows = await res.json().catch(() => []);
             const row = rows?.[0] || null;
@@ -2016,12 +2016,7 @@ export default Sentry.withSentry(
             };
 
             // 2. Slug Validation
-            if (!slug || slug.includes('.')) return terminateWithLog(slug ? 'invalid_slug' : 'home_page_access');
-
-            const isValidSlug = /^[a-z0-9-]+$/.test(slug);
-            if (!isValidSlug) {
-                return terminateWithLog('invalid_slug_format');
-            }
+            if (!slug) return terminateWithLog('home_page_access');
 
             // 3. Fetch link data from Redis/Supabase (supports apex/www domain mismatch)
             const requestedHost = url.hostname.toLowerCase();
@@ -2031,6 +2026,23 @@ export default Sentry.withSentry(
                     ? requestedHost.slice(4)
                     : `www.${requestedHost}`;
             const domainCandidates = [...new Set([normalizedDomain, requestedHost, alternateDomain])].filter(Boolean);
+
+            // If slug looks invalid (dots / bad charset) on a user-owned custom domain, still attribute the click
+            // to the domain owner (but keep the invalid verdict for analytics).
+            if (slug.includes('.') || !/^[a-z0-9-]+$/.test(slug)) {
+                if (domain !== "glynk.to") {
+                    const domainOwner = await getActiveCustomDomainOwner(env, domainCandidates);
+                    if (domainOwner?.userId) {
+                        const verdict = slug.includes('.') ? 'invalid_slug' : 'invalid_slug_format';
+                        return terminateWithLog(verdict, {
+                            user_id: domainOwner.userId,
+                            domain: domainOwner.domain || domain,
+                            slug
+                        });
+                    }
+                }
+                return terminateWithLog(slug.includes('.') ? 'invalid_slug' : 'invalid_slug_format');
+            }
 
             let linkData = null;
 
