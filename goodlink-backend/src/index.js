@@ -118,6 +118,37 @@ async function getCustomDomainConfig(env, domain) {
     }
 }
 
+async function getActiveCustomDomainOwner(env, domainCandidates) {
+    if (!Array.isArray(domainCandidates) || domainCandidates.length === 0) return null;
+
+    for (const candidate of domainCandidates) {
+        try {
+            const res = await fetch(
+                `${env.SUPABASE_URL}/rest/v1/custom_domains?domain=eq.${encodeURIComponent(candidate)}&status=eq.active&select=user_id,domain&limit=1`,
+                {
+                    headers: {
+                        "apikey": env.SUPABASE_SERVICE_ROLE_KEY,
+                        "Authorization": `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}`
+                    }
+                }
+            );
+            if (!res.ok) continue;
+            const rows = await res.json().catch(() => []);
+            const row = rows?.[0] || null;
+            if (row?.user_id) {
+                return {
+                    userId: row.user_id,
+                    domain: row.domain || candidate
+                };
+            }
+        } catch {
+            // Keep trying other candidates.
+        }
+    }
+
+    return null;
+}
+
 function getBearerToken(request) {
     const authHeader = request.headers.get("Authorization") || request.headers.get("authorization") || "";
     if (!authHeader.toLowerCase().startsWith("bearer ")) return null;
@@ -2038,7 +2069,19 @@ export default Sentry.withSentry(
                 }
             }
 
-            if (!linkData) return terminateWithLog('link_not_found');
+            if (!linkData) {
+                if (domain !== "glynk.to") {
+                    const domainOwner = await getActiveCustomDomainOwner(env, domainCandidates);
+                    if (domainOwner?.userId) {
+                        return terminateWithLog('link_not_found', {
+                            user_id: domainOwner.userId,
+                            domain: domainOwner.domain || domain,
+                            slug
+                        });
+                    }
+                }
+                return terminateWithLog('link_not_found');
+            }
 
             // Redis may return stringified JSON; normalize before any field checks
             if (typeof linkData === "string") {
