@@ -1836,6 +1836,7 @@ export default Sentry.withSentry(
             };
 
             // 1. Noise/Sensitive paths filter: silent skip without any logs or DB writes
+            /*
             const blockedPathTokens = [
                 "/favicon.ico",
                 "/robots.txt",
@@ -1872,6 +1873,8 @@ export default Sentry.withSentry(
             const isBlockedPath = blockedPathTokens.some((token) => path.includes(token));
             const hasBlockedSlugToken = blockedSlugTokens.some((token) => slugCandidate.includes(token));
             const hasInvalidSlugChars = slugCandidate.length > 0 && /[^a-z0-9-]/.test(slugCandidate);
+            */
+            const slugCandidate = path.split("?")[0].replace(/^\/+|\/+$/g, "");
             const isGlynlRootWithoutSlug = domain === "glynk.to" && (path === "/" || slugCandidate === "");
             if (isGlynlRootWithoutSlug) {
                 return new Response(getGlynk404Page(), {
@@ -1879,6 +1882,7 @@ export default Sentry.withSentry(
                     headers: { "Content-Type": "text/html;charset=UTF-8" }
                 });
             }
+            /*
             if (
                 isBlockedPath ||
                 hasBlockedSlugToken ||
@@ -1887,6 +1891,7 @@ export default Sentry.withSentry(
             ) {
                 return new Response(null, { status: 204 });
             }
+            */
 
             queueAxiomLog("request_received", null, false, {
                 backend_event: "request_received",
