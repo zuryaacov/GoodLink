@@ -53,6 +53,8 @@ const relativeTime = (dateString) => {
 };
 
 const TRAFFIC_PAGE_SIZE = 20;
+const isInvalidTrafficVerdict = (verdict) =>
+  typeof verdict === 'string' && verdict.toLowerCase().startsWith('invalid_slug');
 
 const KPICard = ({ title, value, change, trend, icon, iconBgClass, iconColorClass }) => {
   const headingId = `kpi-${title
@@ -213,6 +215,7 @@ const Analytics = () => {
     uniqueVisitors: 0,
     activeLinks: 0,
     botDetected: 0,
+    invalidTraffic: 0,
   });
   const [chartData, setChartData] = useState({
     humanVsBot: { human: 0, bot: 0, unknown: 0 },
@@ -300,6 +303,7 @@ const Analytics = () => {
           (click.verdict && click.verdict.toLowerCase().includes('bot')) ||
           (click.fraud_score && click.fraud_score > 80)
       ).length;
+      const invalidTraffic = clicks.filter((click) => isInvalidTrafficVerdict(click.verdict)).length;
 
       const uniqueVisitors = new Set(
         clicks.map((c) => c.session_id || c.ip_address).filter(Boolean)
@@ -317,6 +321,7 @@ const Analytics = () => {
         uniqueVisitors,
         activeLinks: activeLinksCount || 0,
         botDetected,
+        invalidTraffic,
       });
 
       let humanCount = 0;
@@ -376,6 +381,7 @@ const Analytics = () => {
         .from('clicks')
         .select('*', { count: 'exact' })
         .eq('user_id', user.id)
+        .or('verdict.is.null,verdict.not.ilike.invalid_slug%')
         .order('clicked_at', { ascending: false })
         .range(from, to);
 
@@ -508,8 +514,8 @@ const Analytics = () => {
         )}
       </div>
 
-      {/* KPI Cards - 4 columns */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* KPI Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
         <KPICard
           title="Total Clicks"
           value={formatNumber(stats.totalClicks)}
@@ -536,6 +542,19 @@ const Analytics = () => {
           icon="smart_toy"
           iconBgClass="bg-amber-500/10"
           iconColorClass="text-amber-900"
+        />
+        <KPICard
+          title="Invalid Traffic"
+          value={formatNumber(stats.invalidTraffic)}
+          change={
+            stats.totalClicks
+              ? `${Math.round((stats.invalidTraffic / stats.totalClicks) * 100)}%`
+              : '0%'
+          }
+          trend={stats.invalidTraffic > 0 ? 'down' : 'up'}
+          icon="gpp_bad"
+          iconBgClass="bg-red-500/10"
+          iconColorClass="text-red-700"
         />
         <KPICard
           title="Conversion Est."

@@ -6,22 +6,43 @@ import Analytics from './Analytics.jsx';
 
 // Mock supabase for Analytics page (no data, but no crash)
 vi.mock('../../lib/supabase', () => ({
+  // Minimal chainable query mock used by Analytics page
+  // so tests don't fail with query-builder method errors.
   supabase: {
     auth: {
       getUser: vi.fn().mockResolvedValue({
         data: { user: { id: 'user-1', email: 'user@example.com' } },
       }),
     },
-    from: vi.fn(() => ({
-      select: vi.fn(() => ({
-        eq: vi.fn(() =>
+    from: vi.fn(() => {
+      const query = {
+        select: vi.fn(() => query),
+        eq: vi.fn(() => query),
+        neq: vi.fn(() => query),
+        or: vi.fn(() => query),
+        order: vi.fn(() => query),
+        range: vi.fn(() =>
           Promise.resolve({
             data: [],
+            count: 0,
             error: null,
           })
         ),
-      })),
-    })),
+        maybeSingle: vi.fn(() =>
+          Promise.resolve({
+            data: null,
+            error: null,
+          })
+        ),
+        then: (resolve) =>
+          resolve({
+            data: [],
+            error: null,
+            count: 0,
+          }),
+      };
+      return query;
+    }),
   },
 }));
 
