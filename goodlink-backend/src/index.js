@@ -91,7 +91,7 @@ function buildSafeUrl(base, searchParams) {
         searchParams.forEach((value, key) => urlObj.searchParams.set(key, value));
         const finalUrl = urlObj.toString();
         return finalUrl;
-    } catch (e) {
+    } catch {
         // If URL in database is broken, return as-is
         return base;
     }
@@ -113,7 +113,7 @@ async function getCustomDomainConfig(env, domain) {
         const row = data?.[0];
         if (!row) return { exists: false, rootRedirect: null };
         return { exists: true, rootRedirect: row.root_redirect || null };
-    } catch (e) {
+    } catch {
         return { exists: false, rootRedirect: null };
     }
 }
@@ -189,8 +189,9 @@ async function insertImpersonationAuditLog(env, payload) {
  * Send click record directly to Supabase via QStash
  * All data is collected from Cloudflare (no IPINFO)
  */
-async function logClickToSupabase(env, clickRecord, redis) {
+async function logClickToSupabase(env, clickRecord) {
     try {
+        /*
         const rayDedupKey = `log:${clickRecord.ray_id}:${clickRecord.slug}`;
         const ipDedupKey = `ip_limit:${clickRecord.ip_address}:${clickRecord.slug}`;
 
@@ -205,6 +206,7 @@ async function logClickToSupabase(env, clickRecord, redis) {
         if (isNewClick === null) {
             return;
         }
+        */
 
         // Send directly to Supabase via QStash
         const supabaseUrl = `${env.SUPABASE_URL}/rest/v1/clicks`;
@@ -1951,7 +1953,7 @@ export default Sentry.withSentry(
             // Terminate with log to Supabase - redirects to fallback_url if available
             const terminateWithLog = (verdict, linkData = null) => {
                 const clickRecord = buildClickRecord(request, rayId, ip, slug, domain, userAgent, verdict, linkData);
-                ctx.waitUntil(logClickToSupabase(env, clickRecord, redis));
+                ctx.waitUntil(logClickToSupabase(env, clickRecord));
                 const isBotVerdict = verdict === "blacklisted" || verdict.startsWith("bot_");
                 queueAxiomLog(isBotVerdict ? "bot_blocked" : "invalid_request", slug || null, isBotVerdict, {
                     verdict,
@@ -2106,7 +2108,7 @@ export default Sentry.withSentry(
 
             // 6. Send log to Supabase
             const clickRecord = buildClickRecord(request, rayId, ip, slug, domain, userAgent, verdict, linkData);
-            ctx.waitUntil(logClickToSupabase(env, clickRecord, redis));
+            ctx.waitUntil(logClickToSupabase(env, clickRecord));
 
             // If blocked, redirect to fallback_url if exists, otherwise 404
             if (shouldBlock) {
