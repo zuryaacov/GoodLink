@@ -328,11 +328,13 @@ const Analytics = () => {
       let botCount = 0;
       let unknownCount = 0;
       clicks.forEach((click) => {
+        const isInvalidTraffic = isInvalidTrafficVerdict(click.verdict);
         const isBot =
           click.is_bot === true ||
           (click.verdict && click.verdict.toLowerCase().includes('bot')) ||
           (click.fraud_score && click.fraud_score > 80);
         if (isBot) botCount++;
+        else if (isInvalidTraffic) unknownCount++;
         else if (click.is_bot === false || click.verdict) humanCount++;
         else unknownCount++;
       });
