@@ -103,6 +103,9 @@ const HumanVsBotCard = ({ humanCount, botCount, unknownCount }) => {
   const humanPct = total ? (humanCount / total) * 100 : 0;
   const botPct = total ? (botCount / total) * 100 : 0;
   const unknownPct = total ? (unknownCount / total) * 100 : 0;
+  const humanColor = '#10b981';
+  const botColor = '#a855f7';
+  const unknownColor = '#ff6b00';
   return (
     <div className="bg-card-bg border border-card-border rounded-2xl p-6 flex flex-col items-center transition-all hover:shadow-card-mint lg:col-span-1">
       <div className="w-full flex justify-between items-center mb-6">
@@ -116,7 +119,7 @@ const HumanVsBotCard = ({ humanCount, botCount, unknownCount }) => {
         <div
           className="w-40 h-40 rounded-full flex items-center justify-center"
           style={{
-            background: `conic-gradient(#135bec 0% ${humanPct}%, #a855f7 ${humanPct}% ${humanPct + botPct}%, #374151 ${humanPct + botPct}% 100%)`,
+            background: `conic-gradient(${humanColor} 0% ${humanPct}%, ${botColor} ${humanPct}% ${humanPct + botPct}%, ${unknownColor} ${humanPct + botPct}% 100%)`,
           }}
         >
           <div className="w-[120px] h-[120px] bg-white rounded-full flex items-center justify-center">
@@ -129,15 +132,27 @@ const HumanVsBotCard = ({ humanCount, botCount, unknownCount }) => {
       </div>
       <div className="w-full grid grid-cols-2 gap-4 mt-2">
         <div className="flex items-center gap-2">
-          <span className="w-3 h-3 rounded-full bg-[#135bec] shrink-0" aria-hidden="true" />
+          <span
+            className="w-3 h-3 rounded-full shrink-0"
+            style={{ backgroundColor: humanColor }}
+            aria-hidden="true"
+          />
           <span className="text-xs text-[#1b1b1b]">Human ({humanCount})</span>
         </div>
         <div className="flex items-center gap-2">
-          <span className="w-3 h-3 rounded-full bg-[#a855f7] shrink-0" aria-hidden="true" />
+          <span
+            className="w-3 h-3 rounded-full shrink-0"
+            style={{ backgroundColor: botColor }}
+            aria-hidden="true"
+          />
           <span className="text-xs text-[#1b1b1b]">Bot ({botCount})</span>
         </div>
         <div className="flex items-center gap-2">
-          <span className="w-3 h-3 rounded-full bg-gray-600 shrink-0" aria-hidden="true" />
+          <span
+            className="w-3 h-3 rounded-full shrink-0"
+            style={{ backgroundColor: unknownColor }}
+            aria-hidden="true"
+          />
           <span className="text-xs text-[#1b1b1b]">Unknown ({unknownCount})</span>
         </div>
       </div>
