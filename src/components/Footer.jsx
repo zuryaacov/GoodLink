@@ -58,7 +58,7 @@ const Footer = () => {
               Features
             </Link>
             <Link
-              to="/#resources"
+              to="/#insights"
               className="text-sm text-slate-500 dark:text-[#1b1b1b] hover:text-primary transition-colors"
             >
               Insights

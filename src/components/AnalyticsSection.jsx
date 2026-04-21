@@ -3,7 +3,7 @@ import React from 'react';
 const AnalyticsSection = () => {
   return (
     <section
-      id="resources"
+      id="insights"
       aria-labelledby="insights-heading"
       className="scroll-mt-20 py-16 px-6 bg-white border-y border-slate-200"
     >

@@ -77,7 +77,7 @@ const Navbar = () => {
   const navLinks = [
     { name: 'Pricing', href: '#pricing', id: 'pricing' },
     { name: 'Features', href: '#features', id: 'features' },
-    { name: 'Insights', href: '#resources', id: 'resources' },
+    { name: 'Insights', href: '#insights', id: 'insights' },
   ];
 
   const handleSectionClick = (e, sectionId) => {
