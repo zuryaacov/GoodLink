@@ -1,4 +1,32 @@
 const SCRIPT_SRC = 'https://app.lemonsqueezy.com/js/lemon.js';
+const BODY_SCROLL_STYLE_KEYS = [
+  'overflow',
+  'overflowX',
+  'overflowY',
+  'position',
+  'top',
+  'left',
+  'right',
+  'width',
+  'paddingRight',
+  'marginRight',
+];
+
+const snapshotBodyScrollStyles = () => {
+  if (typeof document === 'undefined') return null;
+  const snap = {};
+  BODY_SCROLL_STYLE_KEYS.forEach((key) => {
+    snap[key] = document.body.style[key] || '';
+  });
+  return snap;
+};
+
+const restoreBodyScrollStyles = (snapshot) => {
+  if (!snapshot || typeof document === 'undefined') return;
+  BODY_SCROLL_STYLE_KEYS.forEach((key) => {
+    document.body.style[key] = snapshot[key] || '';
+  });
+};
 
 const isCheckoutSuccessEvent = (payload) => {
   const eventName = String(payload?.event || payload?.name || '').toLowerCase();
@@ -16,6 +44,11 @@ const dispatchCheckoutSuccess = (payload) => {
       detail: payload || null,
     })
   );
+};
+
+const isCheckoutClosedEvent = (payload) => {
+  const eventName = String(payload?.event || payload?.name || '').toLowerCase();
+  return eventName.includes('close');
 };
 
 const ensureLemonScript = async () => {
@@ -59,7 +92,17 @@ const ensureLemonSetup = () => {
     window.LemonSqueezy.Setup({
       eventHandler: (payload) => {
         if (isCheckoutSuccessEvent(payload)) {
+          if (window.__goodlinkLemonBodyStyleSnapshot) {
+            restoreBodyScrollStyles(window.__goodlinkLemonBodyStyleSnapshot);
+            window.__goodlinkLemonBodyStyleSnapshot = null;
+          }
           dispatchCheckoutSuccess(payload);
+        }
+        if (isCheckoutClosedEvent(payload)) {
+          if (window.__goodlinkLemonBodyStyleSnapshot) {
+            restoreBodyScrollStyles(window.__goodlinkLemonBodyStyleSnapshot);
+            window.__goodlinkLemonBodyStyleSnapshot = null;
+          }
         }
       },
     });
@@ -80,6 +123,8 @@ export async function openLemonOverlay(url) {
   }
 
   ensureLemonSetup();
+
+  window.__goodlinkLemonBodyStyleSnapshot = snapshotBodyScrollStyles();
 
   if (window.LemonSqueezy?.Url?.Open) {
     window.LemonSqueezy.Url.Open(targetUrl);
