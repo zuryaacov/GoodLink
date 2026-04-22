@@ -2143,7 +2143,9 @@ export default Sentry.withSentry(
 
             // Verified bots are trusted and bypass suspicion scoring.
             if (!isVerifiedBot) {
-                if (badBotRegex.test(userAgent) || userAgent.trim() === "") {
+                if (userAgent.trim() === "") {
+                    suspicionScore += 50;
+                } else if (badBotRegex.test(userAgent)) {
                     suspicionScore += 50;
                 }
 
