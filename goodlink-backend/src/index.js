@@ -2023,6 +2023,13 @@ export default Sentry.withSentry(
             const hasBlockedSlugToken = blockedSlugTokens.some((token) => slug.includes(token));
             const matchedBlockedPathToken = blockedPathTokens.find((token) => path.includes(token)) || null;
             const matchedBlockedSlugToken = blockedSlugTokens.find((token) => slug.includes(token)) || null;
+            const requestedHost = url.hostname.toLowerCase();
+            const normalizedDomain = domain;
+            const alternateDomain =
+                requestedHost.startsWith("www.")
+                    ? requestedHost.slice(4)
+                    : `www.${requestedHost}`;
+            const domainCandidates = [...new Set([normalizedDomain, requestedHost, alternateDomain])].filter(Boolean);
 
             const redis = new Redis({ url: env.UPSTASH_REDIS_REST_URL, token: env.UPSTASH_REDIS_REST_TOKEN });
 
@@ -2031,8 +2038,20 @@ export default Sentry.withSentry(
             });
 
             // Terminate with log to Supabase - redirects to fallback_url if available
-            const terminateWithLog = (verdict, linkData = null, botReasons = []) => {
+            const terminateWithLog = async (verdict, linkData = null, botReasons = []) => {
                 const isBotVerdict = verdict === "blacklisted" || verdict.startsWith("bot_");
+                let attributionLinkData = linkData;
+                if (isBotVerdict && (!attributionLinkData || !attributionLinkData.user_id) && domain !== "glynk.to") {
+                    const domainOwner = await getActiveCustomDomainOwner(env, domainCandidates);
+                    if (domainOwner?.userId) {
+                        attributionLinkData = {
+                            ...(attributionLinkData && typeof attributionLinkData === "object" ? attributionLinkData : {}),
+                            user_id: domainOwner.userId,
+                            domain: domainOwner.domain || domain,
+                            slug
+                        };
+                    }
+                }
                 const clickRecord = buildClickRecord(
                     request,
                     rayId,
@@ -2041,7 +2060,7 @@ export default Sentry.withSentry(
                     domain,
                     userAgent,
                     verdict,
-                    linkData,
+                    attributionLinkData,
                     isBotVerdict,
                     isBotVerdict ? botReasons : []
                 );
@@ -2049,19 +2068,19 @@ export default Sentry.withSentry(
                 queueAxiomLog(isBotVerdict ? "bot_blocked" : "invalid_request", slug || null, isBotVerdict, {
                     verdict,
                     backend_event: "terminate_with_log",
-                    link_json: linkData || null,
+                    link_json: attributionLinkData || null,
                     click_record: clickRecord
                 });
 
                 // If linkData has fallback_url, redirect there instead of showing 404
-                if (linkData?.fallback_url) {
-                    const fallbackUrl = ensureValidUrl(linkData.fallback_url);
+                if (attributionLinkData?.fallback_url) {
+                    const fallbackUrl = ensureValidUrl(attributionLinkData.fallback_url);
                     if (fallbackUrl) {
                         queueAxiomLog("redirect", slug || null, false, {
                             redirect_target_url: fallbackUrl,
                             redirect_reason: `fallback_for_${verdict}`,
                             verdict,
-                            link_json: linkData || null
+                            link_json: attributionLinkData || null
                         });
                         return Response.redirect(fallbackUrl, 302);
                     }
@@ -2082,14 +2101,6 @@ export default Sentry.withSentry(
             if (slug.toLowerCase() === "robots.txt") return terminateWithLog("bot_robots_txt", null, ["slug_is_robots_txt"]);
 
             // 3. Fetch link data from Redis/Supabase (supports apex/www domain mismatch)
-            const requestedHost = url.hostname.toLowerCase();
-            const normalizedDomain = domain;
-            const alternateDomain =
-                requestedHost.startsWith("www.")
-                    ? requestedHost.slice(4)
-                    : `www.${requestedHost}`;
-            const domainCandidates = [...new Set([normalizedDomain, requestedHost, alternateDomain])].filter(Boolean);
-
             // If slug contains disallowed path separators/dots, treat as bot traffic.
             if (slug.includes('/') || slug.includes('.')) {
                 if (domain !== "glynk.to") {
