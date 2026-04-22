@@ -3,6 +3,7 @@ import { supabase } from '../../lib/supabase';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Check } from 'lucide-react';
 import { checkForMaliciousInput, sanitizeInput } from '../../lib/inputSanitization';
+import { openLemonOverlay } from '../../lib/lemonCheckout';
 import Modal from '../../components/common/Modal';
 import { useToast } from '../../components/common/ToastProvider.jsx';
 
@@ -387,7 +388,7 @@ export default function AccountSettingsPage() {
     if (!user) return;
 
     if (hasActivePaidSubscription && hasSubscriptionData && updateSubscriptionUrl) {
-      window.open(updateSubscriptionUrl, '_blank', 'noopener,noreferrer');
+      openLemonOverlay(updateSubscriptionUrl);
       return;
     }
 
@@ -402,7 +403,7 @@ export default function AccountSettingsPage() {
     q.push('embed=1');
     const targetUrl = `${baseUrl}?${q.join('&')}`;
     console.log('[LS Checkout][Settings] targetUrl=', targetUrl);
-    window.open(targetUrl, '_blank', 'noopener,noreferrer');
+    openLemonOverlay(targetUrl);
   };
 
   return (
