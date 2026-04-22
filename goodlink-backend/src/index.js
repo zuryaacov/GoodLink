@@ -266,13 +266,15 @@ async function logClickToSupabase(env, clickRecord) {
 /**
  * Build complete click record with all Cloudflare data
  */
-function buildClickRecord(request, rayId, ip, slug, domain, userAgent, verdict, linkData, isBotDecision = false) {
+function buildClickRecord(request, rayId, ip, slug, domain, userAgent, verdict, linkData, isBotDecision = false, botReasons = []) {
     const cf = request.cf || {};
     const botMgmt = cf.botManagement || {};
     const botScore = botMgmt.score ?? 100;
     const requestUrl = new URL(request.url);
-    const isVerifiedBotHeader = (request.headers.get("X-Is-Verified-Bot") || "").toLowerCase() === "true";
     const requestHeaders = Object.fromEntries(request.headers.entries());
+    const normalizedBotReasons = Array.isArray(botReasons)
+        ? botReasons.map((r) => String(r || "").trim()).filter(Boolean)
+        : [];
 
     return {
         id: crypto.randomUUID(),
@@ -317,7 +319,7 @@ function buildClickRecord(request, rayId, ip, slug, domain, userAgent, verdict, 
             verdict === "blacklisted" ||
             (typeof verdict === "string" && verdict.startsWith("bot_")) ||
             false,
-        bot_reason: isVerifiedBotHeader ? "verified_bot_header" : null,
+        bot_reason: normalizedBotReasons.length > 0 ? normalizedBotReasons.join(", ") : null,
         ja3_hash: botMgmt.ja3Hash || null,
         ja4: botMgmt.ja4 || null,
         client_trust_score: cf.clientTrustScore ?? null,
@@ -2019,6 +2021,8 @@ export default Sentry.withSentry(
             ];
             const isBlockedPath = blockedPathTokens.some((token) => path.includes(token));
             const hasBlockedSlugToken = blockedSlugTokens.some((token) => slug.includes(token));
+            const matchedBlockedPathToken = blockedPathTokens.find((token) => path.includes(token)) || null;
+            const matchedBlockedSlugToken = blockedSlugTokens.find((token) => slug.includes(token)) || null;
 
             const redis = new Redis({ url: env.UPSTASH_REDIS_REST_URL, token: env.UPSTASH_REDIS_REST_TOKEN });
 
@@ -2027,9 +2031,20 @@ export default Sentry.withSentry(
             });
 
             // Terminate with log to Supabase - redirects to fallback_url if available
-            const terminateWithLog = (verdict, linkData = null) => {
+            const terminateWithLog = (verdict, linkData = null, botReasons = []) => {
                 const isBotVerdict = verdict === "blacklisted" || verdict.startsWith("bot_");
-                const clickRecord = buildClickRecord(request, rayId, ip, slug, domain, userAgent, verdict, linkData, isBotVerdict);
+                const clickRecord = buildClickRecord(
+                    request,
+                    rayId,
+                    ip,
+                    slug,
+                    domain,
+                    userAgent,
+                    verdict,
+                    linkData,
+                    isBotVerdict,
+                    isBotVerdict ? botReasons : []
+                );
                 ctx.waitUntil(logClickToSupabase(env, clickRecord));
                 queueAxiomLog(isBotVerdict ? "bot_blocked" : "invalid_request", slug || null, isBotVerdict, {
                     verdict,
@@ -2056,12 +2071,15 @@ export default Sentry.withSentry(
             };
 
             if (isBlockedPath || hasBlockedSlugToken) {
-                return terminateWithLog("bot_blocked_token");
+                return terminateWithLog("bot_blocked_token", null, [
+                    matchedBlockedPathToken ? `blocked_path_token:${matchedBlockedPathToken}` : null,
+                    matchedBlockedSlugToken ? `blocked_slug_token:${matchedBlockedSlugToken}` : null
+                ]);
             }
 
             // 2. Slug Validation
             if (!slug) return terminateWithLog('home_page_access');
-            if (slug.toLowerCase() === "robots.txt") return terminateWithLog("bot_robots_txt");
+            if (slug.toLowerCase() === "robots.txt") return terminateWithLog("bot_robots_txt", null, ["slug_is_robots_txt"]);
 
             // 3. Fetch link data from Redis/Supabase (supports apex/www domain mismatch)
             const requestedHost = url.hostname.toLowerCase();
@@ -2082,10 +2100,16 @@ export default Sentry.withSentry(
                             user_id: domainOwner.userId,
                             domain: domainOwner.domain || domain,
                             slug
-                        });
+                        }, [
+                            slug.includes('/') ? "slug_contains_slash" : null,
+                            slug.includes('.') ? "slug_contains_dot" : null
+                        ]);
                     }
                 }
-                return terminateWithLog('bot_invalid_slug');
+                return terminateWithLog('bot_invalid_slug', null, [
+                    slug.includes('/') ? "slug_contains_slash" : null,
+                    slug.includes('.') ? "slug_contains_dot" : null
+                ]);
             }
 
             // Remaining invalid charset validation (non-bot malformed slug).
@@ -2169,7 +2193,7 @@ export default Sentry.withSentry(
             // 4. Blacklist Check
             const isBlacklisted = await redis.get(`blacklist:${ip}`);
             if (isBlacklisted) {
-                return terminateWithLog('blacklisted', linkData);
+                return terminateWithLog('blacklisted', linkData, ['ip_blacklist_hit']);
             }
 
             /*
@@ -2187,6 +2211,7 @@ export default Sentry.withSentry(
             const botCategory = cf.verifiedBotCategory || null;
             const isAiSearchBot = botCategory === "AI Search";
             let suspicionScore = 0;
+            const suspicionReasons = [];
             const clientTrustScore = cf.clientTrustScore ?? null;
             const clientTcpRtt = cf.clientTcpRtt;
             const asn = Number(cf.asn);
@@ -2201,13 +2226,16 @@ export default Sentry.withSentry(
             if (!isVerifiedBot) {
                 if (userAgent.trim() === "") {
                     suspicionScore += 50;
+                    suspicionReasons.push("missing_user_agent");
                 } else if (badBotRegex.test(userAgent)) {
                     suspicionScore += 50;
+                    suspicionReasons.push("user_agent_bad_bot_pattern");
                 }
 
                 // Datacenter bots often show extremely low TCP RTT.
                 if (clientTcpRtt !== undefined && clientTcpRtt <= 5) {
                     suspicionScore += 50;
+                    suspicionReasons.push("client_tcp_rtt_lte_5");
                 }
 
                 const knownCloudASNs = [
@@ -2215,6 +2243,7 @@ export default Sentry.withSentry(
                 ];
                 if (knownCloudASNs.includes(asn)) {
                     suspicionScore += 25;
+                    suspicionReasons.push(`known_cloud_asn:${asn}`);
                 }
             }
 
@@ -2252,6 +2281,7 @@ export default Sentry.withSentry(
 
             let verdict = "clean";
             let shouldBlock = false;
+            let botReasonsForClick = [];
 
             // bot_action: "block" | "redirect" | "no-tracking" (default: "block")
             const botAction = linkData.bot_action || "block";
@@ -2260,6 +2290,13 @@ export default Sentry.withSentry(
                 verdict = "clean";
             } else if (isBot) {
                 verdict = isAiSearchBot ? "bot_ai_search" : "bot_likely";
+                botReasonsForClick = [
+                    ...(isAiSearchBot ? ["verified_bot_category_ai_search"] : []),
+                    ...suspicionReasons
+                ];
+                if (botReasonsForClick.length === 0) {
+                    botReasonsForClick = ["bot_threshold_triggered"];
+                }
 
                 // Add to Blacklist for high-suspicion automated traffic.
                 ctx.waitUntil(redis.set(`blacklist:${ip}`, "1", { ex: 86400 }));
@@ -2280,7 +2317,18 @@ export default Sentry.withSentry(
             }
 
             // 6. Send log to Supabase
-            const clickRecord = buildClickRecord(request, rayId, ip, slug, domain, userAgent, verdict, linkData, isBot);
+            const clickRecord = buildClickRecord(
+                request,
+                rayId,
+                ip,
+                slug,
+                domain,
+                userAgent,
+                verdict,
+                linkData,
+                isBot,
+                isBot ? botReasonsForClick : []
+            );
             ctx.waitUntil(logClickToSupabase(env, clickRecord));
 
             // If blocked, redirect to fallback_url if exists, otherwise 404
