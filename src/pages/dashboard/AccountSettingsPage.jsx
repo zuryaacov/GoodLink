@@ -356,7 +356,7 @@ export default function AccountSettingsPage() {
     { name: 'PRO', price: '20', priceNum: 20, originalPrice: '62', description: 'For power users', features: ['Unlimited Links', 'Unlimited QR Codes', 'Unlimited Clicks', 'Workspaces, Campaigns and Groups', 'Bot Protection', 'UTM Presets', 'Unlimited Custom Domains', 'Geo Redirect', 'Conversion API & S2S tracking', 'Pro Analytics', 'Expedited Support'], highlighted: false, checkoutUrl: 'https://goodlink.lemonsqueezy.com/checkout/buy/924daf77-b7b3-405d-a94a-2ad2cc476da4?embed=1', buttonText: 'Go Pro' },
   ];
   const isCancelled = profile?.subscription_status === 'cancelled';
-  const isFreeTrial = profile?.subscription_status === 'free_trial';
+  const isFreeTrial = profile?.subscription_status === 'free_trial' || profile?.subscription_status === 'free_plan';
   const currentPlanKey =
     isCancelled || isFreeTrial
       ? null
