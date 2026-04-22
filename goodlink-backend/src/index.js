@@ -2152,8 +2152,8 @@ export default Sentry.withSentry(
                 }
 
                 // Datacenter bots often show extremely low TCP RTT.
-                if (clientTcpRtt !== undefined && clientTcpRtt < 10) {
-                    suspicionScore += 20;
+                if (clientTcpRtt !== undefined && clientTcpRtt <= 5) {
+                    suspicionScore += 50;
                 }
 
                 const knownCloudASNs = [
