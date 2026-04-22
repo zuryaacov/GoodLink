@@ -53,7 +53,7 @@ const isCheckoutClosedEvent = (payload) => {
 
 const ensureLemonScript = async () => {
   if (typeof window === 'undefined' || typeof document === 'undefined') return false;
-  if (window.LemonSqueezy?.Url?.Open) return true;
+  if (window.LemonSqueezy || typeof window.createLemonSqueezy === 'function') return true;
 
   const existing = document.querySelector(`script[src="${SCRIPT_SRC}"]`);
   if (!existing) {
@@ -66,7 +66,7 @@ const ensureLemonScript = async () => {
   return new Promise((resolve) => {
     const startedAt = Date.now();
     const checkReady = () => {
-      if (window.LemonSqueezy?.Url?.Open) {
+      if (window.LemonSqueezy || typeof window.createLemonSqueezy === 'function') {
         resolve(true);
         return;
       }
@@ -130,6 +130,18 @@ export async function openLemonOverlay(url) {
     window.LemonSqueezy.Url.Open(targetUrl);
     return true;
   }
+
+  // Fallback path for environments where Url.Open is unavailable:
+  // trigger Lemon overlay via class-based button.
+  const link = document.createElement('a');
+  link.href = targetUrl;
+  link.className = 'lemonsqueezy-button';
+  link.rel = 'noopener noreferrer';
+  link.style.display = 'none';
+  document.body.appendChild(link);
+  link.click();
+  window.setTimeout(() => link.remove(), 0);
+  return true;
 
   window.location.assign(targetUrl);
   return false;
