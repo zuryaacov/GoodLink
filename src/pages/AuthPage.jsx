@@ -4,7 +4,6 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { Eye, EyeOff } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { isValidEmail } from '../lib/emailValidation';
-import { openLemonOverlay } from '../lib/lemonCheckout';
 import Modal from '../components/common/Modal';
 import { TermsContent } from './TermsPage';
 import { PrivacyContent } from './PrivacyPage';
@@ -81,7 +80,7 @@ const AuthPage = () => {
       if (profile && profile.plan_type !== 'free' && profile.lemon_squeezy_customer_portal_url) {
         const portalUrl = String(profile.lemon_squeezy_customer_portal_url).trim();
         if (portalUrl) {
-          openLemonOverlay(portalUrl);
+          window.open(portalUrl, '_blank', 'noopener,noreferrer');
           return;
         }
       }
@@ -104,7 +103,7 @@ const AuthPage = () => {
     q.push('embed=1');
     const finalUrl = `${baseUrl}?${q.join('&')}`;
     console.log('[LS Checkout][Auth] finalUrl=', finalUrl);
-    openLemonOverlay(finalUrl);
+    window.open(finalUrl, '_blank', 'noopener,noreferrer');
   };
 
   // Check if user is already logged in when component mounts with plan param

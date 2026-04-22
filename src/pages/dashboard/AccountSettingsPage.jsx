@@ -3,7 +3,6 @@ import { supabase } from '../../lib/supabase';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Check } from 'lucide-react';
 import { checkForMaliciousInput, sanitizeInput } from '../../lib/inputSanitization';
-import { openLemonOverlay } from '../../lib/lemonCheckout';
 import Modal from '../../components/common/Modal';
 import { useToast } from '../../components/common/ToastProvider.jsx';
 
@@ -92,23 +91,6 @@ export default function AccountSettingsPage() {
   useEffect(() => {
     fetchUserData();
   }, []);
-
-  useEffect(() => {
-    const handleCheckoutSuccess = () => {
-      setSuccess('Great news! Your subscription was updated successfully.');
-      fetchUserData();
-      showToast({
-        type: 'success',
-        title: 'Subscription updated',
-        message: 'Your plan was updated successfully.',
-      });
-    };
-
-    window.addEventListener('goodlink:lemon-checkout-success', handleCheckoutSuccess);
-    return () => {
-      window.removeEventListener('goodlink:lemon-checkout-success', handleCheckoutSuccess);
-    };
-  }, [showToast]);
 
   const fetchUserData = async () => {
     try {
@@ -387,9 +369,27 @@ export default function AccountSettingsPage() {
             : null;
   const currentPlanPrice = currentPlanKey === 'starter' ? 5 : currentPlanKey === 'advanced' ? 10 : currentPlanKey === 'pro' ? 20 : 0;
   const planKeyFromName = (name) => name === 'STARTER' ? 'starter' : name === 'ADVANCED' ? 'advanced' : 'pro';
+  const subscriptionData = profile?.lemon_squeezy_subscription_data;
+  const parsedSubscriptionData = typeof subscriptionData === 'string'
+    ? (() => {
+        try {
+          return JSON.parse(subscriptionData);
+        } catch {
+          return null;
+        }
+      })()
+    : subscriptionData;
+  const hasSubscriptionData = parsedSubscriptionData != null;
+  const updateSubscriptionUrl = parsedSubscriptionData?.data?.attributes?.urls?.customer_portal_update_subscription;
+  const hasActivePaidSubscription = !isCancelled && !isFreeTrial && currentPlanKey != null;
 
   const openCheckout = (plan) => {
     if (!user) return;
+
+    if (hasActivePaidSubscription && hasSubscriptionData && updateSubscriptionUrl) {
+      window.open(updateSubscriptionUrl, '_blank', 'noopener,noreferrer');
+      return;
+    }
 
     const baseUrl = plan.checkoutUrl.split('?')[0];
     const q = [];
@@ -402,7 +402,7 @@ export default function AccountSettingsPage() {
     q.push('embed=1');
     const targetUrl = `${baseUrl}?${q.join('&')}`;
     console.log('[LS Checkout][Settings] targetUrl=', targetUrl);
-    void openLemonOverlay(targetUrl);
+    window.open(targetUrl, '_blank', 'noopener,noreferrer');
   };
 
   return (
