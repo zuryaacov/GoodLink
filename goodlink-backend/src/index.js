@@ -2022,6 +2022,7 @@ export default Sentry.withSentry(
 
             // 2. Slug Validation
             if (!slug) return terminateWithLog('home_page_access');
+            if (slug.toLowerCase() === "robots.txt") return terminateWithLog("bot_robots_txt");
 
             // 3. Fetch link data from Redis/Supabase (supports apex/www domain mismatch)
             const requestedHost = url.hostname.toLowerCase();
