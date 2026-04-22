@@ -1985,6 +1985,40 @@ export default Sentry.withSentry(
 
             // Clean leading and trailing slashes to prevent routing errors
             const slug = path.split('?')[0].replace(/^\/+|\/+$/g, '');
+            const blockedPathTokens = [
+                "/favicon.ico",
+                "/robots.txt",
+                "/sitemap.xml",
+                "/ads.txt",
+                "/.env",
+                "/.aws",
+                "/.git",
+                "/.vscode",
+                "/.ds_store",
+                "/wp-admin",
+                "/wp-login.php",
+                "/xmlrpc.php",
+                "/phpmyadmin",
+                "/admin",
+                "/backend",
+                "/apple-touch-icon"
+            ];
+            const blockedSlugTokens = [
+                ".php",
+                ".xml",
+                "wp-includes",
+                "favicon",
+                ".js",
+                "feed",
+                "api",
+                "wp-json",
+                "magento_version",
+                ".css",
+                ".env",
+                ".aws"
+            ];
+            const isBlockedPath = blockedPathTokens.some((token) => path.includes(token));
+            const hasBlockedSlugToken = blockedSlugTokens.some((token) => slug.includes(token));
 
             const redis = new Redis({ url: env.UPSTASH_REDIS_REST_URL, token: env.UPSTASH_REDIS_REST_TOKEN });
 
@@ -2020,6 +2054,10 @@ export default Sentry.withSentry(
 
                 return htmlResponse(getGlynk404Page());
             };
+
+            if (isBlockedPath || hasBlockedSlugToken) {
+                return terminateWithLog("bot_blocked_token");
+            }
 
             // 2. Slug Validation
             if (!slug) return terminateWithLog('home_page_access');
