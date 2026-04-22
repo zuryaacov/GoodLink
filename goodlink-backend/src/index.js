@@ -2034,13 +2034,12 @@ export default Sentry.withSentry(
                     : `www.${requestedHost}`;
             const domainCandidates = [...new Set([normalizedDomain, requestedHost, alternateDomain])].filter(Boolean);
 
-            // If slug looks invalid (dots / bad charset) on a user-owned custom domain, still attribute the click
-            // to the domain owner (but keep the invalid verdict for analytics).
-            if (slug.includes('.') || !/^[a-z0-9-]+$/.test(slug)) {
+            // If slug contains disallowed path separators/dots, treat as bot traffic.
+            if (slug.includes('/') || slug.includes('.')) {
                 if (domain !== "glynk.to") {
                     const domainOwner = await getActiveCustomDomainOwner(env, domainCandidates);
                     if (domainOwner?.userId) {
-                        const verdict = slug.includes('.') ? 'invalid_slug' : 'invalid_slug_format';
+                        const verdict = 'bot_invalid_slug';
                         return terminateWithLog(verdict, {
                             user_id: domainOwner.userId,
                             domain: domainOwner.domain || domain,
@@ -2048,7 +2047,22 @@ export default Sentry.withSentry(
                         });
                     }
                 }
-                return terminateWithLog(slug.includes('.') ? 'invalid_slug' : 'invalid_slug_format');
+                return terminateWithLog('bot_invalid_slug');
+            }
+
+            // Remaining invalid charset validation (non-bot malformed slug).
+            if (!/^[a-z0-9-]+$/.test(slug)) {
+                if (domain !== "glynk.to") {
+                    const domainOwner = await getActiveCustomDomainOwner(env, domainCandidates);
+                    if (domainOwner?.userId) {
+                        return terminateWithLog('invalid_slug_format', {
+                            user_id: domainOwner.userId,
+                            domain: domainOwner.domain || domain,
+                            slug
+                        });
+                    }
+                }
+                return terminateWithLog('invalid_slug_format');
             }
 
             let linkData = null;
