@@ -2128,34 +2128,36 @@ export default Sentry.withSentry(
             */
 
             // 5. Bot Analysis (Cloudflare Pro-compatible suspicion scoring)
-            let suspicionScore = 0;
             const cf = request.cf || {};
             const isVerifiedBot = (request.headers.get("X-Is-Verified-Bot") || "").toLowerCase() === "true";
+            let suspicionScore = 0;
             const clientTrustScore = cf.clientTrustScore ?? null;
             const clientTcpRtt = cf.clientTcpRtt;
             const asn = Number(cf.asn);
 
-            const automationUaPatterns = [
-                /python-requests/i,
-                /curl/i,
-                /wget/i,
-                /go-http-client/i,
-                /libwww/i
-            ];
-            if (automationUaPatterns.some((pattern) => pattern.test(userAgent)) || userAgent.trim() === "") {
-                suspicionScore += 50;
-            }
+            // 1) Hard whitelist for social preview crawlers (allow, but do not count as click).
+            const socialBots = /(facebookexternalhit|WhatsApp|TelegramBot|Twitterbot|LinkedInBot|Viber|SkypeUriPreview)/i;
 
-            // Datacenter bots often show extremely low TCP RTT.
-            if (clientTcpRtt !== undefined && clientTcpRtt < 10) {
-                suspicionScore += 20;
-            }
+            // 2) Expanded blacklist (including AI crawlers and known scraping clients).
+            const badBotRegex = /(python-requests|curl|wget|go-http-client|libwww|urllib|node-fetch|axios|guzzlehttp|java\/|ruby|HeadlessChrome|PhantomJS|Selenium|Playwright|AhrefsBot|SemrushBot|DotBot|MJ12bot|PetalBot|Barkrowler|spider|crawl|Claude|GPTBot|ChatGPT|Perplexity|Bytespider|Amazonbot|SearchBot|DataForSeoBot)/i;
 
-            const knownCloudASNs = [
-                16509, 8987, 14618, 17421, 15169, 396982, 8075, 8068, 12076, 14061, 24940, 63949, 31898
-            ];
-            if (knownCloudASNs.includes(asn)) {
-                suspicionScore += 25;
+            // Verified bots are trusted and bypass suspicion scoring.
+            if (!isVerifiedBot) {
+                if (badBotRegex.test(userAgent) || userAgent.trim() === "") {
+                    suspicionScore += 50;
+                }
+
+                // Datacenter bots often show extremely low TCP RTT.
+                if (clientTcpRtt !== undefined && clientTcpRtt < 10) {
+                    suspicionScore += 20;
+                }
+
+                const knownCloudASNs = [
+                    16509, 8987, 14618, 17421, 15169, 396982, 8075, 8068, 12076, 14061, 24940, 63949, 31898
+                ];
+                if (knownCloudASNs.includes(asn)) {
+                    suspicionScore += 25;
+                }
             }
 
             // Verified bots (search engines etc.) are always considered clean.
@@ -2179,6 +2181,17 @@ export default Sentry.withSentry(
                     targetUrl = geoTargetUrl;
                 }
             }
+            const finalRedirectUrl = buildSafeUrl(targetUrl, url.searchParams);
+
+            if (socialBots.test(userAgent)) {
+                queueAxiomLog("social_preview_allowed", slug || null, false, {
+                    backend_event: "social_preview_allowed_no_click_count",
+                    redirect_target_url: finalRedirectUrl,
+                    user_agent: userAgent
+                });
+                return Response.redirect(finalRedirectUrl, 302);
+            }
+
             let verdict = "clean";
             let shouldBlock = false;
 
@@ -2255,7 +2268,6 @@ export default Sentry.withSentry(
                 return htmlResponse(getGlynk404Page());
             }
 
-            const finalRedirectUrl = buildSafeUrl(targetUrl, url.searchParams);
             const planType = (linkData?.plan_type || "").toLowerCase();
             const pixels = Array.isArray(linkData?.pixels) ? linkData.pixels : [];
             const trackingMode = linkData?.tracking_mode || "pixel";
