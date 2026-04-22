@@ -271,6 +271,8 @@ function buildClickRecord(request, rayId, ip, slug, domain, userAgent, verdict, 
     const botMgmt = cf.botManagement || {};
     const botScore = botMgmt.score ?? 100;
     const requestUrl = new URL(request.url);
+    const isVerifiedBotHeader = (request.headers.get("X-Is-Verified-Bot") || "").toLowerCase() === "true";
+    const requestHeaders = Object.fromEntries(request.headers.entries());
 
     return {
         id: crypto.randomUUID(),
@@ -311,14 +313,13 @@ function buildClickRecord(request, rayId, ip, slug, domain, userAgent, verdict, 
         // Bot data - fraud_score is inverse of bot_score (100 = clean, 0 = bot)
         fraud_score: 100 - botScore,
         is_bot:
-            botScore <= 29 ||
-            botMgmt.verifiedBot ||
             verdict === "blacklisted" ||
             (typeof verdict === "string" && verdict.startsWith("bot_")) ||
             false,
-        bot_reason: botMgmt.verifiedBot ? "verified_bot" : (botScore <= 29 ? `low_score_${botScore}` : null),
+        bot_reason: isVerifiedBotHeader ? "verified_bot_header" : null,
         ja3_hash: botMgmt.ja3Hash || null,
         ja4: botMgmt.ja4 || null,
+        client_trust_score: cf.clientTrustScore ?? null,
 
         // Security data
         threat_score: cf.threatScore || null,
@@ -334,6 +335,8 @@ function buildClickRecord(request, rayId, ip, slug, domain, userAgent, verdict, 
         full_url: requestUrl.toString(),
         query_params: requestUrl.search || "",
         clicked_at: new Date().toISOString(),
+        request_cf: cf,
+        request_headers: requestHeaders,
 
         // Traffic source: detected from click-ID params in URL
         traffic_source: requestUrl.searchParams.has("fbclid") || requestUrl.searchParams.has("FBCLID")
@@ -1939,7 +1942,9 @@ export default Sentry.withSentry(
                 },
                 bot_context: {
                     score: request.cf?.botManagement?.score ?? null,
-                    verified_bot: request.cf?.verifiedBot ?? false
+                    verified_bot: (request.headers.get("X-Is-Verified-Bot") || "").toLowerCase() === "true",
+                    client_trust_score: request.cf?.clientTrustScore ?? null,
+                    client_tcp_rtt: request.cf?.clientTcpRtt ?? null
                 }
             });
 
@@ -2113,12 +2118,49 @@ export default Sentry.withSentry(
                 return terminateWithLog('blacklisted', linkData);
             }
 
-            // 5. Bot Analysis
+            /*
+            // 5. Bot Analysis (legacy for Cloudflare Bot Management plans)
             const botScore = request.cf?.botManagement?.score || 100;
             const isVerifiedBot = request.cf?.verifiedBot || false;
             const isBotUA = /bot|crawler|spider|googlebot/i.test(userAgent);
             const isImpersonator = isBotUA && !isVerifiedBot;
             const isBot = botScore <= 29 || isVerifiedBot || isImpersonator;
+            */
+
+            // 5. Bot Analysis (Cloudflare Pro-compatible suspicion scoring)
+            let suspicionScore = 0;
+            const cf = request.cf || {};
+            const isVerifiedBot = (request.headers.get("X-Is-Verified-Bot") || "").toLowerCase() === "true";
+            const clientTrustScore = cf.clientTrustScore ?? null;
+            const clientTcpRtt = cf.clientTcpRtt;
+            const asn = Number(cf.asn);
+
+            const automationUaPatterns = [
+                /python-requests/i,
+                /curl/i,
+                /wget/i,
+                /go-http-client/i,
+                /libwww/i
+            ];
+            if (automationUaPatterns.some((pattern) => pattern.test(userAgent)) || userAgent.trim() === "") {
+                suspicionScore += 50;
+            }
+
+            // Datacenter bots often show extremely low TCP RTT.
+            if (clientTcpRtt !== undefined && clientTcpRtt < 10) {
+                suspicionScore += 20;
+            }
+
+            const knownCloudASNs = [
+                16509, 8987, 14618, 17421, 15169, 396982, 8075, 8068, 12076, 14061, 24940, 63949, 31898
+            ];
+            if (knownCloudASNs.includes(asn)) {
+                suspicionScore += 25;
+            }
+
+            // Verified bots (search engines etc.) are always considered clean.
+            const isBot = !isVerifiedBot && suspicionScore >= 45;
+            const isImpersonator = false;
 
             // Geo redirect override (if configured): match visitor country to geo_rules.country
             // and use the rule URL as target. Query params/UTMs are preserved later by buildSafeUrl.
@@ -2143,13 +2185,13 @@ export default Sentry.withSentry(
             // bot_action: "block" | "redirect" | "no-tracking" (default: "block")
             const botAction = linkData.bot_action || "block";
 
-            if (isBot) {
-                verdict = isImpersonator ? "bot_impersonator" : (botScore <= 10 ? "bot_certain" : "bot_likely");
+            if (isVerifiedBot) {
+                verdict = "clean";
+            } else if (isBot) {
+                verdict = "bot_likely";
 
-                // Add to Blacklist only for certain bots or impersonators
-                if (botScore <= 20 || isImpersonator) {
-                    ctx.waitUntil(redis.set(`blacklist:${ip}`, "1", { ex: 86400 }));
-                }
+                // Add to Blacklist for high-suspicion automated traffic.
+                ctx.waitUntil(redis.set(`blacklist:${ip}`, "1", { ex: 86400 }));
 
                 // Handle based on bot_action
                 if (botAction === "block") {
@@ -2162,7 +2204,7 @@ export default Sentry.withSentry(
                     // If no fallback, continue to regular target
                 }
                 // If botAction === "no-tracking" - continue to regular target (already set)
-            } else if (botScore <= 59) {
+            } else if (suspicionScore > 0) {
                 verdict = "suspicious";
             }
 
@@ -2182,9 +2224,13 @@ export default Sentry.withSentry(
                             redirect_reason: "bot_fallback_redirect",
                             link_json: linkData || null,
                             bot_context: {
-                                score: botScore,
+                                score: null,
                                 verified_bot: isVerifiedBot,
-                                impersonator: isImpersonator
+                                impersonator: isImpersonator,
+                                suspicion_score: suspicionScore,
+                                client_trust_score: clientTrustScore,
+                                client_tcp_rtt: clientTcpRtt,
+                                asn
                             }
                         });
                         return Response.redirect(fallbackUrl, 302);
@@ -2197,9 +2243,13 @@ export default Sentry.withSentry(
                     redirect_reason: "bot_blocked_no_fallback",
                     link_json: linkData || null,
                     bot_context: {
-                        score: botScore,
+                        score: null,
                         verified_bot: isVerifiedBot,
-                        impersonator: isImpersonator
+                        impersonator: isImpersonator,
+                        suspicion_score: suspicionScore,
+                        client_trust_score: clientTrustScore,
+                        client_tcp_rtt: clientTcpRtt,
+                        asn
                     }
                 });
                 return htmlResponse(getGlynk404Page());
