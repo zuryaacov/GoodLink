@@ -2130,6 +2130,8 @@ export default Sentry.withSentry(
             // 5. Bot Analysis (Cloudflare Pro-compatible suspicion scoring)
             const cf = request.cf || {};
             const isVerifiedBot = (request.headers.get("X-Is-Verified-Bot") || "").toLowerCase() === "true";
+            const botCategory = cf.verifiedBotCategory || null;
+            const isAiSearchBot = botCategory === "AI Search";
             let suspicionScore = 0;
             const clientTrustScore = cf.clientTrustScore ?? null;
             const clientTcpRtt = cf.clientTcpRtt;
@@ -2163,7 +2165,7 @@ export default Sentry.withSentry(
             }
 
             // Verified bots (search engines etc.) are always considered clean.
-            const isBot = !isVerifiedBot && suspicionScore >= 45;
+            const isBot = isAiSearchBot || (!isVerifiedBot && suspicionScore >= 45);
             const isImpersonator = false;
 
             // Geo redirect override (if configured): match visitor country to geo_rules.country
@@ -2200,10 +2202,10 @@ export default Sentry.withSentry(
             // bot_action: "block" | "redirect" | "no-tracking" (default: "block")
             const botAction = linkData.bot_action || "block";
 
-            if (isVerifiedBot) {
+            if (isVerifiedBot && !isAiSearchBot) {
                 verdict = "clean";
             } else if (isBot) {
-                verdict = "bot_likely";
+                verdict = isAiSearchBot ? "bot_ai_search" : "bot_likely";
 
                 // Add to Blacklist for high-suspicion automated traffic.
                 ctx.waitUntil(redis.set(`blacklist:${ip}`, "1", { ex: 86400 }));
@@ -2241,6 +2243,7 @@ export default Sentry.withSentry(
                             bot_context: {
                                 score: null,
                                 verified_bot: isVerifiedBot,
+                                verified_bot_category: botCategory,
                                 impersonator: isImpersonator,
                                 suspicion_score: suspicionScore,
                                 client_trust_score: clientTrustScore,
@@ -2260,6 +2263,7 @@ export default Sentry.withSentry(
                     bot_context: {
                         score: null,
                         verified_bot: isVerifiedBot,
+                        verified_bot_category: botCategory,
                         impersonator: isImpersonator,
                         suspicion_score: suspicionScore,
                         client_trust_score: clientTrustScore,
