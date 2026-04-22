@@ -266,7 +266,7 @@ async function logClickToSupabase(env, clickRecord) {
 /**
  * Build complete click record with all Cloudflare data
  */
-function buildClickRecord(request, rayId, ip, slug, domain, userAgent, verdict, linkData) {
+function buildClickRecord(request, rayId, ip, slug, domain, userAgent, verdict, linkData, isBotDecision = false) {
     const cf = request.cf || {};
     const botMgmt = cf.botManagement || {};
     const botScore = botMgmt.score ?? 100;
@@ -313,6 +313,7 @@ function buildClickRecord(request, rayId, ip, slug, domain, userAgent, verdict, 
         // Bot data - fraud_score is inverse of bot_score (100 = clean, 0 = bot)
         fraud_score: 100 - botScore,
         is_bot:
+            Boolean(isBotDecision) ||
             verdict === "blacklisted" ||
             (typeof verdict === "string" && verdict.startsWith("bot_")) ||
             false,
@@ -1993,9 +1994,9 @@ export default Sentry.withSentry(
 
             // Terminate with log to Supabase - redirects to fallback_url if available
             const terminateWithLog = (verdict, linkData = null) => {
-                const clickRecord = buildClickRecord(request, rayId, ip, slug, domain, userAgent, verdict, linkData);
-                ctx.waitUntil(logClickToSupabase(env, clickRecord));
                 const isBotVerdict = verdict === "blacklisted" || verdict.startsWith("bot_");
+                const clickRecord = buildClickRecord(request, rayId, ip, slug, domain, userAgent, verdict, linkData, isBotVerdict);
+                ctx.waitUntil(logClickToSupabase(env, clickRecord));
                 queueAxiomLog(isBotVerdict ? "bot_blocked" : "invalid_request", slug || null, isBotVerdict, {
                     verdict,
                     backend_event: "terminate_with_log",
@@ -2227,7 +2228,7 @@ export default Sentry.withSentry(
             }
 
             // 6. Send log to Supabase
-            const clickRecord = buildClickRecord(request, rayId, ip, slug, domain, userAgent, verdict, linkData);
+            const clickRecord = buildClickRecord(request, rayId, ip, slug, domain, userAgent, verdict, linkData, isBot);
             ctx.waitUntil(logClickToSupabase(env, clickRecord));
 
             // If blocked, redirect to fallback_url if exists, otherwise 404
