@@ -1677,6 +1677,7 @@ const LinkActionsMenu = ({
   const [isOpen, setIsOpen] = useState(false);
   const triggerRef = useRef(null);
   const menuRef = useRef(null);
+  const isRejected = (link?.status || '').toLowerCase() === 'rejected';
 
   useEffect(() => {
     if (!isOpen) return;
@@ -1730,17 +1731,19 @@ const LinkActionsMenu = ({
               <span className="material-symbols-outlined text-base" aria-hidden="true">info</span>
               Details
             </button>
-            <button
-              role="menuitem"
-              onClick={() => {
-                setIsOpen(false);
-                onEdit(link);
-              }}
-              className="w-full px-4 py-3 text-left text-[#1b1b1b] hover:bg-white/5 transition-colors flex items-center gap-3 text-sm"
-            >
-              <span className="material-symbols-outlined text-base" aria-hidden="true">edit</span>
-              Edit
-            </button>
+            {!isRejected && (
+              <button
+                role="menuitem"
+                onClick={() => {
+                  setIsOpen(false);
+                  onEdit(link);
+                }}
+                className="w-full px-4 py-3 text-left text-[#1b1b1b] hover:bg-white/5 transition-colors flex items-center gap-3 text-sm"
+              >
+                <span className="material-symbols-outlined text-base" aria-hidden="true">edit</span>
+                Edit
+              </button>
+            )}
             <button
               role="menuitem"
               onClick={() => {
