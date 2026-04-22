@@ -9,11 +9,6 @@
   html { scroll-behavior: smooth; }
 }
 
-/* Keep layout width stable when overlays lock page scroll (prevents page jump). */
-html {
-  scrollbar-gutter: stable;
-}
-
 /* Visible focus ring for keyboard users */
 :focus-visible {
   outline: 3px solid #a855f7;
