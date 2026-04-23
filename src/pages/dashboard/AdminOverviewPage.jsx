@@ -85,6 +85,16 @@ const AdminOverviewPage = () => {
   const [selectedActiveLink, setSelectedActiveLink] = useState(null);
   const [selectedCapi, setSelectedCapi] = useState(null);
   const [selectedCleanClick, setSelectedCleanClick] = useState(null);
+  const [futureEmailQueue, setFutureEmailQueue] = useState([]);
+  const [recentEmailLogs, setRecentEmailLogs] = useState([]);
+  const [emailsLoading, setEmailsLoading] = useState(false);
+  const [emailsError, setEmailsError] = useState(null);
+  const [emailQueueStats, setEmailQueueStats] = useState({
+    pending: 0,
+    sentToday: 0,
+    failedToday: 0,
+    successRateToday: 0,
+  });
 
   const changeView = (view) => {
     if (!VALID_VIEWS.has(view)) return;
@@ -116,7 +126,14 @@ const AdminOverviewPage = () => {
   useEffect(() => {
     fetchPendingLinks();
     fetchOverviewStats();
+    fetchEmailQueueData();
   }, []);
+
+  useEffect(() => {
+    if (activeView === 'overview') {
+      fetchEmailQueueData();
+    }
+  }, [activeView]);
 
   const fetchOverviewStats = async () => {
     try {
@@ -200,6 +217,121 @@ const AdminOverviewPage = () => {
       setUsers([]);
     } finally {
       setUsersLoading(false);
+    }
+  };
+
+  const formatEmailTimestamp = (value) => {
+    if (!value) return '—';
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return '—';
+    return date.toLocaleString();
+  };
+
+  const fetchEmailQueueData = async () => {
+    setEmailsLoading(true);
+    setEmailsError(null);
+    try {
+      const now = new Date();
+      const weekAhead = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+      const startOfToday = new Date(now);
+      startOfToday.setHours(0, 0, 0, 0);
+      const endOfToday = new Date(now);
+      endOfToday.setHours(23, 59, 59, 999);
+
+      const [pendingRes, logsRes, pendingCountRes, sentTodayCountRes, failedTodayCountRes] =
+        await Promise.all([
+        supabase
+          .from('email_logs')
+          .select('id, user_id, email, email_type, scheduled_for, status')
+          .eq('status', 'pending')
+          .gte('scheduled_for', now.toISOString())
+          .lte('scheduled_for', weekAhead.toISOString())
+          .order('scheduled_for', { ascending: true })
+          .limit(200),
+        supabase
+          .from('email_logs')
+          .select('id, user_id, email, email_type, status, sent_at, provider_message_id, updated_at')
+          .in('status', ['sent', 'opened', 'clicked', 'failed'])
+          .order('updated_at', { ascending: false })
+          .limit(50),
+        supabase.from('email_logs').select('*', { count: 'exact', head: true }).eq('status', 'pending'),
+        supabase
+          .from('email_logs')
+          .select('*', { count: 'exact', head: true })
+          .in('status', ['sent', 'opened', 'clicked'])
+          .gte('sent_at', startOfToday.toISOString())
+          .lte('sent_at', endOfToday.toISOString()),
+        supabase
+          .from('email_logs')
+          .select('*', { count: 'exact', head: true })
+          .eq('status', 'failed')
+          .gte('updated_at', startOfToday.toISOString())
+          .lte('updated_at', endOfToday.toISOString()),
+        ]);
+
+      if (pendingRes.error) throw pendingRes.error;
+      if (logsRes.error) throw logsRes.error;
+      if (pendingCountRes.error) throw pendingCountRes.error;
+      if (sentTodayCountRes.error) throw sentTodayCountRes.error;
+      if (failedTodayCountRes.error) throw failedTodayCountRes.error;
+
+      const pendingRows = pendingRes.data || [];
+      const recentRows = logsRes.data || [];
+      const userIds = [
+        ...new Set([...pendingRows, ...recentRows].map((row) => row.user_id).filter(Boolean)),
+      ];
+
+      let profilesByUserId = {};
+      if (userIds.length > 0) {
+        const { data: profiles, error: profilesError } = await supabase
+          .from('profiles')
+          .select('user_id, email, full_name')
+          .in('user_id', userIds);
+        if (profilesError) throw profilesError;
+        profilesByUserId = (profiles || []).reduce((acc, profile) => {
+          acc[profile.user_id] = profile;
+          return acc;
+        }, {});
+      }
+
+      setFutureEmailQueue(
+        pendingRows.map((row) => ({
+          ...row,
+          user_email: profilesByUserId[row.user_id]?.email || row.email || '',
+          user_full_name: profilesByUserId[row.user_id]?.full_name || '',
+        }))
+      );
+      setRecentEmailLogs(
+        recentRows.map((row) => ({
+          ...row,
+          user_email: profilesByUserId[row.user_id]?.email || row.email || '',
+          user_full_name: profilesByUserId[row.user_id]?.full_name || '',
+        }))
+      );
+      const sentToday = sentTodayCountRes.count || 0;
+      const failedToday = failedTodayCountRes.count || 0;
+      const totalToday = sentToday + failedToday;
+      const successRateToday = totalToday > 0 ? Math.round((sentToday / totalToday) * 100) : 0;
+
+      setEmailQueueStats({
+        pending: pendingCountRes.count || 0,
+        sentToday,
+        failedToday,
+        successRateToday,
+      });
+    } catch (err) {
+      console.error('Error fetching email queue data:', err);
+      setEmailsError(err.message || 'Unknown error');
+      setFutureEmailQueue([]);
+      setRecentEmailLogs([]);
+      setEmailQueueStats({
+        pending: 0,
+        sentToday: 0,
+        failedToday: 0,
+        successRateToday: 0,
+      });
+    } finally {
+      setEmailsLoading(false);
     }
   };
 
@@ -712,6 +844,167 @@ const AdminOverviewPage = () => {
                 iconColorClass="text-red-600"
                 onClick={() => changeView('bots')}
               />
+            </div>
+
+            <div className="rounded-2xl border border-slate-200 bg-slate-50/60 p-4 sm:p-5">
+              <div className="flex items-start justify-between gap-3 mb-4">
+                <div>
+                  <h3 className="text-lg font-bold text-[#1b1b1b]">Email Queue</h3>
+                  <p className="text-sm text-slate-600">
+                    Pending emails for the next 7 days + recent delivery log.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={fetchEmailQueueData}
+                  className="px-3 py-2 rounded-lg border border-slate-300 text-xs font-bold text-[#1b1b1b] hover:bg-slate-100 transition-colors"
+                >
+                  Refresh
+                </button>
+              </div>
+
+              {emailsLoading ? (
+                <p className="text-slate-500 text-sm font-medium">Loading email queue...</p>
+              ) : emailsError ? (
+                <p className="text-red-500 text-sm font-medium">Error: {emailsError}</p>
+              ) : (
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3">
+                    <div className="rounded-xl border border-amber-200 bg-amber-50 p-3">
+                      <p className="text-[11px] uppercase tracking-wide font-bold text-amber-700">
+                        Pending
+                      </p>
+                      <p className="text-2xl font-extrabold text-amber-800">{emailQueueStats.pending}</p>
+                    </div>
+                    <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-3">
+                      <p className="text-[11px] uppercase tracking-wide font-bold text-emerald-700">
+                        Sent Today
+                      </p>
+                      <p className="text-2xl font-extrabold text-emerald-800">
+                        {emailQueueStats.sentToday}
+                      </p>
+                    </div>
+                    <div className="rounded-xl border border-red-200 bg-red-50 p-3">
+                      <p className="text-[11px] uppercase tracking-wide font-bold text-red-700">
+                        Failed Today
+                      </p>
+                      <p className="text-2xl font-extrabold text-red-800">{emailQueueStats.failedToday}</p>
+                    </div>
+                    <div className="rounded-xl border border-blue-200 bg-blue-50 p-3">
+                      <p className="text-[11px] uppercase tracking-wide font-bold text-blue-700">
+                        Success Rate Today
+                      </p>
+                      <p className="text-2xl font-extrabold text-blue-800">
+                        {emailQueueStats.successRateToday}%
+                      </p>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+                  <div className="rounded-xl border border-slate-200 bg-white p-3">
+                    <h4 className="text-sm font-bold text-[#1b1b1b] mb-2">Upcoming (Next 7 Days)</h4>
+                    {futureEmailQueue.length === 0 ? (
+                      <p className="text-xs text-slate-500">No pending emails in the next week.</p>
+                    ) : (
+                      <div className="overflow-auto">
+                        <table className="w-full text-xs">
+                          <thead>
+                            <tr className="text-left text-slate-500">
+                              <th className="py-2 pr-3">User</th>
+                              <th className="py-2 pr-3">Type</th>
+                              <th className="py-2 pr-3">Scheduled</th>
+                              <th className="py-2">Status</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {futureEmailQueue.map((row) => (
+                              <tr key={row.id} className="border-t border-slate-100 align-top">
+                                <td className="py-2 pr-3">
+                                  <p className="font-semibold text-[#1b1b1b] break-all">
+                                    {row.user_full_name?.trim() || 'Unnamed user'}
+                                  </p>
+                                  <p className="text-slate-500 break-all">
+                                    {row.user_email?.trim() || row.email || 'No email'}
+                                  </p>
+                                </td>
+                                <td className="py-2 pr-3 font-semibold text-slate-700">{row.email_type}</td>
+                                <td className="py-2 pr-3 text-slate-600">
+                                  {formatEmailTimestamp(row.scheduled_for)}
+                                </td>
+                                <td className="py-2">
+                                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold bg-amber-100 text-amber-700">
+                                    pending
+                                  </span>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="rounded-xl border border-slate-200 bg-white p-3">
+                    <h4 className="text-sm font-bold text-[#1b1b1b] mb-2">Recent Delivery Log</h4>
+                    {recentEmailLogs.length === 0 ? (
+                      <p className="text-xs text-slate-500">No recent email logs found.</p>
+                    ) : (
+                      <div className="overflow-auto">
+                        <table className="w-full text-xs">
+                          <thead>
+                            <tr className="text-left text-slate-500">
+                              <th className="py-2 pr-3">Result</th>
+                              <th className="py-2 pr-3">User</th>
+                              <th className="py-2 pr-3">Type</th>
+                              <th className="py-2 pr-3">Sent</th>
+                              <th className="py-2">Provider ID</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {recentEmailLogs.map((row) => {
+                              const isSuccess = ['sent', 'opened', 'clicked'].includes(
+                                (row.status || '').toLowerCase()
+                              );
+                              return (
+                                <tr key={row.id} className="border-t border-slate-100 align-top">
+                                  <td className="py-2 pr-3">
+                                    {isSuccess ? (
+                                      <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 font-bold text-emerald-700">
+                                        <span aria-hidden="true">✓</span> OK
+                                      </span>
+                                    ) : (
+                                      <span className="inline-flex items-center rounded-full bg-red-100 px-2 py-0.5 font-bold text-red-700">
+                                        Failed
+                                      </span>
+                                    )}
+                                  </td>
+                                  <td className="py-2 pr-3">
+                                    <p className="font-semibold text-[#1b1b1b] break-all">
+                                      {row.user_full_name?.trim() || 'Unnamed user'}
+                                    </p>
+                                    <p className="text-slate-500 break-all">
+                                      {row.user_email?.trim() || row.email || 'No email'}
+                                    </p>
+                                  </td>
+                                  <td className="py-2 pr-3 font-semibold text-slate-700">{row.email_type}</td>
+                                  <td className="py-2 pr-3 text-slate-600">
+                                    {formatEmailTimestamp(row.sent_at || row.updated_at)}
+                                  </td>
+                                  <td className="py-2">
+                                    <span className="text-slate-500 break-all">
+                                      {row.provider_message_id || '—'}
+                                    </span>
+                                  </td>
+                                </tr>
+                              );
+                            })}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
+                  </div>
+                </div>
+                </div>
+              )}
             </div>
           </>
         ) : activeView === 'new-links' ? (
