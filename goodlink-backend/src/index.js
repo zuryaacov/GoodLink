@@ -520,6 +520,75 @@ function getBridgePageHtml(opts) {
 </body></html>`;
 }
 
+function normalizeBrevoEventType(rawType) {
+    const t = String(rawType || "")
+        .toLowerCase()
+        .replace(/[\s_-]+/g, "");
+
+    if (t.includes("open")) return "opened";
+    if (t.includes("click")) return "clicked";
+    if (t.includes("hardbounce") || t.includes("bounce")) return "failed";
+    if (t.includes("unsubscribe")) return "deleted";
+    return null;
+}
+
+function extractBrevoMessageId(eventObj) {
+    if (!eventObj || typeof eventObj !== "object") return null;
+    const direct =
+        eventObj["message-id"] ||
+        eventObj["message_id"] ||
+        eventObj["messageId"] ||
+        eventObj["Message-Id"] ||
+        eventObj["msgid"] ||
+        eventObj["smtp-id"] ||
+        null;
+
+    const fromNested =
+        eventObj?.message?.id ||
+        eventObj?.message?.messageId ||
+        eventObj?.message?.["message-id"] ||
+        null;
+
+    return String(direct || fromNested || "").trim() || null;
+}
+
+function buildCandidateMessageIds(rawMessageId) {
+    const original = String(rawMessageId || "").trim();
+    if (!original) return [];
+    const noBrackets = original.replace(/^<|>$/g, "");
+    const withBrackets = `<${noBrackets}>`;
+    return [...new Set([original, noBrackets, withBrackets].filter(Boolean))];
+}
+
+async function updateEmailLogByMessageId(env, messageId, updateData) {
+    const candidates = buildCandidateMessageIds(messageId);
+    for (const candidate of candidates) {
+        const patchUrl = `${env.SUPABASE_URL}/rest/v1/email_logs?provider_message_id=eq.${encodeURIComponent(candidate)}`;
+        const res = await fetch(patchUrl, {
+            method: "PATCH",
+            headers: {
+                "apikey": env.SUPABASE_SERVICE_ROLE_KEY,
+                "Authorization": `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}`,
+                "Content-Type": "application/json",
+                "Prefer": "return=representation"
+            },
+            body: JSON.stringify(updateData)
+        });
+
+        if (!res.ok) {
+            await res.text().catch(() => "");
+            continue;
+        }
+
+        const rows = await res.json().catch(() => []);
+        if (Array.isArray(rows) && rows.length > 0) {
+            return { updated: true, matchedMessageId: candidate, rowsUpdated: rows.length };
+        }
+    }
+
+    return { updated: false, matchedMessageId: null, rowsUpdated: 0 };
+}
+
 export default Sentry.withSentry(
     () => ({
         dsn: "https://e771f37fced759ffa221f6b97bdce745@o4510770008293376.ingest.us.sentry.io/4510770172985344",
@@ -1853,6 +1922,87 @@ export default Sentry.withSentry(
                 }
             }
 
+            // === API Endpoint: Brevo transactional email events webhook ===
+            // Receives events like opened / clicked / hard bounce / unsubscribed
+            // and updates public.email_logs by provider_message_id.
+            if (path === "/api/brevo-email-events" && request.method === "POST") {
+                try {
+                    // Optional protection: set BREVO_WEBHOOK_TOKEN in worker env
+                    // and add ?token=... in Brevo webhook URL.
+                    if (env.BREVO_WEBHOOK_TOKEN) {
+                        const token = String(url.searchParams.get("token") || "").trim();
+                        if (!token || token !== String(env.BREVO_WEBHOOK_TOKEN).trim()) {
+                            return new Response(JSON.stringify({ error: "Unauthorized webhook token" }), {
+                                status: 401,
+                                headers: { ...corsHeaders, "Content-Type": "application/json" }
+                            });
+                        }
+                    }
+
+                    const rawBody = await request.text();
+                    let payload;
+                    try {
+                        payload = JSON.parse(rawBody || "{}");
+                    } catch {
+                        return new Response(JSON.stringify({ error: "Invalid JSON payload" }), {
+                            status: 400,
+                            headers: { ...corsHeaders, "Content-Type": "application/json" }
+                        });
+                    }
+
+                    const events = Array.isArray(payload) ? payload : [payload];
+                    const summary = {
+                        received: events.length,
+                        supported: 0,
+                        updated: 0,
+                        skipped_no_message_id: 0,
+                        skipped_unknown_event: 0,
+                        not_found: 0
+                    };
+
+                    for (const ev of events) {
+                        const normalizedStatus = normalizeBrevoEventType(ev?.event || ev?.type || ev?.name);
+                        if (!normalizedStatus) {
+                            summary.skipped_unknown_event += 1;
+                            continue;
+                        }
+                        summary.supported += 1;
+
+                        const messageId = extractBrevoMessageId(ev);
+                        if (!messageId) {
+                            summary.skipped_no_message_id += 1;
+                            continue;
+                        }
+
+                        const updateData = {
+                            status: normalizedStatus,
+                            updated_at: new Date().toISOString()
+                        };
+
+                        if (normalizedStatus === "failed") {
+                            updateData.last_error = "hard_bounce_from_brevo";
+                        }
+                        if (normalizedStatus === "deleted") {
+                            updateData.last_error = "unsubscribed_from_brevo";
+                        }
+
+                        const result = await updateEmailLogByMessageId(env, messageId, updateData);
+                        if (result.updated) summary.updated += 1;
+                        else summary.not_found += 1;
+                    }
+
+                    return new Response(JSON.stringify({ ok: true, summary }), {
+                        status: 200,
+                        headers: { ...corsHeaders, "Content-Type": "application/json" }
+                    });
+                } catch (error) {
+                    return new Response(JSON.stringify({ error: error.message || "Webhook processing failed" }), {
+                        status: 500,
+                        headers: { ...corsHeaders, "Content-Type": "application/json" }
+                    });
+                }
+            }
+
             const userAgent = request.headers.get("user-agent") || "";
             const rayId = request.headers.get("cf-ray") || crypto.randomUUID();
             const ip = request.headers.get("cf-connecting-ip");
@@ -1952,7 +2102,7 @@ export default Sentry.withSentry(
             });
 
             if (path === '/') {
-                // For active custom domains, root path should either redirect to root_redirect or show branded 404.ג
+                // For active custom domains, root path should either redirect to root_redirect or show branded 404.
                 if (domain !== 'glynk.to') {
                     const customDomainCfg = await getCustomDomainConfig(env, domain);
                     if (customDomainCfg.exists) {
