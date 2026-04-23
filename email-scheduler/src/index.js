@@ -75,7 +75,13 @@ async function runScheduler(env, source) {
         },
       });
 
-      await markSent(env, row.id, nextAttempts, brevoResult.messageId || null);
+      await markSent(
+        env,
+        row.id,
+        nextAttempts,
+        brevoResult.messageId || null,
+        brevoResult.apiResponse || null
+      );
 
       // Business rule: once trial_33 is sent successfully, mark the user as cancelled.
       if (row.email_type === "trial_33") {
@@ -124,7 +130,7 @@ async function fetchDueEmails(env, limit) {
   return res.json();
 }
 
-async function markSent(env, rowId, attempts, providerMessageId) {
+async function markSent(env, rowId, attempts, providerMessageId, apiResponse) {
   const patchUrl = `${env.SUPABASE_URL}/rest/v1/email_logs?id=eq.${rowId}`;
   const res = await fetch(patchUrl, {
     method: "PATCH",
@@ -137,6 +143,10 @@ async function markSent(env, rowId, attempts, providerMessageId) {
       status: "sent",
       sent_at: new Date().toISOString(),
       provider_message_id: providerMessageId,
+      metadata: {
+        provider: "brevo",
+        send_response: apiResponse || null,
+      },
       attempts,
       last_error: null,
     }),
@@ -250,12 +260,24 @@ async function sendBrevoEmail(env, { to, templateId, params }) {
     throw new Error(`brevo_send_failed:${res.status}:${body}`);
   }
 
+  let parsedBody = null;
   try {
-    const json = JSON.parse(body);
-    return { messageId: json.messageId || null };
+    parsedBody = JSON.parse(body);
   } catch {
-    return { messageId: null };
+    parsedBody = null;
   }
+
+  return {
+    messageId: parsedBody?.messageId || null,
+    apiResponse: {
+      status: res.status,
+      ok: res.ok,
+      headers: {
+        "content-type": res.headers.get("content-type") || null,
+      },
+      body: parsedBody ?? body,
+    },
+  };
 }
 
 function jsonResponse(body, status = 200) {
