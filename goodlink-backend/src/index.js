@@ -525,6 +525,8 @@ function normalizeBrevoEventType(rawType) {
         .toLowerCase()
         .replace(/[\s_-]+/g, "");
 
+    // Brevo can send both "opened" and "first_opening".
+    if (t.includes("firstopening")) return "opened";
     if (t.includes("open")) return "opened";
     if (t.includes("click")) return "clicked";
     if (t.includes("hardbounce") || t.includes("bounce")) return "failed";
@@ -1923,7 +1925,7 @@ export default Sentry.withSentry(
             }
 
             // === API Endpoint: Brevo transactional email events webhook ===
-            // Receives events like opened / clicked / hard bounce / unsubscribed
+            // Receives events like opened / first opening / clicked / hard bounce / unsubscribed
             // and updates public.email_logs by provider_message_id.
             if (path === "/api/brevo-email-events" && request.method === "POST") {
                 try {
