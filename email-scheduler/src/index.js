@@ -43,7 +43,7 @@ async function runScheduler(env, source) {
 
   const limit = parseInt(env.MAX_EMAILS_PER_RUN || `${DEFAULT_MAX_PER_RUN}`, 10);
   const dueRows = await fetchDueEmails(env, limit);
-  const stats = { sent: 0, failed: 0, skipped: 0 };
+  const stats = { sent: 0, failed: 0, skipped: 0, profileCancelled: 0 };
 
   console.log(`[email-scheduler] source=${source} due_rows=${dueRows.length}`);
 
@@ -76,6 +76,15 @@ async function runScheduler(env, source) {
       });
 
       await markSent(env, row.id, nextAttempts, brevoResult.messageId || null);
+
+      // Business rule: once trial_33 is sent successfully, mark the user as cancelled.
+      if (row.email_type === "trial_33") {
+        const cancelled = await setProfileSubscriptionCancelled(env, row.user_id);
+        if (cancelled) {
+          stats.profileCancelled += 1;
+        }
+      }
+
       stats.sent += 1;
     } catch (error) {
       await markFailed(env, row.id, nextAttempts, String(error?.message || error));
@@ -159,6 +168,34 @@ async function markFailed(env, rowId, attempts, errorMessage) {
     const body = await res.text();
     console.error(`[email-scheduler] markFailed failed row=${rowId}`, res.status, body);
   }
+}
+
+async function setProfileSubscriptionCancelled(env, userId) {
+  const patchUrl = `${env.SUPABASE_URL}/rest/v1/profiles?user_id=eq.${userId}`;
+  const res = await fetch(patchUrl, {
+    method: "PATCH",
+    headers: {
+      ...supabaseHeaders(env),
+      "Content-Type": "application/json",
+      Prefer: "return=minimal",
+    },
+    body: JSON.stringify({
+      subscription_status: "cancelled",
+      updated_at: new Date().toISOString(),
+    }),
+  });
+
+  if (!res.ok) {
+    const body = await res.text();
+    console.error(
+      `[email-scheduler] setProfileSubscriptionCancelled failed user=${userId}`,
+      res.status,
+      body
+    );
+    return false;
+  }
+
+  return true;
 }
 
 function supabaseHeaders(env) {
