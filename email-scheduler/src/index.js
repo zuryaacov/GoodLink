@@ -171,13 +171,18 @@ async function markFailed(env, rowId, attempts, errorMessage) {
 }
 
 async function setProfileSubscriptionCancelled(env, userId) {
-  const patchUrl = `${env.SUPABASE_URL}/rest/v1/profiles?user_id=eq.${userId}`;
+  // Safety rule: cancel only if the user is still on free_trial.
+  // Do NOT cancel users on free_plan (or any other status).
+  const patchUrl =
+    `${env.SUPABASE_URL}/rest/v1/profiles` +
+    `?user_id=eq.${userId}` +
+    `&subscription_status=eq.free_trial`;
   const res = await fetch(patchUrl, {
     method: "PATCH",
     headers: {
       ...supabaseHeaders(env),
       "Content-Type": "application/json",
-      Prefer: "return=minimal",
+      Prefer: "return=representation",
     },
     body: JSON.stringify({
       subscription_status: "cancelled",
@@ -195,7 +200,8 @@ async function setProfileSubscriptionCancelled(env, userId) {
     return false;
   }
 
-  return true;
+  const updatedRows = await res.json();
+  return Array.isArray(updatedRows) && updatedRows.length > 0;
 }
 
 function supabaseHeaders(env) {
