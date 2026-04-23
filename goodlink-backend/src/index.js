@@ -1952,7 +1952,7 @@ export default Sentry.withSentry(
             });
 
             if (path === '/') {
-                // For active custom domains, root path should either redirect to root_redirect or show branded 404.
+                // For active custom domains, root path should either redirect to root_redirect or show branded 404.ג
                 if (domain !== 'glynk.to') {
                     const customDomainCfg = await getCustomDomainConfig(env, domain);
                     if (customDomainCfg.exists) {
