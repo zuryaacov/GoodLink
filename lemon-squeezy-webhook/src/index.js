@@ -234,6 +234,12 @@ async function updateUserSubscription(supabaseUrl, supabaseKey, userId, subscrip
 
       const updatedProfile = await updateResponse.json();
       console.log('Profile updated successfully:', updatedProfile);
+
+      // On paid activation, cancel all pending trial_* scheduled emails.
+      if (subscriptionStatus === 'active') {
+        await cancelPendingTrialEmails(supabaseUrl, supabaseKey, userId);
+      }
+
       return { data: updatedProfile };
     } else {
       // Create new profile (shouldn't happen if trigger works, but just in case)
@@ -262,6 +268,13 @@ async function updateUserSubscription(supabaseUrl, supabaseKey, userId, subscrip
 
       const createdProfile = await createResponse.json();
       console.log('Profile created successfully:', createdProfile);
+
+      // Defensive path: if profile was created directly in active state,
+      // cancel pending trial_* emails as well.
+      if (subscriptionStatus === 'active') {
+        await cancelPendingTrialEmails(supabaseUrl, supabaseKey, userId);
+      }
+
       return { data: createdProfile };
     }
   } catch (error) {
