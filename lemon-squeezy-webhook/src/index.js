@@ -56,6 +56,44 @@ async function verifySignature(rawBody, signature, secret) {
 }
 
 /**
+ * Cancel all still-pending trial_* emails for a user.
+ * Called after a paid subscription becomes active. Uses the Postgres
+ * function public.cancel_pending_trial_emails(uuid) (SECURITY DEFINER).
+ *
+ * Failure is logged but does not abort the webhook — the scheduler will
+ * simply send the next email on its cycle, which is harmless.
+ *
+ * @param {string} supabaseUrl
+ * @param {string} supabaseKey - service role key
+ * @param {string} userId
+ */
+async function cancelPendingTrialEmails(supabaseUrl, supabaseKey, userId) {
+  try {
+    const rpcUrl = `${supabaseUrl}/rest/v1/rpc/cancel_pending_trial_emails`;
+    const response = await fetch(rpcUrl, {
+      method: 'POST',
+      headers: {
+        'apikey': supabaseKey,
+        'Authorization': `Bearer ${supabaseKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ p_user_id: userId }),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('cancel_pending_trial_emails failed:', response.status, errorText);
+      return;
+    }
+
+    const cancelledCount = await response.json();
+    console.log(`Cancelled ${cancelledCount} pending trial_* emails for user ${userId}`);
+  } catch (error) {
+    console.error('Error cancelling pending trial emails:', error);
+  }
+}
+
+/**
  * Update user subscription in Supabase
  * @param {string} supabaseUrl - Supabase project URL
  * @param {string} supabaseKey - Supabase service role key
@@ -73,13 +111,13 @@ async function updateUserSubscription(supabaseUrl, supabaseKey, userId, subscrip
   try {
     const subscription = subscriptionData.data;
     const attributes = subscription.attributes;
-    
+
     // Determine plan type from variant name, product name, or variant_id
     let planType = 'free';
     const variantId = attributes.variant_id?.toString();
     const variantName = (attributes.variant_name || '').toLowerCase();
     const productName = (attributes.product_name || '').toLowerCase();
-    
+
     // Try to extract plan from variant name first (most reliable)
     if (variantName.includes('start')) {
       planType = 'start';
@@ -94,7 +132,7 @@ async function updateUserSubscription(supabaseUrl, supabaseKey, userId, subscrip
     } else if (productName.includes('pro')) {
       planType = 'pro';
     }
-    
+
     // Optional: Map specific variant IDs if needed (uncomment and update with your actual IDs)
     // To find variant IDs: Lemon Squeezy Dashboard → Products → Click variant → Check URL or details
     // const variantToPlan = {
@@ -141,7 +179,7 @@ async function updateUserSubscription(supabaseUrl, supabaseKey, userId, subscrip
     // Set subscription_created_at only on creation
     if (eventName === 'subscription_created') {
       updateData.subscription_created_at = attributes.created_at || new Date().toISOString();
-      
+
       // Save customer portal URL from subscription_created event
       // Lemon Squeezy sends this in attributes.urls.customer_portal
       if (attributes.urls?.customer_portal) {
@@ -156,7 +194,7 @@ async function updateUserSubscription(supabaseUrl, supabaseKey, userId, subscrip
 
     // Update or insert profile in Supabase
     const upsertUrl = `${supabaseUrl}/rest/v1/profiles`;
-    
+
     // First, try to get existing profile
     const getProfileUrl = `${supabaseUrl}/rest/v1/profiles?user_id=eq.${userId}&select=id`;
     const getResponse = await fetch(getProfileUrl, {
@@ -239,7 +277,7 @@ export default {
   async fetch(request, env) {
     // Only accept POST requests
     if (request.method !== 'POST') {
-      return new Response('Method not allowed', { 
+      return new Response('Method not allowed', {
         status: 405,
         headers: { 'Content-Type': 'text/plain' }
       });
@@ -260,7 +298,7 @@ export default {
       if (missing.length > 0) {
         console.error('Missing required environment variables:', missing.join(', '));
         console.error('Please set these in Cloudflare Dashboard → Workers & Pages → lemon-squeezy-webhook → Settings → Variables');
-        return new Response(`Server configuration error: Missing ${missing.join(', ')}`, { 
+        return new Response(`Server configuration error: Missing ${missing.join(', ')}`, {
           status: 500,
           headers: { 'Content-Type': 'text/plain' }
         });
@@ -277,11 +315,11 @@ export default {
       // Lemon Squeezy uses X-Signature (or X-Lsq-Signature in some versions)
       // Try different header names and case variations
       let signature = request.headers.get('X-Signature') ||
-                     request.headers.get('x-signature') ||
-                     request.headers.get('X-Lsq-Signature') || 
-                     request.headers.get('x-lsq-signature') ||
-                     request.headers.get('X-LSQ-Signature');
-      
+        request.headers.get('x-signature') ||
+        request.headers.get('X-Lsq-Signature') ||
+        request.headers.get('x-lsq-signature') ||
+        request.headers.get('X-LSQ-Signature');
+
       if (!signature) {
         console.error('Missing signature header. Available headers:', Object.keys(allHeaders));
         // For debugging: allow processing without signature (REMOVE IN PRODUCTION!)
@@ -296,7 +334,7 @@ export default {
         const isValid = await verifySignature(rawBody, signature, secret);
         if (!isValid) {
           console.error('Invalid webhook signature');
-          return new Response('Invalid signature', { 
+          return new Response('Invalid signature', {
             status: 401,
             headers: { 'Content-Type': 'text/plain' }
           });
@@ -312,7 +350,7 @@ export default {
         payload = JSON.parse(rawBody);
       } catch (error) {
         console.error('Error parsing JSON:', error);
-        return new Response('Invalid JSON', { 
+        return new Response('Invalid JSON', {
           status: 400,
           headers: { 'Content-Type': 'text/plain' }
         });
@@ -330,13 +368,13 @@ export default {
       });
 
       // Handle different event types
-      if (eventName === 'subscription_created' || 
-          eventName === 'subscription_updated' || 
-          eventName === 'subscription_cancelled') {
-        
+      if (eventName === 'subscription_created' ||
+        eventName === 'subscription_updated' ||
+        eventName === 'subscription_cancelled') {
+
         if (!userId) {
           console.error('No user_id in custom_data');
-          return new Response('Missing user_id', { 
+          return new Response('Missing user_id', {
             status: 400,
             headers: { 'Content-Type': 'text/plain' }
           });
@@ -353,27 +391,27 @@ export default {
 
         if (result.error) {
           console.error('Error updating subscription:', result.error);
-          return new Response(`Error: ${result.error}`, { 
+          return new Response(`Error: ${result.error}`, {
             status: 500,
             headers: { 'Content-Type': 'text/plain' }
           });
         }
 
-        return new Response('Webhook processed successfully', { 
+        return new Response('Webhook processed successfully', {
           status: 200,
           headers: { 'Content-Type': 'text/plain' }
         });
       } else {
         // Log unhandled events but return success
         console.log('Unhandled event type:', eventName);
-        return new Response('Event received but not processed', { 
+        return new Response('Event received but not processed', {
           status: 200,
           headers: { 'Content-Type': 'text/plain' }
         });
       }
     } catch (error) {
       console.error('Worker error:', error);
-      return new Response('Internal server error', { 
+      return new Response('Internal server error', {
         status: 500,
         headers: { 'Content-Type': 'text/plain' }
       });
