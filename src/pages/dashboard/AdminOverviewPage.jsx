@@ -5,6 +5,7 @@ import { deleteLinkFromRedis } from '../../lib/redisCache';
 
 const VALID_VIEWS = new Set([
   'overview',
+  'emails',
   'new-links',
   'links',
   'users',
@@ -66,6 +67,7 @@ const AdminOverviewPage = () => {
   const [customDomains, setCustomDomains] = useState([]);
   const [overviewStats, setOverviewStats] = useState({
     newLinks: 0,
+    emails: 0,
     links: 0,
     users: 0,
     customDomains: 0,
@@ -126,11 +128,10 @@ const AdminOverviewPage = () => {
   useEffect(() => {
     fetchPendingLinks();
     fetchOverviewStats();
-    fetchEmailQueueData();
   }, []);
 
   useEffect(() => {
-    if (activeView === 'overview') {
+    if (activeView === 'emails') {
       fetchEmailQueueData();
     }
   }, [activeView]);
@@ -139,6 +140,7 @@ const AdminOverviewPage = () => {
     try {
       const [
         pendingLinksRes,
+        pendingEmailsRes,
         linksRes,
         usersRes,
         customDomainsRes,
@@ -150,6 +152,7 @@ const AdminOverviewPage = () => {
           .from('links')
           .select('*', { count: 'exact', head: true })
           .eq('review_status', 'pending'),
+        supabase.from('email_logs').select('*', { count: 'exact', head: true }).eq('status', 'pending'),
         supabase.from('links').select('*', { count: 'exact', head: true }).eq('status', 'active'),
         supabase
           .from('profiles')
@@ -166,6 +169,7 @@ const AdminOverviewPage = () => {
 
       const errors = [
         pendingLinksRes.error,
+        pendingEmailsRes.error,
         linksRes.error,
         usersRes.error,
         customDomainsRes.error,
@@ -181,6 +185,7 @@ const AdminOverviewPage = () => {
       const cleanClicks = cleanClicksRes.count || 0;
       setOverviewStats({
         newLinks: pendingLinksRes.count || 0,
+        emails: pendingEmailsRes.count || 0,
         links: linksRes.count || 0,
         users: usersRes.count || 0,
         customDomains: customDomainsRes.count || 0,
@@ -192,6 +197,7 @@ const AdminOverviewPage = () => {
       console.error('Error fetching admin overview stats:', err);
       setOverviewStats({
         newLinks: 0,
+        emails: 0,
         links: 0,
         users: 0,
         customDomains: 0,
@@ -797,6 +803,14 @@ const AdminOverviewPage = () => {
                 onClick={() => changeView('new-links')}
               />
               <StatCard
+                title="Emails"
+                value={overviewStats.emails}
+                icon="mail"
+                iconBgClass="bg-blue-500/10"
+                iconColorClass="text-blue-600"
+                onClick={() => changeView('emails')}
+              />
+              <StatCard
                 title="Users"
                 value={overviewStats.users}
                 icon="group"
@@ -844,6 +858,20 @@ const AdminOverviewPage = () => {
                 iconColorClass="text-red-600"
                 onClick={() => changeView('bots')}
               />
+            </div>
+
+          </>
+        ) : activeView === 'emails' ? (
+          <>
+            <div className="mb-4">
+              <button
+                type="button"
+                onClick={() => changeView('overview')}
+                className="mb-3 px-3 py-2 rounded-lg border border-slate-200 text-sm font-semibold text-[#1b1b1b] hover:bg-slate-100"
+              >
+                Back
+              </button>
+              <h3 className="text-lg font-bold text-[#1b1b1b]">Emails</h3>
             </div>
 
             <div className="rounded-2xl border border-slate-200 bg-slate-50/60 p-4 sm:p-5">
@@ -900,83 +928,24 @@ const AdminOverviewPage = () => {
                     </div>
                   </div>
                   <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
-                  <div className="rounded-xl border border-slate-200 bg-white p-3">
-                    <h4 className="text-sm font-bold text-[#1b1b1b] mb-2">Upcoming (Next 7 Days)</h4>
-                    {futureEmailQueue.length === 0 ? (
-                      <p className="text-xs text-slate-500">No pending emails in the next week.</p>
-                    ) : (
-                      <div className="overflow-auto">
-                        <table className="w-full text-xs">
-                          <thead>
-                            <tr className="text-left text-slate-500">
-                              <th className="py-2 pr-3">User</th>
-                              <th className="py-2 pr-3">Type</th>
-                              <th className="py-2 pr-3">Scheduled</th>
-                              <th className="py-2">Status</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {futureEmailQueue.map((row) => (
-                              <tr key={row.id} className="border-t border-slate-100 align-top">
-                                <td className="py-2 pr-3">
-                                  <p className="font-semibold text-[#1b1b1b] break-all">
-                                    {row.user_full_name?.trim() || 'Unnamed user'}
-                                  </p>
-                                  <p className="text-slate-500 break-all">
-                                    {row.user_email?.trim() || row.email || 'No email'}
-                                  </p>
-                                </td>
-                                <td className="py-2 pr-3 font-semibold text-slate-700">{row.email_type}</td>
-                                <td className="py-2 pr-3 text-slate-600">
-                                  {formatEmailTimestamp(row.scheduled_for)}
-                                </td>
-                                <td className="py-2">
-                                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold bg-amber-100 text-amber-700">
-                                    pending
-                                  </span>
-                                </td>
+                    <div className="rounded-xl border border-slate-200 bg-white p-3">
+                      <h4 className="text-sm font-bold text-[#1b1b1b] mb-2">Upcoming (Next 7 Days)</h4>
+                      {futureEmailQueue.length === 0 ? (
+                        <p className="text-xs text-slate-500">No pending emails in the next week.</p>
+                      ) : (
+                        <div className="overflow-auto">
+                          <table className="w-full text-xs">
+                            <thead>
+                              <tr className="text-left text-slate-500">
+                                <th className="py-2 pr-3">User</th>
+                                <th className="py-2 pr-3">Type</th>
+                                <th className="py-2 pr-3">Scheduled</th>
+                                <th className="py-2">Status</th>
                               </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="rounded-xl border border-slate-200 bg-white p-3">
-                    <h4 className="text-sm font-bold text-[#1b1b1b] mb-2">Recent Delivery Log</h4>
-                    {recentEmailLogs.length === 0 ? (
-                      <p className="text-xs text-slate-500">No recent email logs found.</p>
-                    ) : (
-                      <div className="overflow-auto">
-                        <table className="w-full text-xs">
-                          <thead>
-                            <tr className="text-left text-slate-500">
-                              <th className="py-2 pr-3">Result</th>
-                              <th className="py-2 pr-3">User</th>
-                              <th className="py-2 pr-3">Type</th>
-                              <th className="py-2 pr-3">Sent</th>
-                              <th className="py-2">Provider ID</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {recentEmailLogs.map((row) => {
-                              const isSuccess = ['sent', 'opened', 'clicked'].includes(
-                                (row.status || '').toLowerCase()
-                              );
-                              return (
+                            </thead>
+                            <tbody>
+                              {futureEmailQueue.map((row) => (
                                 <tr key={row.id} className="border-t border-slate-100 align-top">
-                                  <td className="py-2 pr-3">
-                                    {isSuccess ? (
-                                      <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 font-bold text-emerald-700">
-                                        <span aria-hidden="true">✓</span> OK
-                                      </span>
-                                    ) : (
-                                      <span className="inline-flex items-center rounded-full bg-red-100 px-2 py-0.5 font-bold text-red-700">
-                                        Failed
-                                      </span>
-                                    )}
-                                  </td>
                                   <td className="py-2 pr-3">
                                     <p className="font-semibold text-[#1b1b1b] break-all">
                                       {row.user_full_name?.trim() || 'Unnamed user'}
@@ -987,22 +956,81 @@ const AdminOverviewPage = () => {
                                   </td>
                                   <td className="py-2 pr-3 font-semibold text-slate-700">{row.email_type}</td>
                                   <td className="py-2 pr-3 text-slate-600">
-                                    {formatEmailTimestamp(row.sent_at || row.updated_at)}
+                                    {formatEmailTimestamp(row.scheduled_for)}
                                   </td>
                                   <td className="py-2">
-                                    <span className="text-slate-500 break-all">
-                                      {row.provider_message_id || '—'}
+                                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold bg-amber-100 text-amber-700">
+                                      pending
                                     </span>
                                   </td>
                                 </tr>
-                              );
-                            })}
-                          </tbody>
-                        </table>
-                      </div>
-                    )}
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="rounded-xl border border-slate-200 bg-white p-3">
+                      <h4 className="text-sm font-bold text-[#1b1b1b] mb-2">Recent Delivery Log</h4>
+                      {recentEmailLogs.length === 0 ? (
+                        <p className="text-xs text-slate-500">No recent email logs found.</p>
+                      ) : (
+                        <div className="overflow-auto">
+                          <table className="w-full text-xs">
+                            <thead>
+                              <tr className="text-left text-slate-500">
+                                <th className="py-2 pr-3">Result</th>
+                                <th className="py-2 pr-3">User</th>
+                                <th className="py-2 pr-3">Type</th>
+                                <th className="py-2 pr-3">Sent</th>
+                                <th className="py-2">Provider ID</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {recentEmailLogs.map((row) => {
+                                const isSuccess = ['sent', 'opened', 'clicked'].includes(
+                                  (row.status || '').toLowerCase()
+                                );
+                                return (
+                                  <tr key={row.id} className="border-t border-slate-100 align-top">
+                                    <td className="py-2 pr-3">
+                                      {isSuccess ? (
+                                        <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 font-bold text-emerald-700">
+                                          <span aria-hidden="true">✓</span> OK
+                                        </span>
+                                      ) : (
+                                        <span className="inline-flex items-center rounded-full bg-red-100 px-2 py-0.5 font-bold text-red-700">
+                                          Failed
+                                        </span>
+                                      )}
+                                    </td>
+                                    <td className="py-2 pr-3">
+                                      <p className="font-semibold text-[#1b1b1b] break-all">
+                                        {row.user_full_name?.trim() || 'Unnamed user'}
+                                      </p>
+                                      <p className="text-slate-500 break-all">
+                                        {row.user_email?.trim() || row.email || 'No email'}
+                                      </p>
+                                    </td>
+                                    <td className="py-2 pr-3 font-semibold text-slate-700">{row.email_type}</td>
+                                    <td className="py-2 pr-3 text-slate-600">
+                                      {formatEmailTimestamp(row.sent_at || row.updated_at)}
+                                    </td>
+                                    <td className="py-2">
+                                      <span className="text-slate-500 break-all">
+                                        {row.provider_message_id || '—'}
+                                      </span>
+                                    </td>
+                                  </tr>
+                                );
+                              })}
+                            </tbody>
+                          </table>
+                        </div>
+                      )}
+                    </div>
                   </div>
-                </div>
                 </div>
               )}
             </div>
