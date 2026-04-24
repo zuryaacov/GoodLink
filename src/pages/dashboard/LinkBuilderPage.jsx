@@ -27,6 +27,8 @@ const LinkBuilderPage = () => {
   const [planType, setPlanType] = useState('free');
   const wizardRef = useRef(null);
   const [initialLoading, setInitialLoading] = useState(!!linkIdToLoad);
+  const detectedTimeZone =
+    Intl.DateTimeFormat?.().resolvedOptions?.().timeZone || 'UTC';
 
   const getLinksReturnPath = (spaceIdOverride = null) => {
     const effectiveSpaceId = spaceIdOverride || formData.spaceId || spaceIdFromQuery || null;
@@ -57,6 +59,17 @@ const LinkBuilderPage = () => {
     botAction: 'no-tracking',
     fallbackUrl: '',
     geoRules: [],
+    accessMode: 'direct', // 'direct' | 'controlled'
+    enablePasswordProtection: false,
+    accessPassword: '',
+    enableAntiBruteForce: false,
+    maxLoginAttempts: 5,
+    lockoutDurationMinutes: 30,
+    enableTimeLimit: false,
+    expirationDateTime: '',
+    expirationTimeZone: detectedTimeZone,
+    enableClickLimit: false,
+    maxClicksAllowed: '',
     spaceId: spaceIdFromQuery || null,
     shortUrl: '',
     fullUtmString: '',
@@ -184,6 +197,20 @@ const LinkBuilderPage = () => {
           }
           return [];
         })(),
+        accessMode: data.access_mode || 'direct',
+        enablePasswordProtection: Boolean(data.enable_password_protection),
+        accessPassword: data.access_password || '',
+        enableAntiBruteForce: Boolean(data.enable_anti_brute_force),
+        maxLoginAttempts: data.max_login_attempts ?? 5,
+        lockoutDurationMinutes: data.lockout_duration_minutes ?? 30,
+        enableTimeLimit: Boolean(data.enable_time_limit),
+        expirationDateTime: data.expiration_datetime || '',
+        expirationTimeZone: data.expiration_timezone || detectedTimeZone,
+        enableClickLimit: Boolean(data.enable_click_limit),
+        maxClicksAllowed:
+          data.max_clicks_allowed === null || data.max_clicks_allowed === undefined
+            ? ''
+            : String(data.max_clicks_allowed),
         spaceId: data.space_id || spaceIdFromQuery || null,
         shortUrl: '', // Will be regenerated
         fullUtmString: '',
@@ -298,6 +325,33 @@ const LinkBuilderPage = () => {
           bot_action: formData.botAction,
           fallback_url: finalFallbackUrl,
           geo_rules: Array.isArray(formData.geoRules) ? formData.geoRules : [],
+          access_mode: formData.accessMode || 'direct',
+          enable_password_protection: Boolean(formData.enablePasswordProtection),
+          access_password: formData.enablePasswordProtection ? formData.accessPassword || null : null,
+          enable_anti_brute_force:
+            Boolean(formData.enablePasswordProtection) && Boolean(formData.enableAntiBruteForce),
+          max_login_attempts:
+            formData.enablePasswordProtection && formData.enableAntiBruteForce
+              ? Number(formData.maxLoginAttempts || 5)
+              : null,
+          lockout_duration_minutes:
+            formData.enablePasswordProtection && formData.enableAntiBruteForce
+              ? Number(formData.lockoutDurationMinutes || 30)
+              : null,
+          enable_time_limit: Boolean(formData.enableTimeLimit),
+          expiration_datetime:
+            formData.enableTimeLimit && formData.expirationDateTime
+              ? formData.expirationDateTime
+              : null,
+          expiration_timezone:
+            formData.enableTimeLimit && formData.expirationTimeZone
+              ? formData.expirationTimeZone
+              : null,
+          enable_click_limit: Boolean(formData.enableClickLimit),
+          max_clicks_allowed:
+            formData.enableClickLimit && String(formData.maxClicksAllowed).trim() !== ''
+              ? Number(formData.maxClicksAllowed)
+              : null,
           space_id: formData.spaceId || null,
           status: 'active',
           review_status: 'pending',
@@ -425,6 +479,33 @@ const LinkBuilderPage = () => {
           bot_action: formData.botAction,
           fallback_url: finalFallbackUrl,
           geo_rules: Array.isArray(formData.geoRules) ? formData.geoRules : [],
+          access_mode: formData.accessMode || 'direct',
+          enable_password_protection: Boolean(formData.enablePasswordProtection),
+          access_password: formData.enablePasswordProtection ? formData.accessPassword || null : null,
+          enable_anti_brute_force:
+            Boolean(formData.enablePasswordProtection) && Boolean(formData.enableAntiBruteForce),
+          max_login_attempts:
+            formData.enablePasswordProtection && formData.enableAntiBruteForce
+              ? Number(formData.maxLoginAttempts || 5)
+              : null,
+          lockout_duration_minutes:
+            formData.enablePasswordProtection && formData.enableAntiBruteForce
+              ? Number(formData.lockoutDurationMinutes || 30)
+              : null,
+          enable_time_limit: Boolean(formData.enableTimeLimit),
+          expiration_datetime:
+            formData.enableTimeLimit && formData.expirationDateTime
+              ? formData.expirationDateTime
+              : null,
+          expiration_timezone:
+            formData.enableTimeLimit && formData.expirationTimeZone
+              ? formData.expirationTimeZone
+              : null,
+          enable_click_limit: Boolean(formData.enableClickLimit),
+          max_clicks_allowed:
+            formData.enableClickLimit && String(formData.maxClicksAllowed).trim() !== ''
+              ? Number(formData.maxClicksAllowed)
+              : null,
           space_id: formData.spaceId || null,
           status: 'active',
           review_status: 'pending',

@@ -35,6 +35,23 @@ const isMetaFamilyPlatform = (platform) =>
 const isSingleSelectPlatform = (platform) =>
   SINGLE_SELECT_PLATFORMS.has(String(platform || '').trim().toLowerCase());
 
+const getTimeZoneOptions = () => {
+  const fallback = ['UTC', 'Asia/Jerusalem', 'America/New_York', 'Europe/London'];
+  const list =
+    typeof Intl.supportedValuesOf === 'function' ? Intl.supportedValuesOf('timeZone') : fallback;
+  const fmt = new Intl.DateTimeFormat('en-US', {
+    timeZoneName: 'shortOffset',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+  const now = new Date();
+  return list.map((tz) => {
+    const parts = fmt.formatToParts(now, { timeZone: tz });
+    const offset = parts.find((p) => p.type === 'timeZoneName')?.value || 'UTC';
+    return { value: tz, label: `(${offset}) ${tz}` };
+  });
+};
+
 function getPlatformLogo(platform) {
   switch (platform) {
     case 'meta':
@@ -161,6 +178,7 @@ export default function LinkWizardOnePerPage({
   const [availablePixels, setAvailablePixels] = useState([]);
   const [loadingPixels, setLoadingPixels] = useState(false);
   const [stepIndex, setStepIndex] = useState(0);
+  const [timeZoneOptions] = useState(() => getTimeZoneOptions());
 
   // Validation state
   const [nameError, setNameError] = useState(null);
@@ -243,6 +261,27 @@ export default function LinkWizardOnePerPage({
         subtitle: 'Where should the user land ?',
       },
       {
+        id: 'mode',
+        badge: 'Access',
+        badgeColor: 'text-[#0b996f] bg-[#0b996f]/10',
+        title: 'Choose',
+        highlight: 'Redirection Mode',
+        highlightClass:
+          'bg-gradient-to-r from-[#0b996f] to-[#10b981] bg-clip-text text-transparent',
+        subtitle: 'Direct access or secured link controls.',
+      },
+      {
+        id: 'access',
+        badge: 'Security',
+        badgeColor: 'text-[#135bec] bg-[#135bec]/10',
+        title: 'Configure',
+        highlight: 'Access Rules',
+        highlightClass:
+          'bg-gradient-to-r from-[#135bec] to-[#42a5f5] bg-clip-text text-transparent',
+        subtitle: 'Set password, time limits, and click limits.',
+        show: (formData.accessMode || 'direct') === 'controlled',
+      },
+      {
         id: 'domain',
         badge: 'Domain',
         badgeColor: 'text-[#a855f7] bg-[#a855f7]/10',
@@ -306,7 +345,7 @@ export default function LinkWizardOnePerPage({
       },
     ];
     return list.filter((s) => s.show !== false);
-  }, [planType, domains.length]);
+  }, [planType, domains.length, formData.accessMode]);
 
   const totalSteps = steps.length;
   const currentStep = steps[stepIndex];
@@ -594,6 +633,24 @@ export default function LinkWizardOnePerPage({
       if (!ok) return;
     } else if (currentStep.id === 'bot') {
       if (!validateBotStep()) return;
+    } else if (currentStep.id === 'access') {
+      if (formData.enablePasswordProtection && !String(formData.accessPassword || '').trim()) {
+        return;
+      }
+      if (formData.enablePasswordProtection && formData.enableAntiBruteForce) {
+        const attempts = Number(formData.maxLoginAttempts);
+        const lockout = Number(formData.lockoutDurationMinutes);
+        if (!Number.isFinite(attempts) || attempts < 1) return;
+        if (!Number.isFinite(lockout) || lockout < 1) return;
+      }
+      if (formData.enableClickLimit) {
+        const maxClicks = Number(formData.maxClicksAllowed);
+        if (!Number.isFinite(maxClicks) || maxClicks < 1) return;
+      }
+      if (formData.enableTimeLimit) {
+        if (!String(formData.expirationDateTime || '').trim()) return;
+        if (!String(formData.expirationTimeZone || '').trim()) return;
+      }
     }
 
     if (isLast) {
@@ -897,6 +954,160 @@ export default function LinkWizardOnePerPage({
                         <span className="material-symbols-outlined text-sm" aria-hidden="true">verified</span>
                         Secure link
                       </p>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Step: Domain */}
+              {currentStep.id === 'mode' && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <button
+                    type="button"
+                    onClick={() => updateFormData('accessMode', 'direct')}
+                    className={`p-5 rounded-2xl border-2 text-left transition-all ${
+                      (formData.accessMode || 'direct') === 'direct'
+                        ? 'border-[#10b981] bg-[#10b981]/5'
+                        : 'border-slate-200 bg-white hover:border-[#10b981]/40'
+                    }`}
+                  >
+                    <p className="text-lg font-bold text-[#1b1b1b]">Direct Access</p>
+                    <p className="text-sm text-slate-600 mt-2">
+                      Simple, fast redirection with no restrictions or security layers.
+                    </p>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => updateFormData('accessMode', 'controlled')}
+                    className={`p-5 rounded-2xl border-2 text-left transition-all ${
+                      (formData.accessMode || 'direct') === 'controlled'
+                        ? 'border-[#135bec] bg-[#135bec]/5'
+                        : 'border-slate-200 bg-white hover:border-[#135bec]/40'
+                    }`}
+                  >
+                    <p className="text-lg font-bold text-[#1b1b1b]">Access Control &amp; Limits</p>
+                    <p className="text-sm text-slate-600 mt-2">
+                      Secure your link with passwords, expiration dates, or click caps.
+                    </p>
+                  </button>
+                </div>
+              )}
+
+              {currentStep.id === 'access' && (
+                <div className="space-y-5">
+                  <div className="p-4 rounded-2xl border border-slate-200 bg-white space-y-3">
+                    <label className="flex items-center gap-3">
+                      <input
+                        type="checkbox"
+                        checked={!!formData.enablePasswordProtection}
+                        onChange={(e) => updateFormData('enablePasswordProtection', e.target.checked)}
+                      />
+                      <span className="font-bold text-[#1b1b1b]">Enable Password Protection</span>
+                    </label>
+                    {formData.enablePasswordProtection && (
+                      <>
+                        <input
+                          type="text"
+                          value={formData.accessPassword || ''}
+                          onChange={(e) => updateFormData('accessPassword', e.target.value)}
+                          placeholder="Enter password..."
+                          className="w-full bg-white border border-slate-200 rounded-xl p-3 text-[#1b1b1b] outline-none focus:border-[#135bec]"
+                        />
+                        <label className="flex items-center gap-3">
+                          <input
+                            type="checkbox"
+                            checked={!!formData.enableAntiBruteForce}
+                            onChange={(e) => updateFormData('enableAntiBruteForce', e.target.checked)}
+                          />
+                          <span className="font-semibold text-[#1b1b1b]">
+                            Enable Anti-Brute Force Protection
+                          </span>
+                        </label>
+                        {formData.enableAntiBruteForce && (
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <input
+                              type="number"
+                              min={1}
+                              value={formData.maxLoginAttempts ?? 5}
+                              onChange={(e) => updateFormData('maxLoginAttempts', e.target.value)}
+                              placeholder="e.g. 5"
+                              className="w-full bg-white border border-slate-200 rounded-xl p-3 text-[#1b1b1b] outline-none focus:border-[#135bec]"
+                            />
+                            <input
+                              type="number"
+                              min={1}
+                              value={formData.lockoutDurationMinutes ?? 30}
+                              onChange={(e) => updateFormData('lockoutDurationMinutes', e.target.value)}
+                              placeholder="e.g. 30"
+                              className="w-full bg-white border border-slate-200 rounded-xl p-3 text-[#1b1b1b] outline-none focus:border-[#135bec]"
+                            />
+                          </div>
+                        )}
+                        <p className="text-xs text-slate-500">
+                          Temporarily blocks the visitor&apos;s IP after multiple failed attempts.
+                        </p>
+                      </>
+                    )}
+                  </div>
+
+                  <div className="p-4 rounded-2xl border border-slate-200 bg-white space-y-3">
+                    <label className="flex items-center gap-3">
+                      <input
+                        type="checkbox"
+                        checked={!!formData.enableTimeLimit}
+                        onChange={(e) => updateFormData('enableTimeLimit', e.target.checked)}
+                      />
+                      <span className="font-bold text-[#1b1b1b]">Enable Time Limit</span>
+                    </label>
+                    {formData.enableTimeLimit && (
+                      <>
+                        <input
+                          type="datetime-local"
+                          value={formData.expirationDateTime || ''}
+                          onChange={(e) => updateFormData('expirationDateTime', e.target.value)}
+                          className="w-full bg-white border border-slate-200 rounded-xl p-3 text-[#1b1b1b] outline-none focus:border-[#135bec]"
+                        />
+                        <select
+                          value={formData.expirationTimeZone || 'UTC'}
+                          onChange={(e) => updateFormData('expirationTimeZone', e.target.value)}
+                          className="w-full bg-white border border-slate-200 rounded-xl p-3 text-[#1b1b1b] outline-none focus:border-[#135bec]"
+                        >
+                          {timeZoneOptions.map((tz) => (
+                            <option key={tz.value} value={tz.value}>
+                              {tz.label}
+                            </option>
+                          ))}
+                        </select>
+                        <p className="text-xs text-slate-500">
+                          The link will deactivate based on the selected time zone.
+                        </p>
+                      </>
+                    )}
+                  </div>
+
+                  <div className="p-4 rounded-2xl border border-slate-200 bg-white space-y-3">
+                    <label className="flex items-center gap-3">
+                      <input
+                        type="checkbox"
+                        checked={!!formData.enableClickLimit}
+                        onChange={(e) => updateFormData('enableClickLimit', e.target.checked)}
+                      />
+                      <span className="font-bold text-[#1b1b1b]">Enable Click Limit</span>
+                    </label>
+                    {formData.enableClickLimit && (
+                      <>
+                        <input
+                          type="number"
+                          min={1}
+                          value={formData.maxClicksAllowed || ''}
+                          onChange={(e) => updateFormData('maxClicksAllowed', e.target.value)}
+                          placeholder="e.g. 1000"
+                          className="w-full bg-white border border-slate-200 rounded-xl p-3 text-[#1b1b1b] outline-none focus:border-[#135bec]"
+                        />
+                        <p className="text-xs text-slate-500">
+                          Once this limit is reached, the link will no longer redirect visitors.
+                        </p>
+                      </>
                     )}
                   </div>
                 </div>
@@ -1268,6 +1479,16 @@ export default function LinkWizardOnePerPage({
                 </div>
                 <div className="flex justify-between items-center border-b border-slate-200 pb-3">
                   <span className="text-gray-500 text-[10px] font-bold uppercase tracking-widest">
+                    Access Mode
+                  </span>
+                  <span className="font-bold text-[#1b1b1b] text-xs uppercase">
+                    {(formData.accessMode || 'direct') === 'controlled'
+                      ? 'Access Control & Limits'
+                      : 'Direct Access'}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center border-b border-slate-200 pb-3">
+                  <span className="text-gray-500 text-[10px] font-bold uppercase tracking-widest">
                     Bot Action
                   </span>
                   <span className="font-bold text-yellow-700 text-xs uppercase">
@@ -1278,6 +1499,22 @@ export default function LinkWizardOnePerPage({
                         : 'Allow'}
                   </span>
                 </div>
+                {(formData.accessMode || 'direct') === 'controlled' && (
+                  <div className="flex justify-between items-center border-b border-slate-200 pb-3">
+                    <span className="text-gray-500 text-[10px] font-bold uppercase tracking-widest">
+                      Access Rules
+                    </span>
+                    <span className="font-bold text-[#135bec] text-xs text-right max-w-[180px]">
+                      {[
+                        formData.enablePasswordProtection ? 'Password' : null,
+                        formData.enableClickLimit ? 'Click Limit' : null,
+                        formData.enableTimeLimit ? 'Time Limit' : null,
+                      ]
+                        .filter(Boolean)
+                        .join(' + ') || 'None'}
+                    </span>
+                  </div>
+                )}
                 <div className="flex justify-between items-center border-b border-slate-200 pb-3">
                   <span className="text-gray-500 text-[10px] font-bold uppercase tracking-widest">
                     Geo Rules
