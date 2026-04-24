@@ -84,6 +84,20 @@ export async function updateLinkInRedis(linkData, supabase, oldDomain = null, ol
       fallback_url: linkData.fallback_url || null,
       space_id: linkData.space_id || null,
       geo_rules: linkData.geo_rules || [],
+      access_mode: linkData.access_mode || 'direct',
+      enable_password_protection: Boolean(linkData.enable_password_protection),
+      access_password: linkData.access_password || null,
+      enable_anti_brute_force: Boolean(linkData.enable_anti_brute_force),
+      max_login_attempts:
+        linkData.max_login_attempts === undefined ? null : linkData.max_login_attempts,
+      lockout_duration_minutes:
+        linkData.lockout_duration_minutes === undefined ? null : linkData.lockout_duration_minutes,
+      enable_time_limit: Boolean(linkData.enable_time_limit),
+      expiration_datetime: linkData.expiration_datetime || null,
+      expiration_timezone: linkData.expiration_timezone || null,
+      enable_click_limit: Boolean(linkData.enable_click_limit),
+      max_clicks_allowed:
+        linkData.max_clicks_allowed === undefined ? null : linkData.max_clicks_allowed,
       plan_type: planType,
       created_at: linkData.created_at,
       updated_at: linkData.updated_at || new Date().toISOString(),
