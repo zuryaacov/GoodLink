@@ -173,12 +173,14 @@ export default function LinkWizardOnePerPage({
   stepRefs,
   isSubmitting = false,
 }) {
+  const browserTimeZone = Intl.DateTimeFormat?.().resolvedOptions?.().timeZone || 'UTC';
   const [domains, setDomains] = useState(['glynk.to']);
   const [domainStatuses, setDomainStatuses] = useState({}); // domain -> 'active' | 'pending'
   const [availablePixels, setAvailablePixels] = useState([]);
   const [loadingPixels, setLoadingPixels] = useState(false);
   const [stepIndex, setStepIndex] = useState(0);
   const [timeZoneOptions] = useState(() => getTimeZoneOptions());
+  const browserTimeZoneOption = timeZoneOptions.find((tz) => tz.value === browserTimeZone);
 
   // Validation state
   const [nameError, setNameError] = useState(null);
@@ -1055,7 +1057,13 @@ export default function LinkWizardOnePerPage({
                       <input
                         type="checkbox"
                         checked={!!formData.enableTimeLimit}
-                        onChange={(e) => updateFormData('enableTimeLimit', e.target.checked)}
+                        onChange={(e) => {
+                          const enabled = e.target.checked;
+                          updateFormData('enableTimeLimit', enabled);
+                          if (enabled && !String(formData.expirationTimeZone || '').trim()) {
+                            updateFormData('expirationTimeZone', browserTimeZone);
+                          }
+                        }}
                       />
                       <span className="font-bold text-[#1b1b1b]">Enable Time Limit</span>
                     </label>
@@ -1072,12 +1080,20 @@ export default function LinkWizardOnePerPage({
                           onChange={(e) => updateFormData('expirationTimeZone', e.target.value)}
                           className="w-full bg-white border border-slate-200 rounded-xl p-3 text-[#1b1b1b] outline-none focus:border-[#135bec]"
                         >
+                          {browserTimeZoneOption && (
+                            <option value={browserTimeZoneOption.value}>
+                              Your Time Zone: {browserTimeZoneOption.label}
+                            </option>
+                          )}
                           {timeZoneOptions.map((tz) => (
                             <option key={tz.value} value={tz.value}>
                               {tz.label}
                             </option>
                           ))}
                         </select>
+                        <p className="text-xs text-slate-500">
+                          Detected from your browser: {browserTimeZoneOption?.label || browserTimeZone}
+                        </p>
                         <p className="text-xs text-slate-500">
                           The link will deactivate based on the selected time zone.
                         </p>
