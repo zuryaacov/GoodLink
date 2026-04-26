@@ -318,30 +318,72 @@ function getPasswordGatePageHtml(opts = {}) {
 </html>`;
 }
 
-async function getHumanClickCountForLink(env, linkData) {
+async function getLinkCurrentClicksFromDb(env, linkData) {
     const linkId = String(linkData?.id || "").trim();
-    const slug = String(linkData?.slug || "").trim();
-    if (!linkId && !slug) return 0;
-    const query = linkId
-        ? `link_id=eq.${encodeURIComponent(linkId)}`
-        : `slug=eq.${encodeURIComponent(slug)}&domain=eq.${encodeURIComponent(String(linkData?.domain || ""))}`;
-    const countUrl = `${env.SUPABASE_URL}/rest/v1/clicks?${query}&is_bot=eq.false&select=id`;
+    if (!linkId) return 0;
     try {
-        const res = await fetch(countUrl, {
-            method: "HEAD",
+        const selectUrl = `${env.SUPABASE_URL}/rest/v1/links?id=eq.${encodeURIComponent(linkId)}&select=current_clicks&limit=1`;
+        const res = await fetch(selectUrl, {
+            method: "GET",
+            headers: {
+                "apikey": env.SUPABASE_SERVICE_ROLE_KEY,
+                "Authorization": `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}`
+            }
+        });
+        if (!res.ok) return Number(linkData?.current_clicks || 0) || 0;
+        const rows = await res.json().catch(() => []);
+        const row = rows?.[0] || null;
+        const value = Number(row?.current_clicks);
+        return Number.isFinite(value) && value >= 0 ? value : 0;
+    } catch {
+        return Number(linkData?.current_clicks || 0) || 0;
+    }
+}
+
+async function incrementLinkCurrentClicksAtomic(env, linkData, maxAllowed) {
+    const linkId = String(linkData?.id || "").trim();
+    if (!linkId) return { allowed: false, reason: "missing_link_id", currentClicks: 0 };
+    const numericMax = Number(maxAllowed);
+    if (!Number.isFinite(numericMax) || numericMax < 1) {
+        return { allowed: true, reason: "limit_not_enabled", currentClicks: Number(linkData?.current_clicks || 0) || 0 };
+    }
+
+    let expectedCurrent = Number(linkData?.current_clicks);
+    if (!Number.isFinite(expectedCurrent) || expectedCurrent < 0) expectedCurrent = 0;
+
+    for (let attempt = 0; attempt < 3; attempt += 1) {
+        if (expectedCurrent >= numericMax) {
+            return { allowed: false, reason: "click_limit_reached", currentClicks: expectedCurrent };
+        }
+
+        const nextValue = expectedCurrent + 1;
+        const patchUrl = `${env.SUPABASE_URL}/rest/v1/links?id=eq.${encodeURIComponent(linkId)}&current_clicks=eq.${encodeURIComponent(String(expectedCurrent))}`;
+        const patchRes = await fetch(patchUrl, {
+            method: "PATCH",
             headers: {
                 "apikey": env.SUPABASE_SERVICE_ROLE_KEY,
                 "Authorization": `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}`,
-                "Prefer": "count=exact"
-            }
+                "Content-Type": "application/json",
+                "Prefer": "return=representation"
+            },
+            body: JSON.stringify({ current_clicks: nextValue })
         });
-        if (!res.ok) return 0;
-        const contentRange = res.headers.get("content-range") || "";
-        const total = Number(contentRange.split("/")[1]);
-        return Number.isFinite(total) ? total : 0;
-    } catch {
-        return 0;
+
+        if (patchRes.ok) {
+            const rows = await patchRes.json().catch(() => []);
+            if (Array.isArray(rows) && rows.length > 0) {
+                return { allowed: true, reason: "incremented", currentClicks: nextValue };
+            }
+        }
+
+        expectedCurrent = await getLinkCurrentClicksFromDb(env, linkData);
     }
+
+    if (expectedCurrent >= numericMax) {
+        return { allowed: false, reason: "click_limit_reached", currentClicks: expectedCurrent };
+    }
+
+    return { allowed: false, reason: "increment_failed", currentClicks: expectedCurrent };
 }
 
 /**
@@ -2823,10 +2865,15 @@ export default Sentry.withSentry(
                     Number(linkData.max_clicks_allowed) > 0 &&
                     !isLikelyBot
                 ) {
-                    const currentHumanClicks = await getHumanClickCountForLink(env, linkData);
-                    if (currentHumanClicks >= Number(linkData.max_clicks_allowed)) {
+                    const incrementResult = await incrementLinkCurrentClicksAtomic(
+                        env,
+                        linkData,
+                        Number(linkData.max_clicks_allowed)
+                    );
+                    if (!incrementResult.allowed) {
                         return terminateWithLog("click_limit_reached", linkData);
                     }
+                    linkData.current_clicks = incrementResult.currentClicks;
                 }
 
                 if (Boolean(linkData?.enable_password_protection) && String(linkData?.access_password || "").length > 0) {
