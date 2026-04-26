@@ -79,6 +79,271 @@ function ensureValidUrl(url) {
     return cleanUrl;
 }
 
+function escapeHtml(value) {
+    return String(value ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+}
+
+function parseLocalDateTimeParts(input) {
+    const raw = String(input || "").trim();
+    const match = raw.match(/^(\d{4})-(\d{2})-(\d{2})[T\s](\d{2}):(\d{2})(?::(\d{2}))?$/);
+    if (!match) return null;
+    return {
+        year: Number(match[1]),
+        month: Number(match[2]),
+        day: Number(match[3]),
+        hour: Number(match[4]),
+        minute: Number(match[5]),
+        second: Number(match[6] || 0)
+    };
+}
+
+function getTimeZoneOffsetMs(date, timeZone) {
+    try {
+        const dtf = new Intl.DateTimeFormat("en-US", {
+            timeZone,
+            year: "numeric",
+            month: "2-digit",
+            day: "2-digit",
+            hour: "2-digit",
+            minute: "2-digit",
+            second: "2-digit",
+            hourCycle: "h23"
+        });
+        const parts = dtf.formatToParts(date);
+        const map = Object.fromEntries(parts.map((p) => [p.type, p.value]));
+        const utcFromLocalParts = Date.UTC(
+            Number(map.year),
+            Number(map.month) - 1,
+            Number(map.day),
+            Number(map.hour),
+            Number(map.minute),
+            Number(map.second)
+        );
+        return utcFromLocalParts - date.getTime();
+    } catch {
+        return 0;
+    }
+}
+
+function zonedDateTimeToUtcMs(localDateTime, timeZone) {
+    const parts = parseLocalDateTimeParts(localDateTime);
+    if (!parts) return null;
+    const initialGuess = Date.UTC(
+        parts.year,
+        parts.month - 1,
+        parts.day,
+        parts.hour,
+        parts.minute,
+        parts.second
+    );
+    const firstOffset = getTimeZoneOffsetMs(new Date(initialGuess), timeZone);
+    const firstPass = initialGuess - firstOffset;
+    const secondOffset = getTimeZoneOffsetMs(new Date(firstPass), timeZone);
+    return initialGuess - secondOffset;
+}
+
+function resolveExpirationTimeMs(linkData) {
+    const rawExpiration = String(linkData?.expiration_datetime || "").trim();
+    if (!rawExpiration) return null;
+    const hasOffset = /z$|[+-]\d{2}:\d{2}$/i.test(rawExpiration);
+    if (hasOffset) {
+        const parsed = Date.parse(rawExpiration);
+        return Number.isFinite(parsed) ? parsed : null;
+    }
+    const timeZone = String(linkData?.expiration_timezone || "UTC").trim() || "UTC";
+    return zonedDateTimeToUtcMs(rawExpiration, timeZone);
+}
+
+function getPasswordGatePageHtml(opts = {}) {
+    const {
+        error = false,
+        errorMessage = "Incorrect password. Please try again.",
+        action = "/",
+        title = "Protected Link",
+        subtitle = "This link is password protected. Please enter the access code to continue."
+    } = opts;
+    return `<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Secure Access | GoodLink</title>
+    <style>
+        :root {
+            --bg-color: #f9fafb;
+            --card-bg: #ffffff;
+            --text-main: #1f2937;
+            --text-muted: #6b7280;
+            --accent: #10b981;
+            --light-accent: #d7fec8;
+            --border-color: #e5e7eb;
+            --error-bg: #fee2e2;
+            --error-txt: #b91c1c;
+        }
+        * { box-sizing: border-box; }
+        html, body { width: 100%; }
+        body {
+            margin: 0;
+            min-height: 100vh;
+            min-height: 100dvh;
+            font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            display: grid;
+            place-items: center;
+            padding: clamp(12px, 4vw, 24px);
+        }
+        .gate-card {
+            width: min(100%, 420px);
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: clamp(14px, 2.5vw, 20px);
+            padding: clamp(18px, 4vw, 34px);
+            text-align: center;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+        }
+        .icon-wrapper {
+            font-size: clamp(28px, 6vw, 40px);
+            color: var(--accent);
+            margin: 0 auto 16px;
+            background-color: var(--light-accent);
+            width: clamp(62px, 14vw, 80px);
+            height: clamp(62px, 14vw, 80px);
+            line-height: clamp(62px, 14vw, 80px);
+            border-radius: 999px;
+        }
+        h1 {
+            margin: 0 0 10px;
+            font-size: clamp(20px, 5vw, 24px);
+            line-height: 1.2;
+            font-weight: 700;
+            word-break: break-word;
+        }
+        p {
+            margin: 0 0 22px;
+            color: var(--text-muted);
+            font-size: clamp(14px, 3.5vw, 15px);
+            line-height: 1.6;
+        }
+        .error-message {
+            color: var(--error-txt);
+            background-color: var(--error-bg);
+            padding: 11px 12px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            font-size: 14px;
+            display: ${error ? "block" : "none"};
+            text-align: start;
+        }
+        .form-group {
+            margin-bottom: 14px;
+            text-align: start;
+        }
+        label {
+            display: block;
+            color: var(--text-main);
+            margin-bottom: 8px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        input[type="password"] {
+            width: 100%;
+            padding: 13px 14px;
+            background: #fff;
+            border: 2px solid var(--border-color);
+            border-radius: 10px;
+            font-size: 16px;
+            min-height: 46px;
+            transition: all .2s ease;
+        }
+        input[type="password"]:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 4px var(--light-accent);
+        }
+        button {
+            width: 100%;
+            margin-top: 4px;
+            min-height: 46px;
+            padding: 12px 14px;
+            background-color: var(--accent);
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+        button:hover { background-color: #059669; }
+        button:focus-visible {
+            outline: 2px solid #065f46;
+            outline-offset: 2px;
+        }
+        .footer {
+            margin-top: 20px;
+            font-size: 12px;
+            color: var(--text-muted);
+            word-break: break-word;
+        }
+        @media (max-width: 360px) {
+            body { padding: 10px; }
+            .gate-card { border-radius: 12px; padding: 14px; }
+        }
+    </style>
+</head>
+<body>
+    <main class="gate-card" role="main">
+        <div class="icon-wrapper" aria-hidden="true">🔒</div>
+        <h1>${escapeHtml(title)}</h1>
+        <p>${escapeHtml(subtitle)}</p>
+        <div class="error-message" id="error-box" role="alert" aria-live="polite">
+            ${escapeHtml(errorMessage)}
+        </div>
+        <form action="${escapeHtml(action)}" method="POST">
+            <div class="form-group">
+                <label for="password">Access Password</label>
+                <input type="password" id="password" name="password" placeholder="Enter password..." required autofocus autocomplete="current-password">
+            </div>
+            <button type="submit">Unlock Link</button>
+        </form>
+        <div class="footer">Secured by GoodLink.ai</div>
+    </main>
+</body>
+</html>`;
+}
+
+async function getHumanClickCountForLink(env, linkData) {
+    const linkId = String(linkData?.id || "").trim();
+    const slug = String(linkData?.slug || "").trim();
+    if (!linkId && !slug) return 0;
+    const query = linkId
+        ? `link_id=eq.${encodeURIComponent(linkId)}`
+        : `slug=eq.${encodeURIComponent(slug)}&domain=eq.${encodeURIComponent(String(linkData?.domain || ""))}`;
+    const countUrl = `${env.SUPABASE_URL}/rest/v1/clicks?${query}&is_bot=eq.false&select=id`;
+    try {
+        const res = await fetch(countUrl, {
+            method: "HEAD",
+            headers: {
+                "apikey": env.SUPABASE_SERVICE_ROLE_KEY,
+                "Authorization": `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}`,
+                "Prefer": "count=exact"
+            }
+        });
+        if (!res.ok) return 0;
+        const contentRange = res.headers.get("content-range") || "";
+        const total = Number(contentRange.split("/")[1]);
+        return Number.isFinite(total) ? total : 0;
+    } catch {
+        return 0;
+    }
+}
+
 /**
  * Build safe redirect URL with query params
  * Handles edge cases like missing trailing slash
@@ -2537,6 +2802,91 @@ export default Sentry.withSentry(
                     }
                 });
                 return htmlResponse(getGlynk404Page());
+            }
+
+            // 7. Access control checks (only after bot decision allows continuation).
+            const accessMode = String(linkData?.access_mode || "direct").toLowerCase();
+            const isControlledLink = accessMode === "controlled";
+            const isLikelyBot = Boolean(isBot);
+
+            if (isControlledLink) {
+                if (Boolean(linkData?.enable_time_limit) && linkData?.expiration_datetime) {
+                    const expirationMs = resolveExpirationTimeMs(linkData);
+                    if (Number.isFinite(expirationMs) && Date.now() > expirationMs) {
+                        return terminateWithLog("link_expired_time_limit", linkData);
+                    }
+                }
+
+                if (
+                    Boolean(linkData?.enable_click_limit) &&
+                    Number.isFinite(Number(linkData?.max_clicks_allowed)) &&
+                    Number(linkData.max_clicks_allowed) > 0 &&
+                    !isLikelyBot
+                ) {
+                    const currentHumanClicks = await getHumanClickCountForLink(env, linkData);
+                    if (currentHumanClicks >= Number(linkData.max_clicks_allowed)) {
+                        return terminateWithLog("click_limit_reached", linkData);
+                    }
+                }
+
+                if (Boolean(linkData?.enable_password_protection) && String(linkData?.access_password || "").length > 0) {
+                    const expectedPassword = String(linkData.access_password);
+                    const formAction = `${url.pathname}${url.search}`;
+                    const bruteForceEnabled = linkData?.enable_anti_brute_force !== false;
+                    const maxAttemptsRaw = Number(linkData?.max_login_attempts);
+                    const lockoutMinutesRaw = Number(linkData?.lockout_duration_minutes);
+                    const maxAttempts = Number.isFinite(maxAttemptsRaw) && maxAttemptsRaw >= 1 ? maxAttemptsRaw : 10;
+                    const lockoutMinutes = Number.isFinite(lockoutMinutesRaw) && lockoutMinutesRaw >= 1 ? lockoutMinutesRaw : 15;
+                    const lockoutSeconds = lockoutMinutes * 60;
+                    const bruteForceScope = `${domain}:${slug}:${ip || "unknown_ip"}`;
+                    const lockKey = `pwd_lock:${bruteForceScope}`;
+                    const attemptsKey = `pwd_attempts:${bruteForceScope}`;
+
+                    if (bruteForceEnabled) {
+                        const isLocked = await redis.get(lockKey);
+                        if (isLocked) {
+                            return htmlResponse(getPasswordGatePageHtml({
+                                error: true,
+                                errorMessage: `Too many failed attempts. Try again in ${lockoutMinutes} minutes.`,
+                                action: formAction
+                            }), 429);
+                        }
+                    }
+
+                    if (request.method === "POST") {
+                        const form = await request.formData().catch(() => null);
+                        const submittedPassword = String(form?.get("password") || "");
+                        if (submittedPassword !== expectedPassword) {
+                            if (bruteForceEnabled) {
+                                const attemptsAfter = await redis.incr(attemptsKey);
+                                await redis.expire(attemptsKey, lockoutSeconds);
+                                if (attemptsAfter >= maxAttempts) {
+                                    await redis.set(lockKey, "1", { ex: lockoutSeconds });
+                                    await redis.del(attemptsKey);
+                                    return htmlResponse(getPasswordGatePageHtml({
+                                        error: true,
+                                        errorMessage: `Too many failed attempts. Try again in ${lockoutMinutes} minutes.`,
+                                        action: formAction
+                                    }), 429);
+                                }
+                            }
+                            return htmlResponse(getPasswordGatePageHtml({
+                                error: true,
+                                errorMessage: "Incorrect password. Please try again.",
+                                action: formAction
+                            }), 401);
+                        }
+                        if (bruteForceEnabled) {
+                            await redis.del(attemptsKey);
+                            await redis.del(lockKey);
+                        }
+                    } else {
+                        return htmlResponse(getPasswordGatePageHtml({
+                            error: false,
+                            action: formAction
+                        }), 200);
+                    }
+                }
             }
 
             const planType = (linkData?.plan_type || "").toLowerCase();
