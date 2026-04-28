@@ -232,6 +232,7 @@ const Analytics = () => {
     activeLinks: 0,
     botDetected: 0,
     invalidTraffic: 0,
+    capiSends: 0,
   });
   const [chartData, setChartData] = useState({
     humanVsBot: { human: 0, bot: 0, unknown: 0 },
@@ -359,12 +360,31 @@ const Analytics = () => {
         .eq('status', 'active')
         .neq('status', 'deleted');
 
+      let capiCountQuery = supabase
+        .from('capi_logs')
+        .select('id', { count: 'exact', head: true })
+        .eq('user_id', user.id);
+
+      if (isSingleLink) {
+        if (linkId) {
+          capiCountQuery = capiCountQuery.eq('link_id', linkId);
+        } else {
+          capiCountQuery = capiCountQuery.eq('domain', linkDomain).eq('slug', linkSlug);
+        }
+      }
+
+      const { count: capiSendsCount, error: capiCountError } = await capiCountQuery;
+      if (capiCountError) {
+        console.error('Error fetching CAPI sends count:', capiCountError);
+      }
+
       setStats({
         totalClicks,
         uniqueVisitors,
         activeLinks: activeLinksCount || 0,
         botDetected,
         invalidTraffic,
+        capiSends: capiSendsCount || 0,
       });
 
       let humanCount = 0;
@@ -560,7 +580,7 @@ const Analytics = () => {
       </div>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
         <KPICard
           title="Total Clicks"
           value={formatNumber(stats.totalClicks)}
@@ -607,6 +627,13 @@ const Analytics = () => {
           icon="attach_money"
           iconBgClass="bg-emerald-500/10"
           iconColorClass="text-emerald-800"
+        />
+        <KPICard
+          title="CAPI"
+          value={formatNumber(stats.capiSends)}
+          icon="hub"
+          iconBgClass="bg-indigo-500/10"
+          iconColorClass="text-indigo-800"
         />
       </div>
 

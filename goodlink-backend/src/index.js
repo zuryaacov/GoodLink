@@ -1549,6 +1549,10 @@ export default Sentry.withSentry(
                         const logRequestBody = { ...requestBody };
 
                         const logRow = {
+                            user_id: link_data?.user_id || null,
+                            link_id: link_data?.id || null,
+                            domain: link_data?.domain || null,
+                            slug: link_data?.slug || null,
                             pixel_id: p.pixel_id,
                             platform: p.platform,
                             event_id: event_id,
