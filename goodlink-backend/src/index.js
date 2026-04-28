@@ -386,6 +386,21 @@ async function incrementLinkCurrentClicksAtomic(env, linkData, maxAllowed) {
     return { allowed: false, reason: "increment_failed", currentClicks: expectedCurrent };
 }
 
+function buildUniqueClickFingerprint(ip, userAgent, fullUrl) {
+    const safeIp = String(ip || "unknown_ip").trim();
+    const safeUserAgent = String(userAgent || "unknown_ua").trim();
+    const safeFullUrl = String(fullUrl || "").trim();
+    return `${safeIp}|${safeUserAgent}|${safeFullUrl}`;
+}
+
+async function sha256Hex(value) {
+    const data = new TextEncoder().encode(String(value || ""));
+    const digest = await crypto.subtle.digest("SHA-256", data);
+    return Array.from(new Uint8Array(digest))
+        .map((b) => b.toString(16).padStart(2, "0"))
+        .join("");
+}
+
 /**
  * Build safe redirect URL with query params
  * Handles edge cases like missing trailing slash
@@ -2859,23 +2874,6 @@ export default Sentry.withSentry(
                     }
                 }
 
-                if (
-                    Boolean(linkData?.enable_click_limit) &&
-                    Number.isFinite(Number(linkData?.max_clicks_allowed)) &&
-                    Number(linkData.max_clicks_allowed) > 0 &&
-                    !isLikelyBot
-                ) {
-                    const incrementResult = await incrementLinkCurrentClicksAtomic(
-                        env,
-                        linkData,
-                        Number(linkData.max_clicks_allowed)
-                    );
-                    if (!incrementResult.allowed) {
-                        return terminateWithLog("click_limit_reached", linkData);
-                    }
-                    linkData.current_clicks = incrementResult.currentClicks;
-                }
-
                 if (Boolean(linkData?.enable_password_protection) && String(linkData?.access_password || "").length > 0) {
                     const expectedPassword = String(linkData.access_password);
                     const formAction = `${url.pathname}${url.search}`;
@@ -2932,6 +2930,36 @@ export default Sentry.withSentry(
                             error: false,
                             action: formAction
                         }), 200);
+                    }
+                }
+
+                if (
+                    Boolean(linkData?.enable_click_limit) &&
+                    Number.isFinite(Number(linkData?.max_clicks_allowed)) &&
+                    Number(linkData.max_clicks_allowed) > 0 &&
+                    !isLikelyBot
+                ) {
+                    const fingerprintSource = buildUniqueClickFingerprint(ip, userAgent, request.url);
+                    const fingerprintHash = await sha256Hex(fingerprintSource);
+                    const uniqueClickKey = `link_unique_click:${String(linkData.id)}:${fingerprintHash}`;
+                    const firstSeenResult = await redis.set(uniqueClickKey, "1", { nx: true });
+                    const isFirstUniqueClick = firstSeenResult !== null;
+
+                    // Existing unique visitor: allow redirect without increasing click counter.
+                    if (isFirstUniqueClick) {
+                        const incrementResult = await incrementLinkCurrentClicksAtomic(
+                            env,
+                            linkData,
+                            Number(linkData.max_clicks_allowed)
+                        );
+
+                        if (!incrementResult.allowed) {
+                            // Roll back "seen" marker so a blocked attempt doesn't consume a slot.
+                            await redis.del(uniqueClickKey);
+                            return terminateWithLog("click_limit_reached", linkData);
+                        }
+
+                        linkData.current_clicks = incrementResult.currentClicks;
                     }
                 }
             }
