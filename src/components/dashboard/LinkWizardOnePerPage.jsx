@@ -1108,7 +1108,7 @@ export default function LinkWizardOnePerPage({
                         checked={!!formData.enableClickLimit}
                         onChange={(e) => updateFormData('enableClickLimit', e.target.checked)}
                       />
-                      <span className="font-bold text-[#1b1b1b]">Enable Click Limit</span>
+                      <span className="font-bold text-[#1b1b1b]">Enable Click Limit - Limited to [X] People (IP&apos;s)</span>
                     </label>
                     {formData.enableClickLimit && (
                       <>
