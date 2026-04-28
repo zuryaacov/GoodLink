@@ -2701,8 +2701,8 @@ export default Sentry.withSentry(
             const clientTcpRtt = cf.clientTcpRtt;
             const asn = Number(cf.asn);
 
-            // 1) Hard whitelist for social preview crawlers (allow, but do not count as click).
-            const socialBots = /(facebookexternalhit|WhatsApp|TelegramBot|Twitterbot|LinkedInBot|Viber|SkypeUriPreview)/i;
+            // 1) Hard whitelist for friendly crawlers/previews (allow, but do not count as click).
+            const friendlyBots = /bot|spider|crawler|facebookexternalhit|whatsapp|linkpreview|preview|slurp|google-read-aloud/i;
 
             // 2) Expanded blacklist (including AI crawlers and known scraping clients).
             const badBotRegex = /(python-requests|curl|wget|go-http-client|libwww|urllib|node-fetch|axios|guzzlehttp|java\/|ruby|HeadlessChrome|PhantomJS|Selenium|Playwright|AhrefsBot|SemrushBot|DotBot|MJ12bot|PetalBot|Barkrowler|spider|crawl|Claude|GPTBot|ChatGPT|Perplexity|Bytespider|Amazonbot|SearchBot|DataForSeoBot)/i;
@@ -2755,9 +2755,9 @@ export default Sentry.withSentry(
             }
             const finalRedirectUrl = buildSafeUrl(targetUrl, url.searchParams);
 
-            if (socialBots.test(userAgent)) {
-                queueAxiomLog("social_preview_allowed", slug || null, false, {
-                    backend_event: "social_preview_allowed_no_click_count",
+            if (friendlyBots.test(userAgent)) {
+                queueAxiomLog("friendly_bot_allowed", slug || null, false, {
+                    backend_event: "friendly_bot_allowed_no_click_count",
                     redirect_target_url: finalRedirectUrl,
                     user_agent: userAgent
                 });
