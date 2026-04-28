@@ -53,6 +53,7 @@ const relativeTime = (dateString) => {
 };
 
 const TRAFFIC_PAGE_SIZE = 20;
+const STATS_BATCH_SIZE = 1000;
 const isInvalidTrafficVerdict = (verdict) =>
   typeof verdict === 'string' && verdict.toLowerCase().startsWith('invalid_slug');
 
@@ -289,28 +290,55 @@ const Analytics = () => {
         return;
       }
 
-      let query = supabase
+      let countQuery = supabase
         .from('clicks')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('clicked_at', { ascending: false });
+        .select('id', { count: 'exact', head: true })
+        .eq('user_id', user.id);
       if (isSingleLink) {
         if (linkId) {
-          query = query.eq('link_id', linkId);
+          countQuery = countQuery.eq('link_id', linkId);
         } else {
-          query = query.eq('domain', linkDomain).eq('slug', linkSlug);
+          countQuery = countQuery.eq('domain', linkDomain).eq('slug', linkSlug);
         }
       }
-      const { data: allClicks, error: clicksError } = await query;
 
-      if (clicksError) {
-        console.error('Error fetching clicks:', clicksError);
+      const { count: totalClicks, error: countError } = await countQuery;
+      if (countError) {
+        console.error('Error fetching total clicks count:', countError);
         setLoading(false);
         return;
       }
 
-      const clicks = allClicks || [];
-      const totalClicks = clicks.length;
+      const clicks = [];
+      let from = 0;
+      while (true) {
+        let batchQuery = supabase
+          .from('clicks')
+          .select('is_bot, verdict, fraud_score, session_id, ip_address, country, city')
+          .eq('user_id', user.id)
+          .order('clicked_at', { ascending: false })
+          .range(from, from + STATS_BATCH_SIZE - 1);
+
+        if (isSingleLink) {
+          if (linkId) {
+            batchQuery = batchQuery.eq('link_id', linkId);
+          } else {
+            batchQuery = batchQuery.eq('domain', linkDomain).eq('slug', linkSlug);
+          }
+        }
+
+        const { data: batchClicks, error: clicksError } = await batchQuery;
+        if (clicksError) {
+          console.error('Error fetching clicks batch:', clicksError);
+          setLoading(false);
+          return;
+        }
+
+        const safeBatch = batchClicks || [];
+        clicks.push(...safeBatch);
+        if (safeBatch.length < STATS_BATCH_SIZE) break;
+        from += STATS_BATCH_SIZE;
+      }
 
       const botDetected = clicks.filter(
         (click) =>
