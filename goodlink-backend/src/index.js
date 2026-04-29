@@ -789,7 +789,7 @@ function dedupeCapiPixelsByPlatformAndPixelId(pixels) {
  */
 async function sendCapiToQStash(env, relayUrl, payload) {
     if (!env.QSTASH_TOKEN || !relayUrl) {
-        return;
+        return { ok: false, reason: "missing_qstash_token_or_relay_url" };
     }
     const qstashPublishUrl = `https://qstash.upstash.io/v2/publish/${relayUrl}`;
     try {
@@ -804,9 +804,14 @@ async function sendCapiToQStash(env, relayUrl, payload) {
             },
             body: JSON.stringify(payload)
         });
-        await res.text();
+        const responseText = await res.text();
+        return {
+            ok: res.ok,
+            status: res.status,
+            body: responseText?.slice(0, 500) || null
+        };
     } catch {
-        /* silent */
+        return { ok: false, reason: "qstash_publish_exception" };
     }
 }
 
@@ -3036,8 +3041,10 @@ export default Sentry.withSentry(
             const capiPixels = pixels.filter((p) => p?.status === "active" && (p?.capi_token || p?.platform === "taboola" || p?.platform === "outbrain"));
             let capiPixelsToSend = [];
             let capiDebugReason = "skip_not_evaluated";
+            let capiQstashDebug = "not_attempted";
             const clickIds = getClickIdsFromUrl(url.searchParams);
             const platformsFromUrl = getPlatformsFromClickIds(clickIds, request, url.searchParams);
+            const isCapiSyncDebug = String(url.searchParams.get("capi_sync_debug") || "") === "1";
 
             if (!isPro) capiDebugReason = "skip_plan_not_pro";
             else if (!wantsCapi) capiDebugReason = "skip_tracking_mode_not_capi";
@@ -3136,7 +3143,32 @@ export default Sentry.withSentry(
                             capi_pixels_count: capiPixelsToSend.length,
                             capi_payload: capiPayload
                         });
-                        ctx.waitUntil(sendCapiToQStash(env, relayUrl, capiPayload));
+                        if (isCapiSyncDebug) {
+                            const qstashResult = await sendCapiToQStash(env, relayUrl, capiPayload);
+                            capiQstashDebug = qstashResult?.ok
+                                ? `ok:${qstashResult?.status ?? 200}`
+                                : `fail:${qstashResult?.status ?? "na"}:${qstashResult?.reason || "unknown"}`;
+                            queueAxiomLog("capi_debug", slug || null, isBot, {
+                                backend_event: "capi_qstash_publish_result",
+                                qstash_publish_ok: Boolean(qstashResult?.ok),
+                                qstash_publish_status: qstashResult?.status ?? null,
+                                qstash_publish_reason: qstashResult?.reason || null,
+                                qstash_publish_body: qstashResult?.body || null,
+                                relay_url: relayUrl
+                            });
+                        } else {
+                            ctx.waitUntil((async () => {
+                                const qstashResult = await sendCapiToQStash(env, relayUrl, capiPayload);
+                                queueAxiomLog("capi_debug", slug || null, isBot, {
+                                    backend_event: "capi_qstash_publish_result",
+                                    qstash_publish_ok: Boolean(qstashResult?.ok),
+                                    qstash_publish_status: qstashResult?.status ?? null,
+                                    qstash_publish_reason: qstashResult?.reason || null,
+                                    qstash_publish_body: qstashResult?.body || null,
+                                    relay_url: relayUrl
+                                });
+                            })());
+                        }
                     } else {
                         capiDebugReason = "skip_dedup_2s";
                         queueAxiomLog("capi_debug", slug || null, isBot, {
@@ -3170,7 +3202,10 @@ export default Sentry.withSentry(
                         link_json: linkData || null,
                         verdict
                     });
-                    return redirectWithHeaders(finalRedirectUrl, 302, { "x-capi-debug": capiDebugReason });
+                    return redirectWithHeaders(finalRedirectUrl, 302, {
+                        "x-capi-debug": capiDebugReason,
+                        "x-capi-qstash-debug": capiQstashDebug
+                    });
                 }
             }
 
@@ -3181,7 +3216,10 @@ export default Sentry.withSentry(
                 link_json: linkData || null,
                 verdict
             });
-            return redirectWithHeaders(finalRedirectUrl, 302, { "x-capi-debug": capiDebugReason });
+            return redirectWithHeaders(finalRedirectUrl, 302, {
+                "x-capi-debug": capiDebugReason,
+                "x-capi-qstash-debug": capiQstashDebug
+            });
         }
     }
 );
