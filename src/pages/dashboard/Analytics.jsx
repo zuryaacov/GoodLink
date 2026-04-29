@@ -240,6 +240,7 @@ const Analytics = () => {
   });
   const [trafficData, setTrafficData] = useState([]);
   const [trafficPage, setTrafficPage] = useState(1);
+  const [trafficFilter, setTrafficFilter] = useState('good');
   const [trafficTotalCount, setTrafficTotalCount] = useState(0);
   const [loadingTrafficPage, setLoadingTrafficPage] = useState(false);
   const [loadingTraffic, setLoadingTraffic] = useState(false);
@@ -275,11 +276,11 @@ const Analytics = () => {
 
   useEffect(() => {
     setTrafficPage(1);
-  }, [linkId, linkDomain, linkSlug]);
+  }, [linkId, linkDomain, linkSlug, trafficFilter]);
 
   useEffect(() => {
     fetchTrafficPage();
-  }, [linkId, linkDomain, linkSlug, trafficPage]);
+  }, [linkId, linkDomain, linkSlug, trafficPage, trafficFilter]);
 
   const fetchStats = async () => {
     try {
@@ -446,9 +447,20 @@ const Analytics = () => {
         .from('clicks')
         .select('*', { count: 'exact' })
         .eq('user_id', user.id)
-        .or('verdict.is.null,verdict.not.ilike.invalid_slug%')
         .order('clicked_at', { ascending: false })
         .range(from, to);
+
+      if (trafficFilter === 'good') {
+        query = query
+          .or('is_bot.is.null,is_bot.eq.false')
+          .or('verdict.is.null,verdict.not.ilike.%bot%')
+          .or('fraud_score.is.null,fraud_score.lte.80')
+          .or('verdict.is.null,verdict.not.ilike.invalid_slug%');
+      } else if (trafficFilter === 'bot') {
+        query = query.or('is_bot.eq.true,verdict.ilike.%bot%,fraud_score.gt.80');
+      } else if (trafficFilter === 'invalid') {
+        query = query.ilike('verdict', 'invalid_slug%');
+      }
 
       if (isSingleLink) {
         if (linkId) {
@@ -666,6 +678,30 @@ const Analytics = () => {
           </button>
         </div>
 
+        <div className="px-4 py-3 border-b border-slate-200">
+          <nav className="flex flex-wrap items-center gap-2" aria-label="Traffic log filters">
+            {[
+              { id: 'good', label: 'Good Traffic' },
+              { id: 'bot', label: 'Bot Traffic' },
+              { id: 'invalid', label: 'Invalid Traffic' },
+            ].map((filterOption) => (
+              <button
+                key={filterOption.id}
+                type="button"
+                onClick={() => setTrafficFilter(filterOption.id)}
+                className={`px-3 py-1.5 rounded-lg border text-xs font-bold transition-all ${
+                  trafficFilter === filterOption.id
+                    ? 'border-primary bg-primary/10 text-[#1b1b1b]'
+                    : 'border-slate-200 text-[#1b1b1b] hover:border-primary hover:bg-primary/10'
+                }`}
+                aria-pressed={trafficFilter === filterOption.id}
+              >
+                {filterOption.label}
+              </button>
+            ))}
+          </nav>
+        </div>
+
         {!loadingTrafficPage && trafficData.length > 0 && (
           <div className="px-4 py-3 border-b border-slate-200 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
             <p className="text-xs text-[#1b1b1b]">
@@ -757,6 +793,7 @@ const Analytics = () => {
                     click.is_bot === true ||
                     (click.verdict && click.verdict.toLowerCase().includes('bot')) ||
                     (click.fraud_score && click.fraud_score > 80);
+                  const isInvalidTraffic = isInvalidTrafficVerdict(click.verdict);
                   const location = [click.city, click.country].filter(Boolean).join(', ') || '—';
                   const flag = countryToFlag(click.country);
                   return (
@@ -795,12 +832,14 @@ const Analytics = () => {
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span
                           className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${
-                            isBot
+                            isInvalidTraffic
+                              ? 'bg-orange-100 text-orange-900 border-orange-200'
+                              : isBot
                               ? 'bg-purple-100 text-purple-900 border-purple-200'
                               : 'bg-blue-100 text-blue-900 border-blue-200'
                           }`}
                         >
-                          {isBot ? 'Bot (Blocked)' : 'Human'}
+                          {isInvalidTraffic ? 'Invalid Traffic' : isBot ? 'Bot (Blocked)' : 'Human'}
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right">
