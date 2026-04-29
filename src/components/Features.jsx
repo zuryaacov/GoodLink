@@ -99,7 +99,7 @@ const Features = () => {
               <p className="text-slate-600 dark:text-[#1b1b1b] text-base md:text-lg font-semibold leading-relaxed">
                 Unlock the ultimate precision tool for your marketing campaigns with our exclusive
                 SuperLink features. Gain the ability to lock content behind{' '}
-                <span className="text-[#7c3aed] font-bold">
+                <span className="text-[#7c3aed] font-bold text-lg md:text-xl">
                   secure passwords, limit clicks to prevent fraud, and set automated expiration
                   dates down to the exact hour and minute
                 </span>
