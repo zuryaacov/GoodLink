@@ -2568,15 +2568,6 @@ export default Sentry.withSentry(
             const htmlResponse = (html, status = 404) => new Response(html, {
                 status, headers: { "Content-Type": "text/html;charset=UTF-8" }
             });
-            const redirectWithHeaders = (targetUrl, status = 302, headers = {}) => {
-                const mergedHeaders = { Location: targetUrl };
-                Object.entries(headers).forEach(([key, value]) => {
-                    if (value !== undefined && value !== null && value !== "") {
-                        mergedHeaders[key] = String(value);
-                    }
-                });
-                return new Response(null, { status, headers: mergedHeaders });
-            };
 
             // Terminate with log to Supabase - redirects to fallback_url if available
             const terminateWithLog = async (verdict, linkData = null, botReasons = []) => {
@@ -3040,31 +3031,8 @@ export default Sentry.withSentry(
             const wantsPixel = trackingMode === "pixel" || trackingMode === "pixel_and_capi";
             const capiPixels = pixels.filter((p) => p?.status === "active" && (p?.capi_token || p?.platform === "taboola" || p?.platform === "outbrain"));
             let capiPixelsToSend = [];
-            let capiDebugReason = "skip_not_evaluated";
-            let capiQstashDebug = "not_attempted";
             const clickIds = getClickIdsFromUrl(url.searchParams);
             const platformsFromUrl = getPlatformsFromClickIds(clickIds, request, url.searchParams);
-            const isCapiSyncDebug = String(url.searchParams.get("capi_sync_debug") || "") === "1";
-
-            if (!isPro) capiDebugReason = "skip_plan_not_pro";
-            else if (!wantsCapi) capiDebugReason = "skip_tracking_mode_not_capi";
-            else if (!env.CAPI_RELAY_URL) capiDebugReason = "skip_missing_capi_relay_url";
-
-            queueAxiomLog("capi_debug", slug || null, isBot, {
-                backend_event: "capi_gate_evaluation",
-                plan_type: planType || null,
-                tracking_mode: trackingMode || null,
-                is_pro: isPro,
-                wants_capi: wantsCapi,
-                wants_pixel: wantsPixel,
-                capi_relay_url_configured: Boolean(env.CAPI_RELAY_URL),
-                total_pixels_count: pixels.length,
-                eligible_capi_pixels_count: capiPixels.length,
-                click_ids_present: Object.entries(clickIds)
-                    .filter(([, value]) => Boolean(value))
-                    .map(([key]) => key),
-                url_target_platforms: [...platformsFromUrl]
-            });
 
             if (isPro && (pixels.length > 0 || capiPixels.length > 0)) {
                 const eventId = crypto.randomUUID();
@@ -3076,17 +3044,6 @@ export default Sentry.withSentry(
                 capiPixelsToSend = dedupeCapiPixelsByPlatformAndPixelId(
                     capiPixels.filter((p) => platformsFromUrl.has(p.platform))
                 );
-
-                if (wantsCapi && capiPixelsToSend.length === 0) {
-                    capiDebugReason = "skip_no_matching_pixels_for_click_ids";
-                    queueAxiomLog("capi_debug", slug || null, isBot, {
-                        backend_event: "capi_not_sent_no_matching_pixels",
-                        plan_type: planType || null,
-                        tracking_mode: trackingMode || null,
-                        eligible_capi_pixels_count: capiPixels.length,
-                        url_target_platforms: [...platformsFromUrl]
-                    });
-                }
 
                 // fbc format: fb.1.[CreationTime in ms].[fbclid from URL]. Only when fbclid exists (do not invent).
                 const userData = {
@@ -3111,7 +3068,6 @@ export default Sentry.withSentry(
                     const capiDedupKey = `capi:${ip}:${slug}`;
                     const isNewCapiRequest = await redis.set(capiDedupKey, "1", { nx: true, ex: 2 });
                     if (isNewCapiRequest !== null) {
-                        capiDebugReason = "sent_queued_to_qstash";
                         const relayUrl = env.CAPI_RELAY_URL.startsWith("http")
                             ? env.CAPI_RELAY_URL
                             : `https://${url.host}${env.CAPI_RELAY_URL}`;
@@ -3143,41 +3099,7 @@ export default Sentry.withSentry(
                             capi_pixels_count: capiPixelsToSend.length,
                             capi_payload: capiPayload
                         });
-                        if (isCapiSyncDebug) {
-                            const qstashResult = await sendCapiToQStash(env, relayUrl, capiPayload);
-                            capiQstashDebug = qstashResult?.ok
-                                ? `ok:${qstashResult?.status ?? 200}`
-                                : `fail:${qstashResult?.status ?? "na"}:${qstashResult?.reason || "unknown"}`;
-                            queueAxiomLog("capi_debug", slug || null, isBot, {
-                                backend_event: "capi_qstash_publish_result",
-                                qstash_publish_ok: Boolean(qstashResult?.ok),
-                                qstash_publish_status: qstashResult?.status ?? null,
-                                qstash_publish_reason: qstashResult?.reason || null,
-                                qstash_publish_body: qstashResult?.body || null,
-                                relay_url: relayUrl
-                            });
-                        } else {
-                            ctx.waitUntil((async () => {
-                                const qstashResult = await sendCapiToQStash(env, relayUrl, capiPayload);
-                                queueAxiomLog("capi_debug", slug || null, isBot, {
-                                    backend_event: "capi_qstash_publish_result",
-                                    qstash_publish_ok: Boolean(qstashResult?.ok),
-                                    qstash_publish_status: qstashResult?.status ?? null,
-                                    qstash_publish_reason: qstashResult?.reason || null,
-                                    qstash_publish_body: qstashResult?.body || null,
-                                    relay_url: relayUrl
-                                });
-                            })());
-                        }
-                    } else {
-                        capiDebugReason = "skip_dedup_2s";
-                        queueAxiomLog("capi_debug", slug || null, isBot, {
-                            backend_event: "capi_not_sent_dedup_2s",
-                            dedup_key: capiDedupKey,
-                            plan_type: planType || null,
-                            tracking_mode: trackingMode || null,
-                            capi_pixels_count: capiPixelsToSend.length
-                        });
+                        ctx.waitUntil(sendCapiToQStash(env, relayUrl, capiPayload));
                     }
                 }
 
@@ -3202,10 +3124,7 @@ export default Sentry.withSentry(
                         link_json: linkData || null,
                         verdict
                     });
-                    return redirectWithHeaders(finalRedirectUrl, 302, {
-                        "x-capi-debug": capiDebugReason,
-                        "x-capi-qstash-debug": capiQstashDebug
-                    });
+                    return Response.redirect(finalRedirectUrl, 302);
                 }
             }
 
@@ -3216,10 +3135,7 @@ export default Sentry.withSentry(
                 link_json: linkData || null,
                 verdict
             });
-            return redirectWithHeaders(finalRedirectUrl, 302, {
-                "x-capi-debug": capiDebugReason,
-                "x-capi-qstash-debug": capiQstashDebug
-            });
+            return Response.redirect(finalRedirectUrl, 302);
         }
     }
 );
