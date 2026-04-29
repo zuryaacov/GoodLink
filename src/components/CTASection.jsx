@@ -56,7 +56,7 @@ const CTASection = () => {
       ],
       highlighted: false,
       checkoutUrl:
-        'https://goodlink.lemonsqueezy.com/checkout/buy/54a3e3e3-3618-4922-bce6-a0617252f1ae?embed=1',
+        'https://goodlink.lemonsqueezy.com/checkout/buy/1014444?embed=1',
       buttonText: 'Get Started',
     },
     {
@@ -81,7 +81,7 @@ const CTASection = () => {
       ],
       highlighted: false,
       checkoutUrl:
-        'https://goodlink.lemonsqueezy.com/checkout/buy/81876116-924c-44f7-b61c-f4a8a93e83f1?embed=1',
+        'https://goodlink.lemonsqueezy.com/checkout/buy/1591830?embed=1',
       buttonText: 'Go Advanced',
     },
     {
@@ -108,7 +108,7 @@ const CTASection = () => {
       ],
       highlighted: true,
       checkoutUrl:
-        'https://goodlink.lemonsqueezy.com/checkout/buy/924daf77-b7b3-405d-a94a-2ad2cc476da4?embed=1',
+        'https://goodlink.lemonsqueezy.com/checkout/buy/1014504?embed=1',
       buttonText: 'Go Pro',
     },
   ];

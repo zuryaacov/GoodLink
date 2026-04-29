@@ -205,7 +205,7 @@ describe('AccountSettingsPage – plan change flow', () => {
 
     await waitFor(() => {
       expect(windowOpenSpy).toHaveBeenCalledWith(
-        'https://goodlink.lemonsqueezy.com/checkout/buy/54a3e3e3-3618-4922-bce6-a0617252f1ae?checkout[email]=user%40example.com&checkout[custom][user_id]=user-1&embed=1',
+        'https://goodlink.lemonsqueezy.com/checkout/buy/1014444?checkout[email]=user%40example.com&checkout[custom][user_id]=user-1&embed=1',
         '_blank',
         'noopener,noreferrer'
       );
