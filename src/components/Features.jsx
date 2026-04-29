@@ -98,10 +98,13 @@ const Features = () => {
               </h3>
               <p className="text-slate-600 dark:text-[#1b1b1b] text-base md:text-lg font-semibold leading-relaxed">
                 Unlock the ultimate precision tool for your marketing campaigns with our exclusive
-                SuperLink features. Gain the ability to lock content behind secure passwords, limit
-                clicks to prevent fraud, and set automated expiration dates down to the exact hour
-                and minute. It&apos;s the smarter way to manage high-value assets while driving
-                urgency and ensuring absolute link exclusivity.
+                SuperLink features. Gain the ability to lock content behind{' '}
+                <span className="text-[#7c3aed] font-bold">
+                  secure passwords, limit clicks to prevent fraud, and set automated expiration
+                  dates down to the exact hour and minute
+                </span>
+                . It&apos;s the smarter way to manage high-value assets while driving urgency and
+                ensuring absolute link exclusivity.
               </p>
             </div>
           </motion.div>

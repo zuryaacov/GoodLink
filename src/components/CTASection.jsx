@@ -219,7 +219,7 @@ const CTASection = () => {
 
         <div className="flex justify-center">
           <div className="flex flex-col items-center justify-center gap-1 text-center text-black font-extrabold tracking-wide text-3xl md:text-5xl">
-            <span className="text-3xl md:text-5xl">נ</span>
+            <span className="text-3xl md:text-5xl">🎁</span>
             <span>Get 30-Day Free Trial</span>
             <span>
               Everything in <span className="text-[#a855f7] text-4xl md:text-6xl">PRO</span>
