@@ -2564,13 +2564,13 @@ export default Sentry.withSentry(
                 status, headers: { "Content-Type": "text/html;charset=UTF-8" }
             });
             const redirectWithHeaders = (targetUrl, status = 302, headers = {}) => {
-                const response = Response.redirect(targetUrl, status);
+                const mergedHeaders = { Location: targetUrl };
                 Object.entries(headers).forEach(([key, value]) => {
                     if (value !== undefined && value !== null && value !== "") {
-                        response.headers.set(key, String(value));
+                        mergedHeaders[key] = String(value);
                     }
                 });
-                return response;
+                return new Response(null, { status, headers: mergedHeaders });
             };
 
             // Terminate with log to Supabase - redirects to fallback_url if available
