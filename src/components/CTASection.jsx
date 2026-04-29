@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+﻿import React, { useEffect, useState } from 'react';
 import { Check } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
@@ -56,7 +56,7 @@ const CTASection = () => {
       ],
       highlighted: false,
       checkoutUrl:
-        'https://goodlink.lemonsqueezy.com/checkout/buy/1014444?embed=1',
+        'https://goodlink.lemonsqueezy.com/checkout/buy/315d0e60-5a87-44f0-90c7-7f7789aa85a0?embed=1',
       buttonText: 'Get Started',
     },
     {
@@ -81,7 +81,7 @@ const CTASection = () => {
       ],
       highlighted: false,
       checkoutUrl:
-        'https://goodlink.lemonsqueezy.com/checkout/buy/1591830?embed=1',
+        'https://goodlink.lemonsqueezy.com/checkout/buy/f544686f-e91d-425b-a930-22d293fcd74e?embed=1',
       buttonText: 'Go Advanced',
     },
     {
@@ -108,7 +108,7 @@ const CTASection = () => {
       ],
       highlighted: true,
       checkoutUrl:
-        'https://goodlink.lemonsqueezy.com/checkout/buy/1014504?embed=1',
+        'https://goodlink.lemonsqueezy.com/checkout/buy/a3649238-094e-4217-af3c-3b1f996f3c80?embed=1',
       buttonText: 'Go Pro',
     },
   ];
@@ -219,7 +219,7 @@ const CTASection = () => {
 
         <div className="flex justify-center">
           <div className="flex flex-col items-center justify-center gap-1 text-center text-black font-extrabold tracking-wide text-3xl md:text-5xl">
-            <span className="text-3xl md:text-5xl">🎁</span>
+            <span className="text-3xl md:text-5xl">נ</span>
             <span>Get 30-Day Free Trial</span>
             <span>
               Everything in <span className="text-[#a855f7] text-4xl md:text-6xl">PRO</span>
@@ -422,3 +422,6 @@ const CTASection = () => {
 };
 
 export default CTASection;
+
+
+

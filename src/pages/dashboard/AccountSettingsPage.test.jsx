@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter, Routes, Route } from 'react-router-dom';
@@ -115,7 +115,7 @@ describe('AccountSettingsPage basic rendering', () => {
   });
 });
 
-describe('AccountSettingsPage – subscription states (free_trial, cancelled)', () => {
+describe('AccountSettingsPage ג€“ subscription states (free_trial, cancelled)', () => {
   it('when subscription_status is free_trial: shows pricing Plans section, marks PRO as recommended, and hides Cancel subscription button', async () => {
     settingsMockConfig.subscriptionStatus = 'free_trial';
     renderAccountSettings();
@@ -145,7 +145,7 @@ describe('AccountSettingsPage – subscription states (free_trial, cancelled)', 
   });
 });
 
-describe('AccountSettingsPage – cancel flow', () => {
+describe('AccountSettingsPage ג€“ cancel flow', () => {
   it('opens Lemon Squeezy portal without updating subscription status locally', async () => {
     const windowOpenSpy = vi.spyOn(window, 'open').mockImplementation(() => null);
     renderAccountSettings();
@@ -172,13 +172,13 @@ describe('AccountSettingsPage – cancel flow', () => {
   });
 });
 
-describe('AccountSettingsPage – plan change flow', () => {
+describe('AccountSettingsPage ג€“ plan change flow', () => {
   it('opens customer_portal_update_subscription URL for users with active paid subscription', async () => {
     const windowOpenSpy = vi.spyOn(window, 'open').mockImplementation(() => null);
     renderAccountSettings();
 
     const switchPlanButton = await screen.findByRole('button', {
-      name: /Switch to this plan — STARTER plan/i,
+      name: /Switch to this plan ג€” STARTER plan/i,
     });
     fireEvent.click(switchPlanButton);
 
@@ -199,13 +199,13 @@ describe('AccountSettingsPage – plan change flow', () => {
     renderAccountSettings();
 
     const switchPlanButton = await screen.findByRole('button', {
-      name: /Switch to this plan — STARTER plan/i,
+      name: /Switch to this plan ג€” STARTER plan/i,
     });
     fireEvent.click(switchPlanButton);
 
     await waitFor(() => {
       expect(windowOpenSpy).toHaveBeenCalledWith(
-        'https://goodlink.lemonsqueezy.com/checkout/buy/1014444?checkout[email]=user%40example.com&checkout[custom][user_id]=user-1&embed=1',
+        'https://goodlink.lemonsqueezy.com/checkout/buy/315d0e60-5a87-44f0-90c7-7f7789aa85a0?checkout[email]=user%40example.com&checkout[custom][user_id]=user-1&embed=1',
         '_blank',
         'noopener,noreferrer'
       );
@@ -214,3 +214,4 @@ describe('AccountSettingsPage – plan change flow', () => {
     windowOpenSpy.mockRestore();
   });
 });
+

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Check } from 'lucide-react';
@@ -154,7 +154,7 @@ export default function AccountSettingsPage() {
         throw new Error('Full name must be at least 2 characters.');
       }
 
-      // 2. Update Auth Metadata (Name only – email is not editable)
+      // 2. Update Auth Metadata (Name only ג€“ email is not editable)
       const updates = {
         data: { full_name: trimmedName },
       };
@@ -162,7 +162,7 @@ export default function AccountSettingsPage() {
       const { error: authError } = await supabase.auth.updateUser(updates);
       if (authError) throw authError;
 
-      // 3. Update Profile Table (full_name, timezone) – keep profiles in sync with auth
+      // 3. Update Profile Table (full_name, timezone) ג€“ keep profiles in sync with auth
       const { error: profileError } = await supabase
         .from('profiles')
         .update({
@@ -196,7 +196,7 @@ export default function AccountSettingsPage() {
           throw new Error(msg);
         }
 
-        // Password validation – same rules as signup
+        // Password validation ג€“ same rules as signup
         if (newPassword.length < 8) {
           const msg = 'Password must be at least 8 characters long';
           setPasswordError(msg);
@@ -351,9 +351,9 @@ export default function AccountSettingsPage() {
   const currentPlanDisplay = currentPlan === 'start' || currentPlan === 'starter' ? 'Starter' : currentPlan === 'advanced' ? 'Advanced' : currentPlan === 'pro' ? 'Pro' : 'Free';
 
   const SETTINGS_PLANS = [
-    { name: 'STARTER', price: '5', priceNum: 5, originalPrice: '10', description: 'Perfect for getting started', features: ['Unlimited Links', 'Unlimited QR Codes', 'Unlimited Clicks', 'Standard Analytics', 'Email Support'], highlighted: false, checkoutUrl: 'https://goodlink.lemonsqueezy.com/checkout/buy/1014444?embed=1', buttonText: 'Get Started' },
-    { name: 'ADVANCED', price: '10', priceNum: 10, originalPrice: '26', description: 'For growing businesses', features: ['Unlimited Links', 'Unlimited QR Codes', 'Unlimited Clicks', 'Email Support', '10 Custom Domains', 'Workspaces, Campaigns and Groups', 'Bot Protection', 'UTM Presets', 'Advanced Analytics', 'SuperLinks Included', 'Password-Protected Access', 'Custom Usage & Click Limits', 'Time-Expiring Links'], highlighted: true, checkoutUrl: 'https://goodlink.lemonsqueezy.com/checkout/buy/1591830?embed=1', buttonText: 'Go Advanced' },
-    { name: 'PRO', price: '20', priceNum: 20, originalPrice: '62', description: 'For power users', features: ['Unlimited Links', 'Unlimited QR Codes', 'Unlimited Clicks', 'Workspaces, Campaigns and Groups', 'Bot Protection', 'UTM Presets', 'Unlimited Custom Domains', 'Geo Redirect', 'Conversion API & S2S tracking', 'Pro Analytics', 'Expedited Support', 'SuperLinks Included', 'Password-Protected Access', 'Custom Usage & Click Limits', 'Time-Expiring Links'], highlighted: false, checkoutUrl: 'https://goodlink.lemonsqueezy.com/checkout/buy/1014504?embed=1', buttonText: 'Go Pro' },
+    { name: 'STARTER', price: '5', priceNum: 5, originalPrice: '10', description: 'Perfect for getting started', features: ['Unlimited Links', 'Unlimited QR Codes', 'Unlimited Clicks', 'Standard Analytics', 'Email Support'], highlighted: false, checkoutUrl: 'https://goodlink.lemonsqueezy.com/checkout/buy/315d0e60-5a87-44f0-90c7-7f7789aa85a0?embed=1', buttonText: 'Get Started' },
+    { name: 'ADVANCED', price: '10', priceNum: 10, originalPrice: '26', description: 'For growing businesses', features: ['Unlimited Links', 'Unlimited QR Codes', 'Unlimited Clicks', 'Email Support', '10 Custom Domains', 'Workspaces, Campaigns and Groups', 'Bot Protection', 'UTM Presets', 'Advanced Analytics', 'SuperLinks Included', 'Password-Protected Access', 'Custom Usage & Click Limits', 'Time-Expiring Links'], highlighted: true, checkoutUrl: 'https://goodlink.lemonsqueezy.com/checkout/buy/f544686f-e91d-425b-a930-22d293fcd74e?embed=1', buttonText: 'Go Advanced' },
+    { name: 'PRO', price: '20', priceNum: 20, originalPrice: '62', description: 'For power users', features: ['Unlimited Links', 'Unlimited QR Codes', 'Unlimited Clicks', 'Workspaces, Campaigns and Groups', 'Bot Protection', 'UTM Presets', 'Unlimited Custom Domains', 'Geo Redirect', 'Conversion API & S2S tracking', 'Pro Analytics', 'Expedited Support', 'SuperLinks Included', 'Password-Protected Access', 'Custom Usage & Click Limits', 'Time-Expiring Links'], highlighted: false, checkoutUrl: 'https://goodlink.lemonsqueezy.com/checkout/buy/a3649238-094e-4217-af3c-3b1f996f3c80?embed=1', buttonText: 'Go Pro' },
   ];
   const isCancelled = profile?.subscription_status === 'cancelled';
   const isFreeTrial = profile?.subscription_status === 'free_trial' || profile?.subscription_status === 'free_plan';
@@ -678,7 +678,7 @@ export default function AccountSettingsPage() {
                         aria-label={
                           isCurrentPlan
                             ? `${plan.name}: your current plan`
-                            : `${buttonLabel} — ${plan.name} plan`
+                            : `${buttonLabel} ג€” ${plan.name} plan`
                         }
                         onClick={() => !isCurrentPlan && openCheckout(plan)}
                         className={`mb-10 w-full text-center inline-block active:scale-95 transition-all ${
@@ -933,3 +933,6 @@ export default function AccountSettingsPage() {
     </div>
   );
 }
+
+
+

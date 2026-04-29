@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+﻿import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { Eye, EyeOff } from 'lucide-react';
@@ -49,10 +49,10 @@ const AuthPage = () => {
   // Plan checkout URLs mapping
   const planCheckoutUrls = {
     start:
-      'https://goodlink.lemonsqueezy.com/checkout/buy/1014444?embed=1',
+      'https://goodlink.lemonsqueezy.com/checkout/buy/315d0e60-5a87-44f0-90c7-7f7789aa85a0?embed=1',
     advanced:
-      'https://goodlink.lemonsqueezy.com/checkout/buy/1591830?embed=1',
-    pro: 'https://goodlink.lemonsqueezy.com/checkout/buy/1014504?embed=1',
+      'https://goodlink.lemonsqueezy.com/checkout/buy/f544686f-e91d-425b-a930-22d293fcd74e?embed=1',
+    pro: 'https://goodlink.lemonsqueezy.com/checkout/buy/a3649238-094e-4217-af3c-3b1f996f3c80?embed=1',
   };
 
   // Function to open Lemon Squeezy checkout or customer portal
@@ -453,7 +453,7 @@ const AuthPage = () => {
             navigate('/dashboard/links');
           }, 2000);
         } else {
-          // Regular login → Link Manager
+          // Regular login ג†’ Link Manager
           navigate('/dashboard/links');
         }
       } else if (view === 'signup') {
@@ -627,7 +627,7 @@ const AuthPage = () => {
               checks.length ? 'text-green-500 font-medium' : ''
             }`}
           >
-            <span>{checks.length ? '✓' : '○'}</span>
+            <span>{checks.length ? 'ג“' : 'ג—‹'}</span>
             <span>At least 8 characters</span>
           </li>
           <li
@@ -635,7 +635,7 @@ const AuthPage = () => {
               checks.hasUpper ? 'text-green-500 font-medium' : ''
             }`}
           >
-            <span>{checks.hasUpper ? '✓' : '○'}</span>
+            <span>{checks.hasUpper ? 'ג“' : 'ג—‹'}</span>
             <span>One uppercase letter (A-Z)</span>
           </li>
           <li
@@ -643,7 +643,7 @@ const AuthPage = () => {
               checks.hasLower ? 'text-green-500 font-medium' : ''
             }`}
           >
-            <span>{checks.hasLower ? '✓' : '○'}</span>
+            <span>{checks.hasLower ? 'ג“' : 'ג—‹'}</span>
             <span>One lowercase letter (a-z)</span>
           </li>
           <li
@@ -651,7 +651,7 @@ const AuthPage = () => {
               checks.hasNumber ? 'text-green-500 font-medium' : ''
             }`}
           >
-            <span>{checks.hasNumber ? '✓' : '○'}</span>
+            <span>{checks.hasNumber ? 'ג“' : 'ג—‹'}</span>
             <span>At least one number</span>
           </li>
         </ul>
@@ -782,7 +782,7 @@ const AuthPage = () => {
                       <input
                         id="login-password"
                         type={showPassword ? 'text' : 'password'}
-                        placeholder="••••••••"
+                        placeholder="ג€¢ג€¢ג€¢ג€¢ג€¢ג€¢ג€¢ג€¢"
                         className="h-12 w-full bg-white border border-slate-200 rounded-xl px-4 pr-12 text-[#1b1b1b] focus:outline-none focus:border-primary transition-colors"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
@@ -805,7 +805,7 @@ const AuthPage = () => {
                     {loading && (
                       <div className="size-4 border-2 border-white/30 border-t-white rounded-full animate-spin" aria-hidden="true"></div>
                     )}
-                    {loading ? 'Signing in…' : 'Sign In'}
+                    {loading ? 'Signing inג€¦' : 'Sign In'}
                   </button>
                 </form>
 
@@ -919,7 +919,7 @@ const AuthPage = () => {
                       <input
                         id="signup-password"
                         type={showPassword ? 'text' : 'password'}
-                        placeholder="••••••••"
+                        placeholder="ג€¢ג€¢ג€¢ג€¢ג€¢ג€¢ג€¢ג€¢"
                         aria-describedby="password-strength"
                         className="h-12 w-full bg-white border border-slate-200 rounded-xl px-4 pr-12 text-[#1b1b1b] focus:outline-none focus:border-primary transition-colors"
                         value={password}
@@ -944,7 +944,7 @@ const AuthPage = () => {
                       <input
                         id="signup-confirm-password"
                         type={showConfirmPassword ? 'text' : 'password'}
-                        placeholder="••••••••"
+                        placeholder="ג€¢ג€¢ג€¢ג€¢ג€¢ג€¢ג€¢ג€¢"
                         className="h-12 w-full bg-white border border-slate-200 rounded-xl px-4 pr-12 text-[#1b1b1b] focus:outline-none focus:border-primary transition-colors"
                         value={confirmPassword}
                         onChange={(e) => setConfirmPassword(e.target.value)}
@@ -1014,7 +1014,7 @@ const AuthPage = () => {
                     {loading && (
                       <div className="size-4 border-2 border-white/30 border-t-white rounded-full animate-spin" aria-hidden="true"></div>
                     )}
-                    {loading ? 'Creating account…' : 'Create Account'}
+                    {loading ? 'Creating accountג€¦' : 'Create Account'}
                   </button>
                 </form>
 
@@ -1118,7 +1118,7 @@ const AuthPage = () => {
                     {loading && (
                       <div className="size-4 border-2 border-white/30 border-t-white rounded-full animate-spin" aria-hidden="true"></div>
                     )}
-                    {loading ? 'Sending…' : 'Send Link'}
+                    {loading ? 'Sendingג€¦' : 'Send Link'}
                   </button>
                 </form>
 
@@ -1185,3 +1185,6 @@ const AuthPage = () => {
 };
 
 export default AuthPage;
+
+
+
