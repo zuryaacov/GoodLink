@@ -394,7 +394,9 @@ const CTASection = () => {
                           )}
                           <span
                             className={`text-sm md:text-base font-semibold leading-relaxed ${
-                              isBlack
+                              isSuperLinksIncluded
+                                ? 'text-[#7c3aed]'
+                                : isBlack
                                 ? 'text-black'
                                 : isPurple
                                   ? 'text-[#7c3aed]'
