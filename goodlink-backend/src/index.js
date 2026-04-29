@@ -595,7 +595,19 @@ async function logClickToSupabase(env, clickRecord) {
 /**
  * Build complete click record with all Cloudflare data
  */
-function buildClickRecord(request, rayId, ip, slug, domain, userAgent, verdict, linkData, isBotDecision = false, botReasons = []) {
+function buildClickRecord(
+    request,
+    rayId,
+    ip,
+    slug,
+    domain,
+    userAgent,
+    verdict,
+    linkData,
+    isBotDecision = false,
+    botReasons = [],
+    redirectMeta = {}
+) {
     const cf = request.cf || {};
     const botMgmt = cf.botManagement || {};
     const botScore = botMgmt.score ?? 100;
@@ -604,6 +616,11 @@ function buildClickRecord(request, rayId, ip, slug, domain, userAgent, verdict, 
     const normalizedBotReasons = Array.isArray(botReasons)
         ? botReasons.map((r) => String(r || "").trim()).filter(Boolean)
         : [];
+    const redirectOutcome = String(redirectMeta?.redirectOutcome || "redirect").trim().toLowerCase();
+    const redirectDestinationUrl =
+        redirectMeta?.redirectDestinationUrl != null && String(redirectMeta.redirectDestinationUrl).trim() !== ""
+            ? String(redirectMeta.redirectDestinationUrl).trim()
+            : null;
 
     return {
         id: crypto.randomUUID(),
@@ -664,6 +681,8 @@ function buildClickRecord(request, rayId, ip, slug, domain, userAgent, verdict, 
 
         // Metadata
         verdict: verdict,
+        redirect_outcome: redirectOutcome,
+        redirect_destination_url: redirectDestinationUrl,
         full_url: requestUrl.toString(),
         query_params: requestUrl.search || "",
         clicked_at: new Date().toISOString(),
@@ -2584,6 +2603,7 @@ export default Sentry.withSentry(
                         };
                     }
                 }
+                const fallbackUrlForTermination = ensureValidUrl(attributionLinkData?.fallback_url);
                 const clickRecord = buildClickRecord(
                     request,
                     rayId,
@@ -2594,7 +2614,11 @@ export default Sentry.withSentry(
                     verdict,
                     attributionLinkData,
                     isBotVerdict,
-                    isBotVerdict ? botReasons : []
+                    isBotVerdict ? botReasons : [],
+                    {
+                        redirectOutcome: fallbackUrlForTermination ? "fallback" : "blocked",
+                        redirectDestinationUrl: fallbackUrlForTermination || null
+                    }
                 );
                 ctx.waitUntil(logClickToSupabase(env, clickRecord));
                 queueAxiomLog(isBotVerdict ? "bot_blocked" : "invalid_request", slug || null, isBotVerdict, {
@@ -2605,8 +2629,8 @@ export default Sentry.withSentry(
                 });
 
                 // If linkData has fallback_url, redirect there instead of showing 404
-                if (attributionLinkData?.fallback_url) {
-                    const fallbackUrl = ensureValidUrl(attributionLinkData.fallback_url);
+                if (fallbackUrlForTermination) {
+                    const fallbackUrl = fallbackUrlForTermination;
                     if (fallbackUrl) {
                         queueAxiomLog("redirect", slug || null, false, {
                             redirect_target_url: fallbackUrl,
@@ -2860,6 +2884,16 @@ export default Sentry.withSentry(
             }
 
             // 6. Send log to Supabase
+            const fallbackUrlForBlock = ensureValidUrl(linkData?.fallback_url);
+            const redirectMetaForClick = shouldBlock
+                ? {
+                    redirectOutcome: fallbackUrlForBlock ? "fallback" : "blocked",
+                    redirectDestinationUrl: fallbackUrlForBlock || null
+                }
+                : {
+                    redirectOutcome: "redirect",
+                    redirectDestinationUrl: finalRedirectUrl || null
+                };
             const clickRecord = buildClickRecord(
                 request,
                 rayId,
@@ -2870,7 +2904,8 @@ export default Sentry.withSentry(
                 verdict,
                 linkData,
                 isBot,
-                isBot ? botReasonsForClick : []
+                isBot ? botReasonsForClick : [],
+                redirectMetaForClick
             );
             ctx.waitUntil(logClickToSupabase(env, clickRecord));
 
