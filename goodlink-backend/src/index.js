@@ -3026,19 +3026,45 @@ export default Sentry.withSentry(
             const wantsPixel = trackingMode === "pixel" || trackingMode === "pixel_and_capi";
             const capiPixels = pixels.filter((p) => p?.status === "active" && (p?.capi_token || p?.platform === "taboola" || p?.platform === "outbrain"));
             let capiPixelsToSend = [];
+            const clickIds = getClickIdsFromUrl(url.searchParams);
+            const platformsFromUrl = getPlatformsFromClickIds(clickIds, request, url.searchParams);
+
+            queueAxiomLog("capi_debug", slug || null, isBot, {
+                backend_event: "capi_gate_evaluation",
+                plan_type: planType || null,
+                tracking_mode: trackingMode || null,
+                is_pro: isPro,
+                wants_capi: wantsCapi,
+                wants_pixel: wantsPixel,
+                capi_relay_url_configured: Boolean(env.CAPI_RELAY_URL),
+                total_pixels_count: pixels.length,
+                eligible_capi_pixels_count: capiPixels.length,
+                click_ids_present: Object.entries(clickIds)
+                    .filter(([, value]) => Boolean(value))
+                    .map(([key]) => key),
+                url_target_platforms: [...platformsFromUrl]
+            });
 
             if (isPro && (pixels.length > 0 || capiPixels.length > 0)) {
                 const eventId = crypto.randomUUID();
                 // Wall-clock second at click (payload hint; relay overwrites platform event_time with its own currentTime).
                 const eventTime = Math.floor(Date.now() / 1000);
                 const eventSourceUrl = request.url || `${url.origin}${url.pathname}${url.search}`;
-                const clickIds = getClickIdsFromUrl(url.searchParams);
-                const platformsFromUrl = getPlatformsFromClickIds(clickIds, request, url.searchParams);
                 // Send CAPI only to platforms found in URL. If one param → one (or two for meta); if multiple params → send to all.
                 // Dedupe by platform + pixel_id so duplicate DB rows (e.g. two identical TikTok pixels) only fire once.
                 capiPixelsToSend = dedupeCapiPixelsByPlatformAndPixelId(
                     capiPixels.filter((p) => platformsFromUrl.has(p.platform))
                 );
+
+                if (wantsCapi && capiPixelsToSend.length === 0) {
+                    queueAxiomLog("capi_debug", slug || null, isBot, {
+                        backend_event: "capi_not_sent_no_matching_pixels",
+                        plan_type: planType || null,
+                        tracking_mode: trackingMode || null,
+                        eligible_capi_pixels_count: capiPixels.length,
+                        url_target_platforms: [...platformsFromUrl]
+                    });
+                }
 
                 // fbc format: fb.1.[CreationTime in ms].[fbclid from URL]. Only when fbclid exists (do not invent).
                 const userData = {
@@ -3095,6 +3121,14 @@ export default Sentry.withSentry(
                             capi_payload: capiPayload
                         });
                         ctx.waitUntil(sendCapiToQStash(env, relayUrl, capiPayload));
+                    } else {
+                        queueAxiomLog("capi_debug", slug || null, isBot, {
+                            backend_event: "capi_not_sent_dedup_2s",
+                            dedup_key: capiDedupKey,
+                            plan_type: planType || null,
+                            tracking_mode: trackingMode || null,
+                            capi_pixels_count: capiPixelsToSend.length
+                        });
                     }
                 }
 
