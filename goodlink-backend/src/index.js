@@ -1825,6 +1825,48 @@ export default Sentry.withSentry(
                         });
                     }
 
+                    // Enforce custom domain quota for ADVANCED plan (max 10 active/non-deleted domains).
+                    try {
+                        const profileUrl = `${env.SUPABASE_URL}/rest/v1/profiles?user_id=eq.${encodeURIComponent(user_id)}&select=plan_type&limit=1`;
+                        const profileRes = await fetch(profileUrl, {
+                            method: "GET",
+                            headers: {
+                                "apikey": env.SUPABASE_SERVICE_ROLE_KEY,
+                                "Authorization": `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}`
+                            }
+                        });
+                        const profileRows = profileRes.ok ? await profileRes.json().catch(() => []) : [];
+                        const planType = String(profileRows?.[0]?.plan_type || "").toLowerCase();
+
+                        if (planType === "advanced") {
+                            const domainsCountUrl =
+                                `${env.SUPABASE_URL}/rest/v1/custom_domains?user_id=eq.${encodeURIComponent(user_id)}` +
+                                `&status=not.eq.deleted&select=id&limit=1`;
+                            const domainsCountRes = await fetch(domainsCountUrl, {
+                                method: "GET",
+                                headers: {
+                                    "apikey": env.SUPABASE_SERVICE_ROLE_KEY,
+                                    "Authorization": `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}`,
+                                    "Prefer": "count=exact"
+                                }
+                            });
+                            const contentRange = domainsCountRes.headers.get("content-range") || "";
+                            const totalPart = contentRange.split("/")[1];
+                            const activeDomainsCount = Number(totalPart);
+                            if (Number.isFinite(activeDomainsCount) && activeDomainsCount >= 10) {
+                                return new Response(JSON.stringify({
+                                    success: false,
+                                    error: "Advanced plan is limited to 10 custom domains. Please upgrade to PRO to add more."
+                                }), {
+                                    status: 403,
+                                    headers: { ...corsHeaders, "Content-Type": "application/json" }
+                                });
+                            }
+                        }
+                    } catch {
+                        // Fail open on quota-check errors to avoid blocking domain setup due to transient issues.
+                    }
+
                     const normalizedInputDomain = normalizeCustomHostnameInput(domain);
                     const hostnameVariants = getHostnameVariants(normalizedInputDomain);
                     if (hostnameVariants.length < 2) {
