@@ -690,6 +690,7 @@ const Analytics = () => {
                 type="button"
                 onClick={() => setTrafficFilter(filterOption.id)}
                 className={`px-3 py-1.5 rounded-lg border text-xs font-bold transition-all ${
+                className={`px-6 py-3 rounded-lg border text-sm font-bold transition-all ${
                   trafficFilter === filterOption.id
                     ? 'border-primary bg-primary/10 text-[#1b1b1b]'
                     : 'border-slate-200 text-[#1b1b1b] hover:border-primary hover:bg-primary/10'
