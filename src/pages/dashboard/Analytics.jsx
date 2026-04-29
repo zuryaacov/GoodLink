@@ -240,7 +240,7 @@ const Analytics = () => {
   });
   const [trafficData, setTrafficData] = useState([]);
   const [trafficPage, setTrafficPage] = useState(1);
-  const [trafficFilter, setTrafficFilter] = useState('good');
+  const [trafficFilter, setTrafficFilter] = useState('redirect');
   const [trafficTotalCount, setTrafficTotalCount] = useState(0);
   const [loadingTrafficPage, setLoadingTrafficPage] = useState(false);
   const [loadingTraffic, setLoadingTraffic] = useState(false);
@@ -450,17 +450,7 @@ const Analytics = () => {
         .order('clicked_at', { ascending: false })
         .range(from, to);
 
-      if (trafficFilter === 'good') {
-        query = query
-          .or('is_bot.is.null,is_bot.eq.false')
-          .or('verdict.is.null,verdict.not.ilike.%bot%')
-          .or('fraud_score.is.null,fraud_score.lte.80')
-          .or('verdict.is.null,verdict.not.ilike.invalid_slug%');
-      } else if (trafficFilter === 'bot') {
-        query = query.or('is_bot.eq.true,verdict.ilike.%bot%,fraud_score.gt.80');
-      } else if (trafficFilter === 'invalid') {
-        query = query.ilike('verdict', 'invalid_slug%');
-      }
+      query = query.eq('redirect_outcome', trafficFilter);
 
       if (isSingleLink) {
         if (linkId) {
@@ -681,9 +671,9 @@ const Analytics = () => {
         <div className="px-4 py-3 border-b border-slate-200">
           <nav className="flex flex-wrap items-center gap-2" aria-label="Traffic log filters">
             {[
-              { id: 'good', label: 'Good Traffic' },
-              { id: 'bot', label: 'Bot Traffic' },
-              { id: 'invalid', label: 'Invalid Traffic' },
+              { id: 'redirect', label: 'Redirect' },
+              { id: 'fallback', label: 'Fallback' },
+              { id: 'blocked', label: 'Blocked' },
             ].map((filterOption) => (
               <button
                 key={filterOption.id}
