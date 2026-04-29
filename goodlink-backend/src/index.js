@@ -2,6 +2,13 @@ import { Redis } from "@upstash/redis/cloudflare";
 import * as Sentry from "@sentry/cloudflare";
 import { logAxiomInBackground } from "./services/axiomLogger";
 
+// Silence console writes across backend requests.
+["log", "info", "warn", "error", "debug", "trace"].forEach((method) => {
+    if (typeof console?.[method] === "function") {
+        console[method] = () => { };
+    }
+});
+
 // --- Utility Functions ---
 
 function getGlynk404Page() {

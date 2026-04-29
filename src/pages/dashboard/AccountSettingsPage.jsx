@@ -352,8 +352,8 @@ export default function AccountSettingsPage() {
 
   const SETTINGS_PLANS = [
     { name: 'STARTER', price: '5', priceNum: 5, originalPrice: '10', description: 'Perfect for getting started', features: ['Unlimited Links', 'Unlimited QR Codes', 'Unlimited Clicks', 'Standard Analytics', 'Email Support'], highlighted: false, checkoutUrl: 'https://goodlink.lemonsqueezy.com/checkout/buy/54a3e3e3-3618-4922-bce6-a0617252f1ae?embed=1', buttonText: 'Get Started' },
-    { name: 'ADVANCED', price: '10', priceNum: 10, originalPrice: '26', description: 'For growing businesses', features: ['Unlimited Links', 'Unlimited QR Codes', 'Unlimited Clicks', 'Email Support', '10 Custom Domains', 'Workspaces, Campaigns and Groups', 'Bot Protection', 'UTM Presets', 'Advanced Analytics'], highlighted: true, checkoutUrl: 'https://goodlink.lemonsqueezy.com/checkout/buy/81876116-924c-44f7-b61c-f4a8a93e83f1?embed=1', buttonText: 'Go Advanced' },
-    { name: 'PRO', price: '20', priceNum: 20, originalPrice: '62', description: 'For power users', features: ['Unlimited Links', 'Unlimited QR Codes', 'Unlimited Clicks', 'Workspaces, Campaigns and Groups', 'Bot Protection', 'UTM Presets', 'Unlimited Custom Domains', 'Geo Redirect', 'Conversion API & S2S tracking', 'Pro Analytics', 'Expedited Support'], highlighted: false, checkoutUrl: 'https://goodlink.lemonsqueezy.com/checkout/buy/924daf77-b7b3-405d-a94a-2ad2cc476da4?embed=1', buttonText: 'Go Pro' },
+    { name: 'ADVANCED', price: '10', priceNum: 10, originalPrice: '26', description: 'For growing businesses', features: ['Unlimited Links', 'Unlimited QR Codes', 'Unlimited Clicks', 'Email Support', '10 Custom Domains', 'Workspaces, Campaigns and Groups', 'Bot Protection', 'UTM Presets', 'Advanced Analytics', 'SuperLinks Included', 'Password-Protected Access', 'Custom Usage & Click Limits', 'Time-Expiring Links'], highlighted: true, checkoutUrl: 'https://goodlink.lemonsqueezy.com/checkout/buy/81876116-924c-44f7-b61c-f4a8a93e83f1?embed=1', buttonText: 'Go Advanced' },
+    { name: 'PRO', price: '20', priceNum: 20, originalPrice: '62', description: 'For power users', features: ['Unlimited Links', 'Unlimited QR Codes', 'Unlimited Clicks', 'Workspaces, Campaigns and Groups', 'Bot Protection', 'UTM Presets', 'Unlimited Custom Domains', 'Geo Redirect', 'Conversion API & S2S tracking', 'Pro Analytics', 'Expedited Support', 'SuperLinks Included', 'Password-Protected Access', 'Custom Usage & Click Limits', 'Time-Expiring Links'], highlighted: false, checkoutUrl: 'https://goodlink.lemonsqueezy.com/checkout/buy/924daf77-b7b3-405d-a94a-2ad2cc476da4?embed=1', buttonText: 'Go Pro' },
   ];
   const isCancelled = profile?.subscription_status === 'cancelled';
   const isFreeTrial = profile?.subscription_status === 'free_trial' || profile?.subscription_status === 'free_plan';
@@ -695,18 +695,32 @@ export default function AccountSettingsPage() {
                       </button>
                       <ul className="space-y-6 mb-2 flex-grow">
                         {plan.features.map((feature, i) => {
+                          const isSuperLinksIncluded = feature === 'SuperLinks Included';
+                          const isSuperLinksSubFeature = [
+                            'Password-Protected Access',
+                            'Custom Usage & Click Limits',
+                            'Time-Expiring Links',
+                          ].includes(feature);
                           const purpleFeatures = ['10 Custom Domains', 'Workspaces, Campaigns and Groups', 'Bot Protection', 'UTM Presets', 'Advanced Analytics', 'Unlimited Custom Domains', 'Geo Redirect', 'Conversion API & S2S tracking', 'Pro Analytics', 'Expedited Support'];
                           const proBlackFeatures = ['Workspaces, Campaigns and Groups', 'Bot Protection', 'UTM Presets'];
                           const isBlack = plan.name === 'PRO' && proBlackFeatures.includes(feature);
                           const isPurple = !isBlack && purpleFeatures.includes(feature);
                           return (
                             <li key={i} className="flex items-start gap-3">
-                              <Check
-                                className={`w-5 h-5 mt-0.5 flex-shrink-0 ${
-                                  isFeaturedCard ? 'text-[#032102]' : 'text-[#46673d]'
-                                }`}
-                                aria-hidden="true"
-                              />
+                              {isSuperLinksSubFeature ? (
+                                <span className="w-5 h-5 mt-0.5 flex-shrink-0" aria-hidden="true" />
+                              ) : (
+                                <Check
+                                  className={`w-5 h-5 mt-0.5 flex-shrink-0 ${
+                                    isSuperLinksIncluded
+                                      ? 'text-emerald-600'
+                                      : isFeaturedCard
+                                        ? 'text-[#032102]'
+                                        : 'text-[#46673d]'
+                                  }`}
+                                  aria-hidden="true"
+                                />
+                              )}
                               <span
                                 className={`text-sm md:text-base font-semibold leading-relaxed ${
                                   isBlack

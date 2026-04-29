@@ -74,6 +74,10 @@ const CTASection = () => {
         'Bot Protection',
         'UTM Presets',
         'Advanced Analytics',
+        'SuperLinks Included',
+        'Password-Protected Access',
+        'Custom Usage & Click Limits',
+        'Time-Expiring Links',
       ],
       highlighted: false,
       checkoutUrl:
@@ -97,6 +101,10 @@ const CTASection = () => {
         'Conversion API & S2S tracking',
         'Pro Analytics',
         'Expedited Support',
+        'SuperLinks Included',
+        'Password-Protected Access',
+        'Custom Usage & Click Limits',
+        'Time-Expiring Links',
       ],
       highlighted: true,
       checkoutUrl:
@@ -343,6 +351,12 @@ const CTASection = () => {
 
                   <ul className="space-y-6 mb-2 flex-grow">
                     {plan.features.map((feature, featureIndex) => {
+                      const isSuperLinksIncluded = feature === 'SuperLinks Included';
+                      const isSuperLinksSubFeature = [
+                        'Password-Protected Access',
+                        'Custom Usage & Click Limits',
+                        'Time-Expiring Links',
+                      ].includes(feature);
                       const purpleFeatures = [
                         '10 Custom Domains',
                         'Workspaces, Campaigns and Groups',
@@ -364,12 +378,20 @@ const CTASection = () => {
                       const isPurple = !isBlack && purpleFeatures.includes(feature);
                       return (
                         <li key={featureIndex} className="flex items-start gap-3">
-                          <Check
-                            aria-hidden="true"
-                            className={`w-5 h-5 mt-0.5 flex-shrink-0 ${
-                              isFeaturedCard ? 'text-[#032102]' : 'text-[#46673d]'
-                            }`}
-                          />
+                          {isSuperLinksSubFeature ? (
+                            <span className="w-5 h-5 mt-0.5 flex-shrink-0" aria-hidden="true" />
+                          ) : (
+                            <Check
+                              aria-hidden="true"
+                              className={`w-5 h-5 mt-0.5 flex-shrink-0 ${
+                                isSuperLinksIncluded
+                                  ? 'text-emerald-600'
+                                  : isFeaturedCard
+                                    ? 'text-[#032102]'
+                                    : 'text-[#46673d]'
+                              }`}
+                            />
+                          )}
                           <span
                             className={`text-sm md:text-base font-semibold leading-relaxed ${
                               isBlack

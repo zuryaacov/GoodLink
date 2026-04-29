@@ -8,6 +8,13 @@ import { ToastProvider } from './components/common/ToastProvider.jsx'
 import AccessibilityWidget from './components/accessibility/AccessibilityWidget.jsx'
 import { hydrateAccessibilityFromStorage } from './lib/accessibilityPreferences.js'
 
+// Silence console writes across the frontend bundle.
+;['log', 'info', 'warn', 'error', 'debug', 'trace'].forEach((method) => {
+  if (typeof console?.[method] === 'function') {
+    console[method] = () => {}
+  }
+})
+
 hydrateAccessibilityFromStorage()
 
 // Initialize Sentry
@@ -16,12 +23,8 @@ Sentry.init({
   // Setting this option to true will send default PII data to Sentry.
   // For example, automatic IP address collection on events
   sendDefaultPii: true,
-  // Enable logging
-  enableLogs: true,
-  integrations: [
-    // send console.log, console.warn, and console.error calls as logs to Sentry
-    Sentry.consoleLoggingIntegration({ levels: ['log', 'warn', 'error'] }),
-  ],
+  // Disable SDK log forwarding to keep console output silent.
+  enableLogs: false,
 })
 
 createRoot(document.getElementById('root')).render(
