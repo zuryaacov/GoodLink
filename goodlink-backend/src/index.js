@@ -2563,6 +2563,15 @@ export default Sentry.withSentry(
             const htmlResponse = (html, status = 404) => new Response(html, {
                 status, headers: { "Content-Type": "text/html;charset=UTF-8" }
             });
+            const redirectWithHeaders = (targetUrl, status = 302, headers = {}) => {
+                const response = Response.redirect(targetUrl, status);
+                Object.entries(headers).forEach(([key, value]) => {
+                    if (value !== undefined && value !== null && value !== "") {
+                        response.headers.set(key, String(value));
+                    }
+                });
+                return response;
+            };
 
             // Terminate with log to Supabase - redirects to fallback_url if available
             const terminateWithLog = async (verdict, linkData = null, botReasons = []) => {
@@ -3026,8 +3035,13 @@ export default Sentry.withSentry(
             const wantsPixel = trackingMode === "pixel" || trackingMode === "pixel_and_capi";
             const capiPixels = pixels.filter((p) => p?.status === "active" && (p?.capi_token || p?.platform === "taboola" || p?.platform === "outbrain"));
             let capiPixelsToSend = [];
+            let capiDebugReason = "skip_not_evaluated";
             const clickIds = getClickIdsFromUrl(url.searchParams);
             const platformsFromUrl = getPlatformsFromClickIds(clickIds, request, url.searchParams);
+
+            if (!isPro) capiDebugReason = "skip_plan_not_pro";
+            else if (!wantsCapi) capiDebugReason = "skip_tracking_mode_not_capi";
+            else if (!env.CAPI_RELAY_URL) capiDebugReason = "skip_missing_capi_relay_url";
 
             queueAxiomLog("capi_debug", slug || null, isBot, {
                 backend_event: "capi_gate_evaluation",
@@ -3057,6 +3071,7 @@ export default Sentry.withSentry(
                 );
 
                 if (wantsCapi && capiPixelsToSend.length === 0) {
+                    capiDebugReason = "skip_no_matching_pixels_for_click_ids";
                     queueAxiomLog("capi_debug", slug || null, isBot, {
                         backend_event: "capi_not_sent_no_matching_pixels",
                         plan_type: planType || null,
@@ -3089,6 +3104,7 @@ export default Sentry.withSentry(
                     const capiDedupKey = `capi:${ip}:${slug}`;
                     const isNewCapiRequest = await redis.set(capiDedupKey, "1", { nx: true, ex: 2 });
                     if (isNewCapiRequest !== null) {
+                        capiDebugReason = "sent_queued_to_qstash";
                         const relayUrl = env.CAPI_RELAY_URL.startsWith("http")
                             ? env.CAPI_RELAY_URL
                             : `https://${url.host}${env.CAPI_RELAY_URL}`;
@@ -3122,6 +3138,7 @@ export default Sentry.withSentry(
                         });
                         ctx.waitUntil(sendCapiToQStash(env, relayUrl, capiPayload));
                     } else {
+                        capiDebugReason = "skip_dedup_2s";
                         queueAxiomLog("capi_debug", slug || null, isBot, {
                             backend_event: "capi_not_sent_dedup_2s",
                             dedup_key: capiDedupKey,
@@ -3153,7 +3170,7 @@ export default Sentry.withSentry(
                         link_json: linkData || null,
                         verdict
                     });
-                    return Response.redirect(finalRedirectUrl, 302);
+                    return redirectWithHeaders(finalRedirectUrl, 302, { "x-capi-debug": capiDebugReason });
                 }
             }
 
@@ -3164,7 +3181,7 @@ export default Sentry.withSentry(
                 link_json: linkData || null,
                 verdict
             });
-            return Response.redirect(finalRedirectUrl, 302);
+            return redirectWithHeaders(finalRedirectUrl, 302, { "x-capi-debug": capiDebugReason });
         }
     }
 );
