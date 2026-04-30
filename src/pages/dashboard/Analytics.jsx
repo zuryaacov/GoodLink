@@ -99,28 +99,26 @@ const KPICard = ({ title, value, change, trend, icon, iconBgClass, iconColorClas
   );
 };
 
-const HumanVsBotCard = ({ humanCount, botCount, unknownCount }) => {
-  const total = humanCount + botCount + unknownCount;
+const HumanVsBotCard = ({ humanCount, botCount }) => {
+  const total = humanCount + botCount;
   const humanPct = total ? (humanCount / total) * 100 : 0;
   const botPct = total ? (botCount / total) * 100 : 0;
-  const unknownPct = total ? (unknownCount / total) * 100 : 0;
   const humanColor = '#10b981';
   const botColor = '#a855f7';
-  const unknownColor = '#ff6b00';
   return (
     <div className="bg-card-bg border border-card-border rounded-2xl p-6 flex flex-col items-center transition-all hover:shadow-card-mint lg:col-span-1">
       <div className="w-full flex justify-between items-center mb-6">
         <h3 className="text-lg md:text-xl font-bold text-[#1b1b1b]">Human vs. Bot Ratio</h3>
       </div>
       <p className="sr-only">
-        Traffic split: {Math.round(humanPct)}% human ({humanCount} clicks), {Math.round(botPct)}% bot (
-        {botCount} clicks), {Math.round(unknownPct)}% unknown ({unknownCount} clicks).
+        Traffic split: {Math.round(humanPct)}% human ({humanCount} clicks), {Math.round(botPct)}%
+        bot ({botCount} clicks).
       </p>
       <div className="relative mb-6" aria-hidden="true">
         <div
           className="w-40 h-40 rounded-full flex items-center justify-center"
           style={{
-            background: `conic-gradient(${humanColor} 0% ${humanPct}%, ${botColor} ${humanPct}% ${humanPct + botPct}%, ${unknownColor} ${humanPct + botPct}% 100%)`,
+            background: `conic-gradient(${humanColor} 0% ${humanPct}%, ${botColor} ${humanPct}% 100%)`,
           }}
         >
           <div className="w-[120px] h-[120px] bg-white rounded-full flex items-center justify-center">
@@ -147,14 +145,6 @@ const HumanVsBotCard = ({ humanCount, botCount, unknownCount }) => {
             aria-hidden="true"
           />
           <span className="text-xs text-[#1b1b1b]">Bot ({botCount})</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <span
-            className="w-3 h-3 rounded-full shrink-0"
-            style={{ backgroundColor: unknownColor }}
-            aria-hidden="true"
-          />
-          <span className="text-xs text-[#1b1b1b]">Unknown ({unknownCount})</span>
         </div>
       </div>
     </div>
@@ -648,7 +638,6 @@ const Analytics = () => {
         <HumanVsBotCard
           humanCount={chartData.humanVsBot.human}
           botCount={chartData.humanVsBot.bot}
-          unknownCount={chartData.humanVsBot.unknown}
         />
         <GeoProgressCard geographic={chartData.geographic} />
       </div>
