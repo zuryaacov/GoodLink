@@ -316,7 +316,7 @@ const Analytics = () => {
       while (true) {
         let batchQuery = supabase
           .from('clicks')
-          .select('is_bot, verdict, fraud_score, session_id, ip_address, country, city')
+          .select('link_id, is_bot, verdict, fraud_score, session_id, ip_address, country, city')
           .eq('user_id', user.id)
           .order('clicked_at', { ascending: false })
           .range(from, from + STATS_BATCH_SIZE - 1);
@@ -344,11 +344,14 @@ const Analytics = () => {
 
       const botDetected = clicks.filter(
         (click) =>
-          click.is_bot === true ||
+          click.link_id !== null &&
+          (click.is_bot === true ||
           (click.verdict && click.verdict.toLowerCase().includes('bot')) ||
-          (click.fraud_score && click.fraud_score > 80)
+          (click.fraud_score && click.fraud_score > 80))
       ).length;
-      const invalidTraffic = clicks.filter((click) => isInvalidTrafficVerdict(click.verdict)).length;
+      const invalidTraffic = clicks.filter(
+        (click) => click.link_id === null || isInvalidTrafficVerdict(click.verdict)
+      ).length;
 
       const uniqueVisitors = new Set(
         clicks.map((c) => c.session_id || c.ip_address).filter(Boolean)
@@ -392,11 +395,12 @@ const Analytics = () => {
       let botCount = 0;
       let unknownCount = 0;
       clicks.forEach((click) => {
-        const isInvalidTraffic = isInvalidTrafficVerdict(click.verdict);
+        const isInvalidTraffic = click.link_id === null || isInvalidTrafficVerdict(click.verdict);
         const isBot =
-          click.is_bot === true ||
-          (click.verdict && click.verdict.toLowerCase().includes('bot')) ||
-          (click.fraud_score && click.fraud_score > 80);
+          click.link_id !== null &&
+          (click.is_bot === true ||
+            (click.verdict && click.verdict.toLowerCase().includes('bot')) ||
+            (click.fraud_score && click.fraud_score > 80));
         if (isBot) botCount++;
         else if (isInvalidTraffic) unknownCount++;
         else if (click.is_bot === false || click.verdict) humanCount++;
