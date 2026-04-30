@@ -671,7 +671,7 @@ const Analytics = () => {
         <div className="px-4 py-3 border-b border-slate-200">
           <nav className="flex flex-wrap items-center gap-2" aria-label="Traffic log filters">
             {[
-              { id: 'redirect', label: 'Redirect' },
+              { id: 'redirect', label: 'Delivered' },
               { id: 'fallback', label: 'Fallback' },
               { id: 'blocked', label: 'Blocked' },
             ].map((filterOption) => (
