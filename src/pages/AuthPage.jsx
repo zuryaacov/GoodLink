@@ -453,7 +453,7 @@ const AuthPage = () => {
             navigate('/dashboard/links');
           }, 2000);
         } else {
-          // Regular login ג†’ Link Manager
+          // Regular login -> Link Manager
           navigate('/dashboard/links');
         }
       } else if (view === 'signup') {
@@ -627,7 +627,7 @@ const AuthPage = () => {
               checks.length ? 'text-green-500 font-medium' : ''
             }`}
           >
-            <span>{checks.length ? 'ג“' : 'ג—‹'}</span>
+            <span>{checks.length ? '[x]' : '[ ]'}</span>
             <span>At least 8 characters</span>
           </li>
           <li
@@ -635,7 +635,7 @@ const AuthPage = () => {
               checks.hasUpper ? 'text-green-500 font-medium' : ''
             }`}
           >
-            <span>{checks.hasUpper ? 'ג“' : 'ג—‹'}</span>
+            <span>{checks.hasUpper ? '[x]' : '[ ]'}</span>
             <span>One uppercase letter (A-Z)</span>
           </li>
           <li
@@ -643,7 +643,7 @@ const AuthPage = () => {
               checks.hasLower ? 'text-green-500 font-medium' : ''
             }`}
           >
-            <span>{checks.hasLower ? 'ג“' : 'ג—‹'}</span>
+            <span>{checks.hasLower ? '[x]' : '[ ]'}</span>
             <span>One lowercase letter (a-z)</span>
           </li>
           <li
@@ -651,7 +651,7 @@ const AuthPage = () => {
               checks.hasNumber ? 'text-green-500 font-medium' : ''
             }`}
           >
-            <span>{checks.hasNumber ? 'ג“' : 'ג—‹'}</span>
+            <span>{checks.hasNumber ? '[x]' : '[ ]'}</span>
             <span>At least one number</span>
           </li>
         </ul>
@@ -782,7 +782,7 @@ const AuthPage = () => {
                       <input
                         id="login-password"
                         type={showPassword ? 'text' : 'password'}
-                        placeholder="ג€¢ג€¢ג€¢ג€¢ג€¢ג€¢ג€¢ג€¢"
+                        placeholder="********"
                         className="h-12 w-full bg-white border border-slate-200 rounded-xl px-4 pr-12 text-[#1b1b1b] focus:outline-none focus:border-primary transition-colors"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
@@ -805,7 +805,7 @@ const AuthPage = () => {
                     {loading && (
                       <div className="size-4 border-2 border-white/30 border-t-white rounded-full animate-spin" aria-hidden="true"></div>
                     )}
-                    {loading ? 'Signing inג€¦' : 'Sign In'}
+                    {loading ? 'Signing in...' : 'Sign In'}
                   </button>
                 </form>
 
@@ -919,7 +919,7 @@ const AuthPage = () => {
                       <input
                         id="signup-password"
                         type={showPassword ? 'text' : 'password'}
-                        placeholder="ג€¢ג€¢ג€¢ג€¢ג€¢ג€¢ג€¢ג€¢"
+                        placeholder="********"
                         aria-describedby="password-strength"
                         className="h-12 w-full bg-white border border-slate-200 rounded-xl px-4 pr-12 text-[#1b1b1b] focus:outline-none focus:border-primary transition-colors"
                         value={password}
@@ -944,7 +944,7 @@ const AuthPage = () => {
                       <input
                         id="signup-confirm-password"
                         type={showConfirmPassword ? 'text' : 'password'}
-                        placeholder="ג€¢ג€¢ג€¢ג€¢ג€¢ג€¢ג€¢ג€¢"
+                        placeholder="********"
                         className="h-12 w-full bg-white border border-slate-200 rounded-xl px-4 pr-12 text-[#1b1b1b] focus:outline-none focus:border-primary transition-colors"
                         value={confirmPassword}
                         onChange={(e) => setConfirmPassword(e.target.value)}
@@ -1014,7 +1014,7 @@ const AuthPage = () => {
                     {loading && (
                       <div className="size-4 border-2 border-white/30 border-t-white rounded-full animate-spin" aria-hidden="true"></div>
                     )}
-                    {loading ? 'Creating accountג€¦' : 'Create Account'}
+                    {loading ? 'Creating account...' : 'Create Account'}
                   </button>
                 </form>
 
@@ -1118,7 +1118,7 @@ const AuthPage = () => {
                     {loading && (
                       <div className="size-4 border-2 border-white/30 border-t-white rounded-full animate-spin" aria-hidden="true"></div>
                     )}
-                    {loading ? 'Sendingג€¦' : 'Send Link'}
+                    {loading ? 'Sending...' : 'Send Link'}
                   </button>
                 </form>
 

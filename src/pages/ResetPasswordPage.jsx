@@ -188,7 +188,7 @@ const ResetPasswordPage = () => {
           </p>
         }
         type="success"
-        confirmText="Go to Login"
+        confirmText="GO TO LOGIN"
         onConfirm={handleGoToLogin}
         confirmButtonClass="btn-primary"
       />

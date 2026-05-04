@@ -159,8 +159,12 @@ const Modal = ({
                   </button>
                 </>
               ) : (
-                <button className="btn-primary" onClick={onClose} disabled={isLoading}>
-                  OK
+                <button
+                  className="btn-primary"
+                  onClick={onConfirm ? handleConfirm : onClose}
+                  disabled={isLoading}
+                >
+                  {onConfirm ? confirmText : 'OK'}
                 </button>
               )}
             </div>

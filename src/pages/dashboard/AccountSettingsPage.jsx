@@ -154,7 +154,7 @@ export default function AccountSettingsPage() {
         throw new Error('Full name must be at least 2 characters.');
       }
 
-      // 2. Update Auth Metadata (Name only ג€“ email is not editable)
+      // 2. Update Auth Metadata (Name only - email is not editable)
       const updates = {
         data: { full_name: trimmedName },
       };
@@ -162,7 +162,7 @@ export default function AccountSettingsPage() {
       const { error: authError } = await supabase.auth.updateUser(updates);
       if (authError) throw authError;
 
-      // 3. Update Profile Table (full_name, timezone) ג€“ keep profiles in sync with auth
+      // 3. Update Profile Table (full_name, timezone) - keep profiles in sync with auth
       const { error: profileError } = await supabase
         .from('profiles')
         .update({
@@ -196,7 +196,7 @@ export default function AccountSettingsPage() {
           throw new Error(msg);
         }
 
-        // Password validation ג€“ same rules as signup
+        // Password validation - same rules as signup
         if (newPassword.length < 8) {
           const msg = 'Password must be at least 8 characters long';
           setPasswordError(msg);
@@ -678,7 +678,7 @@ export default function AccountSettingsPage() {
                         aria-label={
                           isCurrentPlan
                             ? `${plan.name}: your current plan`
-                            : `${buttonLabel} ג€” ${plan.name} plan`
+                            : `${buttonLabel} - ${plan.name} plan`
                         }
                         onClick={() => !isCurrentPlan && openCheckout(plan)}
                         className={`mb-10 w-full text-center inline-block active:scale-95 transition-all ${
