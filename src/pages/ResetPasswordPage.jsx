@@ -2,17 +2,16 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Eye, EyeOff } from 'lucide-react';
 import { supabase } from '../lib/supabase';
+import Modal from '../components/common/Modal';
 
 const ResetPasswordPage = () => {
   const navigate = useNavigate();
   const [newPassword, setNewPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
   const [showNewPassword, setShowNewPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [sessionReady, setSessionReady] = useState(false);
   const [error, setError] = useState(null);
-  const [message, setMessage] = useState(null);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -73,19 +72,13 @@ const ResetPasswordPage = () => {
     if (!/[0-9]/.test(newPassword)) {
       errors.push('Password must contain at least one number.');
     }
-    if (!confirmPassword) {
-      errors.push('Please confirm your new password.');
-    } else if (newPassword !== confirmPassword) {
-      errors.push('Passwords do not match.');
-    }
     return errors;
-  }, [newPassword, confirmPassword]);
+  }, [newPassword]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
-    setMessage(null);
 
     try {
       if (!sessionReady) {
@@ -100,17 +93,18 @@ const ResetPasswordPage = () => {
       });
       if (updateError) throw updateError;
 
-      setMessage('Your password has been updated successfully. Redirecting to login...');
       setNewPassword('');
-      setConfirmPassword('');
-
-      await supabase.auth.signOut();
-      setTimeout(() => navigate('/login'), 1200);
+      setShowSuccessModal(true);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong. Please try again.');
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleGoToLogin = async () => {
+    await supabase.auth.signOut();
+    navigate('/login');
   };
 
   return (
@@ -136,12 +130,6 @@ const ResetPasswordPage = () => {
           {error && (
             <div role="alert" className="bg-red-500/10 border border-red-500/20 text-red-500 text-sm p-3 rounded-lg text-center mb-4">
               {error}
-            </div>
-          )}
-
-          {message && (
-            <div role="status" className="bg-green-500/10 border border-green-500/20 text-green-700 text-sm p-3 rounded-lg text-center mb-4">
-              {message}
             </div>
           )}
 
@@ -171,31 +159,6 @@ const ResetPasswordPage = () => {
               </div>
             </div>
 
-            <div className="flex flex-col gap-2">
-              <label htmlFor="confirm-new-password" className="text-sm font-bold text-[#1b1b1b] ml-1">
-                Confirm New Password
-              </label>
-              <div className="relative">
-                <input
-                  id="confirm-new-password"
-                  type={showConfirmPassword ? 'text' : 'password'}
-                  placeholder="........"
-                  className="h-12 w-full bg-white border border-slate-200 rounded-xl px-4 pr-12 text-[#1b1b1b] focus:outline-none focus:border-primary transition-colors"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  autoComplete="new-password"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#10b981] hover:text-[#10b981]/80 transition-colors"
-                >
-                  {showConfirmPassword ? <EyeOff size={20} aria-hidden="true" /> : <Eye size={20} aria-hidden="true" />}
-                </button>
-              </div>
-            </div>
-
             <button
               type="submit"
               disabled={loading || !sessionReady}
@@ -215,6 +178,20 @@ const ResetPasswordPage = () => {
           </div>
         </div>
       </main>
+      <Modal
+        isOpen={showSuccessModal}
+        onClose={() => setShowSuccessModal(false)}
+        title="Password updated successfully"
+        message={
+          <p className="text-sm text-slate-600 leading-relaxed">
+            Your password has been updated. Click the button below to continue to login.
+          </p>
+        }
+        type="success"
+        confirmText="Go to Login"
+        onConfirm={handleGoToLogin}
+        confirmButtonClass="btn-primary"
+      />
     </div>
   );
 };
