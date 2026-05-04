@@ -536,7 +536,7 @@ const AuthPage = () => {
           throw new Error('Please enter a valid email address (e.g. name@example.com)');
         }
         const { error } = await supabase.auth.resetPasswordForEmail(email, {
-          redirectTo: `${window.location.origin}/login${planParam ? `?plan=${planParam}` : ''}`,
+          redirectTo: `${window.location.origin}/reset-password`,
         });
         if (error) throw error;
         setMessage('Password reset link sent to your email.');

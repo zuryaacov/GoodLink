@@ -10,6 +10,7 @@ import DpaPage from './pages/DpaPage';
 import ContactPage from './pages/ContactPage';
 import DocsPage from './pages/DocsPage';
 import AccessibilityStatementPage from './pages/AccessibilityStatementPage';
+import ResetPasswordPage from './pages/ResetPasswordPage';
 import DashboardLayout from './layouts/DashboardLayout';
 import Analytics from './pages/dashboard/Analytics';
 import LinkManager from './pages/dashboard/LinkManager';
@@ -94,6 +95,7 @@ function App() {
     <Routes>
       <Route path="/" element={<Homepage />} />
       <Route path="/login" element={<AuthPage />} />
+      <Route path="/reset-password" element={<ResetPasswordPage />} />
       <Route path="/abuse" element={<AbuseReportPage />} />
       <Route path="/terms" element={<TermsPage />} />
       <Route path="/privacy" element={<PrivacyPage />} />
