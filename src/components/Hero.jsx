@@ -20,8 +20,7 @@ const Hero = ({ user }) => {
             animate={{ y: [0, -6, 0] }}
             transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
           >
-            <span className="mr-2 text-lg">🎁</span>
-            <span>30-Day Free Trial · No credit card required</span>
+            <span>30 Days Free Trial - No credit card required</span>
           </motion.div>
 
           {/* Main line */}
@@ -48,7 +47,7 @@ const Hero = ({ user }) => {
                 to="/login?mode=signup"
                 className="inline-flex h-14 md:h-16 min-w-[200px] md:min-w-[240px] items-center justify-center rounded-xl bg-[#a855f7] hover:bg-[#9333ea] px-10 md:px-12 text-white text-base md:text-lg font-bold tracking-wide transition-all"
               >
-                Start your 30-day free trial
+                Start your 30 days free trial
               </Link>
               <div className="flex flex-wrap justify-center items-center gap-x-6 gap-y-2 mt-6">
                 <div className="flex items-center gap-2 text-base font-bold text-black">

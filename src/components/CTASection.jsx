@@ -219,8 +219,7 @@ const CTASection = () => {
 
         <div className="flex justify-center">
           <div className="flex flex-col items-center justify-center gap-1 text-center text-black font-extrabold tracking-wide text-3xl md:text-5xl">
-            <span className="text-3xl md:text-5xl">🎁</span>
-            <span>Get 30-Day Free Trial</span>
+            <span>Get 30 Days Free Trial</span>
             <span>
               Everything in <span className="text-[#a855f7] text-4xl md:text-6xl">PRO</span>
             </span>
@@ -234,7 +233,7 @@ const CTASection = () => {
               to="/login?mode=signup"
               className="inline-flex h-14 md:h-16 min-w-[200px] md:min-w-[240px] items-center justify-center rounded-xl bg-[#a855f7] hover:bg-[#9333ea] px-10 md:px-12 text-white text-base md:text-lg font-bold tracking-wide transition-all"
             >
-              Start your 30-day free trial
+              Start your 30 days free trial
             </Link>
           </div>
         )}
@@ -259,7 +258,7 @@ const CTASection = () => {
               if (isCurrentPlan) buttonLabel = 'Your current plan';
               else if (isDowngrade) buttonLabel = 'Switch to this plan';
             } else {
-              buttonLabel = plan.name === 'PRO' ? 'Free 30-day Trial' : 'Start with Pro Trial';
+              buttonLabel = plan.name === 'PRO' ? 'Free 30 days Trial' : 'Start with Pro Trial';
             }
 
             return (
@@ -280,7 +279,7 @@ const CTASection = () => {
               >
                 {!user && plan.highlighted && (
                   <span className="absolute -top-5 left-1/2 -translate-x-1/2 px-6 py-2 bg-[#a855f7] text-white text-xs font-black rounded-full uppercase tracking-widest shadow-lg">
-                    30-Day Free Trial
+                    30 Days Free Trial
                   </span>
                 )}
                 {user && (isCurrentPlan || isRecommendedForTrial) && (
