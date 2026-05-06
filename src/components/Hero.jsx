@@ -20,6 +20,7 @@ const Hero = ({ user }) => {
             animate={{ y: [0, -6, 0] }}
             transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
           >
+            <span className="mr-2 text-lg">🎁</span>
             <span>30 Days Free Trial - No credit card required</span>
           </motion.div>
 
