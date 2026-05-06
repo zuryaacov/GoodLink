@@ -352,8 +352,8 @@ export default function AccountSettingsPage() {
 
   const SETTINGS_PLANS = [
     { name: 'STARTER', price: '5', priceNum: 5, originalPrice: '10', description: 'Perfect for getting started', features: ['Unlimited Links', 'Unlimited QR Codes', 'Unlimited Clicks', 'Standard Analytics', 'Email Support'], highlighted: false, checkoutUrl: 'https://goodlink.lemonsqueezy.com/checkout/buy/315d0e60-5a87-44f0-90c7-7f7789aa85a0?embed=1', buttonText: 'Get Started' },
-    { name: 'ADVANCED', price: '10', priceNum: 10, originalPrice: '26', description: 'For growing businesses', features: ['Unlimited Links', 'Unlimited QR Codes', 'Unlimited Clicks', 'Email Support', '10 Custom Domains', 'Workspaces, Campaigns and Groups', 'Bot Protection', 'UTM Presets', 'Advanced Analytics', 'SuperLinks Included', 'Password-Protected Access', 'Custom Usage & Click Limits', 'Time-Expiring Links'], highlighted: true, checkoutUrl: 'https://goodlink.lemonsqueezy.com/checkout/buy/f544686f-e91d-425b-a930-22d293fcd74e?embed=1', buttonText: 'Go Advanced' },
-    { name: 'PRO', price: '20', priceNum: 20, originalPrice: '62', description: 'For power users', features: ['Unlimited Links', 'Unlimited QR Codes', 'Unlimited Clicks', 'Workspaces, Campaigns and Groups', 'Bot Protection', 'UTM Presets', 'Unlimited Custom Domains', 'Geo Redirect', 'Conversion API & S2S tracking', 'Pro Analytics', 'Expedited Support', 'SuperLinks Included', 'Password-Protected Access', 'Custom Usage & Click Limits', 'Time-Expiring Links'], highlighted: false, checkoutUrl: 'https://goodlink.lemonsqueezy.com/checkout/buy/a3649238-094e-4217-af3c-3b1f996f3c80?embed=1', buttonText: 'Go Pro' },
+    { name: 'ADVANCED', price: '10', priceNum: 10, originalPrice: '26', description: 'For growing businesses', features: ['Unlimited Links', 'Unlimited QR Codes', 'Unlimited Clicks', 'Email Support', '10 Custom Domains', 'Workspaces, Campaigns and Groups', 'Bot Protection', 'UTM Presets', 'Advanced Analytics', 'SuperLinks', 'Password-Protected Access', 'Custom Usage & Click Limits', 'Time-Expiring Links'], highlighted: true, checkoutUrl: 'https://goodlink.lemonsqueezy.com/checkout/buy/f544686f-e91d-425b-a930-22d293fcd74e?embed=1', buttonText: 'Go Advanced' },
+    { name: 'PRO', price: '20', priceNum: 20, originalPrice: '62', description: 'For power users', features: ['Unlimited Links', 'Unlimited QR Codes', 'Unlimited Clicks', 'Workspaces, Campaigns and Groups', 'Bot Protection', 'UTM Presets', 'Unlimited Custom Domains', 'Geo Redirect', 'Conversion API & S2S tracking', 'Pro Analytics', 'Expedited Support', 'SuperLinks', 'Password-Protected Access', 'Custom Usage & Click Limits', 'Time-Expiring Links'], highlighted: false, checkoutUrl: 'https://goodlink.lemonsqueezy.com/checkout/buy/a3649238-094e-4217-af3c-3b1f996f3c80?embed=1', buttonText: 'Go Pro' },
   ];
   const isCancelled = profile?.subscription_status === 'cancelled';
   const isFreeTrial = profile?.subscription_status === 'free_trial' || profile?.subscription_status === 'free_plan';
@@ -695,7 +695,7 @@ export default function AccountSettingsPage() {
                       </button>
                       <ul className="space-y-6 mb-2 flex-grow">
                         {plan.features.map((feature, i) => {
-                          const isSuperLinksIncluded = feature === 'SuperLinks Included';
+                          const isSuperLinksIncluded = feature === 'SuperLinks';
                           const isSuperLinksSubFeature = [
                             'Password-Protected Access',
                             'Custom Usage & Click Limits',

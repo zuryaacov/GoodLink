@@ -74,7 +74,7 @@ const CTASection = () => {
         'Bot Protection',
         'UTM Presets',
         'Advanced Analytics',
-        'SuperLinks Included',
+        'SuperLinks',
         'Password-Protected Access',
         'Custom Usage & Click Limits',
         'Time-Expiring Links',
@@ -101,7 +101,7 @@ const CTASection = () => {
         'Conversion API & S2S tracking',
         'Pro Analytics',
         'Expedited Support',
-        'SuperLinks Included',
+        'SuperLinks',
         'Password-Protected Access',
         'Custom Usage & Click Limits',
         'Time-Expiring Links',
@@ -351,7 +351,7 @@ const CTASection = () => {
 
                   <ul className="space-y-6 mb-2 flex-grow">
                     {plan.features.map((feature, featureIndex) => {
-                      const isSuperLinksIncluded = feature === 'SuperLinks Included';
+                      const isSuperLinksIncluded = feature === 'SuperLinks';
                       const isSuperLinksSubFeature = [
                         'Password-Protected Access',
                         'Custom Usage & Click Limits',
