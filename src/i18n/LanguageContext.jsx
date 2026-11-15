@@ -3,7 +3,9 @@ import en from './translations/en';
 import he from './translations/he';
 
 const STORAGE_KEY = 'goodlink:lang';
-const PREF_KEY = 'goodlink:lang_pref'; // only set when user picks from footer
+// v2: ignore older sticky prefs so IP detection can work again after VPN / location changes
+const PREF_KEY = 'goodlink:lang_pref_v2';
+const OLD_PREF_KEY = 'goodlink:lang_pref';
 const dictionaries = { en, he };
 
 const LanguageContext = createContext(null);
@@ -30,22 +32,36 @@ function writeStored(key, value) {
   }
 }
 
-function getInitialLanguage() {
+function removeStored(key) {
+  try {
+    localStorage.removeItem(key);
+  } catch {
+    // ignore
+  }
+}
+
+function getManualPreference() {
   const pref = readStored(PREF_KEY);
   if (pref === 'he' || pref === 'en') return pref;
+  return null;
+}
 
-  const cached = readStored(STORAGE_KEY);
-  if (cached === 'he' || cached === 'en') return cached;
+function getInitialLanguage() {
+  // Manual footer choice wins
+  const pref = getManualPreference();
+  if (pref) return pref;
 
+  // Auto mode: do NOT restore cached Hebrew/English from a previous IP.
+  // Start English, then apply IP detection on mount.
   return 'en';
 }
 
-async function detectIsIsrael() {
+async function detectCountryCode() {
   const fetchWithTimeout = async (url, parse) => {
     const controller = new AbortController();
     const timer = window.setTimeout(() => controller.abort(), 4000);
     try {
-      const res = await fetch(url, { signal: controller.signal });
+      const res = await fetch(url, { signal: controller.signal, cache: 'no-store' });
       if (!res.ok) throw new Error(`geo_failed:${res.status}`);
       return parse(res);
     } finally {
@@ -54,19 +70,24 @@ async function detectIsIsrael() {
   };
 
   try {
-    const country = await fetchWithTimeout('https://api.country.is/', async (res) => {
+    return await fetchWithTimeout('https://api.country.is/', async (res) => {
       const data = await res.json();
       return String(data?.country || '').toUpperCase();
     });
-    return country === 'IL';
   } catch {
     try {
-      const country = await fetchWithTimeout('https://ipapi.co/country_code/', async (res) => {
+      return await fetchWithTimeout('https://ipapi.co/country_code/', async (res) => {
         return (await res.text()).trim().toUpperCase();
       });
-      return country === 'IL';
     } catch {
-      return false;
+      try {
+        return await fetchWithTimeout('https://ipwho.is/', async (res) => {
+          const data = await res.json();
+          return String(data?.country_code || '').toUpperCase();
+        });
+      } catch {
+        return null;
+      }
     }
   }
 }
@@ -75,23 +96,29 @@ export function LanguageProvider({ children }) {
   const [language, setLanguageState] = useState(getInitialLanguage);
 
   useEffect(() => {
+    // Drop legacy sticky preference so old EN/HE header choices don't lock language forever
+    removeStored(OLD_PREF_KEY);
+  }, []);
+
+  useEffect(() => {
     applyDocumentDirection(language);
     writeStored(STORAGE_KEY, language);
   }, [language]);
 
   // Auto language by IP only when the user has not chosen manually in the footer
   useEffect(() => {
-    const pref = readStored(PREF_KEY);
-    if (pref === 'he' || pref === 'en') return;
+    if (getManualPreference()) return;
 
     let cancelled = false;
     (async () => {
-      const isIsrael = await detectIsIsrael();
+      const country = await detectCountryCode();
       if (cancelled) return;
-      // Re-check preference in case user clicked while geo was loading
-      const latestPref = readStored(PREF_KEY);
-      if (latestPref === 'he' || latestPref === 'en') return;
-      setLanguageState(isIsrael ? 'he' : 'en');
+      if (getManualPreference()) return;
+
+      // If geo failed, keep current (default English)
+      if (!country) return;
+
+      setLanguageState(country === 'IL' ? 'he' : 'en');
     })();
 
     return () => {
