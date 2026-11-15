@@ -3,11 +3,31 @@ import { Check } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
+import { useLanguage } from '../i18n/LanguageContext';
+
+const PRO_FEATURE_KEYS = [
+  'featureUnlimitedLinks',
+  'featureUnlimitedQr',
+  'featureUnlimitedClicks',
+  'featureWorkspaces',
+  'featureBotProtection',
+  'featureUtmPresets',
+  'featureUnlimitedDomains',
+  'featureGeoRedirect',
+  'featureCapi',
+  'featureProAnalytics',
+  'featureExpeditedSupport',
+  'featureSuperLinks',
+  'featurePasswordAccess',
+  'featureClickLimits',
+  'featureTimeExpiring',
+];
 
 const CTASection = () => {
   const [user, setUser] = useState(null);
   const [userProfile, setUserProfile] = useState(null);
   const navigate = useNavigate();
+  const { t } = useLanguage();
 
   useEffect(() => {
     if (!supabase) return;
@@ -90,27 +110,11 @@ const CTASection = () => {
       price: '20',
       originalPrice: '62',
       description: 'For power users',
-      features: [
-        'Unlimited Links',
-        'Unlimited QR Codes',
-        'Unlimited Clicks',
-        'Workspaces, Campaigns and Groups',
-        'Bot Protection',
-        'UTM Presets',
-        'Unlimited Custom Domains',
-        'Geo Redirect',
-        'Conversion API & S2S tracking',
-        'Pro Analytics',
-        'Expedited Support',
-        'SuperLinks',
-        'Password-Protected Access',
-        'Custom Usage & Click Limits',
-        'Time-Expiring Links',
-      ],
+      featureKeys: PRO_FEATURE_KEYS,
       highlighted: true,
       checkoutUrl:
         'https://goodlink.lemonsqueezy.com/checkout/buy/a3649238-094e-4217-af3c-3b1f996f3c80?embed=1',
-      buttonText: 'Go Pro',
+      buttonTextKey: 'goPro',
     },
   ];
 
@@ -214,7 +218,7 @@ const CTASection = () => {
           className="flex flex-col items-center text-center gap-4 max-w-3xl mx-auto"
         >
           <div className="inline-flex items-center rounded-full bg-[#c0ffa5]/30 px-3 py-1 text-sm font-medium text-[#047857] border border-[#c0ffa5]/50">
-            What's Included
+            {t('whatsIncludedBadge')}
           </div>
         </motion.div>
 
@@ -232,13 +236,13 @@ const CTASection = () => {
             const planPriceNum = Number(plan.price) || 0;
             const isDowngrade = currentPlanKey && planPriceNum < currentPlanPrice;
             const isFeaturedCard = user ? isCurrentPlan || isRecommendedForTrial : plan.highlighted;
-            let buttonLabel = plan.buttonText;
+            let buttonLabel = t(plan.buttonTextKey || 'goPro');
 
             if (user) {
-              if (isCurrentPlan) buttonLabel = 'Your current plan';
-              else if (isDowngrade) buttonLabel = 'Switch to this plan';
+              if (isCurrentPlan) buttonLabel = t('yourCurrentPlan');
+              else if (isDowngrade) buttonLabel = t('switchToThisPlan');
             } else {
-              buttonLabel = 'Sign Up';
+              buttonLabel = t('signUp');
             }
 
             return (
@@ -253,12 +257,12 @@ const CTASection = () => {
               >
                 {!user && plan.highlighted && (
                   <span className="absolute -top-5 left-1/2 -translate-x-1/2 px-6 py-2 bg-[#a855f7] text-white text-sm font-black rounded-full uppercase tracking-widest shadow-lg">
-                    Free Forever
+                    {t('freeForever')}
                   </span>
                 )}
                 {user && (isCurrentPlan || isRecommendedForTrial) && (
                   <span className="absolute -top-5 left-1/2 -translate-x-1/2 px-6 py-2 bg-[#0b996f] text-white text-sm font-black rounded-full uppercase tracking-widest shadow-lg">
-                    {isCurrentPlan ? 'Current Plan' : 'Recommended'}
+                    {isCurrentPlan ? t('currentPlan') : t('recommended')}
                   </span>
                 )}
 
@@ -271,7 +275,7 @@ const CTASection = () => {
                           : 'text-3xl md:text-4xl font-bold text-slate-900'
                       }`}
                     >
-                      What You Get
+                      {t('whatYouGet')}
                     </h3>
                   </div>
 
@@ -297,34 +301,29 @@ const CTASection = () => {
                   </button>
 
                   <ul className="space-y-6 mb-2 flex-grow">
-                    {plan.features.map((feature, featureIndex) => {
-                      const isSuperLinksIncluded = feature === 'SuperLinks';
+                    {(plan.featureKeys || []).map((featureKey) => {
+                      const isSuperLinksIncluded = featureKey === 'featureSuperLinks';
                       const isSuperLinksSubFeature = [
-                        'Password-Protected Access',
-                        'Custom Usage & Click Limits',
-                        'Time-Expiring Links',
-                      ].includes(feature);
-                      const purpleFeatures = [
-                        '10 Custom Domains',
-                        'Workspaces, Campaigns and Groups',
-                        'Bot Protection',
-                        'UTM Presets',
-                        'Advanced Analytics',
-                        'Unlimited Custom Domains',
-                        'Geo Redirect',
-                        'Conversion API & S2S tracking',
-                        'Pro Analytics',
-                        'Expedited Support',
+                        'featurePasswordAccess',
+                        'featureClickLimits',
+                        'featureTimeExpiring',
+                      ].includes(featureKey);
+                      const purpleFeatureKeys = [
+                        'featureUnlimitedDomains',
+                        'featureGeoRedirect',
+                        'featureCapi',
+                        'featureProAnalytics',
+                        'featureExpeditedSupport',
                       ];
-                      const proBlackFeatures = [
-                        'Workspaces, Campaigns and Groups',
-                        'Bot Protection',
-                        'UTM Presets',
+                      const proBlackFeatureKeys = [
+                        'featureWorkspaces',
+                        'featureBotProtection',
+                        'featureUtmPresets',
                       ];
-                      const isBlack = plan.name === 'PRO' && proBlackFeatures.includes(feature);
-                      const isPurple = !isBlack && purpleFeatures.includes(feature);
+                      const isBlack = plan.name === 'PRO' && proBlackFeatureKeys.includes(featureKey);
+                      const isPurple = !isBlack && purpleFeatureKeys.includes(featureKey);
                       return (
-                        <li key={featureIndex} className="flex items-start gap-3">
+                        <li key={featureKey} className="flex items-start gap-3">
                           {isSuperLinksSubFeature ? (
                             <span className="w-6 h-6 mt-0.5 flex-shrink-0" aria-hidden="true" />
                           ) : (
@@ -352,7 +351,7 @@ const CTASection = () => {
                                     : 'text-slate-700'
                             }`}
                           >
-                            {feature}
+                            {t(featureKey)}
                           </span>
                         </li>
                       );

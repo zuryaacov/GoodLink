@@ -1,35 +1,38 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import { useLanguage } from '../i18n/LanguageContext';
 
 const Features = () => {
+  const { t } = useLanguage();
+
   const features = [
     {
       icon: 'dns',
-      title: 'GoodSync',
-      description:
-        'Stop losing conversions to ad-blockers and privacy updates. GoodSync establishes a rock-solid, server-to-server Conversion API (CAPI) between your links and major ad platforms like Facebook, Instagram, and TikTok. It bypasses browser limitations (iOS 14+) to ensure 100% tracking accuracy and smarter AI optimization for your pixel.',
-      highlight: 'server-to-server Conversion API (CAPI)',
+      titleKey: 'goodSyncTitle',
+      beforeKey: 'goodSyncBefore',
+      highlightKey: 'goodSyncHighlight',
+      afterKey: 'goodSyncAfter',
     },
     {
       icon: 'shield',
-      title: 'GoodShield',
-      description:
-        "Your Budget's Best Friend. Stop paying for fake traffic. GoodShield uses real-time edge intelligence to identify and neutralize bots, crawlers, and suspicious activity. Whether you want to block, redirect, or cloak your destination URL, GoodShield ensures that only genuine human visitors reach your offers, keeping your conversion rates high and your accounts safe.",
-      highlight: 'real-time edge intelligence to identify and neutralize bots',
+      titleKey: 'goodShieldTitle',
+      beforeKey: 'goodShieldBefore',
+      highlightKey: 'goodShieldHighlight',
+      afterKey: 'goodShieldAfter',
     },
     {
       icon: 'public',
-      title: 'GoodLink',
-      description:
-        'Take full ownership of your online presence with professional Custom Domains. Stop sending your traffic through generic, untrusted links that hurt your reputation. Our platform allows you to seamlessly map your own branded URLs, ensuring that every click reinforces your authority and builds instant trust with your audience.',
-      highlight: 'professional Custom Domains',
+      titleKey: 'goodLinkTitle',
+      beforeKey: 'goodLinkBefore',
+      highlightKey: 'goodLinkHighlight',
+      afterKey: 'goodLinkAfter',
     },
     {
       icon: 'insights',
-      title: 'GoodSight',
-      description:
-        'Get a clear view of your audience. Track every click, geographic origin, and device type in real-time. GoodSight provides the essential data you need to monitor your link performance and verify your traffic quality at a glance.',
-      highlight: 'Track every click',
+      titleKey: 'goodSightTitle',
+      beforeKey: 'goodSightBefore',
+      highlightKey: 'goodSightHighlight',
+      afterKey: 'goodSightAfter',
     },
   ];
 
@@ -64,14 +67,13 @@ const Features = () => {
           className="flex flex-col items-center text-center gap-4 max-w-3xl mx-auto"
         >
           <div className="inline-flex items-center rounded-full bg-[#a855f7]/10 px-3 py-1 text-sm font-medium text-[#7c3aed] border border-[#a855f7]/20">
-            Features
+            {t('featuresBadge')}
           </div>
           <h2 id="features-heading" className="text-slate-900 dark:text-[#1b1b1b] tracking-tight text-3xl md:text-5xl font-black leading-tight">
-            Engineered for Performance
+            {t('featuresHeading')}
           </h2>
           <p className="text-slate-600 dark:text-[#1b1b1b] text-lg md:text-xl font-normal leading-relaxed">
-            Tools designed to give you the competitive edge in media buying. Stop losing data and
-            start scaling your campaigns.
+            {t('featuresSubheading')}
           </p>
         </motion.div>
         {/* Feature Grid */}
@@ -94,17 +96,14 @@ const Features = () => {
             </div>
             <div className="flex flex-col gap-3">
               <h3 className="text-slate-900 dark:text-[#1b1b1b] text-xl md:text-2xl font-bold leading-tight">
-                SuperLinks
+                {t('superLinksTitle')}
               </h3>
               <p className="text-slate-600 dark:text-[#1b1b1b] text-base md:text-lg font-semibold leading-relaxed">
-                Unlock the ultimate precision tool for your marketing campaigns with our exclusive
-                SuperLink features. Gain the ability to lock content behind{' '}
+                {t('superLinksBefore')}
                 <span className="text-[#7c3aed] font-bold text-lg md:text-xl">
-                  secure passwords, limit clicks to prevent fraud, and set automated expiration
-                  dates down to the exact hour and minute
+                  {t('superLinksHighlight')}
                 </span>
-                . It&apos;s the smarter way to manage high-value assets while driving urgency and
-                ensuring absolute link exclusivity.
+                {t('superLinksAfter')}
               </p>
             </div>
           </motion.div>
@@ -117,9 +116,9 @@ const Features = () => {
           viewport={{ once: true }}
           className="grid grid-cols-1 lg:grid-cols-2 gap-8"
         >
-          {features.map((feature, index) => (
+          {features.map((feature) => (
             <motion.div
-              key={index}
+              key={feature.titleKey}
               variants={itemVariants}
               className="group flex flex-col gap-5 rounded-2xl border border-white/10 dark:border-[#324467] bg-white/5 dark:bg-[#192233]/50 backdrop-blur-md p-8 md:p-10 shadow-sm hover:shadow-xl hover:border-[#a855f7]/50 transition-all duration-300"
             >
@@ -128,24 +127,14 @@ const Features = () => {
               </div>
               <div className="flex flex-col gap-3">
                 <h3 className="text-slate-900 dark:text-[#1b1b1b] text-xl md:text-2xl font-bold leading-tight">
-                  {feature.title}
+                  {t(feature.titleKey)}
                 </h3>
                 <p className="text-slate-600 dark:text-[#1b1b1b] text-base md:text-lg font-semibold leading-relaxed">
-                  {feature.highlight
-                    ? (() => {
-                        const [before, ...rest] = feature.description.split(feature.highlight);
-                        const after = rest.join(feature.highlight);
-                        return (
-                          <>
-                            {before}
-                            <span className="text-[#7c3aed] font-bold text-lg md:text-xl">
-                              {feature.highlight}
-                            </span>
-                            {after}
-                          </>
-                        );
-                      })()
-                    : feature.description}
+                  {t(feature.beforeKey)}
+                  <span className="text-[#7c3aed] font-bold text-lg md:text-xl">
+                    {t(feature.highlightKey)}
+                  </span>
+                  {t(feature.afterKey)}
                 </p>
               </div>
             </motion.div>

@@ -1,9 +1,11 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import AccessibilityFooterRestore from './accessibility/AccessibilityFooterRestore';
+import { useLanguage } from '../i18n/LanguageContext';
 
 const Footer = () => {
   const location = useLocation();
+  const { t, language, setLanguage } = useLanguage();
 
   return (
     <footer className="border-t border-slate-200 dark:border-slate-200 bg-white dark:bg-[#111722] py-12 px-6">
@@ -40,96 +42,102 @@ const Footer = () => {
                 </svg>
               </div>
               */}
-              <span className="text-3xl font-black leading-tight tracking-tight text-inherit">
+              <span className="brand-logo text-3xl font-black leading-tight tracking-tight text-inherit">
                 GoodLink
               </span>
             </Link>
             <p className="text-sm text-slate-500 dark:text-[#1b1b1b] max-w-xs">
-              The advanced link management platform for high-performance marketers. Track, optimize,
-              and scale.
+              {t('footerTagline')}
             </p>
           </div>
-          <nav aria-label="Product links" className="flex flex-col gap-4">
-            <h3 className="font-bold text-slate-900 dark:text-[#1b1b1b]">Product</h3>
+          <nav aria-label={t('footerProductNav')} className="flex flex-col gap-4">
+            <h3 className="font-bold text-slate-900 dark:text-[#1b1b1b]">{t('footerProduct')}</h3>
             <Link
               to="/#features"
               className="text-sm text-slate-500 dark:text-[#1b1b1b] hover:text-primary transition-colors"
             >
-              Features
+              {t('navFeatures')}
             </Link>
             <Link
               to="/#insights"
               className="text-sm text-slate-500 dark:text-[#1b1b1b] hover:text-primary transition-colors"
             >
-              Insights
+              {t('navInsights')}
             </Link>
             <Link
               to="/#pricing"
               className="text-sm text-slate-500 dark:text-[#1b1b1b] hover:text-primary transition-colors"
             >
-              What's Included
+              {t('navWhatsIncluded')}
             </Link>
           </nav>
-          <nav aria-label="Company links" className="flex flex-col gap-4">
-            <h3 className="font-bold text-slate-900 dark:text-[#1b1b1b]">Company</h3>
+          <nav aria-label={t('footerCompanyNav')} className="flex flex-col gap-4">
+            <h3 className="font-bold text-slate-900 dark:text-[#1b1b1b]">{t('footerCompany')}</h3>
             <Link
               to="/abuse"
               className="text-sm text-slate-500 dark:text-[#1b1b1b] hover:text-primary transition-colors"
             >
-              Abuse / DMCA
+              {t('footerAbuse')}
             </Link>
             <Link
               to="/terms"
               className="text-sm text-slate-500 dark:text-[#1b1b1b] hover:text-primary transition-colors"
             >
-              Terms of Service
+              {t('footerTerms')}
             </Link>
             <Link
               to="/privacy"
               className="text-sm text-slate-500 dark:text-[#1b1b1b] hover:text-primary transition-colors"
             >
-              Privacy Policy
+              {t('footerPrivacy')}
             </Link>
             <Link
               to="/accessibility"
               className="text-sm text-slate-500 dark:text-[#1b1b1b] hover:text-primary transition-colors"
             >
-              Accessibility
+              {t('footerAccessibility')}
             </Link>
             <Link
               to="/subprocessors"
               className="text-sm text-slate-500 dark:text-[#1b1b1b] hover:text-primary transition-colors"
             >
-              Subprocessors
+              {t('footerSubprocessors')}
             </Link>
             <Link
               to="/dpa"
               className="text-sm text-slate-500 dark:text-[#1b1b1b] hover:text-primary transition-colors"
             >
-              DPA
+              {t('footerDpa')}
             </Link>
             <Link
               to="/contact"
               className="text-sm text-slate-500 dark:text-[#1b1b1b] hover:text-primary transition-colors"
             >
-              Contact Us
+              {t('footerContact')}
             </Link>
             <Link
               to="/docs"
               className="text-sm text-slate-500 dark:text-[#1b1b1b] hover:text-primary transition-colors"
             >
-              Docs
+              {t('footerDocs')}
             </Link>
           </nav>
         </div>
         <div className="mt-12 border-t border-slate-200 dark:border-slate-200 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
           <p className="text-sm text-slate-500 dark:text-[#1b1b1b]">
-            © 2025 GoodLink.ai. All rights reserved.
+            {t('footerCopyright')}
           </p>
-          <nav aria-label="Footer utilities" className="flex flex-col sm:flex-row items-center gap-3 sm:gap-6">
+          <nav aria-label={t('footerUtilitiesNav')} className="flex flex-col sm:flex-row items-center gap-3 sm:gap-6">
+            <button
+              type="button"
+              onClick={() => setLanguage(language === 'he' ? 'en' : 'he')}
+              className="text-sm text-slate-500 dark:text-[#1b1b1b] hover:text-primary transition-colors font-medium underline-offset-2 hover:underline"
+            >
+              {language === 'he' ? 'ENGLISH' : 'עברית'}
+            </button>
             <AccessibilityFooterRestore className="dark:text-slate-400" />
             <div className="flex gap-4">
-              <Link to="/contact" aria-label="Contact us via email" className="text-[#1b1b1b] hover:text-primary transition-colors">
+              <Link to="/contact" aria-label={t('footerContactAria')} className="text-[#1b1b1b] hover:text-primary transition-colors">
                 <span className="material-symbols-outlined" aria-hidden="true">mail</span>
               </Link>
             </div>

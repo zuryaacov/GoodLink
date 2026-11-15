@@ -2,8 +2,11 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { CheckCircle2 } from 'lucide-react';
+import { useLanguage } from '../i18n/LanguageContext';
 
 const Hero = ({ user }) => {
+  const { t } = useLanguage();
+
   return (
     <section aria-labelledby="hero-heading" className="relative px-6 py-16 md:py-24 bg-[#d7fec8]">
       <div className="mx-auto max-w-7xl flex flex-col items-center text-center">
@@ -20,8 +23,8 @@ const Hero = ({ user }) => {
             animate={{ y: [0, -6, 0] }}
             transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
           >
-            <span className="mr-2 text-lg">🎁</span>
-            <span>Free Forever – No credit card required</span>
+            <span className="me-2 text-lg">🎁</span>
+            <span>{t('heroBadge')}</span>
           </motion.div>
 
           {/* Main line */}
@@ -29,16 +32,17 @@ const Hero = ({ user }) => {
             id="hero-heading"
             className="text-slate-900 text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-black leading-loose md:leading-[1.75] lg:leading-[2] xl:leading-[1.75] tracking-tight"
           >
-            Short Links, Bot Protection,
+            {t('heroTitleBefore')}
             <br className="hidden sm:block" />
             <span>
-              <span className="text-[#a855f7]">S2S Tracking</span> &amp; Great Analytics
+              <span className="text-[#a855f7]">{t('heroTitleHighlight')}</span>
+              {t('heroTitleAfter')}
             </span>
           </h1>
 
           {/* Secondary line */}
           <p className="text-[#0b996f] text-xl sm:text-2xl md:text-3xl lg:text-[2.25rem] xl:text-[2.07rem] font-bold leading-snug xl:whitespace-nowrap">
-            Speed-of-Light Redirection, Server-Side Power &amp; Clean Traffic
+            {t('heroSubtitle')}
           </p>
 
           {/* CTA */}
@@ -48,7 +52,7 @@ const Hero = ({ user }) => {
                 to="/login?mode=signup"
                 className="inline-flex h-14 md:h-16 min-w-[200px] md:min-w-[240px] items-center justify-center rounded-xl bg-[#a855f7] hover:bg-[#9333ea] px-10 md:px-12 text-white text-base md:text-lg font-bold tracking-wide transition-all"
               >
-                Create Your Free Account
+                {t('heroCta')}
               </Link>
               <div className="flex flex-wrap justify-center items-center gap-x-6 gap-y-2 mt-6">
                 <div className="flex items-center gap-2 text-base font-bold text-black">
@@ -57,7 +61,7 @@ const Hero = ({ user }) => {
                     className="text-[#a855f7] flex-shrink-0"
                     aria-hidden="true"
                   />
-                  No credit card required
+                  {t('heroNoCard')}
                 </div>
                 <div className="flex items-center gap-2 text-base font-bold text-black">
                   <CheckCircle2
@@ -65,7 +69,7 @@ const Hero = ({ user }) => {
                     className="text-[#a855f7] flex-shrink-0"
                     aria-hidden="true"
                   />
-                  Full access included
+                  {t('heroFullAccess')}
                 </div>
               </div>
             </div>

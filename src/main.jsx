@@ -7,6 +7,7 @@ import App from './App.jsx'
 import { ToastProvider } from './components/common/ToastProvider.jsx'
 import AccessibilityWidget from './components/accessibility/AccessibilityWidget.jsx'
 import { hydrateAccessibilityFromStorage } from './lib/accessibilityPreferences.js'
+import { LanguageProvider } from './i18n/LanguageContext.jsx'
 
 // Silence console writes across the frontend bundle.
 ;['log', 'info', 'warn', 'error', 'debug', 'trace'].forEach((method) => {
@@ -30,10 +31,12 @@ Sentry.init({
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <BrowserRouter>
-      <ToastProvider>
-        <App />
-        <AccessibilityWidget />
-      </ToastProvider>
+      <LanguageProvider>
+        <ToastProvider>
+          <App />
+          <AccessibilityWidget />
+        </ToastProvider>
+      </LanguageProvider>
     </BrowserRouter>
   </StrictMode>,
 )

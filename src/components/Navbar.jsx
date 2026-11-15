@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../lib/supabase';
+import { useLanguage } from '../i18n/LanguageContext';
 
 const scrollToTarget = (targetId) => {
   const el = document.getElementById(targetId);
@@ -24,6 +25,7 @@ const Navbar = () => {
   const location = useLocation();
   const hamburgerRef = useRef(null);
   const mobileMenuRef = useRef(null);
+  const { t } = useLanguage();
 
   useEffect(() => {
     // Get initial user
@@ -75,9 +77,9 @@ const Navbar = () => {
   };
 
   const navLinks = [
-    { name: "What's Included", href: '#pricing', id: 'pricing' },
-    { name: 'Features', href: '#features', id: 'features' },
-    { name: 'Insights', href: '#insights', id: 'insights' },
+    { name: t('navWhatsIncluded'), href: '#pricing', id: 'pricing' },
+    { name: t('navFeatures'), href: '#features', id: 'features' },
+    { name: t('navInsights'), href: '#insights', id: 'insights' },
   ];
 
   const handleSectionClick = (e, sectionId) => {
@@ -129,17 +131,17 @@ const Navbar = () => {
             </svg>
           </div>
           */}
-          <span className="text-3xl font-black leading-tight tracking-tight text-inherit">
+          <span className="brand-logo text-3xl font-black leading-tight tracking-tight text-inherit">
             GoodLink
           </span>
         </Link>
 
         {/* Desktop Navigation */}
-        <nav aria-label="Main" className="hidden md:flex flex-1 justify-center">
+        <nav aria-label={t('mainNav')} className="hidden md:flex flex-1 justify-center">
           <div className="flex items-center gap-9">
             {navLinks.map((link) => (
               <a
-                key={link.name}
+                key={link.id}
                 href={link.href}
                 onClick={(e) => {
                   e.preventDefault();
@@ -162,13 +164,13 @@ const Navbar = () => {
                   to="/dashboard/links"
                   className="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-[#a855f7] hover:bg-[#9333ea] text-white text-sm font-bold leading-normal tracking-[0.015em] transition-colors"
                 >
-                  <span className="truncate">Dashboard</span>
+                  <span className="truncate">{t('dashboard')}</span>
                 </Link>
                 <button
                   onClick={handleLogout}
                   className="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-[#c0ffa5] hover:bg-[#b0ef95] text-[#1b1b1b] text-sm font-bold leading-normal tracking-[0.015em] transition-colors"
                 >
-                  <span className="truncate">Logout</span>
+                  <span className="truncate">{t('logout')}</span>
                 </button>
               </>
             ) : (
@@ -176,7 +178,7 @@ const Navbar = () => {
                 to="/login"
                 className="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-[#a855f7] hover:bg-[#9333ea] text-white text-sm font-bold leading-normal tracking-[0.015em] transition-colors"
               >
-                <span className="truncate">Login</span>
+                <span className="truncate">{t('login')}</span>
               </Link>
             )}
           </div>
@@ -186,7 +188,7 @@ const Navbar = () => {
             onClick={() => setIsOpen(!isOpen)}
             aria-expanded={isOpen}
             aria-controls="mobile-menu"
-            aria-label={isOpen ? 'Close menu' : 'Open menu'}
+            aria-label={isOpen ? t('closeMenu') : t('openMenu')}
             className="flex md:hidden items-center justify-center size-10 rounded-lg text-[#1b1b1b] hover:bg-black/5 transition-colors"
           >
             <span className="material-symbols-outlined text-2xl" aria-hidden="true">{isOpen ? 'close' : 'menu'}</span>
@@ -200,7 +202,7 @@ const Navbar = () => {
             id="mobile-menu"
             ref={mobileMenuRef}
             role="region"
-            aria-label="Mobile navigation"
+            aria-label={t('mobileNav')}
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
@@ -214,10 +216,10 @@ const Navbar = () => {
               transition={{ duration: 0.2, delay: 0.05 }}
               className="p-6 flex flex-col gap-6"
             >
-              <nav aria-label="Mobile" className="flex flex-col gap-4">
+              <nav aria-label={t('mobileNavLabel')} className="flex flex-col gap-4">
                 {navLinks.map((link) => (
                   <a
-                    key={link.name}
+                    key={link.id}
                     href={link.href}
                     onClick={(e) => {
                       e.preventDefault();
@@ -234,7 +236,7 @@ const Navbar = () => {
                     onClick={closeMobileMenu}
                     className="text-[#1b1b1b] hover:text-primary transition-colors text-lg font-bold"
                   >
-                    Dashboard
+                    {t('dashboard')}
                   </Link>
                 )}
               </nav>
@@ -247,7 +249,7 @@ const Navbar = () => {
                     }}
                     className="flex w-full cursor-pointer items-center justify-center rounded-lg h-12 bg-[#c0ffa5] hover:bg-[#b0ef95] text-[#1b1b1b] font-bold transition-colors"
                   >
-                    Logout
+                    {t('logout')}
                   </button>
                 ) : (
                   <Link
@@ -255,7 +257,7 @@ const Navbar = () => {
                     onClick={closeMobileMenu}
                     className="flex w-full cursor-pointer items-center justify-center rounded-lg h-12 bg-[#a855f7] hover:bg-[#9333ea] text-white font-bold transition-colors"
                   >
-                    Login
+                    {t('login')}
                   </Link>
                 )}
               </div>

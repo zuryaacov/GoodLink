@@ -7,10 +7,12 @@ import AnalyticsSection from '../components/AnalyticsSection';
 import CTASection from '../components/CTASection';
 import Footer from '../components/Footer';
 import { supabase } from '../lib/supabase';
+import { useLanguage } from '../i18n/LanguageContext';
 
 const Homepage = () => {
   const [user, setUser] = useState(null);
   const location = useLocation();
+  const { t } = useLanguage();
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user: u } }) => setUser(u));
@@ -45,7 +47,7 @@ const Homepage = () => {
   return (
     <div className="relative flex min-h-screen w-full flex-col">
       <a href="#main-content" className="skip-to-content">
-        Skip to main content
+        {t('skipToContent')}
       </a>
       <Navbar />
       <main id="main-content" className="flex-1">

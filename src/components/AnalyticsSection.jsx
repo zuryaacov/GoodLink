@@ -1,6 +1,9 @@
 import React from 'react';
+import { useLanguage } from '../i18n/LanguageContext';
 
 const AnalyticsSection = () => {
+  const { t } = useLanguage();
+
   return (
     <section
       id="insights"
@@ -12,7 +15,7 @@ const AnalyticsSection = () => {
           <div
             className="inline-flex items-center rounded-full bg-[#a855f7]/10 px-3 py-1 text-sm font-semibold text-[#6d28d9] border border-[#a855f7]/30"
           >
-            Insights
+            {t('insightsBadge')}
           </div>
         </div>
 
@@ -22,29 +25,28 @@ const AnalyticsSection = () => {
             id="insights-heading"
             className="text-slate-900 dark:text-[#1b1b1b] text-3xl md:text-4xl font-bold leading-tight"
           >
-            Analytics You Can Trust
+            {t('insightsHeading')}
           </h2>
           <p className="text-slate-600 dark:text-[#1b1b1b] text-lg">
-            Stop flying blind. Our dashboard gives you a granular view of every interaction.
-            Visualize trends, spot anomalies, and optimize your ROI in real-time.
+            {t('insightsBody')}
           </p>
           <ul className="flex flex-col gap-4 mt-2">
             <li className="flex items-center gap-3">
               <span className="material-symbols-outlined text-green-700" aria-hidden="true">check</span>
               <span className="text-slate-700 dark:text-slate-300 font-medium">
-                Click-level bot detection
+                {t('insightsBotDetection')}
               </span>
             </li>
             <li className="flex items-center gap-3">
               <span className="material-symbols-outlined text-green-700" aria-hidden="true">check</span>
               <span className="text-slate-700 dark:text-slate-300 font-medium">
-                Bot filtering &amp; exclusion
+                {t('insightsBotFiltering')}
               </span>
             </li>
             <li className="flex items-center gap-3">
               <span className="material-symbols-outlined text-green-700" aria-hidden="true">check</span>
               <span className="text-slate-700 dark:text-slate-300 font-medium">
-                Exportable raw data logs
+                {t('insightsExportLogs')}
               </span>
             </li>
           </ul>
@@ -54,11 +56,11 @@ const AnalyticsSection = () => {
             <div className="rounded-xl border border-slate-200 dark:border-slate-200 bg-white dark:bg-white p-6 shadow-2xl">
               <div className="flex flex-col gap-2 mb-6">
                 <p className="text-slate-600 dark:text-[#1b1b1b] text-sm font-medium uppercase tracking-wider">
-                  Link Click Performance
+                  {t('insightsChartTitle')}
                 </p>
                 <div className="flex items-baseline justify-between">
                   <p className="text-slate-900 dark:text-[#1b1b1b] text-4xl font-bold tracking-tight">
-                    1.2M <span className="text-lg font-normal text-slate-600">Clicks</span>
+                    1.2M <span className="text-lg font-normal text-slate-600">{t('insightsClicks')}</span>
                   </p>
                   <div className="flex items-center gap-1 bg-green-500/10 px-2 py-1 rounded">
                     <span className="material-symbols-outlined text-green-700 text-sm" aria-hidden="true">
@@ -67,7 +69,7 @@ const AnalyticsSection = () => {
                     <p className="text-green-800 dark:text-green-700 text-sm font-bold">+12.5%</p>
                   </div>
                 </div>
-                <p className="text-[#1b1b1b] text-sm">Last 30 Days</p>
+                <p className="text-[#1b1b1b] text-sm">{t('insightsLast30Days')}</p>
               </div>
               {/* Chart SVG */}
               <div className="w-full h-[200px] relative">
@@ -76,7 +78,7 @@ const AnalyticsSection = () => {
                   preserveAspectRatio="none"
                   viewBox="0 0 478 150"
                   role="img"
-                  aria-label="Line chart showing link click performance trend over the past week"
+                  aria-label={t('insightsChartAria')}
                 >
                   <defs>
                     <linearGradient id="chartGradient" x1="0" x2="0" y1="0" y2="1">
@@ -99,13 +101,13 @@ const AnalyticsSection = () => {
                 </svg>
               </div>
               <div className="flex justify-between mt-6 px-2">
-                <p className="text-[#1b1b1b] dark:text-[#1b1b1b] text-xs font-bold uppercase">Mon</p>
-                <p className="text-[#1b1b1b] dark:text-[#1b1b1b] text-xs font-bold uppercase">Tue</p>
-                <p className="text-[#1b1b1b] dark:text-[#1b1b1b] text-xs font-bold uppercase">Wed</p>
-                <p className="text-[#1b1b1b] dark:text-[#1b1b1b] text-xs font-bold uppercase">Thu</p>
-                <p className="text-[#1b1b1b] dark:text-[#1b1b1b] text-xs font-bold uppercase">Fri</p>
-                <p className="text-[#1b1b1b] dark:text-[#1b1b1b] text-xs font-bold uppercase">Sat</p>
-                <p className="text-[#1b1b1b] dark:text-[#1b1b1b] text-xs font-bold uppercase">Sun</p>
+                <p className="text-[#1b1b1b] dark:text-[#1b1b1b] text-xs font-bold uppercase">{t('dayMon')}</p>
+                <p className="text-[#1b1b1b] dark:text-[#1b1b1b] text-xs font-bold uppercase">{t('dayTue')}</p>
+                <p className="text-[#1b1b1b] dark:text-[#1b1b1b] text-xs font-bold uppercase">{t('dayWed')}</p>
+                <p className="text-[#1b1b1b] dark:text-[#1b1b1b] text-xs font-bold uppercase">{t('dayThu')}</p>
+                <p className="text-[#1b1b1b] dark:text-[#1b1b1b] text-xs font-bold uppercase">{t('dayFri')}</p>
+                <p className="text-[#1b1b1b] dark:text-[#1b1b1b] text-xs font-bold uppercase">{t('daySat')}</p>
+                <p className="text-[#1b1b1b] dark:text-[#1b1b1b] text-xs font-bold uppercase">{t('daySun')}</p>
               </div>
             </div>
           </div>

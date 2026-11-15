@@ -90,6 +90,15 @@ select:focus-visible {
   body {
     @apply bg-background text-foreground font-sans antialiased;
   }
+  /* Hebrew uses Assistant; English keeps Plus Jakarta Sans via font-sans */
+  html[lang='he'] body {
+    font-family: 'Assistant', 'Plus Jakarta Sans', sans-serif;
+  }
+}
+
+/* Brand logo always keeps the original English font */
+.brand-logo {
+  font-family: 'Plus Jakarta Sans', sans-serif !important;
 }
 
 /* Custom scrollbar */
@@ -155,6 +164,10 @@ select:focus-visible {
   font-size: 1.5rem;
   font-weight: 600;
   margin-bottom: 8px;
+}
+
+html[lang='he'] .modal-box h2 {
+  font-family: 'Assistant', 'Plus Jakarta Sans', sans-serif;
 }
 
 .modal-box p {
