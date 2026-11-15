@@ -420,10 +420,10 @@ export default function AccountSettingsPage() {
           <p className="text-[#1b1b1b]">{t('dashSettingsSubtitle')}</p>
         </div>
 
-        {/* Main Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Main Grid — Subscription column temporarily disabled; profile uses full width */}
+        <div className="grid grid-cols-1 gap-8">
           {/* Left Column: Profile & Settings */}
-          <div className="lg:col-span-2 space-y-6">
+          <div className="space-y-6">
             {/* User Profile Card */}
             <div className="bg-card-bg border border-card-border rounded-2xl p-6 hover:shadow-card-mint transition-all">
               <h2 className="text-xl font-bold text-[#1b1b1b] mb-6 flex items-center gap-2">
@@ -543,7 +543,8 @@ export default function AccountSettingsPage() {
             </div>
           </div>
 
-          {/* Right Column: Plan Status */}
+          {/* DISABLED — Subscription panel. Set to true to re-enable. */}
+          {false && (
           <div className="lg:col-span-1 space-y-6">
             <div className="bg-card-bg border border-card-border rounded-2xl p-6 relative overflow-hidden hover:shadow-card-mint transition-all">
               {/* Status Badge */}
@@ -601,10 +602,11 @@ export default function AccountSettingsPage() {
               )}
             </div>
           </div>
+          )}
         </div>
 
-        {/* Pricing cards (same layout and styling as homepage CTASection).
-            Temporarily hidden for users on a 30-day free trial. */}
+        {/* DISABLED — Plans / pricing cards. Set to true to re-enable. */}
+        {false && (
         <div className="mt-12">
           <h2 className="text-2xl font-bold text-[#1b1b1b] dark:text-[#1b1b1b] mb-6">{t('dashPlans')}</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8 xl:gap-10 items-stretch">
@@ -746,6 +748,7 @@ export default function AccountSettingsPage() {
             })}
           </div>
         </div>
+        )}
 
         {/* Security (below Pricing) - Only for Email+Password Users */}
         {isEmailUser && (
