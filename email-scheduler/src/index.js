@@ -29,6 +29,20 @@ export default {
 };
 
 async function runScheduler(env, source) {
+  // DISABLED: trial reminder email sending.
+  // To re-enable: remove this early return (and optionally re-enable the trial_33 cancel block below).
+  console.log(`[email-scheduler] source=${source} sending_disabled=true`);
+  return {
+    ok: true,
+    source,
+    processed: 0,
+    stats: { sent: 0, failed: 0, skipped: 0, profileCancelled: 0 },
+    elapsedMs: 0,
+    now: new Date().toISOString(),
+    sendingDisabled: true,
+  };
+
+  /* ORIGINAL SENDING LOGIC — kept for future re-enable
   const startedAt = Date.now();
   const missing = [];
 
@@ -83,13 +97,14 @@ async function runScheduler(env, source) {
         brevoResult.apiResponse || null
       );
 
-      // Business rule: once trial_33 is sent successfully, mark the user as cancelled.
-      if (row.email_type === "trial_33") {
-        const cancelled = await setProfileSubscriptionCancelled(env, row.user_id);
-        if (cancelled) {
-          stats.profileCancelled += 1;
-        }
-      }
+      // DISABLED (keep for future): after trial_33, cancel free_trial users.
+      // Uncomment to re-enable trial expiry cancel logic.
+      // if (row.email_type === "trial_33") {
+      //   const cancelled = await setProfileSubscriptionCancelled(env, row.user_id);
+      //   if (cancelled) {
+      //     stats.profileCancelled += 1;
+      //   }
+      // }
 
       stats.sent += 1;
     } catch (error) {
@@ -110,6 +125,7 @@ async function runScheduler(env, source) {
 
   console.log("[email-scheduler] result=", JSON.stringify(result));
   return result;
+  */
 }
 
 async function fetchDueEmails(env, limit) {
@@ -180,6 +196,7 @@ async function markFailed(env, rowId, attempts, errorMessage) {
   }
 }
 
+/* DISABLED — trial cancel helper (re-enable with the trial_33 block above).
 async function setProfileSubscriptionCancelled(env, userId) {
   // Safety rule: cancel only if the user is still on free_trial.
   // Do NOT cancel users on free_plan (or any other status).
@@ -213,6 +230,7 @@ async function setProfileSubscriptionCancelled(env, userId) {
   const updatedRows = await res.json();
   return Array.isArray(updatedRows) && updatedRows.length > 0;
 }
+*/
 
 function supabaseHeaders(env) {
   return {
