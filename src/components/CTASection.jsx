@@ -279,26 +279,22 @@ const CTASection = () => {
                     </h3>
                   </div>
 
-                  <button
-                    type="button"
-                    disabled={!!user && isCurrentPlan}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      if (user && isCurrentPlan) return;
-                      openCheckout(plan);
-                    }}
-                    className={`mb-10 w-full text-center inline-block active:scale-95 transition-all ${
-                      isFeaturedCard
-                        ? !user || !isCurrentPlan
+                  {!(user && isCurrentPlan) && (
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        openCheckout(plan);
+                      }}
+                      className={`mb-10 w-full text-center inline-block active:scale-95 transition-all ${
+                        isFeaturedCard
                           ? 'py-5 rounded-full bg-[#a855f7] text-white font-black text-xl shadow-xl shadow-[#a855f7]/30 hover:bg-[#9333ea] cursor-pointer transition-colors'
-                          : 'py-5 rounded-full bg-slate-300 text-slate-500 font-black text-xl cursor-not-allowed'
-                        : !user || !isCurrentPlan
-                          ? 'py-4 rounded-full border border-[#787585] text-[#5549d0] font-bold text-lg hover:bg-[#d7fec8] cursor-pointer'
-                          : 'py-4 rounded-full border border-[#787585] text-[#5549d0] font-bold text-lg cursor-not-allowed'
-                    }`}
-                  >
-                    {buttonLabel}
-                  </button>
+                          : 'py-4 rounded-full border border-[#787585] text-[#5549d0] font-bold text-lg hover:bg-[#d7fec8] cursor-pointer'
+                      }`}
+                    >
+                      {buttonLabel}
+                    </button>
+                  )}
 
                   <ul className="space-y-6 mb-2 flex-grow">
                     {(plan.featureKeys || []).map((featureKey) => {
