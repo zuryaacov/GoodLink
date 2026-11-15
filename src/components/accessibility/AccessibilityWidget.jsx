@@ -12,6 +12,7 @@ import {
   saveAccessibilityPreferences,
 } from '../../lib/accessibilityPreferences';
 import { useToast } from '../common/ToastProvider.jsx';
+import { useLanguage } from '../../i18n/LanguageContext';
 
 function getFocusableElements(container) {
   if (!container) return [];
@@ -32,6 +33,7 @@ export default function AccessibilityWidget() {
   const [open, setOpen] = useState(false);
   const [prefs, setPrefs] = useState(() => loadAccessibilityPreferences());
   const { showToast } = useToast();
+  const { t } = useLanguage();
 
   const triggerRef = useRef(null);
   const panelRef = useRef(null);
@@ -175,9 +177,8 @@ export default function AccessibilityWidget() {
     setPrefs((prev) => ({ ...prev, widgetHidden: true }));
     showToast({
       type: 'success',
-      title: 'Accessibility menu hidden',
-      message:
-        'Your display settings stay active. To show the floating button again, use “Show accessibility menu” in the dashboard sidebar (above your name), or go to the GoodLink homepage footer.',
+      title: t('accHiddenToastTitle'),
+      message: t('accHiddenToastMessage'),
       duration: 12000,
     });
   };
@@ -206,7 +207,7 @@ export default function AccessibilityWidget() {
           ref={triggerRef}
           type="button"
           className="gl-acc-widget-trigger"
-          aria-label="Accessibility Menu"
+          aria-label={t('accMenuAria')}
           aria-expanded={open}
           aria-controls={panelId}
           aria-haspopup="dialog"
@@ -220,7 +221,7 @@ export default function AccessibilityWidget() {
             <button
               type="button"
               className="gl-acc-panel-backdrop"
-              aria-label="Close accessibility menu"
+              aria-label={t('accCloseAria')}
               tabIndex={-1}
               onClick={() => setOpen(false)}
             />
@@ -235,14 +236,14 @@ export default function AccessibilityWidget() {
               <div className="gl-acc-panel-header">
                 <div>
                   <h2 id={titleId} className="gl-acc-panel-title">
-                    Accessibility
+                    {t('accTitle')}
                   </h2>
-                  <p className="gl-acc-panel-sub">Adjust display to your needs. Settings are saved on this device.</p>
+                  <p className="gl-acc-panel-sub">{t('accSubtitle')}</p>
                 </div>
                 <button
                   type="button"
                   className="gl-acc-close"
-                  aria-label="Close accessibility menu"
+                  aria-label={t('accCloseAria')}
                   onClick={() => setOpen(false)}
                 >
                   <span aria-hidden>×</span>
@@ -251,7 +252,7 @@ export default function AccessibilityWidget() {
 
               <div className="gl-acc-section">
                 <span className="gl-acc-section-label" id={`${titleId}-text`}>
-                  Text size
+                  {t('accTextSize')}
                 </span>
                 <div className="gl-acc-row" role="group" aria-labelledby={`${titleId}-text`}>
                   <button
@@ -260,7 +261,7 @@ export default function AccessibilityWidget() {
                     className="gl-acc-btn"
                     onClick={() => bumpFont(-10)}
                     disabled={prefs.fontScale <= 100}
-                    aria-label="Decrease text size"
+                    aria-label={t('accDecreaseText')}
                   >
                     A−
                   </button>
@@ -272,7 +273,7 @@ export default function AccessibilityWidget() {
                     className="gl-acc-btn"
                     onClick={() => bumpFont(10)}
                     disabled={prefs.fontScale >= 200}
-                    aria-label="Increase text size"
+                    aria-label={t('accIncreaseText')}
                   >
                     A+
                   </button>
@@ -281,7 +282,7 @@ export default function AccessibilityWidget() {
 
               <div className="gl-acc-section">
                 <span className="gl-acc-section-label" id={`${titleId}-font`}>
-                  Readable font
+                  {t('accReadableFont')}
                 </span>
                 <div
                   className="gl-acc-segment"
@@ -305,46 +306,46 @@ export default function AccessibilityWidget() {
                     role="radio"
                     aria-checked={prefs.fontMode === 'default'}
                     tabIndex={prefs.fontMode === 'default' ? 0 : -1}
-                    aria-label="Default site fonts"
+                    aria-label={t('accFontDefaultAria')}
                     className={prefs.fontMode === 'default' ? 'gl-acc-segment-active' : ''}
                     onClick={() => patchPrefs({ fontMode: 'default' })}
                   >
-                    Default
+                    {t('accFontDefault')}
                   </button>
                   <button
                     type="button"
                     role="radio"
                     aria-checked={prefs.fontMode === 'sans'}
                     tabIndex={prefs.fontMode === 'sans' ? 0 : -1}
-                    aria-label="Plain sans-serif"
+                    aria-label={t('accFontSansAria')}
                     className={prefs.fontMode === 'sans' ? 'gl-acc-segment-active' : ''}
                     onClick={() => patchPrefs({ fontMode: 'sans' })}
                   >
-                    Sans
+                    {t('accFontSans')}
                   </button>
                   <button
                     type="button"
                     role="radio"
                     aria-checked={prefs.fontMode === 'dyslexia'}
                     tabIndex={prefs.fontMode === 'dyslexia' ? 0 : -1}
-                    aria-label="Dyslexia-friendly font"
+                    aria-label={t('accFontDyslexicAria')}
                     className={prefs.fontMode === 'dyslexia' ? 'gl-acc-segment-active' : ''}
                     onClick={() => patchPrefs({ fontMode: 'dyslexia' })}
                   >
-                    Dyslexic
+                    {t('accFontDyslexic')}
                   </button>
                 </div>
               </div>
 
               <div className="gl-acc-section">
-                <span className="gl-acc-section-label">Display</span>
+                <span className="gl-acc-section-label">{t('accDisplay')}</span>
                 <button
                   type="button"
                   className="gl-acc-toggle"
                   aria-pressed={prefs.highContrast}
                   onClick={() => toggle('highContrast')}
                 >
-                  <span>High contrast</span>
+                  <span>{t('accHighContrast')}</span>
                   <span className="gl-acc-toggle-track" aria-hidden>
                     <span className="gl-acc-toggle-knob" />
                   </span>
@@ -355,7 +356,7 @@ export default function AccessibilityWidget() {
                   aria-pressed={prefs.grayscale}
                   onClick={() => toggle('grayscale')}
                 >
-                  <span>Grayscale</span>
+                  <span>{t('accGrayscale')}</span>
                   <span className="gl-acc-toggle-track" aria-hidden>
                     <span className="gl-acc-toggle-knob" />
                   </span>
@@ -366,7 +367,7 @@ export default function AccessibilityWidget() {
                   aria-pressed={prefs.highlightLinks}
                   onClick={() => toggle('highlightLinks')}
                 >
-                  <span>Highlight links &amp; buttons</span>
+                  <span>{t('accHighlightLinks')}</span>
                   <span className="gl-acc-toggle-track" aria-hidden>
                     <span className="gl-acc-toggle-knob" />
                   </span>
@@ -377,7 +378,7 @@ export default function AccessibilityWidget() {
                   aria-pressed={prefs.reduceMotion}
                   onClick={() => toggle('reduceMotion')}
                 >
-                  <span>Stop animations</span>
+                  <span>{t('accStopAnimations')}</span>
                   <span className="gl-acc-toggle-track" aria-hidden>
                     <span className="gl-acc-toggle-knob" />
                   </span>
@@ -388,7 +389,7 @@ export default function AccessibilityWidget() {
                   aria-pressed={prefs.bigCursor}
                   onClick={() => toggle('bigCursor')}
                 >
-                  <span>Big cursor</span>
+                  <span>{t('accBigCursor')}</span>
                   <span className="gl-acc-toggle-track" aria-hidden>
                     <span className="gl-acc-toggle-knob" />
                   </span>
@@ -399,7 +400,7 @@ export default function AccessibilityWidget() {
                   aria-pressed={prefs.readingGuide}
                   onClick={() => toggle('readingGuide')}
                 >
-                  <span>Reading guide</span>
+                  <span>{t('accReadingGuide')}</span>
                   <span className="gl-acc-toggle-track" aria-hidden>
                     <span className="gl-acc-toggle-knob" />
                   </span>
@@ -415,7 +416,7 @@ export default function AccessibilityWidget() {
                     setOpen(false);
                   }}
                 >
-                  Reset all settings
+                  {t('accResetAll')}
                 </button>
               </div>
 
@@ -423,15 +424,14 @@ export default function AccessibilityWidget() {
                 <button
                   type="button"
                   className="gl-acc-btn gl-acc-btn-outline gl-acc-hide-widget-btn"
-                  title="Removes the purple floating button. Restore via the dashboard sidebar (when logged in) or the GoodLink homepage footer."
+                  title={t('accHideFloatingTitle')}
                   aria-describedby={`${titleId}-hide-hint`}
                   onClick={hideFloatingWidget}
                 >
-                  Hide floating button
+                  {t('accHideFloating')}
                 </button>
                 <p id={`${titleId}-hide-hint`} className="gl-acc-panel-sub" style={{ marginTop: '0.5rem' }}>
-                  You can bring it back anytime from the dashboard sidebar (above your name) or the Homepage
-                  footer.
+                  {t('accHideFloatingHint')}
                 </p>
               </div>
             </div>

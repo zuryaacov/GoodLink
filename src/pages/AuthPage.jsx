@@ -7,8 +7,10 @@ import { isValidEmail } from '../lib/emailValidation';
 import Modal from '../components/common/Modal';
 import { TermsContent } from './TermsPage';
 import { PrivacyContent } from './PrivacyPage';
+import { useLanguage } from '../i18n/LanguageContext';
 
 const AuthPage = () => {
+  const { t, language } = useLanguage();
   const [searchParams] = useSearchParams();
   const planParam = searchParams.get('plan');
   const modeParam = searchParams.get('mode');
@@ -258,13 +260,13 @@ const AuthPage = () => {
       try {
         const widgetId = window.turnstile.render(container, {
           sitekey: siteKey,
-          language: 'auto',
+          language: language === 'he' ? 'he' : 'en',
           callback: (token) => {
             setTurnstileToken(token);
           },
           'error-callback': () => {
             setTurnstileToken(null);
-            setError('Security verification failed. Please try again.');
+            setError(t('authErrSecurityFailed'));
             // Reset the widget so user can try again
             setTimeout(() => {
               if (window.turnstile && widgetId) {
@@ -318,7 +320,7 @@ const AuthPage = () => {
         }
       }
     };
-  }, [view, shouldRenderTurnstile]);
+  }, [view, shouldRenderTurnstile, language, t]);
 
   // When Turnstile token is ready and auto-submit is requested, complete signup automatically
   useEffect(() => {
@@ -352,13 +354,13 @@ const AuthPage = () => {
         if (!verifyResponse.ok) {
           const errorData = await verifyResponse.json().catch(() => ({}));
           throw new Error(
-            errorData.error || 'Security verification failed. Please try again.'
+            errorData.error || t('authErrSecurityFailed')
           );
         }
 
         const verifyResult = await verifyResponse.json();
         if (!verifyResult.success) {
-          throw new Error('Security verification failed. Please try again.');
+          throw new Error(t('authErrSecurityFailed'));
         }
 
         // Only proceed with signup if Turnstile verification passed
@@ -377,9 +379,7 @@ const AuthPage = () => {
 
         if (error) {
           if (error.message && error.message.includes('confirmation email')) {
-            throw new Error(
-              'Email configuration error. Please contact support or check your Supabase email settings.'
-            );
+            throw new Error(t('authErrEmailConfig'));
           }
           throw error;
         }
@@ -387,7 +387,7 @@ const AuthPage = () => {
         // If Supabase returns a user with empty identities, it usually means the email already exists
         // (Supabase may do this to prevent user enumeration).
         if (data?.user && Array.isArray(data.user.identities) && data.user.identities.length === 0) {
-          throw new Error('This email already exists. Please Sign In.');
+          throw new Error(t('authErrEmailExists'));
         }
 
         if (data?.user && !data?.session) {
@@ -398,7 +398,7 @@ const AuthPage = () => {
         }
       } catch (err) {
         let message =
-          err instanceof Error ? err.message : 'Something went wrong. Please try again.';
+          err instanceof Error ? err.message : t('authErrGeneric');
 
         // Friendly message when trying to sign up with an email that already exists
         if (
@@ -408,7 +408,7 @@ const AuthPage = () => {
             err.message
           )
         ) {
-          message = 'This email already exists. Please Sign In.';
+          message = t('authErrEmailExists');
         }
 
         setError(message);
@@ -430,6 +430,7 @@ const AuthPage = () => {
     fullName,
     planParam,
     navigate,
+    t,
   ]);
 
   const handleSubmit = async (e) => {
@@ -460,12 +461,10 @@ const AuthPage = () => {
         // Full name validation
         const trimmedName = fullName.trim();
         if (!trimmedName || trimmedName.length < 2) {
-          throw new Error(
-            'Your full name is required so we can personalize your Goodlink experience.'
-          );
+          throw new Error(t('authErrFullNameRequired'));
         }
         if (trimmedName.length > 20) {
-          throw new Error('Full name cannot exceed 20 characters');
+          throw new Error(t('authErrFullNameTooLong'));
         }
 
         // Structured validation on full name (allowed chars + no multiple hyphens)
@@ -477,20 +476,20 @@ const AuthPage = () => {
 
         // Email format validation (professional validation: length, regex, edge cases)
         if (!isValidEmail(email)) {
-          throw new Error('Please enter a valid email address (e.g. name@example.com)');
+          throw new Error(t('authErrInvalidEmail'));
         }
 
         // Password validation
         if (!password) {
-          throw new Error('Please enter a password.');
+          throw new Error(t('authErrEnterPassword'));
         }
 
         if (password.length < 8) {
-          throw new Error('Password is not valid.');
+          throw new Error(t('authErrPasswordInvalid'));
         }
 
         if (password.length > 15) {
-          throw new Error('Password is not valid.');
+          throw new Error(t('authErrPasswordInvalid'));
         }
 
         // Check for at least one uppercase letter, one lowercase letter, and one number
@@ -499,15 +498,15 @@ const AuthPage = () => {
         const hasNumber = /[0-9]/.test(password);
 
         if (!hasUpper || !hasLower || !hasNumber) {
-          throw new Error('Password is not valid.');
+          throw new Error(t('authErrPasswordInvalid'));
         }
 
         if (!confirmPassword) {
-          throw new Error('Please confirm your password.');
+          throw new Error(t('authErrConfirmPassword'));
         }
 
         if (password !== confirmPassword) {
-          throw new Error('Passwords do not match');
+          throw new Error(t('authErrPasswordsMismatch'));
         }
 
         // Honeypot check - if this field is filled, it's a bot
@@ -519,7 +518,7 @@ const AuthPage = () => {
         if (honeypotValue && honeypotValue.trim() !== '') {
           // Silently block bot without revealing why
           console.warn('Bot detected via honeypot field');
-          setError('Registration failed. Please try again.');
+          setError(t('authErrRegistrationFailed'));
           setLoading(false);
           return;
         }
@@ -533,13 +532,13 @@ const AuthPage = () => {
         }
       } else if (view === 'forgot-password') {
         if (!isValidEmail(email)) {
-          throw new Error('Please enter a valid email address (e.g. name@example.com)');
+          throw new Error(t('authErrInvalidEmail'));
         }
         const { error } = await supabase.auth.resetPasswordForEmail(email, {
           redirectTo: `${window.location.origin}/reset-password`,
         });
         if (error) throw error;
-        setMessage('Password reset link sent to your email.');
+        setMessage(t('authMsgResetSent'));
       }
     } catch (err) {
       setError(err.message);
@@ -601,10 +600,10 @@ const AuthPage = () => {
     // Text by strength
     const strengthText = () => {
       if (strengthScore === 0) return '';
-      if (strengthScore === 1) return 'Very Weak';
-      if (strengthScore === 2) return 'Weak';
-      if (strengthScore === 3) return 'Medium';
-      return 'Strong';
+      if (strengthScore === 1) return t('authPwVeryWeak');
+      if (strengthScore === 2) return t('authPwWeak');
+      if (strengthScore === 3) return t('authPwMedium');
+      return t('authPwStrong');
     };
 
     return (
@@ -628,7 +627,7 @@ const AuthPage = () => {
             }`}
           >
             <span>{checks.length ? '[x]' : '[ ]'}</span>
-            <span>At least 8 characters</span>
+            <span>{t('authPwAtLeast8')}</span>
           </li>
           <li
             className={`flex items-center gap-2 ${
@@ -636,7 +635,7 @@ const AuthPage = () => {
             }`}
           >
             <span>{checks.hasUpper ? '[x]' : '[ ]'}</span>
-            <span>One uppercase letter (A-Z)</span>
+            <span>{t('authPwUpper')}</span>
           </li>
           <li
             className={`flex items-center gap-2 ${
@@ -644,7 +643,7 @@ const AuthPage = () => {
             }`}
           >
             <span>{checks.hasLower ? '[x]' : '[ ]'}</span>
-            <span>One lowercase letter (a-z)</span>
+            <span>{t('authPwLower')}</span>
           </li>
           <li
             className={`flex items-center gap-2 ${
@@ -652,7 +651,7 @@ const AuthPage = () => {
             }`}
           >
             <span>{checks.hasNumber ? '[x]' : '[ ]'}</span>
-            <span>At least one number</span>
+            <span>{t('authPwNumber')}</span>
           </li>
         </ul>
 
@@ -669,7 +668,7 @@ const AuthPage = () => {
                     : 'text-green-500'
             }`}
           >
-            Password strength: {strengthText()}
+            {t('authPwStrength')} {strengthText()}
           </p>
         )}
       </div>
@@ -698,14 +697,14 @@ const AuthPage = () => {
         </svg>
       </div>
       */}
-      <span className="text-3xl font-black leading-tight tracking-tight text-inherit">GoodLink</span>
+      <span className="brand-logo text-3xl font-black leading-tight tracking-tight text-inherit">GoodLink</span>
     </Link>
   );
 
   return (
     <div className="min-h-screen w-full bg-[#d7fec8] flex flex-col items-center px-6 pt-10 md:pt-16 pb-12 relative overflow-hidden">
       <a href="#auth-main" className="skip-to-content">
-        Skip to main content
+        {t('authSkipToContent')}
       </a>
       <div className="absolute top-[-10%] left-[-10%] size-96 bg-primary/10 blur-[120px] rounded-full" aria-hidden="true"></div>
       <div className="absolute bottom-[-10%] right-[-10%] size-96 bg-secondary-green/30 blur-[120px] rounded-full" aria-hidden="true"></div>
@@ -717,7 +716,7 @@ const AuthPage = () => {
           {planParam && (
             <div className="mb-4 p-3 bg-primary/10 border border-primary/30 rounded-lg text-center">
               <p className="text-sm text-primary font-bold">
-                Complete your {planParam.toUpperCase()} plan purchase
+                {t('authCompletePlanPurchase').replace('{plan}', planParam.toUpperCase())}
               </p>
             </div>
           )}
@@ -732,8 +731,8 @@ const AuthPage = () => {
                 className="flex flex-col gap-6"
               >
                 <div className="text-center mb-2">
-                  <h1 className="text-2xl font-bold text-[#1b1b1b] mb-2">Welcome Back</h1>
-                  <p className="text-[#1b1b1b]">Log in to your GoodLink.ai account</p>
+                  <h1 className="text-2xl font-bold text-[#1b1b1b] mb-2">{t('authWelcomeBack')}</h1>
+                  <p className="text-[#1b1b1b]">{t('authLoginSubtitle')}</p>
                 </div>
 
                 {error && (
@@ -750,7 +749,7 @@ const AuthPage = () => {
 
                 <form onSubmit={handleSubmit} className="flex flex-col gap-4">
                   <div className="flex flex-col gap-2">
-                    <label htmlFor="login-email" className="text-sm font-bold text-[#1b1b1b] ml-1">Email Address</label>
+                    <label htmlFor="login-email" className="text-sm font-bold text-[#1b1b1b] ms-1">{t('authEmailLabel')}</label>
                     <input
                       id="login-email"
                       type="text"
@@ -763,8 +762,8 @@ const AuthPage = () => {
                     />
                   </div>
                   <div className="flex flex-col gap-2">
-                    <div className="flex justify-between items-center ml-1">
-                      <label htmlFor="login-password" className="text-sm font-bold text-[#1b1b1b]">Password</label>
+                    <div className="flex justify-between items-center ms-1">
+                      <label htmlFor="login-password" className="text-sm font-bold text-[#1b1b1b]">{t('authPasswordLabel')}</label>
                       <button
                         type="button"
                         onClick={() => {
@@ -775,7 +774,7 @@ const AuthPage = () => {
                         }}
                         className="text-xs text-primary hover:text-primary/80 font-bold transition-colors"
                       >
-                        Forgot?
+                        {t('authForgot')}
                       </button>
                     </div>
                     <div className="relative">
@@ -783,15 +782,15 @@ const AuthPage = () => {
                         id="login-password"
                         type={showPassword ? 'text' : 'password'}
                         placeholder="********"
-                        className="h-12 w-full bg-white border border-slate-200 rounded-xl px-4 pr-12 text-[#1b1b1b] focus:outline-none focus:border-primary transition-colors"
+                        className="h-12 w-full bg-white border border-slate-200 rounded-xl px-4 pe-12 text-[#1b1b1b] focus:outline-none focus:border-primary transition-colors"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                       />
                       <button
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
-                        aria-label={showPassword ? 'Hide password' : 'Show password'}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-[#10b981] hover:text-[#10b981]/80 transition-colors"
+                        aria-label={showPassword ? t('authHidePassword') : t('authShowPassword')}
+                        className="absolute end-3 top-1/2 -translate-y-1/2 text-[#10b981] hover:text-[#10b981]/80 transition-colors"
                       >
                         {showPassword ? <EyeOff size={20} aria-hidden="true" /> : <Eye size={20} aria-hidden="true" />}
                       </button>
@@ -805,7 +804,7 @@ const AuthPage = () => {
                     {loading && (
                       <div className="size-4 border-2 border-white/30 border-t-white rounded-full animate-spin" aria-hidden="true"></div>
                     )}
-                    {loading ? 'Signing in...' : 'Sign In'}
+                    {loading ? t('authSigningIn') : t('authSignIn')}
                   </button>
                 </form>
 
@@ -814,7 +813,7 @@ const AuthPage = () => {
                     <div className="w-full border-t border-slate-200"></div>
                   </div>
                   <span className="relative z-10 bg-white px-4 text-xs text-slate-500 font-bold uppercase tracking-widest">
-                    Or continue with
+                    {t('authOrContinueWith')}
                   </span>
                 </div>
 
@@ -841,11 +840,11 @@ const AuthPage = () => {
                       fill="#EA4335"
                     />
                   </svg>
-                  Google
+                  {t('authGoogle')}
                 </button>
 
                 <p className="text-center text-sm text-[#1b1b1b] mt-2">
-                  Don't have an account?{' '}
+                  {t('authNoAccount')}{' '}
                   <button
                     onClick={() => {
                       setView('signup');
@@ -855,7 +854,7 @@ const AuthPage = () => {
                     }}
                     className="text-primary hover:text-primary/80 font-bold transition-colors underline-offset-4 hover:underline"
                   >
-                    Create one for free
+                    {t('authCreateOneFree')}
                   </button>
                 </p>
               </motion.div>
@@ -871,8 +870,8 @@ const AuthPage = () => {
                 className="flex flex-col gap-6"
               >
                 <div className="text-center mb-2">
-                  <h1 className="text-2xl font-bold text-[#1b1b1b] mb-2">Join GoodLink.ai</h1>
-                  <p className="text-[#1b1b1b]">Get Your GoodLink's Now</p>
+                  <h1 className="text-2xl font-bold text-[#1b1b1b] mb-2">{t('authJoinTitle')}</h1>
+                  <p className="text-[#1b1b1b]">{t('authJoinSubtitle')}</p>
                 </div>
 
                 {error && (
@@ -889,11 +888,11 @@ const AuthPage = () => {
 
                 <form onSubmit={handleSubmit} className="flex flex-col gap-4">
                   <div className="flex flex-col gap-2">
-                    <label htmlFor="signup-name" className="text-sm font-bold text-[#1b1b1b] ml-1">Full Name</label>
+                    <label htmlFor="signup-name" className="text-sm font-bold text-[#1b1b1b] ms-1">{t('authFullNameLabel')}</label>
                     <input
                       id="signup-name"
                       type="text"
-                      placeholder="Your full name"
+                      placeholder={t('authFullNamePlaceholder')}
                       autoComplete="name"
                       className="h-12 w-full bg-white border border-slate-200 rounded-xl px-4 text-[#1b1b1b] focus:outline-none focus:border-primary transition-colors"
                       value={fullName}
@@ -901,7 +900,7 @@ const AuthPage = () => {
                     />
                   </div>
                   <div className="flex flex-col gap-2">
-                    <label htmlFor="signup-email" className="text-sm font-bold text-[#1b1b1b] ml-1">Email Address</label>
+                    <label htmlFor="signup-email" className="text-sm font-bold text-[#1b1b1b] ms-1">{t('authEmailLabel')}</label>
                     <input
                       id="signup-email"
                       type="text"
@@ -914,22 +913,22 @@ const AuthPage = () => {
                     />
                   </div>
                   <div className="flex flex-col gap-2">
-                    <label htmlFor="signup-password" className="text-sm font-bold text-[#1b1b1b] ml-1">Password</label>
+                    <label htmlFor="signup-password" className="text-sm font-bold text-[#1b1b1b] ms-1">{t('authPasswordLabel')}</label>
                     <div className="relative">
                       <input
                         id="signup-password"
                         type={showPassword ? 'text' : 'password'}
                         placeholder="********"
                         aria-describedby="password-strength"
-                        className="h-12 w-full bg-white border border-slate-200 rounded-xl px-4 pr-12 text-[#1b1b1b] focus:outline-none focus:border-primary transition-colors"
+                        className="h-12 w-full bg-white border border-slate-200 rounded-xl px-4 pe-12 text-[#1b1b1b] focus:outline-none focus:border-primary transition-colors"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                       />
                       <button
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
-                        aria-label={showPassword ? 'Hide password' : 'Show password'}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-[#10b981] hover:text-[#10b981]/80 transition-colors"
+                        aria-label={showPassword ? t('authHidePassword') : t('authShowPassword')}
+                        className="absolute end-3 top-1/2 -translate-y-1/2 text-[#10b981] hover:text-[#10b981]/80 transition-colors"
                       >
                         {showPassword ? <EyeOff size={20} aria-hidden="true" /> : <Eye size={20} aria-hidden="true" />}
                       </button>
@@ -937,23 +936,23 @@ const AuthPage = () => {
                     {view === 'signup' && <PasswordStrengthMeter password={password} />}
                   </div>
                   <div className="flex flex-col gap-2">
-                    <label htmlFor="signup-confirm-password" className="text-sm font-bold text-[#1b1b1b] ml-1">
-                      Confirm Password
+                    <label htmlFor="signup-confirm-password" className="text-sm font-bold text-[#1b1b1b] ms-1">
+                      {t('authConfirmPasswordLabel')}
                     </label>
                     <div className="relative">
                       <input
                         id="signup-confirm-password"
                         type={showConfirmPassword ? 'text' : 'password'}
                         placeholder="********"
-                        className="h-12 w-full bg-white border border-slate-200 rounded-xl px-4 pr-12 text-[#1b1b1b] focus:outline-none focus:border-primary transition-colors"
+                        className="h-12 w-full bg-white border border-slate-200 rounded-xl px-4 pe-12 text-[#1b1b1b] focus:outline-none focus:border-primary transition-colors"
                         value={confirmPassword}
                         onChange={(e) => setConfirmPassword(e.target.value)}
                       />
                       <button
                         type="button"
                         onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                        aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-[#10b981] hover:text-[#10b981]/80 transition-colors"
+                        aria-label={showConfirmPassword ? t('authHidePassword') : t('authShowPassword')}
+                        className="absolute end-3 top-1/2 -translate-y-1/2 text-[#10b981] hover:text-[#10b981]/80 transition-colors"
                       >
                         {showConfirmPassword ? <EyeOff size={20} aria-hidden="true" /> : <Eye size={20} aria-hidden="true" />}
                       </button>
@@ -964,15 +963,14 @@ const AuthPage = () => {
       <Modal
         isOpen={showSignupSuccessModal}
         onClose={() => setShowSignupSuccessModal(false)}
-        title="Registration completed successfully"
+        title={t('authSignupSuccessTitle')}
         message={
           <p className="text-sm text-slate-600 leading-relaxed">
-            Check your email for the confirmation link! If you don&apos;t receive it, check your
-            spam folder.
+            {t('authSignupSuccessMessage')}
           </p>
         }
         type="success"
-        confirmText="Got it"
+        confirmText={t('authGotIt')}
         onConfirm={() => setShowSignupSuccessModal(false)}
         confirmButtonClass="btn-primary"
       />
@@ -1014,7 +1012,7 @@ const AuthPage = () => {
                     {loading && (
                       <div className="size-4 border-2 border-white/30 border-t-white rounded-full animate-spin" aria-hidden="true"></div>
                     )}
-                    {loading ? 'Creating account...' : 'Create Account'}
+                    {loading ? t('authCreatingAccount') : t('authCreateAccount')}
                   </button>
                 </form>
 
@@ -1023,7 +1021,7 @@ const AuthPage = () => {
                     <div className="w-full border-t border-slate-200"></div>
                   </div>
                   <span className="relative z-10 bg-white px-4 text-xs text-slate-500 font-bold uppercase tracking-widest">
-                    Or join with
+                    {t('authOrJoinWith')}
                   </span>
                 </div>
 
@@ -1050,11 +1048,11 @@ const AuthPage = () => {
                       fill="#EA4335"
                     />
                   </svg>
-                  Google
+                  {t('authGoogle')}
                 </button>
 
                 <p className="text-center text-sm text-[#1b1b1b] mt-2">
-                  Already have an account?{' '}
+                  {t('authHaveAccount')}{' '}
                   <button
                     onClick={() => {
                       setView('login');
@@ -1064,7 +1062,7 @@ const AuthPage = () => {
                     }}
                     className="text-primary hover:text-primary/80 font-bold transition-colors underline-offset-4 hover:underline"
                   >
-                    Sign In
+                    {t('authSignIn')}
                   </button>
                 </p>
               </motion.div>
@@ -1080,8 +1078,8 @@ const AuthPage = () => {
                 className="flex flex-col gap-6"
               >
                 <div className="text-center mb-2">
-                  <h1 className="text-2xl font-bold text-[#1b1b1b] mb-2">Reset Password</h1>
-                  <p className="text-[#1b1b1b]">We'll send you recovery instructions</p>
+                  <h1 className="text-2xl font-bold text-[#1b1b1b] mb-2">{t('authResetTitle')}</h1>
+                  <p className="text-[#1b1b1b]">{t('authResetSubtitle')}</p>
                 </div>
 
                 {error && (
@@ -1098,7 +1096,7 @@ const AuthPage = () => {
 
                 <form onSubmit={handleSubmit} className="flex flex-col gap-6">
                   <div className="flex flex-col gap-2">
-                    <label htmlFor="forgot-email" className="text-sm font-bold text-[#1b1b1b] ml-1">Email Address</label>
+                    <label htmlFor="forgot-email" className="text-sm font-bold text-[#1b1b1b] ms-1">{t('authEmailLabel')}</label>
                     <input
                       id="forgot-email"
                       type="text"
@@ -1118,7 +1116,7 @@ const AuthPage = () => {
                     {loading && (
                       <div className="size-4 border-2 border-white/30 border-t-white rounded-full animate-spin" aria-hidden="true"></div>
                     )}
-                    {loading ? 'Sending...' : 'Send Link'}
+                    {loading ? t('authSending') : t('authSendLink')}
                   </button>
                 </form>
 
@@ -1131,47 +1129,47 @@ const AuthPage = () => {
                   }}
                   className="flex items-center justify-center gap-2 text-sm text-slate-500 hover:text-primary transition-colors group"
                 >
-                  <span className="material-symbols-outlined text-sm transition-transform group-hover:-translate-x-1" aria-hidden="true">
+                  <span className="material-symbols-outlined text-sm transition-transform group-hover:-translate-x-1 rtl:group-hover:translate-x-1" aria-hidden="true">
                     arrow_back
                   </span>
-                  Back to Login
+                  {t('authBackToLogin')}
                 </button>
               </motion.div>
             )}
           </AnimatePresence>
         </div>
 
-        <div className="mt-8 text-xs text-slate-500 text-center max-w-[280px]">
-          By continuing, you agree to GoodLink's{' '}
+        <div className="mt-8 text-xs text-slate-500 text-center max-w-[320px]">
+          {t('authAgreePrefix')}{' '}
           <button
             type="button"
             onClick={() => setLegalModalType('terms')}
             className="underline text-[#1b1b1b] hover:text-primary"
           >
-            Terms of Service
+            {t('authTermsOfService')}
           </button>{' '}
-          and{' '}
+          {t('authAnd')}{' '}
           <button
             type="button"
             onClick={() => setLegalModalType('privacy')}
             className="underline text-[#1b1b1b] hover:text-primary"
           >
-            Privacy Policy
+            {t('authPrivacyPolicy')}
           </button>
-          .
+          {t('authAgreeSuffix')}
         </div>
       </main>
       <Modal
         isOpen={!!legalModalType}
         onClose={() => setLegalModalType(null)}
-        title={legalModalType === 'terms' ? 'Terms of Service' : 'Privacy Policy'}
+        title={legalModalType === 'terms' ? t('authTermsOfService') : t('authPrivacyPolicy')}
         message={
           legalModalType === 'terms' ? (
-            <div className="text-left max-h-[70vh] overflow-y-auto pr-2">
+            <div className="text-start max-h-[70vh] overflow-y-auto pe-2">
               <TermsContent />
             </div>
           ) : legalModalType === 'privacy' ? (
-            <div className="text-left max-h-[70vh] overflow-y-auto pr-2">
+            <div className="text-start max-h-[70vh] overflow-y-auto pe-2">
               <PrivacyContent />
             </div>
           ) : (

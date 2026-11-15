@@ -3,6 +3,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { MemoryRouter, Routes, Route } from 'react-router-dom';
 import AuthPage from './AuthPage.jsx';
+import { LanguageProvider } from '../i18n/LanguageContext.jsx';
 
 // Minimal supabase mock so AuthPage side-effects don't hit real network
 vi.mock('../lib/supabase', () => {
@@ -51,11 +52,13 @@ beforeEach(() => {
 
 function renderAuth(initialPath = '/login') {
   return render(
-    <MemoryRouter initialEntries={[initialPath]}>
-      <Routes>
-        <Route path="/login" element={<AuthPage />} />
-      </Routes>
-    </MemoryRouter>
+    <LanguageProvider>
+      <MemoryRouter initialEntries={[initialPath]}>
+        <Routes>
+          <Route path="/login" element={<AuthPage />} />
+        </Routes>
+      </MemoryRouter>
+    </LanguageProvider>
   );
 }
 
