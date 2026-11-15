@@ -12,7 +12,8 @@ import { useLanguage } from '../../i18n/LanguageContext';
 const Sidebar = ({ className = '', onLinkClick }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
+  const navTextClass = language === 'he' ? 'text-lg' : 'text-base';
   const [userName, setUserName] = useState('');
   const [planType, setPlanType] = useState('free');
   const [subscriptionStatus, setSubscriptionStatus] = useState(null);
@@ -206,7 +207,7 @@ const Sidebar = ({ className = '', onLinkClick }) => {
                 (location.pathname === '/dashboard' ||
                   location.pathname === '/dashboard/analytics');
               const active = link.href === '/dashboard' ? analyticsActive : isActive;
-              return `flex items-center gap-3 px-3 py-3 rounded-xl text-base font-medium transition-all duration-200 ${
+              return `flex items-center gap-3 px-3 py-3 rounded-xl ${navTextClass} font-medium transition-all duration-200 ${
                 active
                   ? 'bg-secondary-green text-[#1b1b1b] shadow-lg shadow-secondary-green/20'
                   : 'text-slate-600 hover:text-[#1b1b1b] hover:bg-slate-100'
@@ -219,7 +220,7 @@ const Sidebar = ({ className = '', onLinkClick }) => {
         ))}
         <button
           onClick={handleLogout}
-          className="lg:hidden flex items-center gap-3 px-3 py-3 rounded-xl text-base font-medium transition-all duration-200 text-slate-600 hover:text-[#1b1b1b] hover:bg-slate-100 w-full text-start"
+          className={`lg:hidden flex items-center gap-3 px-3 py-3 rounded-xl ${navTextClass} font-medium transition-all duration-200 text-slate-600 hover:text-[#1b1b1b] hover:bg-slate-100 w-full text-start`}
         >
           <span className="material-symbols-outlined text-[20px]" aria-hidden="true">logout</span>
           {t('logout')}
@@ -251,7 +252,7 @@ const Sidebar = ({ className = '', onLinkClick }) => {
         </div>
         <button
           onClick={handleLogout}
-          className="hidden lg:flex items-center justify-center gap-3 px-3 py-2 w-full text-slate-600 hover:text-[#1b1b1b] hover:bg-slate-100 rounded-xl transition-all duration-200 text-base font-medium"
+          className={`hidden lg:flex items-center justify-center gap-3 px-3 py-2 w-full text-slate-600 hover:text-[#1b1b1b] hover:bg-slate-100 rounded-xl transition-all duration-200 ${navTextClass} font-medium`}
         >
           {t('logout')}
         </button>
