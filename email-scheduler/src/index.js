@@ -97,8 +97,8 @@ async function runScheduler(env, source) {
         brevoResult.apiResponse || null
       );
 
-      // DISABLED (keep for future): after trial_33, cancel free_trial users.
-      // Uncomment to re-enable trial expiry cancel logic.
+      // DISABLED: after trial_33, cancel free_trial users.
+      // Helper setProfileSubscriptionCancelled is kept defined below — uncomment only this block to re-enable.
       // if (row.email_type === "trial_33") {
       //   const cancelled = await setProfileSubscriptionCancelled(env, row.user_id);
       //   if (cancelled) {
@@ -196,7 +196,8 @@ async function markFailed(env, rowId, attempts, errorMessage) {
   }
 }
 
-/* DISABLED — trial cancel helper (re-enable with the trial_33 block above).
+// Kept defined (unused while the trial_33 call site above is commented) so re-enabling
+// that block alone cannot throw ReferenceError.
 async function setProfileSubscriptionCancelled(env, userId) {
   // Safety rule: cancel only if the user is still on free_trial.
   // Do NOT cancel users on free_plan (or any other status).
@@ -230,7 +231,6 @@ async function setProfileSubscriptionCancelled(env, userId) {
   const updatedRows = await res.json();
   return Array.isArray(updatedRows) && updatedRows.length > 0;
 }
-*/
 
 function supabaseHeaders(env) {
   return {

@@ -1,7 +1,7 @@
 ﻿import React, { useEffect, useState } from 'react';
 import { Check } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 
 const CTASection = () => {
@@ -41,49 +41,50 @@ const CTASection = () => {
     return () => authListener?.subscription?.unsubscribe();
   }, []);
 
+  // Homepage shows PRO only. Starter/Advanced kept commented for future re-enable.
   const plans = [
-    {
-      name: 'STARTER',
-      price: '5',
-      originalPrice: '10',
-      description: 'Perfect for getting started',
-      features: [
-        'Unlimited Links',
-        'Unlimited QR Codes',
-        'Unlimited Clicks',
-        'Standard Analytics',
-        'Email Support',
-      ],
-      highlighted: false,
-      checkoutUrl:
-        'https://goodlink.lemonsqueezy.com/checkout/buy/315d0e60-5a87-44f0-90c7-7f7789aa85a0?embed=1',
-      buttonText: 'Get Started',
-    },
-    {
-      name: 'ADVANCED',
-      price: '10',
-      originalPrice: '26',
-      description: 'For growing businesses',
-      features: [
-        'Unlimited Links',
-        'Unlimited QR Codes',
-        'Unlimited Clicks',
-        'Email Support',
-        '10 Custom Domains',
-        'Workspaces, Campaigns and Groups',
-        'Bot Protection',
-        'UTM Presets',
-        'Advanced Analytics',
-        'SuperLinks',
-        'Password-Protected Access',
-        'Custom Usage & Click Limits',
-        'Time-Expiring Links',
-      ],
-      highlighted: false,
-      checkoutUrl:
-        'https://goodlink.lemonsqueezy.com/checkout/buy/f544686f-e91d-425b-a930-22d293fcd74e?embed=1',
-      buttonText: 'Go Advanced',
-    },
+    // {
+    //   name: 'STARTER',
+    //   price: '5',
+    //   originalPrice: '10',
+    //   description: 'Perfect for getting started',
+    //   features: [
+    //     'Unlimited Links',
+    //     'Unlimited QR Codes',
+    //     'Unlimited Clicks',
+    //     'Standard Analytics',
+    //     'Email Support',
+    //   ],
+    //   highlighted: false,
+    //   checkoutUrl:
+    //     'https://goodlink.lemonsqueezy.com/checkout/buy/315d0e60-5a87-44f0-90c7-7f7789aa85a0?embed=1',
+    //   buttonText: 'Get Started',
+    // },
+    // {
+    //   name: 'ADVANCED',
+    //   price: '10',
+    //   originalPrice: '26',
+    //   description: 'For growing businesses',
+    //   features: [
+    //     'Unlimited Links',
+    //     'Unlimited QR Codes',
+    //     'Unlimited Clicks',
+    //     'Email Support',
+    //     '10 Custom Domains',
+    //     'Workspaces, Campaigns and Groups',
+    //     'Bot Protection',
+    //     'UTM Presets',
+    //     'Advanced Analytics',
+    //     'SuperLinks',
+    //     'Password-Protected Access',
+    //     'Custom Usage & Click Limits',
+    //     'Time-Expiring Links',
+    //   ],
+    //   highlighted: false,
+    //   checkoutUrl:
+    //     'https://goodlink.lemonsqueezy.com/checkout/buy/f544686f-e91d-425b-a930-22d293fcd74e?embed=1',
+    //   buttonText: 'Go Advanced',
+    // },
     {
       name: 'PRO',
       price: '20',
@@ -213,38 +214,16 @@ const CTASection = () => {
           className="flex flex-col items-center text-center gap-4 max-w-3xl mx-auto"
         >
           <div className="inline-flex items-center rounded-full bg-[#c0ffa5]/30 px-3 py-1 text-sm font-medium text-[#047857] border border-[#c0ffa5]/50">
-            Pricing
+            What's Included
           </div>
         </motion.div>
-
-        <div className="flex justify-center">
-          <div className="flex flex-col items-center justify-center gap-1 text-center text-black font-extrabold tracking-wide text-3xl md:text-5xl">
-            <span className="text-3xl md:text-5xl">🎁</span>
-            <span>Get 30 Days Free Trial</span>
-            <span>
-              Everything in <span className="text-[#a855f7] text-4xl md:text-6xl">PRO</span>
-            </span>
-            <span>No credit card required</span>
-          </div>
-        </div>
-
-        {!user && (
-          <div className="flex justify-center mt-6">
-            <Link
-              to="/login?mode=signup"
-              className="inline-flex h-14 md:h-16 min-w-[200px] md:min-w-[240px] items-center justify-center rounded-xl bg-[#a855f7] hover:bg-[#9333ea] px-10 md:px-12 text-white text-base md:text-lg font-bold tracking-wide transition-all"
-            >
-              Start your 30 days free trial
-            </Link>
-          </div>
-        )}
 
         <motion.div
           variants={containerVariants}
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true }}
-          className="grid grid-cols-1 xl:grid-cols-3 gap-8 xl:gap-10 items-stretch"
+          className="flex justify-center w-full"
         >
           {plans.map((plan) => {
             const planKey = planKeyFromName(plan.name);
@@ -259,73 +238,41 @@ const CTASection = () => {
               if (isCurrentPlan) buttonLabel = 'Your current plan';
               else if (isDowngrade) buttonLabel = 'Switch to this plan';
             } else {
-              buttonLabel = plan.name === 'PRO' ? 'Free 30 days Trial' : 'Start with Pro Trial';
+              buttonLabel = 'Sign Up';
             }
 
             return (
               <motion.div
                 key={plan.name}
                 variants={itemVariants}
-                className={`group relative flex flex-col h-full transition-all duration-300 ${
+                className={`group relative flex flex-col w-[92%] md:w-[50%] xl:w-[30%] transition-all duration-300 ${
                   isFeaturedCard
-                    ? 'bg-[#c7edb8] p-8 lg:p-10 xl:p-12 rounded-[2.5rem] shadow-[0_32px_64px_rgba(74,61,196,0.12)] scale-100 xl:scale-105 z-10 border-4 border-white hover:border-[#a855f7]'
+                    ? 'bg-[#c7edb8] p-8 lg:p-10 xl:p-12 rounded-[2.5rem] shadow-[0_32px_64px_rgba(74,61,196,0.12)] z-10 border-4 border-white hover:border-[#a855f7]'
                     : 'bg-[#f3f3f4] p-8 lg:p-10 rounded-[2rem] border border-[#c8c4d6]/20 hover:border-[#a855f7]'
-                } ${
-                  plan.name === 'PRO'
-                    ? 'order-1 xl:order-3'
-                    : plan.name === 'ADVANCED'
-                      ? 'order-2 xl:order-2'
-                      : 'order-3 xl:order-1'
                 }`}
               >
                 {!user && plan.highlighted && (
-                  <span className="absolute -top-5 left-1/2 -translate-x-1/2 px-6 py-2 bg-[#a855f7] text-white text-xs font-black rounded-full uppercase tracking-widest shadow-lg">
-                    30 Days Free Trial
+                  <span className="absolute -top-5 left-1/2 -translate-x-1/2 px-6 py-2 bg-[#a855f7] text-white text-sm font-black rounded-full uppercase tracking-widest shadow-lg">
+                    Free Forever
                   </span>
                 )}
                 {user && (isCurrentPlan || isRecommendedForTrial) && (
-                  <span className="absolute -top-5 left-1/2 -translate-x-1/2 px-6 py-2 bg-[#0b996f] text-white text-xs font-black rounded-full uppercase tracking-widest shadow-lg">
+                  <span className="absolute -top-5 left-1/2 -translate-x-1/2 px-6 py-2 bg-[#0b996f] text-white text-sm font-black rounded-full uppercase tracking-widest shadow-lg">
                     {isCurrentPlan ? 'Current Plan' : 'Recommended'}
                   </span>
                 )}
 
                 <div className="flex flex-col h-full">
-                  <div className="mb-8">
+                  <div className="mb-8 text-center">
                     <h3
                       className={`mb-2 ${
                         isFeaturedCard
-                          ? 'text-3xl font-black text-[#032102]'
-                          : 'text-2xl font-bold text-slate-900'
+                          ? 'text-4xl md:text-5xl font-black text-[#032102]'
+                          : 'text-3xl md:text-4xl font-bold text-slate-900'
                       }`}
                     >
-                      {plan.name}
+                      What You Get
                     </h3>
-                    <p
-                      className={`text-sm ${
-                        isFeaturedCard ? 'text-[#2f4e27] font-medium' : 'text-slate-600'
-                      }`}
-                    >
-                      {plan.description}
-                    </p>
-                  </div>
-
-                  <div className="mb-10 flex items-baseline gap-1">
-                    <span
-                      className={`tracking-tighter ${
-                        isFeaturedCard
-                          ? 'text-7xl font-extrabold text-[#032102]'
-                          : 'text-5xl font-extrabold text-slate-900'
-                      }`}
-                    >
-                      ${plan.price}
-                    </span>
-                    <span
-                      className={`font-medium ${
-                        isFeaturedCard ? 'text-[#2f4e27] font-bold' : 'text-slate-500'
-                      }`}
-                    >
-                      /mo
-                    </span>
                   </div>
 
                   <button
@@ -339,11 +286,11 @@ const CTASection = () => {
                     className={`mb-10 w-full text-center inline-block active:scale-95 transition-all ${
                       isFeaturedCard
                         ? !user || !isCurrentPlan
-                          ? 'py-5 rounded-full bg-[#a855f7] text-white font-black text-lg shadow-xl shadow-[#a855f7]/30 hover:bg-[#9333ea] cursor-pointer transition-colors'
-                          : 'py-5 rounded-full bg-slate-300 text-slate-500 font-black text-lg cursor-not-allowed'
+                          ? 'py-5 rounded-full bg-[#a855f7] text-white font-black text-xl shadow-xl shadow-[#a855f7]/30 hover:bg-[#9333ea] cursor-pointer transition-colors'
+                          : 'py-5 rounded-full bg-slate-300 text-slate-500 font-black text-xl cursor-not-allowed'
                         : !user || !isCurrentPlan
-                          ? 'py-4 rounded-full border border-[#787585] text-[#5549d0] font-bold hover:bg-[#d7fec8] cursor-pointer'
-                          : 'py-4 rounded-full border border-[#787585] text-[#5549d0] font-bold cursor-not-allowed'
+                          ? 'py-4 rounded-full border border-[#787585] text-[#5549d0] font-bold text-lg hover:bg-[#d7fec8] cursor-pointer'
+                          : 'py-4 rounded-full border border-[#787585] text-[#5549d0] font-bold text-lg cursor-not-allowed'
                     }`}
                   >
                     {buttonLabel}
@@ -379,11 +326,11 @@ const CTASection = () => {
                       return (
                         <li key={featureIndex} className="flex items-start gap-3">
                           {isSuperLinksSubFeature ? (
-                            <span className="w-5 h-5 mt-0.5 flex-shrink-0" aria-hidden="true" />
+                            <span className="w-6 h-6 mt-0.5 flex-shrink-0" aria-hidden="true" />
                           ) : (
                             <Check
                               aria-hidden="true"
-                              className={`w-5 h-5 mt-0.5 flex-shrink-0 ${
+                              className={`w-6 h-6 mt-0.5 flex-shrink-0 ${
                                 isSuperLinksIncluded
                                   ? 'text-emerald-600'
                                   : isFeaturedCard
@@ -393,7 +340,7 @@ const CTASection = () => {
                             />
                           )}
                           <span
-                            className={`text-sm md:text-base font-semibold leading-relaxed ${
+                            className={`text-base md:text-lg font-semibold leading-relaxed ${
                               isSuperLinksIncluded
                                 ? 'text-[#7c3aed]'
                                 : isBlack

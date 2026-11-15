@@ -67,7 +67,7 @@ const Footer = () => {
               to="/#pricing"
               className="text-sm text-slate-500 dark:text-[#1b1b1b] hover:text-primary transition-colors"
             >
-              Pricing
+              What's Included
             </Link>
           </nav>
           <nav aria-label="Company links" className="flex flex-col gap-4">
