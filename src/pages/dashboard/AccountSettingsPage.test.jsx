@@ -2,6 +2,10 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter, Routes, Route } from 'react-router-dom';
+import { LanguageProvider } from '../../i18n/LanguageContext.jsx';
+
+// Pin language to English so IP-based detection doesn't run in tests
+localStorage.setItem('goodlink:lang_pref_v2', 'en');
 import AccountSettingsPage from './AccountSettingsPage.jsx';
 
 // Configurable profile for subscription_status (free_trial, cancelled, active)
@@ -92,11 +96,13 @@ beforeEach(() => {
 
 function renderAccountSettings() {
   return render(
-    <MemoryRouter initialEntries={['/dashboard/settings']}>
+    <LanguageProvider>
+<MemoryRouter initialEntries={['/dashboard/settings']}>
       <Routes>
         <Route path="/dashboard/settings" element={<AccountSettingsPage />} />
       </Routes>
     </MemoryRouter>
+</LanguageProvider>
   );
 }
 

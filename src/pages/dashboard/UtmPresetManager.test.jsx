@@ -2,6 +2,10 @@ import React from 'react';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { MemoryRouter, Routes, Route } from 'react-router-dom';
+import { LanguageProvider } from '../../i18n/LanguageContext.jsx';
+
+// Pin language to English so IP-based detection doesn't run in tests
+localStorage.setItem('goodlink:lang_pref_v2', 'en');
 import UtmPresetManager from './UtmPresetManager.jsx';
 
 // Toast mock
@@ -106,11 +110,13 @@ beforeEach(() => {
 
 function renderUtmPresetManager() {
   return render(
-    <MemoryRouter initialEntries={['/dashboard/utm-presets']}>
+    <LanguageProvider>
+<MemoryRouter initialEntries={['/dashboard/utm-presets']}>
       <Routes>
         <Route path="/dashboard/utm-presets" element={<UtmPresetManager />} />
       </Routes>
     </MemoryRouter>
+</LanguageProvider>
   );
 }
 

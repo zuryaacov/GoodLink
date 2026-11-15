@@ -2,6 +2,10 @@ import React from 'react';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { MemoryRouter, Routes, Route } from 'react-router-dom';
+import { LanguageProvider } from '../../i18n/LanguageContext.jsx';
+
+// Pin language to English so IP-based detection doesn't run in tests
+localStorage.setItem('goodlink:lang_pref_v2', 'en');
 import Analytics from './Analytics.jsx';
 
 // Mock supabase for Analytics page (no data, but no crash)
@@ -52,11 +56,13 @@ beforeEach(() => {
 
 function renderAnalytics() {
   return render(
-    <MemoryRouter initialEntries={['/dashboard/analytics']}>
+    <LanguageProvider>
+<MemoryRouter initialEntries={['/dashboard/analytics']}>
       <Routes>
         <Route path="/dashboard/analytics" element={<Analytics />} />
       </Routes>
     </MemoryRouter>
+</LanguageProvider>
   );
 }
 

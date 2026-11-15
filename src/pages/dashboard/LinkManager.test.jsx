@@ -2,6 +2,10 @@ import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { MemoryRouter, Routes, Route } from 'react-router-dom';
+import { LanguageProvider } from '../../i18n/LanguageContext.jsx';
+
+// Pin language to English so IP-based detection doesn't run in tests
+localStorage.setItem('goodlink:lang_pref_v2', 'en');
 import LinkManager from './LinkManager.jsx';
 
 // Configurable profile for subscription_status (e.g. cancelled)
@@ -73,11 +77,13 @@ beforeEach(() => {
 
 function renderLinkManager(initialPath = '/dashboard/links') {
   return render(
-    <MemoryRouter initialEntries={[initialPath]}>
+    <LanguageProvider>
+<MemoryRouter initialEntries={[initialPath]}>
       <Routes>
         <Route path="/dashboard/links" element={<LinkManager />} />
       </Routes>
     </MemoryRouter>
+</LanguageProvider>
   );
 }
 

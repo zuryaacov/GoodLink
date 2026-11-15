@@ -5,8 +5,10 @@ import { supabase } from '../../lib/supabase';
 import Modal from '../../components/common/Modal';
 import SubscriptionCancelledScreen from '../../components/dashboard/SubscriptionCancelledScreen';
 import { useToast } from '../../components/common/ToastProvider.jsx';
+import { useLanguage } from '../../i18n/LanguageContext';
 
 const CustomDomainsManager = () => {
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const location = useLocation();
   const [domains, setDomains] = useState([]);
@@ -359,7 +361,7 @@ const CustomDomainsManager = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-full" role="status">
-        <div className="text-[#1b1b1b]">Loading domains...</div>
+        <div className="text-[#1b1b1b]">{t('dashDomainsLoading')}</div>
       </div>
     );
   }
@@ -400,20 +402,11 @@ const CustomDomainsManager = () => {
           </div>
 
           <h2 className="text-2xl md:text-3xl font-bold text-[#1b1b1b] mb-4 tracking-tight">
-            Unlock Custom Domains
+            {t('dashUnlockDomainsTitle')}
           </h2>
 
           <p className="text-sm md:text-base text-[#1b1b1b] mb-8 leading-relaxed">
-            Your current&nbsp;
-            <span className="font-semibold text-[#1b1b1b] italic capitalize">
-              {normalizedPlan} plan
-            </span>{' '}
-            does not include custom domain management. Upgrade to&nbsp;
-            <span className="text-[#a855f7] font-bold uppercase tracking-wider">
-              ADVANCED
-            </span> or{' '}
-            <span className="text-[#a855f7] font-bold uppercase tracking-wider">PRO</span> to
-            connect your own domains and brand your links.
+            {t('dashUnlockDomainsBody').replace('{plan}', normalizedPlan.toUpperCase())}
           </p>
 
           {/* Value props */}
@@ -421,18 +414,18 @@ const CustomDomainsManager = () => {
             <div className="flex items-center gap-3 p-3 bg-white/80 rounded-xl border border-slate-200 hover:border-[#a855f7]/40 transition-colors">
               <Globe className="w-5 h-5 text-[#a855f7]" aria-hidden="true" />
               <div>
-                <p className="font-semibold text-sm text-[#1b1b1b] italic">Brand Your Links</p>
+                <p className="font-semibold text-sm text-[#1b1b1b] italic">{t('dashPaywallBrandLinks')}</p>
                 <p className="text-xs text-[#1b1b1b]">
-                  Use your own domain (e.g., go.mybrand.com) instead of the default short links.
+                  {t('dashPaywallBrandLinksDesc')}
                 </p>
               </div>
             </div>
             <div className="flex items-center gap-3 p-3 bg-white/80 rounded-xl border border-slate-200 hover:border-[#a855f7]/40 transition-colors">
               <BarChart3 className="w-5 h-5 text-[#a855f7]" aria-hidden="true" />
               <div>
-                <p className="font-semibold text-sm text-[#1b1b1b] italic">Professional Appearance</p>
+                <p className="font-semibold text-sm text-[#1b1b1b] italic">{t('dashPaywallProAppearance')}</p>
                 <p className="text-xs text-[#1b1b1b]">
-                  Build trust with branded links that match your business identity.
+                  {t('dashPaywallProAppearanceDesc')}
                 </p>
               </div>
             </div>
@@ -446,14 +439,12 @@ const CustomDomainsManager = () => {
             className="group relative w-full inline-flex items-center justify-center gap-2 bg-[#a855f7] text-white font-bold py-3.5 px-8 rounded-2xl transition-all duration-300 hover:bg-[#9333ea] hover:scale-[1.02] active:scale-[0.98] shadow-xl shadow-[#a855f7]/30"
           >
             <Zap className="w-5 h-5" aria-hidden="true" />
-            <span>View Plans & Upgrade</span>
+            <span>{t('dashViewPlansUpgrade')}</span>
             <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" aria-hidden="true" />
           </button>
 
           <p className="mt-5 text-xs text-[#1b1b1b]">
-            Custom Domains are available on the{' '}
-            <span className="font-semibold text-[#1b1b1b]">ADVANCED</span> and{' '}
-            <span className="font-semibold text-[#1b1b1b]">PRO</span> plans.
+            {t('dashDomainsAvailOn')}
           </p>
         </div>
       </div>
@@ -464,9 +455,9 @@ const CustomDomainsManager = () => {
     <div className="flex flex-col gap-6 md:gap-8 w-full max-w-7xl mx-auto">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="flex flex-col gap-2">
-          <h1 className="text-2xl sm:text-3xl font-bold text-[#1b1b1b]">Custom Domains</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold text-[#1b1b1b]">{t('dashDomainsTitle')}</h1>
           <p className="text-[#1b1b1b] text-sm sm:text-base">
-            Brand your links with custom domains (e.g., go.mybrand.com)
+            {t('dashDomainsSubtitle')}
           </p>
         </div>
         <button
@@ -474,7 +465,7 @@ const CustomDomainsManager = () => {
           className="px-6 py-3 bg-[#a855f7] hover:bg-[#9333ea] text-white font-bold rounded-xl transition-all shadow-lg shadow-[#a855f7]/20 flex items-center gap-2 whitespace-nowrap"
         >
           <span className="material-symbols-outlined" aria-hidden="true">add</span>
-          New Domain
+          {t('dashNewDomain')}
         </button>
       </div>
 
@@ -515,15 +506,15 @@ const CustomDomainsManager = () => {
       {domains.length === 0 ? (
         <div className="bg-[#fcfdfd] border rounded-2xl p-12 text-center hover:shadow-card-mint transition-all border-[#a855f7]/40 md:border-card-border md:hover:border-[#a855f7]/40">
           <span className="material-symbols-outlined text-6xl text-black mb-4" aria-hidden="true">public</span>
-          <h3 className="text-xl font-bold text-black mb-2">No Custom Domains Yet</h3>
+          <h3 className="text-xl font-bold text-black mb-2">{t('dashEmptyDomainsTitle')}</h3>
           <p className="text-black mb-6">
-            Create your first custom domain to brand your links
+            {t('dashEmptyDomainsBody')}
           </p>
           <button
             onClick={() => navigate('/dashboard/domains/new')}
             className="px-6 py-3 bg-[#a855f7] hover:bg-[#9333ea] text-white font-bold rounded-xl transition-all"
           >
-            Create First Domain
+            {t('dashCreateFirstDomain')}
           </button>
         </div>
       ) : (
@@ -605,7 +596,7 @@ const CustomDomainsManager = () => {
                           className="w-full px-4 py-3 text-left text-[#1b1b1b] hover:bg-white/5 transition-colors flex items-center gap-3 text-sm"
                         >
                           <span className="material-symbols-outlined text-base" aria-hidden="true">info</span>
-                          Details
+                          {t('dashDetails')}
                         </button>
                         <button
                           role="menuitem"
@@ -617,7 +608,7 @@ const CustomDomainsManager = () => {
                           className="w-full px-4 py-3 text-left text-[#1b1b1b] hover:bg-white/5 transition-colors flex items-center gap-3 text-sm"
                         >
                           <span className="material-symbols-outlined text-base" aria-hidden="true">edit</span>
-                          Edit Root
+                          {t('dashEdit')}
                         </button>
                         <button
                           role="menuitem"
@@ -629,7 +620,7 @@ const CustomDomainsManager = () => {
                           className="w-full px-4 py-3 text-left text-red-500 hover:bg-red-400/10 transition-colors flex items-center gap-3 text-sm"
                         >
                           <span className="material-symbols-outlined text-base" aria-hidden="true">delete</span>
-                          Delete
+                          {t('dashDelete')}
                         </button>
                       </div>
                     </>
@@ -815,7 +806,7 @@ const CustomDomainsManager = () => {
         }
         type="delete"
         confirmText="Delete Domain"
-        cancelText="Cancel"
+        cancelText={t('dashCancel')}
         onConfirm={handleDeleteConfirm}
         isLoading={deleteModalState.isLoading}
       />

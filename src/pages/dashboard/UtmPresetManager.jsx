@@ -6,6 +6,7 @@ import SubscriptionCancelledScreen from '../../components/dashboard/Subscription
 import Modal from '../../components/common/Modal';
 import { Copy } from 'lucide-react';
 import { useToast } from '../../components/common/ToastProvider.jsx';
+import { useLanguage } from '../../i18n/LanguageContext';
 
 const PLATFORMS = {
   meta: { name: 'Meta (FB/IG)', colorClass: 'text-blue-700 bg-blue-400/10' },
@@ -17,6 +18,7 @@ const PLATFORMS = {
 };
 
 const UtmPresetManager = () => {
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const location = useLocation();
   const [presets, setPresets] = useState([]);
@@ -273,7 +275,7 @@ const UtmPresetManager = () => {
           <span className="material-symbols-outlined text-4xl text-slate-600 animate-spin" aria-hidden="true">
             refresh
           </span>
-          <p className="text-[#1b1b1b] mt-4">Loading UTM presets...</p>
+          <p className="text-[#1b1b1b] mt-4">{t('dashUtmLoading')}</p>
         </div>
       </div>
     );
@@ -308,19 +310,10 @@ const UtmPresetManager = () => {
             </div>
           </div>
           <h2 className="text-2xl md:text-3xl font-bold text-[#1b1b1b] mb-4 tracking-tight">
-            Unlock UTM Presets
+            {t('dashUnlockUtmTitle')}
           </h2>
           <p className="text-sm md:text-base text-[#1b1b1b] mb-8 leading-relaxed">
-            Your current&nbsp;
-            <span className="font-semibold text-[#1b1b1b] italic capitalize">
-              {normalizedPlan} plan
-            </span>
-            &nbsp;does not include UTM preset management. Upgrade to&nbsp;
-            <span className="text-[#a855f7] font-bold uppercase tracking-wider">
-              ADVANCED
-            </span> or{' '}
-            <span className="text-[#a855f7] font-bold uppercase tracking-wider">PRO</span> to create
-            and manage UTM presets for your campaigns.
+            {t('dashUnlockUtmBody').replace('{plan}', normalizedPlan.toUpperCase())}
           </p>
           <button
             onClick={() => {
@@ -328,7 +321,7 @@ const UtmPresetManager = () => {
             }}
             className="w-full inline-flex items-center justify-center gap-2 bg-[#a855f7] text-white font-bold py-3.5 px-8 rounded-2xl transition-all hover:bg-[#9333ea] shadow-xl shadow-[#a855f7]/30"
           >
-            View Plans & Upgrade
+            {t('dashViewPlansUpgrade')}
           </button>
         </div>
       </div>
@@ -339,9 +332,9 @@ const UtmPresetManager = () => {
     <div className="w-full max-w-7xl mx-auto">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-[#1b1b1b] mb-2">UTM Presets</h1>
+          <h1 className="text-3xl font-bold text-[#1b1b1b] mb-2">{t('dashUtmTitle')}</h1>
           <p className="text-[#1b1b1b]">
-            Create and manage UTM parameter presets for your campaigns
+            {t('dashUtmSubtitle')}
           </p>
         </div>
         <button
@@ -349,22 +342,22 @@ const UtmPresetManager = () => {
           className="w-full sm:w-auto px-6 py-3 bg-[#a855f7] hover:bg-[#9333ea] text-white font-bold rounded-xl transition-all shadow-lg shadow-[#a855f7]/20 flex items-center justify-center gap-2"
         >
           <span className="material-symbols-outlined" aria-hidden="true">add</span>
-          New UTM Preset
+          {t('dashNewUtmPreset')}
         </button>
       </div>
 
       {presets.length === 0 ? (
         <div className="bg-[#fcfdfd] border rounded-2xl p-12 text-center hover:shadow-card-mint transition-all border-[#a855f7]/40 md:border-card-border md:hover:border-[#a855f7]/40">
           <span className="material-symbols-outlined text-6xl text-black mb-4" aria-hidden="true">campaign</span>
-          <h3 className="text-xl font-bold text-black mb-2">No UTM Presets Yet</h3>
+          <h3 className="text-xl font-bold text-black mb-2">{t('dashEmptyUtmTitle')}</h3>
           <p className="text-black mb-6">
-            Create your first UTM preset to start tracking your campaigns
+            {t('dashEmptyUtmBody')}
           </p>
           <button
             onClick={handleNewPreset}
             className="px-6 py-3 bg-[#a855f7] hover:bg-[#9333ea] text-white font-bold rounded-xl transition-all"
           >
-            Create First Preset
+            {t('dashCreateFirstPreset')}
           </button>
         </div>
       ) : (
@@ -434,7 +427,7 @@ const UtmPresetManager = () => {
                             className="w-full px-4 py-3 text-left text-[#1b1b1b] hover:bg-white/5 transition-colors flex items-center gap-3 text-sm"
                           >
                             <span className="material-symbols-outlined text-base" aria-hidden="true">edit</span>
-                            Edit
+                            {t('dashEdit')}
                           </button>
                           <button
                             role="menuitem"
@@ -446,7 +439,7 @@ const UtmPresetManager = () => {
                             className="w-full px-4 py-3 text-left text-red-500 hover:bg-red-400/10 transition-colors flex items-center gap-3 text-sm"
                           >
                             <span className="material-symbols-outlined text-base" aria-hidden="true">delete</span>
-                            Delete
+                            {t('dashDelete')}
                           </button>
                         </div>
                       </>
@@ -458,11 +451,11 @@ const UtmPresetManager = () => {
                   {/* Chips: one per UTM param */}
                   <div className="flex flex-wrap gap-2">
                     {[
-                      { key: 'utm_source', label: 'Source', value: preset.utm_source },
-                      { key: 'utm_medium', label: 'Medium', value: preset.utm_medium },
-                      { key: 'utm_campaign', label: 'Campaign', value: preset.utm_campaign },
-                      { key: 'utm_content', label: 'Content', value: preset.utm_content },
-                      { key: 'utm_term', label: 'Term', value: preset.utm_term },
+                      { key: 'utm_source', label: t('dashUtmSource'), value: preset.utm_source },
+                      { key: 'utm_medium', label: t('dashUtmMedium'), value: preset.utm_medium },
+                      { key: 'utm_campaign', label: t('dashUtmCampaign'), value: preset.utm_campaign },
+                      { key: 'utm_content', label: t('dashUtmContent'), value: preset.utm_content },
+                      { key: 'utm_term', label: t('dashUtmTerm'), value: preset.utm_term },
                     ]
                       .filter(({ value }) => value)
                       .map(({ key, label, value }) => (
@@ -483,7 +476,7 @@ const UtmPresetManager = () => {
                     </div>
                   ) : (
                     <div className="text-xs text-slate-600 font-bold italic p-3 rounded-lg bg-white border border-slate-200">
-                      No UTM parameters set
+                      {t('dashNoUtmParams')}
                     </div>
                   )}
                 </div>
@@ -498,7 +491,7 @@ const UtmPresetManager = () => {
                     {copiedId === preset.id ? (
                       <>
                         <span className="material-symbols-outlined text-sm" aria-hidden="true">check</span>
-                        Copied!
+                        {t('dashCopied')}
                       </>
                     ) : (
                       <>

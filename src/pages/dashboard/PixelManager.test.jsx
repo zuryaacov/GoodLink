@@ -2,6 +2,10 @@ import React from 'react';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { MemoryRouter, Routes, Route } from 'react-router-dom';
+import { LanguageProvider } from '../../i18n/LanguageContext.jsx';
+
+// Pin language to English so IP-based detection doesn't run in tests
+localStorage.setItem('goodlink:lang_pref_v2', 'en');
 import PixelManager from './PixelManager.jsx';
 
 // Simple toast mock
@@ -85,11 +89,13 @@ beforeEach(() => {
 
 function renderPixelManager() {
   return render(
-    <MemoryRouter initialEntries={['/dashboard/pixels']}>
+    <LanguageProvider>
+<MemoryRouter initialEntries={['/dashboard/pixels']}>
       <Routes>
         <Route path="/dashboard/pixels" element={<PixelManager />} />
       </Routes>
     </MemoryRouter>
+</LanguageProvider>
   );
 }
 

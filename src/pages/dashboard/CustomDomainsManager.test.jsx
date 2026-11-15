@@ -2,6 +2,10 @@ import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import { MemoryRouter, Routes, Route } from 'react-router-dom';
+import { LanguageProvider } from '../../i18n/LanguageContext.jsx';
+
+// Pin language to English so IP-based detection doesn't run in tests
+localStorage.setItem('goodlink:lang_pref_v2', 'en');
 import CustomDomainsManager from './CustomDomainsManager.jsx';
 
 vi.mock('../../components/common/ToastProvider.jsx', () => ({
@@ -93,11 +97,13 @@ beforeEach(() => {
 
 function renderCustomDomains() {
   return render(
-    <MemoryRouter initialEntries={['/dashboard/domains']}>
+    <LanguageProvider>
+<MemoryRouter initialEntries={['/dashboard/domains']}>
       <Routes>
         <Route path="/dashboard/domains" element={<CustomDomainsManager />} />
       </Routes>
     </MemoryRouter>
+</LanguageProvider>
   );
 }
 
@@ -146,7 +152,7 @@ describe('CustomDomainsManager – basic states and actions', () => {
     fireEvent.click(menuButton);
 
     await waitFor(() => {
-      expect(screen.getByText(/Edit Root/i)).toBeInTheDocument();
+      expect(screen.getByText(/^Edit$/)).toBeInTheDocument();
       expect(screen.getByText(/Details/i)).toBeInTheDocument();
     });
     expect(screen.getAllByText(/Delete/i).length).toBeGreaterThanOrEqual(1);

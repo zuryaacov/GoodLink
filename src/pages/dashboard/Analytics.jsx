@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import Modal from '../../components/common/Modal';
+import { useLanguage } from '../../i18n/LanguageContext';
 
 // Country name/code to flag emoji (regional indicators: A=0x1F1E6)
 const countryToFlag = (country) => {
@@ -40,15 +41,22 @@ const countryToFlag = (country) => {
 };
 
 // Relative time
-const relativeTime = (dateString) => {
+const relativeTime = (dateString, t) => {
   if (!dateString) return '—';
   const date = new Date(dateString);
   const now = new Date();
   const sec = Math.floor((now - date) / 1000);
-  if (sec < 60) return 'Just now';
-  if (sec < 3600) return `${Math.floor(sec / 60)} mins ago`;
-  if (sec < 86400) return `${Math.floor(sec / 3600)} hours ago`;
-  if (sec < 604800) return `${Math.floor(sec / 86400)} days ago`;
+  if (!t) {
+    if (sec < 60) return 'Just now';
+    if (sec < 3600) return `${Math.floor(sec / 60)} mins ago`;
+    if (sec < 86400) return `${Math.floor(sec / 3600)} hours ago`;
+    if (sec < 604800) return `${Math.floor(sec / 86400)} days ago`;
+  } else {
+    if (sec < 60) return t('dashJustNow');
+    if (sec < 3600) return t('dashMinsAgo').replace('{n}', String(Math.floor(sec / 60)));
+    if (sec < 86400) return t('dashHoursAgo').replace('{n}', String(Math.floor(sec / 3600)));
+    if (sec < 604800) return t('dashDaysAgo').replace('{n}', String(Math.floor(sec / 86400)));
+  }
   return date.toLocaleDateString('he-IL', { day: '2-digit', month: '2-digit', year: 'numeric' });
 };
 
@@ -57,8 +65,8 @@ const STATS_BATCH_SIZE = 1000;
 const isInvalidTrafficVerdict = (verdict) =>
   typeof verdict === 'string' && verdict.toLowerCase().startsWith('invalid_slug');
 
-const KPICard = ({ title, value, change, trend, icon, iconBgClass, iconColorClass }) => {
-  const headingId = `kpi-${title
+const KPICard = ({ title, idKey, value, change, trend, icon, iconBgClass, iconColorClass }) => {
+  const headingId = `kpi-${(idKey || title)
     .replace(/[^a-z0-9]+/gi, '-')
     .replace(/^-+|-+$/g, '')
     .toLowerCase()}`;
@@ -100,6 +108,7 @@ const KPICard = ({ title, value, change, trend, icon, iconBgClass, iconColorClas
 };
 
 const HumanVsBotCard = ({ humanCount, botCount }) => {
+  const { t } = useLanguage();
   const total = humanCount + botCount;
   const humanPct = total ? (humanCount / total) * 100 : 0;
   const botPct = total ? (botCount / total) * 100 : 0;
@@ -108,7 +117,7 @@ const HumanVsBotCard = ({ humanCount, botCount }) => {
   return (
     <div className="bg-card-bg border border-card-border rounded-2xl p-6 flex flex-col items-center transition-all hover:shadow-card-mint lg:col-span-1">
       <div className="w-full flex justify-between items-center mb-6">
-        <h3 className="text-lg md:text-xl font-bold text-[#1b1b1b]">Human vs. Bot Ratio</h3>
+        <h3 className="text-lg md:text-xl font-bold text-[#1b1b1b]">{t('dashHumanVsBot')}</h3>
       </div>
       <p className="sr-only">
         Traffic split: {Math.round(humanPct)}% human ({humanCount} clicks), {Math.round(botPct)}%
@@ -124,7 +133,7 @@ const HumanVsBotCard = ({ humanCount, botCount }) => {
           <div className="w-[120px] h-[120px] bg-white rounded-full flex items-center justify-center">
             <div className="text-center">
               <span className="block text-2xl font-bold text-[#1b1b1b]">{Math.round(humanPct)}%</span>
-              <span className="block text-[10px] text-[#1b1b1b] uppercase font-bold">Human</span>
+              <span className="block text-[10px] text-[#1b1b1b] uppercase font-bold">{t('dashHuman')}</span>
             </div>
           </div>
         </div>
@@ -136,7 +145,7 @@ const HumanVsBotCard = ({ humanCount, botCount }) => {
             style={{ backgroundColor: humanColor }}
             aria-hidden="true"
           />
-          <span className="text-xs text-[#1b1b1b]">Human ({humanCount})</span>
+          <span className="text-xs text-[#1b1b1b]">{t('dashHuman')} ({humanCount})</span>
         </div>
         <div className="flex items-center gap-2">
           <span
@@ -144,7 +153,7 @@ const HumanVsBotCard = ({ humanCount, botCount }) => {
             style={{ backgroundColor: botColor }}
             aria-hidden="true"
           />
-          <span className="text-xs text-[#1b1b1b]">Bot ({botCount})</span>
+          <span className="text-xs text-[#1b1b1b]">{t('dashBot')} ({botCount})</span>
         </div>
       </div>
     </div>
@@ -152,16 +161,17 @@ const HumanVsBotCard = ({ humanCount, botCount }) => {
 };
 
 const GeoProgressCard = ({ geographic }) => {
+  const { t } = useLanguage();
   const total = geographic.reduce((s, i) => s + i.value, 0);
   const colors = ['#135bec', '#a855f7', '#10b981', '#eab308'];
   return (
     <div className="bg-card-bg border border-card-border rounded-2xl p-6 transition-all hover:shadow-card-mint lg:col-span-2">
       <div className="w-full flex justify-between items-center mb-6">
-        <h3 className="text-lg md:text-xl font-bold text-[#1b1b1b]">Geographic Distribution (Top 15)</h3>
+        <h3 className="text-lg md:text-xl font-bold text-[#1b1b1b]">{t('dashGeoTitle')}</h3>
       </div>
       <div className="space-y-5">
         {geographic.length === 0 ? (
-          <p className="text-[#1b1b1b] text-sm">No geographic data yet</p>
+          <p className="text-[#1b1b1b] text-sm">{t('dashGeoEmpty')}</p>
         ) : (
           geographic.slice(0, 15).map((item, i) => {
             const pct = total ? Math.round((item.value / total) * 100) : 0;
@@ -202,6 +212,7 @@ const GeoProgressCard = ({ geographic }) => {
 };
 
 const Analytics = () => {
+  const { t } = useLanguage();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const linkIdRaw = searchParams.get('link_id');
@@ -538,9 +549,9 @@ const Analytics = () => {
           role="status"
           aria-live="polite"
           aria-busy="true"
-          aria-label="Loading analytics"
+          aria-label={t('dashAnalyticsLoading')}
         >
-          Loading analytics...
+          {t('dashAnalyticsLoading')}
         </div>
       </div>
     );
@@ -553,11 +564,13 @@ const Analytics = () => {
     <div className="flex flex-col gap-6 max-w-7xl mx-auto">
       <div className="flex flex-col gap-2">
         <h1 className="text-3xl font-bold text-[#1b1b1b]">
-          {isSingleLink && linkName ? `Analytics for ${linkName}` : 'Analytics'}
+          {isSingleLink && linkName
+            ? t('dashAnalyticsForLink').replace('{name}', linkName)
+            : t('dashAnalyticsTitle')}
         </h1>
         {isSingleLink ? (
           <p className="text-[#1b1b1b] text-sm">
-            Data for this link only:{' '}
+            {t('dashAnalyticsLinkOnly')}{' '}
             <span className="font-mono text-[#1b1b1b] break-all">{singleLinkUrl}</span>
             {' · '}
             <button
@@ -565,12 +578,12 @@ const Analytics = () => {
               className="text-[#135bec] hover:underline bg-transparent border-none cursor-pointer p-0"
               onClick={() => navigate('/dashboard/analytics')}
             >
-              View all links
+              {t('dashViewAllLinks')}
             </button>
           </p>
         ) : (
           <p className="text-[#1b1b1b] text-sm">
-            Welcome back! Here&apos;s what&apos;s happening with your links.
+            {t('dashAnalyticsWelcome')}
           </p>
         )}
       </div>
@@ -578,21 +591,24 @@ const Analytics = () => {
       {/* KPI Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
         <KPICard
-          title="Total Clicks"
+          idKey="total-clicks"
+          title={t('dashKpiTotalClicks')}
           value={formatNumber(stats.totalClicks)}
           icon="ads_click"
           iconBgClass="bg-[#135bec]/10"
           iconColorClass="text-[#135bec]"
         />
         <KPICard
-          title="Unique Visitors"
+          idKey="unique-visitors"
+          title={t('dashKpiUniqueVisitors')}
           value={formatNumber(stats.uniqueVisitors)}
           icon="group"
           iconBgClass="bg-[#a855f7]/10"
           iconColorClass="text-[#7c3aed]"
         />
         <KPICard
-          title="Bot Traffic"
+          idKey="bot-traffic"
+          title={t('dashKpiBotTraffic')}
           value={formatNumber(stats.botDetected)}
           change={
             stats.totalClicks
@@ -605,7 +621,8 @@ const Analytics = () => {
           iconColorClass="text-amber-900"
         />
         <KPICard
-          title="Invalid Traffic"
+          idKey="invalid-traffic"
+          title={t('dashKpiInvalidTraffic')}
           value={formatNumber(stats.invalidTraffic)}
           change={
             stats.totalClicks
@@ -618,14 +635,16 @@ const Analytics = () => {
           iconColorClass="text-red-700"
         />
         <KPICard
-          title="Conversion Est."
+          idKey="conversion-est"
+          title={t('dashKpiConversionEst')}
           value={conversionEst}
           icon="attach_money"
           iconBgClass="bg-emerald-500/10"
           iconColorClass="text-emerald-800"
         />
         <KPICard
-          title="CAPI"
+          idKey="capi"
+          title={t('dashKpiCapi')}
           value={formatNumber(stats.capiSends)}
           icon="hub"
           iconBgClass="bg-indigo-500/10"
@@ -645,7 +664,7 @@ const Analytics = () => {
       {/* Traffic Log */}
       <div className="bg-card-bg border border-card-border rounded-2xl flex flex-col transition-all hover:shadow-card-mint">
         <div className="p-6 border-b border-slate-200 flex items-center justify-between gap-3">
-          <h3 className="text-lg md:text-xl font-bold text-[#1b1b1b]">Traffic Log</h3>
+          <h3 className="text-lg md:text-xl font-bold text-[#1b1b1b]">{t('dashTrafficLog')}</h3>
           <button
             type="button"
             onClick={fetchTrafficPage}
@@ -657,16 +676,16 @@ const Analytics = () => {
             <span className="material-symbols-outlined text-[16px]" aria-hidden="true">
               refresh
             </span>
-            {loadingTrafficPage ? 'Refreshing...' : 'Refresh'}
+            {loadingTrafficPage ? t('dashRefreshing') : t('dashRefresh')}
           </button>
         </div>
 
         <div className="px-4 py-3 border-b border-slate-200">
           <nav className="flex flex-wrap items-center gap-2" aria-label="Traffic log filters">
             {[
-              { id: 'redirect', label: 'Delivered' },
-              { id: 'fallback', label: 'Fallback' },
-              { id: 'blocked', label: 'Blocked' },
+              { id: 'redirect', label: t('dashFilterDelivered') },
+              { id: 'fallback', label: t('dashFilterFallback') },
+              { id: 'blocked', label: t('dashFilterBlocked') },
             ].map((filterOption) => (
               <button
                 key={filterOption.id}
@@ -688,7 +707,10 @@ const Analytics = () => {
         {!loadingTrafficPage && trafficData.length > 0 && (
           <div className="px-4 py-3 border-b border-slate-200 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
             <p className="text-xs text-[#1b1b1b]">
-              Showing {trafficStart}-{trafficEnd} of {formatNumber(trafficTotalCount)} logs
+              {t('dashShowingLogs')
+                .replace('{start}', String(trafficStart))
+                .replace('{end}', String(trafficEnd))
+                .replace('{total}', formatNumber(trafficTotalCount))}
             </p>
             <nav className="flex items-center justify-center gap-3" aria-label="Traffic log pagination">
               <button
@@ -698,10 +720,12 @@ const Analytics = () => {
                 aria-label="Previous page of traffic log"
                 className="px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-bold text-[#1b1b1b] transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:border-primary hover:bg-primary/10"
               >
-                Previous
+                {t('dashPrevious')}
               </button>
               <span className="text-xs font-medium text-[#1b1b1b]">
-                Page {trafficPage} of {totalTrafficPages}
+                {t('dashPageOf')
+                  .replace('{n}', String(trafficPage))
+                  .replace('{total}', String(totalTrafficPages))}
               </span>
               <button
                 type="button"
@@ -710,7 +734,7 @@ const Analytics = () => {
                 aria-label="Next page of traffic log"
                 className="px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-bold text-[#1b1b1b] transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:border-primary hover:bg-primary/10"
               >
-                Next
+                {t('dashNext')}
               </button>
             </nav>
           </div>
@@ -723,9 +747,9 @@ const Analytics = () => {
               role="status"
               aria-live="polite"
               aria-busy="true"
-              aria-label="Loading traffic log"
+              aria-label={t('dashTrafficLoading')}
             >
-              <p className="text-[#1b1b1b] text-lg mb-2">Loading traffic log...</p>
+              <p className="text-[#1b1b1b] text-lg mb-2">{t('dashTrafficLoading')}</p>
             </div>
           ) : trafficData.length === 0 ? (
             <div className="text-center py-12">
@@ -735,7 +759,7 @@ const Analytics = () => {
               >
                 traffic
               </span>
-              <p className="text-[#1b1b1b] text-lg mb-2">No traffic data yet</p>
+              <p className="text-[#1b1b1b] text-lg mb-2">{t('dashTrafficEmpty')}</p>
               <p className="text-[#1b1b1b] text-sm">
                 Traffic will appear here once users click your links
               </p>
@@ -790,7 +814,7 @@ const Analytics = () => {
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-[#1b1b1b]">
-                        {relativeTime(click.clicked_at || click.created_at)}
+                        {relativeTime(click.clicked_at || click.created_at, t)}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className="flex items-center gap-2">
@@ -822,14 +846,14 @@ const Analytics = () => {
                               : 'bg-blue-100 text-blue-900 border-blue-200'
                           }`}
                         >
-                          {isInvalidTraffic ? 'Invalid Traffic' : isBot ? 'Bot (Blocked)' : 'Human'}
+                          {isInvalidTraffic ? t('dashKpiInvalidTraffic') : isBot ? t('dashBotBlocked') : t('dashHuman')}
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right">
                         <button
                           type="button"
                           onClick={() => handleExpandClick(click.id)}
-                          aria-label={`More information for click from ${location}, ${relativeTime(click.clicked_at || click.created_at)}`}
+                          aria-label={`More information for click from ${location}, ${relativeTime(click.clicked_at || click.created_at, t)}`}
                           className="bg-transparent border border-slate-200 text-[#1b1b1b] hover:border-primary hover:text-[#1b1b1b] hover:bg-primary/10 px-3 py-1.5 rounded-lg text-xs font-bold transition-all"
                         >
                           More Information
@@ -846,7 +870,10 @@ const Analytics = () => {
         {trafficData.length > 0 && (
           <div className="p-4 border-t border-slate-200 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
             <p className="text-xs text-[#1b1b1b]">
-              Showing {trafficStart}-{trafficEnd} of {formatNumber(trafficTotalCount)} logs
+              {t('dashShowingLogs')
+                .replace('{start}', String(trafficStart))
+                .replace('{end}', String(trafficEnd))
+                .replace('{total}', formatNumber(trafficTotalCount))}
             </p>
             <nav className="flex items-center justify-center gap-3" aria-label="Traffic log pagination">
               <button
@@ -856,10 +883,12 @@ const Analytics = () => {
                 aria-label="Previous page of traffic log"
                 className="px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-bold text-[#1b1b1b] transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:border-primary hover:bg-primary/10"
               >
-                Previous
+                {t('dashPrevious')}
               </button>
               <span className="text-xs font-medium text-[#1b1b1b]">
-                Page {trafficPage} of {totalTrafficPages}
+                {t('dashPageOf')
+                  .replace('{n}', String(trafficPage))
+                  .replace('{total}', String(totalTrafficPages))}
               </span>
               <button
                 type="button"
@@ -868,7 +897,7 @@ const Analytics = () => {
                 aria-label="Next page of traffic log"
                 className="px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-bold text-[#1b1b1b] transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:border-primary hover:bg-primary/10"
               >
-                Next
+                {t('dashNext')}
               </button>
             </nav>
           </div>

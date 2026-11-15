@@ -8,6 +8,7 @@ import SubscriptionCancelledScreen from '../../components/dashboard/Subscription
 import { useToast } from '../../components/common/ToastProvider.jsx';
 import QRCode from 'qrcode-svg';
 import qrCodeIcon from '../../assets/qr-code-icon.svg';
+import { useLanguage } from '../../i18n/LanguageContext';
 
 const PLATFORMS = {
   meta: { name: 'Meta (FB/IG)', colorClass: 'text-blue-700 bg-blue-400/10' },
@@ -40,6 +41,7 @@ const KIND_LABEL_PLURAL = {
 const SPACE_NAME_REGEX = /^[A-Za-z0-9 !@#$%&-]+$/;
 
 const LinkManager = () => {
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const { showToast } = useToast();
@@ -74,11 +76,11 @@ const LinkManager = () => {
 
   useEffect(() => {
     if (!spaceModal.isOpen) return;
-    const t = setTimeout(() => {
+    const timer = setTimeout(() => {
       spaceNameInputRef.current?.focus?.();
       spaceNameInputRef.current?.select?.();
     }, 0);
-    return () => clearTimeout(t);
+    return () => clearTimeout(timer);
   }, [spaceModal.isOpen]);
   const [utmPresetsModal, setUtmPresetsModal] = useState({
     isOpen: false,
@@ -628,11 +630,16 @@ const LinkManager = () => {
   };
 
   const createOptions = useMemo(() => {
-    const options = [{ id: 'link', label: 'New Link' }];
+    const newKindKey = {
+      workspace: 'dashNewWorkspace',
+      campaign: 'dashNewCampaign',
+      group: 'dashNewGroup',
+    };
+    const options = [{ id: 'link', label: t('dashNewLink') }];
     if (isFoldersEnabled && nextKind)
-      options.push({ id: nextKind, label: `New ${KIND_LABEL[nextKind]}` });
+      options.push({ id: nextKind, label: t(newKindKey[nextKind]) });
     return options;
-  }, [nextKind, isFoldersEnabled]);
+  }, [nextKind, isFoldersEnabled, t]);
 
   const openMoveModal = (linkToMove) => {
     if (!isFoldersEnabled || !linkToMove) return;
@@ -884,7 +891,7 @@ const LinkManager = () => {
           <span className="material-symbols-outlined text-4xl text-slate-600 animate-spin" aria-hidden="true">
             refresh
           </span>
-          <p className="text-[#1b1b1b] mt-4">Loading links...</p>
+          <p className="text-[#1b1b1b] mt-4">{t('dashLoadingLinks')}</p>
         </div>
       </div>
     );
@@ -896,11 +903,11 @@ const LinkManager = () => {
 
   const pageTitle = isFoldersEnabled
     ? currentLevel === 0
-      ? 'Workspaces'
+      ? t('dashWorkspaces')
       : currentLevel === 1
-        ? 'Campaigns'
-        : 'Groups'
-    : 'Link Manager';
+        ? t('dashCampaigns')
+        : t('dashGroups')
+    : t('dashLinkManagerTitle');
   const showBackArrow = isFoldersEnabled && !!currentSpaceId;
   const showHomeButton = isFoldersEnabled && !currentSpaceId;
 
@@ -940,7 +947,7 @@ const LinkManager = () => {
                   className={`flex items-center justify-center w-11 h-11 rounded-2xl border border-slate-200 text-gray-400 hover:bg-slate-200 hover:text-[#1b1b1b] transition-all active:scale-90 flex-shrink-0 ${
                     showBackArrow || showHomeButton ? '' : 'opacity-0 pointer-events-none'
                   }`}
-                  aria-label={showBackArrow ? 'Back' : 'Home'}
+                  aria-label={showBackArrow ? t('dashBack') : 'Home'}
                 >
                   <span className="material-symbols-outlined text-2xl" aria-hidden="true">
                     {showBackArrow ? 'chevron_left' : 'home'}
@@ -965,7 +972,7 @@ const LinkManager = () => {
                 : {})}
             >
               <span className="material-symbols-outlined text-xl md:text-base" aria-hidden="true">add</span>
-              {createOptions.length === 1 ? 'New Link' : 'Create'}
+              {createOptions.length === 1 ? t('dashNewLink') : t('dashCreate')}
             </button>
             {createMenuOpen && createOptions.length > 1 && (
               <>
@@ -1024,7 +1031,11 @@ const LinkManager = () => {
               className="flex-shrink mx-4 text-xs font-bold uppercase px-3 py-1 rounded-full bg-[#F4F7F6]"
               style={{ color: '#001E22' }}
             >
-              {KIND_LABEL_PLURAL[nextKind] || 'SPACES'}
+              {{
+                workspace: t('dashWorkspaces'),
+                campaign: t('dashCampaigns'),
+                group: t('dashGroups'),
+              }[nextKind] || 'SPACES'}
             </span>
             <div className="flex-grow border-t border-[#E5E9E8]"></div>
           </div>
@@ -1107,14 +1118,14 @@ const LinkManager = () => {
                             onClick={() => openEditSpaceModal(space)}
                             className="w-full px-4 py-2.5 text-left text-[#1b1b1b] hover:bg-white/5 transition-colors text-sm"
                           >
-                            Update
+                            {t('dashUpdate')}
                           </button>
                           <button
                             type="button"
                             onClick={() => handleCancelSpace(space)}
                             className="w-full px-4 py-2.5 text-left text-red-400 hover:bg-red-400/10 transition-colors text-sm"
                           >
-                            Delete
+                            {t('dashDelete')}
                           </button>
                         </div>
                       )}
@@ -1172,9 +1183,9 @@ const LinkManager = () => {
       (!isFoldersEnabled || currentLevel === 0) ? (
         <div className="bg-[#fcfdfd] border rounded-2xl p-12 text-center hover:shadow-card-mint transition-all border-[#a855f7]/40 md:border-card-border md:hover:border-[#a855f7]/40">
           <span className="material-symbols-outlined text-6xl text-black mb-4" aria-hidden="true">link</span>
-          <h3 className="text-xl font-bold text-black mb-2">No Links or Workspaces Yet</h3>
+          <h3 className="text-xl font-bold text-black mb-2">{t('dashEmptyLinksTitle')}</h3>
           <p className="text-black mb-6">
-            Create your first link or workspace to start organizing your tracking.
+            {t('dashEmptyLinksBody')}
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
             <button
@@ -1182,7 +1193,7 @@ const LinkManager = () => {
               onClick={() => navigate('/dashboard/links/new')}
               className="px-6 py-3 bg-[#a855f7] hover:bg-[#9333ea] text-white font-bold rounded-xl transition-all"
             >
-              Create First Link
+              {t('dashCreateFirstLink')}
             </button>
             {isFoldersEnabled && (
               <button
@@ -1190,7 +1201,7 @@ const LinkManager = () => {
                 onClick={() => openCreateSpaceModal('workspace')}
                 className="px-6 py-3 bg-white border border-[#a855f7] text-[#a855f7] font-bold rounded-xl transition-all hover:bg-[#f3f2ff]"
               >
-                Create First Workspace
+                {t('dashCreateFirstWorkspace')}
               </button>
             )}
           </div>
@@ -1216,9 +1227,9 @@ const LinkManager = () => {
                   <div className="flex-1 min-w-0 pr-4">
                     <h3
                       className="text-4xl font-bold text-[#1b1b1b] mb-1 break-words"
-                      title={link.name || 'Untitled'}
+                      title={link.name || t('dashUntitled')}
                     >
-                      {link.name || 'Untitled'}
+                      {link.name || t('dashUntitled')}
                     </h3>
                     <p className="text-xs text-gray-500 truncate" title={link.target_url}>
                       {truncateText(link.target_url, 60)}
@@ -1255,7 +1266,7 @@ const LinkManager = () => {
                   <div className="flex items-center justify-between gap-2">
                     <div className="flex flex-col min-w-0 flex-1">
                       <span className="text-[10px] text-gray-500 font-bold uppercase mb-1 tracking-widest">
-                        Short Link
+                        {t('dashShortLink')}
                       </span>
                       <span
                         className="font-bold text-lg tracking-wide break-all whitespace-normal text-[#0b996f]"
@@ -1296,7 +1307,7 @@ const LinkManager = () => {
                         <span
                           className={`text-sm font-semibold ${isActive ? 'text-slate-700' : 'text-gray-500'}`}
                         >
-                          {isActive ? 'Active' : 'Paused'}
+                          {isActive ? t('dashStatusActive') : t('dashStatusPaused')}
                         </span>
                       </>
                     )}
@@ -1407,7 +1418,7 @@ const LinkManager = () => {
             ? 'Already Here'
             : 'Move To Here'
         }
-        cancelText="Cancel"
+        cancelText={t('dashCancel')}
         onConfirm={handleMoveLink}
         isLoading={moveModal.isSaving}
         message={
@@ -1596,7 +1607,7 @@ const LinkManager = () => {
         }
         type="delete"
         confirmText="Delete Link"
-        cancelText="Cancel"
+        cancelText={t('dashCancel')}
         onConfirm={handleDeleteLink}
         isLoading={deleteLinkModal.isLoading}
       />
@@ -1628,8 +1639,8 @@ const LinkManager = () => {
         onClose={closeCreateSpaceModal}
         title={`${spaceModal.mode === 'edit' ? 'Update' : 'Create'} ${spaceModal.kind ? KIND_LABEL[spaceModal.kind] : 'Item'}`}
         type="confirm"
-        confirmText={spaceModal.mode === 'edit' ? 'Update' : 'Create'}
-        cancelText="Cancel"
+        confirmText={spaceModal.mode === 'edit' ? t('dashUpdate') : t('dashCreate')}
+        cancelText={t('dashCancel')}
         onConfirm={handleSaveSpace}
         isLoading={spaceModal.isLoading}
         confirmButtonClass={spaceModal.mode === 'edit' ? 'btn-update-workspace' : 'btn-primary'}
@@ -1674,6 +1685,7 @@ const LinkActionsMenu = ({
   className = '',
   hoverBorderClass = 'hover:border-primary/40',
 }) => {
+  const { t } = useLanguage();
   const [isOpen, setIsOpen] = useState(false);
   const triggerRef = useRef(null);
   const menuRef = useRef(null);
@@ -1729,7 +1741,7 @@ const LinkActionsMenu = ({
               className="w-full px-4 py-3 text-left text-[#1b1b1b] hover:bg-white/5 transition-colors flex items-center gap-3 text-sm"
             >
               <span className="material-symbols-outlined text-base" aria-hidden="true">info</span>
-              Details
+              {t('dashDetails')}
             </button>
             {!isRejected && (
               <button
@@ -1741,7 +1753,7 @@ const LinkActionsMenu = ({
                 className="w-full px-4 py-3 text-left text-[#1b1b1b] hover:bg-white/5 transition-colors flex items-center gap-3 text-sm"
               >
                 <span className="material-symbols-outlined text-base" aria-hidden="true">edit</span>
-                Edit
+                {t('dashEdit')}
               </button>
             )}
             <button
@@ -1764,7 +1776,7 @@ const LinkActionsMenu = ({
               className="w-full px-4 py-3 text-left text-[#1b1b1b] hover:bg-white/5 transition-colors flex items-center gap-3 text-sm"
             >
               <span className="material-symbols-outlined text-base" aria-hidden="true">content_copy</span>
-              Duplicate
+              {t('dashDuplicate')}
             </button>
             {onMove && (
               <button
@@ -1776,7 +1788,7 @@ const LinkActionsMenu = ({
                 className="w-full px-4 py-3 text-left text-[#1b1b1b] hover:bg-white/5 transition-colors flex items-center gap-3 text-sm"
               >
                 <span className="material-symbols-outlined text-base" aria-hidden="true">drive_file_move</span>
-                Move
+                {t('dashMove')}
               </button>
             )}
             <button
@@ -1788,7 +1800,7 @@ const LinkActionsMenu = ({
               className="w-full px-4 py-3 text-left text-red-400 hover:bg-red-400/10 transition-colors flex items-center gap-3 text-sm"
             >
               <span className="material-symbols-outlined text-base" aria-hidden="true">delete</span>
-              Delete
+              {t('dashDelete')}
             </button>
           </div>
         </>

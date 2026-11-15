@@ -5,6 +5,7 @@ import { Check } from 'lucide-react';
 import { checkForMaliciousInput, sanitizeInput } from '../../lib/inputSanitization';
 import Modal from '../../components/common/Modal';
 import { useToast } from '../../components/common/ToastProvider.jsx';
+import { useLanguage } from '../../i18n/LanguageContext';
 
 const PLAN_FEATURES = {
   free: {
@@ -56,6 +57,7 @@ const COMMON_TIMEZONES = [
 ];
 
 export default function AccountSettingsPage() {
+  const { t } = useLanguage();
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -328,13 +330,13 @@ export default function AccountSettingsPage() {
           role="status"
           aria-live="polite"
           aria-busy="true"
-          aria-label="Loading account settings"
+          aria-label={t('dashSettingsLoading')}
           className="flex flex-col items-center gap-2"
         >
           <span className="material-symbols-outlined animate-spin text-4xl text-[#135bec]" aria-hidden="true">
             refresh
           </span>
-          <span className="text-sm">Loading settings...</span>
+          <span className="text-sm">{t('dashSettingsLoading')}</span>
         </div>
       </div>
     );
@@ -414,8 +416,8 @@ export default function AccountSettingsPage() {
       >
         {/* Header */}
         <div>
-          <h1 className="text-3xl font-bold text-[#1b1b1b] mb-2">Account Settings</h1>
-          <p className="text-[#1b1b1b]">Manage your profile, preferences, and subscription.</p>
+          <h1 className="text-3xl font-bold text-[#1b1b1b] mb-2">{t('dashSettingsTitle')}</h1>
+          <p className="text-[#1b1b1b]">{t('dashSettingsSubtitle')}</p>
         </div>
 
         {/* Main Grid */}
@@ -428,14 +430,14 @@ export default function AccountSettingsPage() {
                 <span className="material-symbols-outlined text-[#135bec]" aria-hidden="true">
                   person
                 </span>
-                Personal Information
+                {t('dashPersonalInfo')}
               </h2>
 
               <form onSubmit={handleUpdateProfile} className="space-y-6" noValidate>
                 {/* Full Name */}
                 <div>
                   <label htmlFor="account-full-name" className="block text-sm font-medium text-[#1b1b1b] mb-2">
-                    Full Name
+                    {t('dashFullName')}
                   </label>
                   <input
                     id="account-full-name"
@@ -452,7 +454,7 @@ export default function AccountSettingsPage() {
                 {/* Email Address (read-only) */}
                 <div>
                   <label htmlFor="account-email" className="block text-sm font-medium text-[#1b1b1b] mb-2">
-                    Email Address
+                    {t('dashEmailAddress')}
                   </label>
                   <input
                     id="account-email"
@@ -467,14 +469,14 @@ export default function AccountSettingsPage() {
                     placeholder="name@example.com"
                   />
                   <p id="account-email-hint" className="text-xs text-slate-600 mt-2">
-                    Email cannot be changed here. Contact support if you need to update it.
+                    {t('dashEmailReadonlyHint')}
                   </p>
                 </div>
 
                 {/* Timezone Selector */}
                 <div>
                   <label htmlFor="account-timezone" className="block text-sm font-medium text-[#1b1b1b] mb-2">
-                    Timezone
+                    {t('dashTimezone')}
                   </label>
                   <div className="relative">
                     <select
@@ -499,7 +501,7 @@ export default function AccountSettingsPage() {
                     </span>
                   </div>
                   <p id="account-timezone-hint" className="text-xs text-slate-600 mt-2">
-                    Used for analytics reports and scheduled events.
+                    {t('dashTimezoneHint')}
                   </p>
                   <div className="mt-6 min-h-[2.5rem]">
                     {success && (
@@ -534,7 +536,7 @@ export default function AccountSettingsPage() {
                         refresh
                       </span>
                     )}
-                    Save Changes
+                    {t('dashSaveChanges')}
                   </button>
                 </div>
               </form>
@@ -553,11 +555,11 @@ export default function AccountSettingsPage() {
                       : 'bg-purple-100 text-[#6d28d9] border-purple-200'
                   }`}
                 >
-                  {isCancelled ? 'Cancelled' : isFreeTrial ? 'Free Trial' : `${currentPlanDisplay} Plan`}
+                  {isCancelled ? t('dashPlanCancelled') : isFreeTrial ? t('dashFreeTrial') : `${currentPlanDisplay} Plan`}
                 </span>
               </div>
 
-              <h2 className="text-xl font-bold text-[#1b1b1b] mb-1 mt-10">Subscription</h2>
+              <h2 className="text-xl font-bold text-[#1b1b1b] mb-1 mt-10">{t('dashSubscription')}</h2>
               <p className="text-[#1b1b1b] text-sm mb-6">Your current plan status.</p>
 
               <div className="space-y-4 mb-8">
@@ -585,7 +587,7 @@ export default function AccountSettingsPage() {
                 <button
                   type="button"
                   onClick={() => setShowCancelConfirmModal(true)}
-                  aria-label="Cancel subscription"
+                  aria-label={t('dashCancelSubscription')}
                   className="w-full group relative overflow-hidden rounded-xl bg-gradient-to-r from-[#a855f7] to-[#7c6ee8] p-[1px]"
                 >
                   <div
@@ -593,7 +595,7 @@ export default function AccountSettingsPage() {
                     aria-hidden="true"
                   />
                   <div className="relative w-full bg-white rounded-[11px] px-6 py-3 flex items-center justify-center gap-2 group-hover:bg-opacity-90 transition-colors">
-                    <span className="font-semibold text-[#6d28d9]">Cancel subscription</span>
+                    <span className="font-semibold text-[#6d28d9]">{t('dashCancelSubscription')}</span>
                   </div>
                 </button>
               )}
@@ -604,7 +606,7 @@ export default function AccountSettingsPage() {
         {/* Pricing cards (same layout and styling as homepage CTASection).
             Temporarily hidden for users on a 30-day free trial. */}
         <div className="mt-12">
-          <h2 className="text-2xl font-bold text-[#1b1b1b] dark:text-[#1b1b1b] mb-6">Plans</h2>
+          <h2 className="text-2xl font-bold text-[#1b1b1b] dark:text-[#1b1b1b] mb-6">{t('dashPlans')}</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8 xl:gap-10 items-stretch">
             {SETTINGS_PLANS.map((plan) => {
               const planKey = planKeyFromName(plan.name);
@@ -613,9 +615,9 @@ export default function AccountSettingsPage() {
               const planPriceNum = plan.priceNum;
               const isDowngrade = currentPlanKey && planPriceNum < currentPlanPrice;
               const isFeaturedCard = isCurrentPlan || isRecommendedForTrial;
-              let buttonLabel = plan.buttonText;
-              if (isCurrentPlan) buttonLabel = 'Your current plan';
-              else if (isDowngrade) buttonLabel = 'Switch to this plan';
+              let buttonLabel = plan.name === 'PRO' ? t('goPro') : plan.buttonText;
+              if (isCurrentPlan) buttonLabel = t('yourCurrentPlan');
+              else if (isDowngrade) buttonLabel = t('switchToThisPlan');
 
                 return (
                   <motion.div
@@ -632,7 +634,7 @@ export default function AccountSettingsPage() {
                       <span
                         className="absolute -top-5 left-1/2 -translate-x-1/2 px-6 py-2 text-white text-xs font-black rounded-full uppercase tracking-widest shadow-lg bg-[#0b996f]"
                       >
-                        {isCurrentPlan ? 'Current Plan' : 'Recommended'}
+                        {isCurrentPlan ? t('currentPlan') : t('recommended')}
                       </span>
                     )}
                     <div className="flex flex-col h-full">
@@ -752,7 +754,7 @@ export default function AccountSettingsPage() {
               <span className="material-symbols-outlined text-[#135bec]" aria-hidden="true">
                 lock
               </span>
-              Security
+              {t('dashSecurity')}
             </h2>
 
             {!showPasswordChange ? (
@@ -761,7 +763,7 @@ export default function AccountSettingsPage() {
                 onClick={() => setShowPasswordChange(true)}
                 className="flex items-center gap-2 bg-[#a855f7] hover:bg-[#9333ea] text-white transition-colors border border-transparent rounded-lg px-4 py-2 font-semibold shadow-md shadow-[#a855f7]/30"
               >
-                Change Password
+                {t('dashChangePassword')}
               </button>
             ) : (
               <div
@@ -771,12 +773,12 @@ export default function AccountSettingsPage() {
                 aria-labelledby="account-password-change-heading"
               >
                 <h3 id="account-password-change-heading" className="text-[#1b1b1b] font-semibold mb-2">
-                  Change Password
+                  {t('dashChangePassword')}
                 </h3>
 
                 <div>
                   <label htmlFor="account-password-current" className="block text-xs font-medium text-[#1b1b1b] mb-1">
-                    Current Password
+                    {t('dashCurrentPassword')}
                   </label>
                   <div className="relative flex items-center">
                     <input
@@ -804,7 +806,7 @@ export default function AccountSettingsPage() {
 
                 <div>
                   <label htmlFor="account-password-new" className="block text-xs font-medium text-[#1b1b1b] mb-1">
-                    New Password
+                    {t('dashNewPassword')}
                   </label>
                   <div className="relative flex items-center">
                     <input
@@ -836,7 +838,7 @@ export default function AccountSettingsPage() {
 
                 <div>
                   <label htmlFor="account-password-confirm" className="block text-xs font-medium text-[#1b1b1b] mb-1">
-                    Confirm New Password
+                    {t('dashConfirmNewPassword')}
                   </label>
                   <div className="relative flex items-center">
                     <input
@@ -896,7 +898,7 @@ export default function AccountSettingsPage() {
                     className="text-[#1b1b1b] hover:text-[#1b1b1b] text-xs px-3 py-2 rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-[#a855f7] focus-visible:ring-offset-2"
                     aria-label="Cancel changing password"
                   >
-                    Cancel
+                    {t('dashCancel')}
                   </button>
                   <button
                     type="button"
@@ -926,7 +928,7 @@ export default function AccountSettingsPage() {
         message="If you cancel your subscription, all your links will stop working."
         type="confirm"
         confirmText="Confirm"
-        cancelText="Cancel"
+        cancelText={t('dashCancel')}
         onConfirm={handleCancelSubscription}
         isLoading={saving}
       />

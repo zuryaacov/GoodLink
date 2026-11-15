@@ -1,12 +1,17 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import en from './translations/en';
 import he from './translations/he';
+import dashboardEn from './translations/dashboardEn';
+import dashboardHe from './translations/dashboardHe';
 
 const STORAGE_KEY = 'goodlink:lang';
 // v2: ignore older sticky prefs so IP detection can work again after VPN / location changes
 const PREF_KEY = 'goodlink:lang_pref_v2';
 const OLD_PREF_KEY = 'goodlink:lang_pref';
-const dictionaries = { en, he };
+const dictionaries = {
+  en: { ...en, ...dashboardEn },
+  he: { ...he, ...dashboardHe },
+};
 
 const LanguageContext = createContext(null);
 

@@ -1,14 +1,15 @@
 import React from 'react';
 import { Lock } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useLanguage } from '../../i18n/LanguageContext';
 
 /**
  * Full-page screen shown when subscription_status === 'cancelled'.
  * Same visual style as "Unlock …" paywalls: blurred background, centered card.
- * Title: subscription cancelled; message: data saved, features frozen until renewal.
  */
 const SubscriptionCancelledScreen = () => {
   const navigate = useNavigate();
+  const { t } = useLanguage();
 
   return (
     <div className="relative min-h-[480px] w-full flex items-center justify-center p-6 overflow-hidden bg-white rounded-2xl border border-dashed border-card-border">
@@ -33,16 +34,16 @@ const SubscriptionCancelledScreen = () => {
           </div>
         </div>
         <h2 className="text-2xl md:text-3xl font-bold text-[#1b1b1b] mb-4 tracking-tight">
-          Subscription Cancelled
+          {t('dashSubCancelledTitle')}
         </h2>
         <p className="text-sm md:text-base text-slate-600 dark:text-slate-400 mb-8 leading-relaxed">
-          Your data is saved. Some features are temporarily frozen until you renew your subscription.
+          {t('dashSubCancelledBody')}
         </p>
         <button
           onClick={() => navigate('/dashboard/settings')}
           className="w-full inline-flex items-center justify-center gap-2 bg-[#a855f7] text-white font-bold py-3.5 px-8 rounded-2xl transition-all hover:bg-[#9333ea] shadow-xl shadow-[#a855f7]/30"
         >
-          Renew in Account Settings
+          {t('dashSubCancelledCta')}
         </button>
       </div>
     </div>

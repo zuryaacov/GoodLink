@@ -7,8 +7,10 @@ import SubscriptionCancelledScreen from '../../components/dashboard/Subscription
 import outbrainLogo from '../../assets/id-bNajMAc_1769618145922.svg';
 import taboolaLogo from '../../assets/idRS-vCmxj_1769618141092.svg';
 import { useToast } from '../../components/common/ToastProvider.jsx';
+import { useLanguage } from '../../i18n/LanguageContext';
 
 const PixelManager = () => {
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const location = useLocation();
   const [pixels, setPixels] = useState([]);
@@ -362,7 +364,7 @@ const PixelManager = () => {
           <span className="material-symbols-outlined text-4xl text-slate-600 animate-spin" aria-hidden="true">
             refresh
           </span>
-          <p className="text-[#1b1b1b] mt-4">Loading CAPI...</p>
+          <p className="text-[#1b1b1b] mt-4">{t('dashCapiLoading')}</p>
         </div>
       </div>
     );
@@ -402,17 +404,11 @@ const PixelManager = () => {
           </div>
 
           <h2 className="text-2xl md:text-3xl font-bold text-[#1b1b1b] mb-4 tracking-tight">
-            Unlock CAPI Manager
+            {t('dashUnlockCapiTitle')}
           </h2>
 
           <p className="text-sm md:text-base text-[#1b1b1b] mb-8 leading-relaxed">
-            Your current&nbsp;
-            <span className="font-semibold text-[#1b1b1b] italic capitalize">
-              {normalizedPlan} plan
-            </span>{' '}
-            does not include CAPI tracking. Upgrade to&nbsp;
-            <span className="text-[#a855f7] font-bold uppercase tracking-wider">PRO</span> to
-            create, manage, and optimize CAPI profiles across all your campaigns.
+            {t('dashUnlockCapiBody').replace('{plan}', normalizedPlan.toUpperCase())}
           </p>
 
           {/* Value props */}
@@ -420,9 +416,9 @@ const PixelManager = () => {
             <div className="flex items-center gap-3 p-3 bg-white/80 rounded-xl border border-slate-200 hover:border-primary/40 transition-colors">
               <Globe className="w-5 h-5 text-[#a855f7]" aria-hidden="true" />
               <div>
-                <p className="font-semibold text-sm text-[#1b1b1b] italic">Cross‑platform CAPI</p>
+                <p className="font-semibold text-sm text-[#1b1b1b] italic">{t('dashPaywallCrossPlatform')}</p>
                 <p className="text-xs text-[#1b1b1b]">
-                  Track Meta, TikTok, Google, Taboola, Outbrain and more from one place.
+                  {t('dashPaywallCrossPlatformDesc')}
                 </p>
               </div>
             </div>
@@ -430,10 +426,10 @@ const PixelManager = () => {
               <BarChart3 className="w-5 h-5 text-[#a855f7]" aria-hidden="true" />
               <div>
                 <p className="font-semibold text-sm text-[#1b1b1b] italic">
-                  Advanced Attribution & Optimization
+                  {t('dashPaywallAttribution')}
                 </p>
                 <p className="text-xs text-[#1b1b1b]">
-                  Optimize ROAS with unified CAPI events and cleaner reporting.
+                  {t('dashPaywallAttributionDesc')}
                 </p>
               </div>
             </div>
@@ -447,13 +443,12 @@ const PixelManager = () => {
             className="group relative w-full inline-flex items-center justify-center gap-2 bg-[#a855f7] text-white font-bold py-3.5 px-8 rounded-2xl transition-all duration-300 hover:bg-[#9333ea] hover:scale-[1.02] active:scale-[0.98] shadow-xl shadow-[#a855f7]/30"
           >
             <Zap className="w-5 h-5" />
-            <span>View Plans & Upgrade</span>
+            <span>{t('dashViewPlansUpgrade')}</span>
             <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
           </button>
 
           <p className="mt-5 text-xs text-[#1b1b1b]">
-            CAPI Manager is available on the{' '}
-            <span className="font-semibold text-[#1b1b1b]">PRO</span> plan.
+            {t('dashCapiAvailOnPro')}
           </p>
         </div>
       </div>
@@ -464,8 +459,8 @@ const PixelManager = () => {
     <div className="flex flex-col gap-6 md:gap-8 w-full max-w-7xl mx-auto">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="flex flex-col gap-2">
-          <h1 className="text-2xl md:text-3xl font-bold text-[#1b1b1b]">CAPI Manager</h1>
-          <p className="text-sm md:text-base text-[#1b1b1b]">Manage your CAPI tracking</p>
+          <h1 className="text-2xl md:text-3xl font-bold text-[#1b1b1b]">{t('dashCapiTitle')}</h1>
+          <p className="text-sm md:text-base text-[#1b1b1b]">{t('dashCapiSubtitle')}</p>
         </div>
         <button
           onClick={() => navigate('/dashboard/pixels/new')}
@@ -481,7 +476,7 @@ const PixelManager = () => {
           }}
         >
           <span className="material-symbols-outlined text-xl md:text-base" aria-hidden="true">add</span>
-          New CAPI
+          {t('dashNewCapi')}
         </button>
       </div>
 
@@ -489,15 +484,15 @@ const PixelManager = () => {
       {pixels.length === 0 ? (
         <div className="bg-[#fcfdfd] border rounded-2xl p-12 text-center hover:shadow-card-mint transition-all border-[#a855f7]/40 md:border-card-border md:hover:border-[#a855f7]/40">
           <span className="material-symbols-outlined text-6xl text-black mb-4" aria-hidden="true">ads_click</span>
-          <h3 className="text-xl font-bold text-black mb-2">No CAPI Profiles Yet</h3>
+          <h3 className="text-xl font-bold text-black mb-2">{t('dashEmptyCapiTitle')}</h3>
           <p className="text-black mb-6">
-            Create your first CAPI profile to start tracking your conversions
+            {t('dashEmptyCapiBody')}
           </p>
           <button
             onClick={() => navigate('/dashboard/pixels/new')}
             className="px-6 py-3 bg-[#a855f7] hover:bg-[#9333ea] text-white font-bold rounded-xl transition-all"
           >
-            Create First CAPI
+            {t('dashCreateFirstCapi')}
           </button>
         </div>
       ) : (
@@ -557,7 +552,7 @@ const PixelManager = () => {
                           className="w-full px-4 py-3 text-left text-[#1b1b1b] hover:bg-white/5 transition-colors flex items-center gap-3 text-sm"
                         >
                           <span className="material-symbols-outlined text-base" aria-hidden="true">edit</span>
-                          Edit
+                          {t('dashEdit')}
                         </button>
                         <button
                           role="menuitem"
@@ -574,7 +569,7 @@ const PixelManager = () => {
                           className="w-full px-4 py-3 text-left text-red-500 hover:bg-red-400/10 transition-colors flex items-center gap-3 text-sm"
                         >
                           <span className="material-symbols-outlined text-base" aria-hidden="true">delete</span>
-                          Delete
+                          {t('dashDelete')}
                         </button>
                       </div>
                     </>
@@ -648,7 +643,7 @@ const PixelManager = () => {
                   />
                 </button>
                 <span className="text-sm text-[#1b1b1b] font-medium">
-                  {pixel.status === 'active' ? 'Active' : 'Paused'}
+                  {pixel.status === 'active' ? t('dashStatusActive') : t('dashStatusPaused')}
                 </span>
               </div>
             </div>
@@ -671,7 +666,7 @@ const PixelManager = () => {
         }
         type="delete"
         confirmText="Delete CAPI"
-        cancelText="Cancel"
+        cancelText={t('dashCancel')}
         onConfirm={handleDelete}
         isLoading={deleteModalState.isLoading}
       />

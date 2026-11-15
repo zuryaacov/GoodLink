@@ -3,8 +3,10 @@ import { Outlet, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import Sidebar from '../components/dashboard/Sidebar';
 import { supabase } from '../lib/supabase';
+import { useLanguage } from '../i18n/LanguageContext';
 
 const DashboardLayout = () => {
+  const { t, isRtl } = useLanguage();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [impersonationBanner, setImpersonationBanner] = useState(null);
   const hamburgerRef = useRef(null);
@@ -121,44 +123,26 @@ const DashboardLayout = () => {
       window.location.assign('/dashboard/admin');
     } catch (err) {
       console.error('Failed to exit impersonation mode:', err);
-      alert('Failed to exit impersonation mode. Please login again.');
+      alert(t('dashExitImpersonationFail'));
     }
   };
+
+  const drawerFrom = isRtl ? '100%' : '-100%';
 
   return (
     <div className="flex h-screen bg-white overflow-hidden">
       <a href="#dashboard-main" className="skip-to-content">
-        Skip to main content
+        {t('skipToContent')}
       </a>
 
-      <div className="hidden lg:block fixed inset-y-0 left-0 z-50">
+      <div className="hidden lg:block fixed inset-y-0 start-0 z-50">
         <Sidebar className="w-64" />
       </div>
 
-      <div className="flex-1 lg:ml-64 flex flex-col h-full overflow-hidden">
+      <div className="flex-1 lg:ms-64 flex flex-col h-full overflow-hidden">
         <header className="lg:hidden h-16 bg-white border-b border-slate-200 flex items-center justify-between px-4 fixed top-0 left-0 right-0 z-40">
           <Link to="/" className="flex items-center gap-2 transition-colors hover:text-[#0b996f]">
-            {/* Link-shape icon hidden by request (kept in code, do not delete)
-            <div className="size-5 sm:size-8 text-primary flex-shrink-0" aria-hidden="true">
-              <svg fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path
-                  d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"
-                  stroke="#a855f7"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="3"
-                ></path>
-                <path
-                  d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"
-                  stroke="#a855f7"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="3"
-                ></path>
-              </svg>
-            </div>
-            */}
-            <span className="text-xl font-black leading-tight tracking-tight text-inherit">
+            <span className="brand-logo text-xl font-black leading-tight tracking-tight text-inherit">
               GoodLink
             </span>
           </Link>
@@ -168,7 +152,7 @@ const DashboardLayout = () => {
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             aria-expanded={isMobileMenuOpen}
             aria-controls="mobile-dashboard-menu"
-            aria-label={isMobileMenuOpen ? 'Close menu' : 'Open menu'}
+            aria-label={isMobileMenuOpen ? t('closeMenu') : t('openMenu')}
             className="text-[#1b1b1b] p-2"
           >
             <span className="material-symbols-outlined" aria-hidden="true">{isMobileMenuOpen ? 'close' : 'menu'}</span>
@@ -181,7 +165,7 @@ const DashboardLayout = () => {
               id="mobile-dashboard-menu"
               role="dialog"
               aria-modal="true"
-              aria-label="Dashboard navigation"
+              aria-label={t('dashMobileNavAria')}
               className="lg:hidden fixed inset-0 z-50"
             >
               <motion.div
@@ -194,17 +178,17 @@ const DashboardLayout = () => {
               />
 
               <motion.div
-                initial={{ x: '-100%' }}
+                initial={{ x: drawerFrom }}
                 animate={{ x: 0 }}
-                exit={{ x: '-100%' }}
+                exit={{ x: drawerFrom }}
                 transition={{ duration: 0.3, ease: 'easeInOut' }}
-                className="absolute left-0 top-0 bottom-0 w-64 bg-nav-bg shadow-2xl flex flex-col border-r border-slate-200"
+                className="absolute start-0 top-0 bottom-0 w-64 bg-nav-bg shadow-2xl flex flex-col border-e border-slate-200"
               >
                 <div className="flex justify-between items-center p-4 border-b border-slate-200 flex-shrink-0">
-                  <span className="text-[#1b1b1b] font-bold ml-2">Menu</span>
+                  <span className="text-[#1b1b1b] font-bold ms-2">{t('dashMenu')}</span>
                   <button
                     onClick={closeMobileMenu}
-                    aria-label="Close menu"
+                    aria-label={t('closeMenu')}
                     className="text-slate-500 hover:text-[#1b1b1b]"
                   >
                     <span className="material-symbols-outlined" aria-hidden="true">close</span>
@@ -225,14 +209,15 @@ const DashboardLayout = () => {
           {impersonationBanner && (
             <div role="alert" className="mb-4 rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
               <p className="text-sm sm:text-base font-semibold text-amber-900">
-                <span aria-hidden="true">{'⚠️'} </span>You are in impersonation mode ({impersonationBanner.targetEmail}).
+                <span aria-hidden="true">{'⚠️'} </span>
+                {t('dashImpersonationBanner').replace('{email}', impersonationBanner.targetEmail || '')}
               </p>
               <button
                 type="button"
                 onClick={exitImpersonation}
                 className="px-3 py-2 rounded-lg border border-amber-400 text-amber-900 text-sm font-bold hover:bg-amber-100 transition-colors"
               >
-                Exit Impersonation
+                {t('dashExitImpersonation')}
               </button>
             </div>
           )}
