@@ -113,8 +113,8 @@ const ResetPasswordPage = () => {
         Skip to main content
       </a>
 
-      <div className="absolute top-[-10%] left-[-10%] size-96 bg-primary/10 blur-[120px] rounded-full" aria-hidden="true"></div>
-      <div className="absolute bottom-[-10%] right-[-10%] size-96 bg-secondary-green/30 blur-[120px] rounded-full" aria-hidden="true"></div>
+      <div className="pointer-events-none absolute top-[-10%] start-[-10%] size-96 bg-primary/10 blur-[120px] rounded-full" aria-hidden="true"></div>
+      <div className="pointer-events-none absolute bottom-[-10%] end-[-10%] size-96 bg-secondary-green/30 blur-[120px] rounded-full" aria-hidden="true"></div>
 
       <main id="reset-main" className="relative z-10 w-full max-w-md flex flex-col items-center">
         <Link to="/" className="flex items-center gap-3 mb-8 transition-colors hover:text-[#0b996f]">

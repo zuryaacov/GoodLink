@@ -41,7 +41,7 @@ const Hero = ({ user }) => {
           </h1>
 
           {/* Secondary line */}
-          <p className="text-[#0b996f] text-xl sm:text-2xl md:text-3xl lg:text-[2.25rem] xl:text-[2.07rem] font-bold leading-snug xl:whitespace-nowrap">
+          <p className="text-[#0b996f] text-xl sm:text-2xl md:text-3xl lg:text-[2.25rem] xl:text-[2.07rem] font-bold leading-snug ltr:xl:whitespace-nowrap px-2">
             {t('heroSubtitle')}
           </p>
 

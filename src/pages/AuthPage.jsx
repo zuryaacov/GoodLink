@@ -706,8 +706,8 @@ const AuthPage = () => {
       <a href="#auth-main" className="skip-to-content">
         {t('authSkipToContent')}
       </a>
-      <div className="absolute top-[-10%] left-[-10%] size-96 bg-primary/10 blur-[120px] rounded-full" aria-hidden="true"></div>
-      <div className="absolute bottom-[-10%] right-[-10%] size-96 bg-secondary-green/30 blur-[120px] rounded-full" aria-hidden="true"></div>
+      <div className="pointer-events-none absolute top-[-10%] start-[-10%] size-96 bg-primary/10 blur-[120px] rounded-full" aria-hidden="true"></div>
+      <div className="pointer-events-none absolute bottom-[-10%] end-[-10%] size-96 bg-secondary-green/30 blur-[120px] rounded-full" aria-hidden="true"></div>
 
       <main id="auth-main" className="relative z-10 w-full max-w-md flex flex-col items-center">
         <Logo />

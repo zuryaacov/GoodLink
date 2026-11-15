@@ -45,7 +45,7 @@ const Homepage = () => {
   }, [location.hash]);
 
   return (
-    <div className="relative flex min-h-screen w-full flex-col">
+    <div className="relative flex min-h-screen w-full max-w-[100vw] flex-col overflow-x-clip">
       <a href="#main-content" className="skip-to-content">
         {t('skipToContent')}
       </a>
