@@ -64,7 +64,7 @@ const Features = () => {
           className="flex flex-col items-center text-center gap-4 max-w-3xl mx-auto"
         >
           <div className="inline-flex items-center rounded-full bg-[#a855f7]/10 px-3 py-1 text-sm font-medium text-[#7c3aed] border border-[#a855f7]/20">
-            Features
+            Features1
           </div>
           <h2 id="features-heading" className="text-slate-900 dark:text-[#1b1b1b] tracking-tight text-3xl md:text-5xl font-black leading-tight">
             Engineered for Performance
