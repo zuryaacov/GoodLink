@@ -168,9 +168,23 @@ export function LanguageProvider({ children }) {
   return <LanguageContext.Provider value={value}>{children}</LanguageContext.Provider>;
 }
 
+// Safe stub for Vite Fast Refresh: when LanguageContext.jsx hot-reloads, a new
+// createContext() identity is created while consumers can briefly still sit under
+// the previous Provider — useContext then returns null. Avoid crashing / Sentry noise.
+const HMR_FALLBACK = {
+  language: 'en',
+  dir: 'ltr',
+  setLanguage: () => {},
+  toggleLanguage: () => {},
+  t: (key) => key,
+};
+
 export function useLanguage() {
   const ctx = useContext(LanguageContext);
   if (!ctx) {
+    if (import.meta.hot) {
+      return HMR_FALLBACK;
+    }
     throw new Error('useLanguage must be used within LanguageProvider');
   }
   return ctx;

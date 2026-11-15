@@ -26,6 +26,14 @@ Sentry.init({
   sendDefaultPii: true,
   // Disable SDK log forwarding to keep console output silent.
   enableLogs: false,
+  // Drop Vite Fast Refresh / HMR noise (e.g. transient LanguageProvider mismatches).
+  beforeSend(event) {
+    const frames = event.exception?.values?.[0]?.stacktrace?.frames || []
+    if (frames.some((f) => String(f.filename || '').includes('react-refresh'))) {
+      return null
+    }
+    return event
+  },
 })
 
 createRoot(document.getElementById('root')).render(

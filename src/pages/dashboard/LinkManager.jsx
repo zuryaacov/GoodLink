@@ -1214,6 +1214,7 @@ const LinkManager = () => {
             return (
               <div
                 key={link.id}
+                dir="ltr"
                 className={`relative bg-card-bg border rounded-[1.25rem] p-6 flex flex-col h-full transition-all duration-300 ease-out overflow-visible hover:shadow-card-mint ${
                   !isActive && !isRejected ? 'opacity-70' : ''
                 } ${
