@@ -17,13 +17,26 @@
  */
 
 /**
+ * Browsers send non-ASCII path segments percent-encoded.
+ * DB stores decoded Unicode slugs — decode before lookup.
+ */
+function decodePathname(pathname) {
+  const raw = String(pathname || '');
+  try {
+    return decodeURIComponent(raw);
+  } catch {
+    return raw;
+  }
+}
+
+/**
  * Extract slug from URL path
  * @param {string} pathname - URL pathname (e.g., "/abc123" or "/abc123?param=value")
  * @returns {string|null} - Slug or null if invalid
  */
 function extractSlug(pathname) {
-  // Remove leading slash and query parameters
-  const path = pathname.replace(/^\//, '').split('?')[0].split('#')[0];
+  // Decode percent-encoding first (Hebrew etc.), then strip leading slash / query
+  const path = decodePathname(pathname).replace(/^\//, '').split('?')[0].split('#')[0];
   
   // Return null for empty paths or common paths
   if (!path || path === '' || path === 'index.html' || path.startsWith('api/')) {
