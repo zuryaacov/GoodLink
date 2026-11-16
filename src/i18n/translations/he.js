@@ -222,6 +222,26 @@ const he = {
   accHiddenToastMessage:
     'הגדרות התצוגה שלכם נשארות פעילות. כדי להציג שוב את הכפתור הצף, השתמשו ב״הצגת תפריט נגישות״ בתפריט הדשבורד (מעל השם שלכם), או בדף הבית בתחתית האתר.',
   accShowMenu: 'הצגת תפריט נגישות',
+
+  // Contact page
+  contactTitle: 'איך אפשר לעזור?',
+  contactSubtitle: 'שלחו לנו הודעה ונחזור אליכם בהקדם האפשרי.',
+  contactEmailLabel: 'אימייל',
+  contactEmailPlaceholder: 'you@example.com',
+  contactMessageLabel: 'איך אפשר לעזור?',
+  contactMessagePlaceholder: 'ההודעה שלכם...',
+  contactSend: 'שליחה',
+  contactSending: 'שולחים...',
+  contactThanksTitle: 'תודה שפניתם אלינו.',
+  contactThanksBody: 'קיבלנו את ההודעה ונחזור אליכם לכתובת האימייל שסיפקתם.',
+  contactSendAnother: 'שליחת הודעה נוספת',
+  contactErrEmailRequired: 'נא להזין כתובת אימייל.',
+  contactErrEmailInvalid: 'נא להזין כתובת אימייל תקינה.',
+  contactErrMessageRequired: 'נא להזין את ההודעה שלכם.',
+  contactErrTurnstile: 'נא להשלים את אימות Cloudflare.',
+  contactErrTurnstileInit: 'לא ניתן לאתחל את אימות Cloudflare. רעננו את הדף ונסו שוב.',
+  contactErrGeneric: 'משהו השתבש. נסו שוב.',
+  contactTurnstileMissingKey: 'חסר מפתח Cloudflare Turnstile.',
 };
 
 export default he;

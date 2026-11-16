@@ -223,6 +223,26 @@ const en = {
   accHiddenToastMessage:
     'Your display settings stay active. To show the floating button again, use “Show accessibility menu” in the dashboard sidebar (above your name), or go to the GoodLink homepage footer.',
   accShowMenu: 'Show accessibility menu',
+
+  // Contact page
+  contactTitle: 'How can we help?',
+  contactSubtitle: "Send us a message and we'll get back to you as soon as we can.",
+  contactEmailLabel: 'Email',
+  contactEmailPlaceholder: 'you@example.com',
+  contactMessageLabel: 'How can we help?',
+  contactMessagePlaceholder: 'Your message...',
+  contactSend: 'Send',
+  contactSending: 'Sending...',
+  contactThanksTitle: 'Thank you for reaching out.',
+  contactThanksBody: "We've received your message and will respond to the email you provided.",
+  contactSendAnother: 'Send another message',
+  contactErrEmailRequired: 'Please enter your email address.',
+  contactErrEmailInvalid: 'Please enter a valid email address.',
+  contactErrMessageRequired: 'Please enter your message.',
+  contactErrTurnstile: 'Please complete the Cloudflare human verification.',
+  contactErrTurnstileInit: 'Could not initialize Cloudflare verification. Please refresh and try again.',
+  contactErrGeneric: 'Something went wrong. Please try again.',
+  contactTurnstileMissingKey: 'Cloudflare Turnstile site key is missing.',
 };
 
 export default en;

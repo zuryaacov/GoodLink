@@ -2,8 +2,10 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { isValidEmail } from '../lib/emailValidation';
+import { useLanguage } from '../i18n/LanguageContext';
 
 const ContactPage = () => {
+  const { t, language, isRtl } = useLanguage();
   const [email, setEmail] = useState('');
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
@@ -18,23 +20,40 @@ const ContactPage = () => {
   }, []);
 
   useEffect(() => {
+    if (sent) return;
+
     const siteKey = import.meta.env.VITE_TURNSTILE_SITE_KEY;
     if (!siteKey || !turnstileContainerRef.current || !window.turnstile) return;
-    if (turnstileWidgetId) return;
+
+    const container = turnstileContainerRef.current;
+
+    if (turnstileWidgetId && window.turnstile) {
+      try {
+        window.turnstile.remove(turnstileWidgetId);
+      } catch {
+        // Ignore if already removed
+      }
+      setTurnstileWidgetId(null);
+      setTurnstileToken(null);
+      container.innerHTML = '';
+    }
 
     try {
-      const id = window.turnstile.render(turnstileContainerRef.current, {
+      const id = window.turnstile.render(container, {
         sitekey: siteKey,
         theme: 'light',
+        language: language === 'he' ? 'he' : 'en',
         callback: (token) => setTurnstileToken(token),
         'expired-callback': () => setTurnstileToken(null),
         'error-callback': () => setTurnstileToken(null),
       });
       setTurnstileWidgetId(id);
     } catch {
-      setError('Could not initialize Cloudflare verification. Please refresh and try again.');
+      setError(t('contactErrTurnstileInit'));
     }
-  }, [turnstileWidgetId]);
+    // Re-render when language changes or form returns from success state
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [language, t, sent]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -44,19 +63,19 @@ const ContactPage = () => {
     const messageTrimmed = message.trim();
 
     if (!emailTrimmed) {
-      setError('Please enter your email address.');
+      setError(t('contactErrEmailRequired'));
       return;
     }
     if (!isValidEmail(emailTrimmed)) {
-      setError('Please enter a valid email address.');
+      setError(t('contactErrEmailInvalid'));
       return;
     }
     if (!messageTrimmed) {
-      setError('Please enter your message.');
+      setError(t('contactErrMessageRequired'));
       return;
     }
     if (!turnstileToken) {
-      setError('Please complete the Cloudflare human verification.');
+      setError(t('contactErrTurnstile'));
       return;
     }
 
@@ -76,7 +95,7 @@ const ContactPage = () => {
         window.turnstile.reset(turnstileWidgetId);
       }
     } catch (err) {
-      setError(err.message || 'Something went wrong. Please try again.');
+      setError(err.message || t('contactErrGeneric'));
       if (window.turnstile && turnstileWidgetId) {
         window.turnstile.reset(turnstileWidgetId);
       }
@@ -87,7 +106,7 @@ const ContactPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-white text-black">
+    <div className="min-h-screen bg-white text-black" dir={isRtl ? 'rtl' : 'ltr'}>
       <header className="sticky top-0 z-40 border-b border-slate-200 py-4 px-6 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80">
         <div className="max-w-3xl mx-auto flex items-center justify-center">
           <Link
@@ -123,36 +142,36 @@ const ContactPage = () => {
 
       <main className="max-w-2xl mx-auto px-6 py-16">
         <h1 className="text-4xl md:text-5xl font-black tracking-tight text-slate-900 mb-4">
-          How can we help?
+          {t('contactTitle')}
         </h1>
         <p className="text-lg text-slate-600 mb-10">
-          Send us a message and we&apos;ll get back to you as soon as we can.
+          {t('contactSubtitle')}
         </p>
 
         {sent ? (
           <div className="p-6 rounded-2xl bg-[#00F59B]/10 border border-[#00F59B]/30 text-slate-800">
-            <p className="font-semibold">Thank you for reaching out.</p>
-            <p className="text-sm mt-1">We&apos;ve received your message and will respond to the email you provided.</p>
+            <p className="font-semibold">{t('contactThanksTitle')}</p>
+            <p className="text-sm mt-1">{t('contactThanksBody')}</p>
             <button
               type="button"
               onClick={() => setSent(false)}
               className="mt-4 text-sm font-medium text-[#a855f7] hover:underline"
             >
-              Send another message
+              {t('contactSendAnother')}
             </button>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
               <label htmlFor="contact-email" className="block text-sm font-semibold text-slate-900 mb-2">
-                Email
+                {t('contactEmailLabel')}
               </label>
               <input
                 id="contact-email"
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="you@example.com"
+                placeholder={t('contactEmailPlaceholder')}
                 className="w-full px-4 py-3 rounded-lg border border-slate-200 bg-white text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#a855f7] focus:border-transparent"
                 disabled={loading}
                 autoComplete="email"
@@ -160,13 +179,13 @@ const ContactPage = () => {
             </div>
             <div>
               <label htmlFor="contact-message" className="block text-sm font-semibold text-slate-900 mb-2">
-                How can we help?
+                {t('contactMessageLabel')}
               </label>
               <textarea
                 id="contact-message"
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
-                placeholder="Your message..."
+                placeholder={t('contactMessagePlaceholder')}
                 rows={6}
                 className="w-full px-4 py-3 rounded-lg border border-slate-200 bg-white text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#a855f7] focus:border-transparent resize-y min-h-[140px]"
                 disabled={loading}
@@ -176,7 +195,7 @@ const ContactPage = () => {
               <div ref={turnstileContainerRef} />
               {!import.meta.env.VITE_TURNSTILE_SITE_KEY && (
                 <p className="text-xs text-amber-600 mt-2">
-                  Cloudflare Turnstile site key is missing.
+                  {t('contactTurnstileMissingKey')}
                 </p>
               )}
             </div>
@@ -190,7 +209,7 @@ const ContactPage = () => {
               disabled={loading}
               className="w-full sm:w-auto px-8 py-4 rounded-lg bg-[#a855f7] hover:bg-[#9333ea] text-white font-bold text-base transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
             >
-              {loading ? 'Sending...' : 'Send'}
+              {loading ? t('contactSending') : t('contactSend')}
             </button>
           </form>
         )}
