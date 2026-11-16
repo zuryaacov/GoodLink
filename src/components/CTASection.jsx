@@ -260,9 +260,10 @@ const CTASection = () => {
                     {t('freeForever')}
                   </span>
                 )}
-                {user && (isCurrentPlan || isRecommendedForTrial) && (
+                {/* Logged-in: hide "Current Plan" green bubble; keep "Recommended" for free-trial only */}
+                {user && !isCurrentPlan && isRecommendedForTrial && (
                   <span className="absolute -top-5 left-1/2 -translate-x-1/2 px-6 py-2 bg-[#0b996f] text-white text-sm font-black rounded-full uppercase tracking-widest shadow-lg">
-                    {isCurrentPlan ? t('currentPlan') : t('recommended')}
+                    {t('recommended')}
                   </span>
                 )}
 
