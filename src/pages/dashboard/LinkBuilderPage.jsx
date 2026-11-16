@@ -284,7 +284,16 @@ const LinkBuilderPage = () => {
         return;
       }
 
-      const finalSlug = formData.slug || generateRandomSlug();
+      // Keep Unicode slugs decoded in DB (never store percent-encoded paths)
+      const decodeSlug = (value) => {
+        const raw = String(value || '').trim();
+        try {
+          return decodeURIComponent(raw);
+        } catch {
+          return raw;
+        }
+      };
+      const finalSlug = decodeSlug(formData.slug || generateRandomSlug());
 
       const utmParams = new URLSearchParams();
       if (formData.utmSource) utmParams.append('utm_source', formData.utmSource);
@@ -294,6 +303,7 @@ const LinkBuilderPage = () => {
       if (formData.utmTerm) utmParams.append('utm_term', formData.utmTerm);
 
       const baseUrl = formData.domain || 'glynk.to';
+      // Build as a plain string — new URL(...).href would percent-encode Hebrew
       const shortUrl = `https://${baseUrl}/${finalSlug}`;
       const fullUtmString = utmParams.toString() ? `${shortUrl}?${utmParams.toString()}` : shortUrl;
 
