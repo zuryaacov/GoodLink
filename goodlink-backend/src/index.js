@@ -13,7 +13,8 @@ import { logAxiomInBackground } from "./services/axiomLogger";
 
 /**
  * Browsers send non-ASCII path segments percent-encoded (e.g. /%D7%99%D7%A2%D7%A7%D7%91).
- * Links are stored in the DB as decoded Unicode (יעקב). Always decode before slug lookup.
+ * Links / slugs are stored in the DB as decoded Unicode (יעקב1). Always decode before
+ * slug lookup and before writing URLs into clicks / logs.
  */
 function decodePathname(pathname) {
     const raw = String(pathname || "");
@@ -21,6 +22,20 @@ function decodePathname(pathname) {
         return decodeURIComponent(raw);
     } catch {
         return raw;
+    }
+}
+
+/** Rebuild absolute URL with a decoded Unicode pathname (never use URL.href for storage). */
+function toDecodedAbsoluteUrl(urlLike) {
+    try {
+        const u = typeof urlLike === "string" ? new URL(urlLike) : new URL(String(urlLike?.url || urlLike));
+        return `${u.origin}${decodePathname(u.pathname)}${u.search}${u.hash || ""}`;
+    } catch {
+        try {
+            return decodeURIComponent(String(urlLike || ""));
+        } catch {
+            return String(urlLike || "");
+        }
     }
 }
 
@@ -696,7 +711,8 @@ function buildClickRecord(
         verdict: verdict,
         redirect_outcome: redirectOutcome,
         redirect_destination_url: redirectDestinationUrl,
-        full_url: requestUrl.toString(),
+        // Store decoded Unicode path (e.g. /יעקב1), not percent-encoded wire form
+        full_url: toDecodedAbsoluteUrl(requestUrl),
         query_params: requestUrl.search || "",
         clicked_at: new Date().toISOString(),
         request_cf: cf,
@@ -2422,12 +2438,13 @@ export default Sentry.withSentry(
             const rayId = request.headers.get("cf-ray") || crypto.randomUUID();
             const ip = request.headers.get("cf-connecting-ip");
             const country = request.cf?.country || null;
+            const decodedRequestUrl = toDecodedAbsoluteUrl(request.url);
             const queueAxiomLog = (action, shortCode = null, isBot = false, extra = {}) => {
                 logAxiomInBackground(ctx, env, {
                     timestamp: new Date().toISOString(),
                     action,
                     short_code: shortCode,
-                    original_url: request.url,
+                    original_url: decodedRequestUrl,
                     visitor_ip: ip || null,
                     user_agent: userAgent || null,
                     country,
@@ -3088,7 +3105,7 @@ export default Sentry.withSentry(
                 const eventId = crypto.randomUUID();
                 // Wall-clock second at click (payload hint; relay overwrites platform event_time with its own currentTime).
                 const eventTime = Math.floor(Date.now() / 1000);
-                const eventSourceUrl = request.url || `${url.origin}${url.pathname}${url.search}`;
+                const eventSourceUrl = decodedRequestUrl || toDecodedAbsoluteUrl(`${url.origin}${url.pathname}${url.search}`);
                 // Send CAPI only to platforms found in URL. If one param → one (or two for meta); if multiple params → send to all.
                 // Dedupe by platform + pixel_id so duplicate DB rows (e.g. two identical TikTok pixels) only fire once.
                 capiPixelsToSend = dedupeCapiPixelsByPlatformAndPixelId(
