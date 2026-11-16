@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { ArrowLeft } from 'lucide-react';
+import { useLanguage } from '../../i18n/LanguageContext';
 import UtmPresetWizardOnePerPage from '../../components/dashboard/UtmPresetWizardOnePerPage';
 import {
   cleanPayloadForDb,
@@ -11,6 +12,7 @@ import {
 } from '../../lib/inputSanitization';
 
 const UtmPresetBuilderPage = () => {
+  const { t, isRtl } = useLanguage();
   const { id } = useParams();
   const navigate = useNavigate();
   const [initialData, setInitialData] = useState(null);
@@ -62,11 +64,11 @@ const UtmPresetBuilderPage = () => {
     const {
       data: { user },
     } = await supabase.auth.getUser();
-    if (!user) throw new Error('User not authenticated');
+    if (!user) throw new Error(t('utmErrNotAuthenticated'));
     const rawName = (presetData.name || '').trim();
     const trimmedName = rawName;
-    if (!trimmedName) throw new Error('Preset name is required');
-    if (trimmedName.length > 100) throw new Error('Preset name cannot exceed 100 characters');
+    if (!trimmedName) throw new Error(t('utmErrNameRequired'));
+    if (trimmedName.length > 100) throw new Error(t('utmErrNameTooLong'));
 
     const { data: existingPresets } = await supabase
       .from('utm_presets')
@@ -76,14 +78,12 @@ const UtmPresetBuilderPage = () => {
     const isDuplicate =
       existingPresets?.length > 0 && (id ? existingPresets.some((p) => p.id !== id) : true);
     if (isDuplicate)
-      throw new Error(
-        'A UTM preset with this name already exists. Please choose a different name.'
-      );
+      throw new Error(t('utmErrNameDuplicate'));
 
     const sanitizeUtmField = (v) => {
       if (!v) return null;
       const cleaned = String(v).trim();
-      if (cleaned.length > 250) throw new Error('UTM value cannot exceed 250 characters');
+      if (cleaned.length > 250) throw new Error(t('utmErrValueTooLong'));
       return cleaned || null;
     };
 
@@ -107,8 +107,8 @@ const UtmPresetBuilderPage = () => {
         state: {
           toast: {
             type: 'success',
-            title: 'UTM preset updated',
-            message: 'Your UTM preset was updated successfully.',
+            title: t('utmToastUpdatedTitle'),
+            message: t('utmToastUpdatedMessage'),
           },
         },
       });
@@ -121,8 +121,8 @@ const UtmPresetBuilderPage = () => {
         state: {
           toast: {
             type: 'success',
-            title: 'UTM preset created',
-            message: 'Your new UTM preset was created successfully.',
+            title: t('utmToastCreatedTitle'),
+            message: t('utmToastCreatedMessage'),
           },
         },
       });
@@ -137,12 +137,12 @@ const UtmPresetBuilderPage = () => {
           role="status"
           aria-busy="true"
           aria-live="polite"
-          aria-label="Loading UTM preset"
+          aria-label={t('utmLoadingPreset')}
         >
           <span className="material-symbols-outlined text-4xl text-slate-600 animate-spin" aria-hidden="true">
             refresh
           </span>
-          <p className="text-[#1b1b1b] mt-4">Loading...</p>
+          <p className="text-[#1b1b1b] mt-4">{t('utmLoading')}</p>
         </div>
       </div>
     );
@@ -156,12 +156,12 @@ const UtmPresetBuilderPage = () => {
             type="button"
             onClick={() => navigate('/dashboard/utm-presets')}
             className="p-2 text-[#1b1b1b] hover:text-[#1b1b1b] hover:bg-white/5 rounded-lg transition-colors"
-            aria-label="Back to UTM presets"
+            aria-label={t('utmBackToPresets')}
           >
-            <ArrowLeft size={24} aria-hidden className="block" />
+            <ArrowLeft size={24} aria-hidden className={`block ${isRtl ? 'rotate-180' : ''}`} />
           </button>
           <h1 className="text-xl font-bold text-[#1b1b1b]">
-            {id ? 'Edit UTM Preset' : 'Create New UTM Preset'}
+            {id ? t('utmEditTitle') : t('utmCreateTitle')}
           </h1>
         </div>
       </div>

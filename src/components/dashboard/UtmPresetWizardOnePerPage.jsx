@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import taboolaLogo from '../../assets/idRS-vCmxj_1769618141092.svg';
 import outbrainLogo from '../../assets/id-bNajMAc_1769618145922.svg';
 import { supabase } from '../../lib/supabase';
+import { useLanguage } from '../../i18n/LanguageContext';
 
 const getPlatformLogo = (platform) => {
   const w = 'w-12 h-12 rounded-xl';
@@ -193,14 +194,14 @@ const UTM_OPTIONS = {
 const UTM_STEPS = [
   {
     id: 'source',
-    label: 'Source',
+    labelKey: 'dashUtmSource',
     key: 'utm_source',
     highlightClass: 'bg-gradient-to-r from-[#135bec] to-[#42a5f5] bg-clip-text text-transparent',
   },
-  { id: 'medium', label: 'Medium', key: 'utm_medium', highlightClass: 'text-purple-700' },
-  { id: 'campaign', label: 'Campaign', key: 'utm_campaign', highlightClass: 'text-yellow-700' },
-  { id: 'content', label: 'Content', key: 'utm_content', highlightClass: 'text-emerald-700' },
-  { id: 'term', label: 'Term', key: 'utm_term', highlightClass: 'text-orange-700' },
+  { id: 'medium', labelKey: 'dashUtmMedium', key: 'utm_medium', highlightClass: 'text-purple-700' },
+  { id: 'campaign', labelKey: 'dashUtmCampaign', key: 'utm_campaign', highlightClass: 'text-yellow-700' },
+  { id: 'content', labelKey: 'dashUtmContent', key: 'utm_content', highlightClass: 'text-emerald-700' },
+  { id: 'term', labelKey: 'dashUtmTerm', key: 'utm_term', highlightClass: 'text-orange-700' },
 ];
 
 const PARAM_COLORS = {
@@ -214,66 +215,66 @@ const PARAM_COLORS = {
 const STEPS = [
   {
     id: 'name',
-    badge: 'Start',
+    badgeKey: 'utmBadgeStart',
     badgeColor: 'text-[#10b981] bg-[#10b981]/10',
-    title: 'Name your',
-    highlight: 'Preset',
+    titleKey: 'utmStepNameTitle',
+    highlightKey: 'utmStepNameHighlight',
     highlightClass: 'bg-gradient-to-r from-[#a855f7] to-[#7c6ee8] bg-clip-text text-transparent',
-    subtitle: 'What should we call your UTM preset ?',
+    subtitleKey: 'utmStepNameSubtitle',
   },
   {
     id: 'platform',
-    badge: 'Platform',
+    badgeKey: 'utmBadgePlatform',
     badgeColor: 'text-[#135bec] bg-[#135bec]/10',
-    title: 'Select',
-    highlight: 'Company',
+    titleKey: 'utmStepSelect',
+    highlightKey: 'utmStepPlatformHighlight',
     highlightClass: 'bg-gradient-to-r from-[#135bec] to-[#42a5f5] bg-clip-text text-transparent',
-    subtitle: 'Which ad platform is this preset for ?',
+    subtitleKey: 'utmStepPlatformSubtitle',
   },
   {
     id: 'source',
-    badge: 'UTM',
+    badgeKey: 'utmBadgeUtm',
     badgeColor: 'text-blue-400 bg-blue-400/10',
-    title: 'Select',
-    highlight: 'Source',
+    titleKey: 'utmStepSelect',
+    highlightKey: 'dashUtmSource',
     highlightClass: 'bg-gradient-to-r from-[#135bec] to-[#42a5f5] bg-clip-text text-transparent',
-    subtitle: 'Where the traffic comes from.',
+    subtitleKey: 'utmStepSourceSubtitle',
   },
   {
     id: 'medium',
-    badge: 'UTM',
+    badgeKey: 'utmBadgeUtm',
     badgeColor: 'text-purple-700 bg-purple-400/10',
-    title: 'Select',
-    highlight: 'Medium',
+    titleKey: 'utmStepSelect',
+    highlightKey: 'dashUtmMedium',
     highlightClass: 'text-purple-700',
-    subtitle: 'Marketing medium (e.g. cpc, email).',
+    subtitleKey: 'utmStepMediumSubtitle',
   },
   {
     id: 'campaign',
-    badge: 'UTM',
+    badgeKey: 'utmBadgeUtm',
     badgeColor: 'text-yellow-700 bg-yellow-500/10',
-    title: 'Select',
-    highlight: 'Campaign',
+    titleKey: 'utmStepSelect',
+    highlightKey: 'dashUtmCampaign',
     highlightClass: 'text-yellow-700',
-    subtitle: 'Campaign name or dynamic value.',
+    subtitleKey: 'utmStepCampaignSubtitle',
   },
   {
     id: 'content',
-    badge: 'UTM',
+    badgeKey: 'utmBadgeUtm',
     badgeColor: 'text-emerald-700 bg-emerald-400/10',
-    title: 'Select',
-    highlight: 'Content',
+    titleKey: 'utmStepSelect',
+    highlightKey: 'dashUtmContent',
     highlightClass: 'text-emerald-700',
-    subtitle: 'Ad content or variation.',
+    subtitleKey: 'utmStepContentSubtitle',
   },
   {
     id: 'term',
-    badge: 'UTM',
+    badgeKey: 'utmBadgeUtm',
     badgeColor: 'text-orange-700 bg-orange-500/10',
-    title: 'Select',
-    highlight: 'Term',
+    titleKey: 'utmStepSelect',
+    highlightKey: 'dashUtmTerm',
     highlightClass: 'text-orange-700',
-    subtitle: 'Paid search keyword or term.',
+    subtitleKey: 'utmStepTermSubtitle',
   },
 ];
 
@@ -284,6 +285,7 @@ function buildPreviewFromParams(params) {
 }
 
 export default function UtmPresetWizardOnePerPage({ initialData, editingPresetId, onSave, onBack, isEdit }) {
+  const { t, isRtl } = useLanguage();
   const [stepIndex, setStepIndex] = useState(0);
   const [presetName, setPresetName] = useState('');
   const [platform, setPlatform] = useState('meta');
@@ -323,11 +325,11 @@ export default function UtmPresetWizardOnePerPage({ initialData, editingPresetId
 
   useEffect(() => {
     if (!currentStep || currentStep.id !== 'name') return;
-    const t = setTimeout(() => {
+    const timer = setTimeout(() => {
       presetNameInputRef.current?.focus?.();
       presetNameInputRef.current?.select?.();
     }, 0);
-    return () => clearTimeout(t);
+    return () => clearTimeout(timer);
   }, [currentStep?.id]);
 
   const handleChipClick = (utmKey, value) => {
@@ -358,9 +360,9 @@ export default function UtmPresetWizardOnePerPage({ initialData, editingPresetId
       if (currentStep?.id === 'name') {
         const name = (presetName || '').trim();
         if (!name) {
-          nextErrors.name = 'Please enter a preset name.';
+          nextErrors.name = t('utmErrNameRequired');
         } else if (name.length > 100) {
-          nextErrors.name = 'Preset name cannot exceed 100 characters.';
+          nextErrors.name = t('utmErrNameTooLong');
         } else {
           const {
             data: { user },
@@ -375,7 +377,7 @@ export default function UtmPresetWizardOnePerPage({ initialData, editingPresetId
               existing?.length > 0 &&
               (isEdit && editingPresetId ? existing.some((p) => p.id !== editingPresetId) : true);
             if (isDuplicate) {
-              nextErrors.name = 'A UTM preset with this name already exists. Please choose a different name.';
+              nextErrors.name = t('utmErrNameDuplicate');
             }
           }
         }
@@ -389,7 +391,7 @@ export default function UtmPresetWizardOnePerPage({ initialData, editingPresetId
     if (isLast) {
       const hasAnyUtmValue = Object.values(params).some((value) => String(value || '').trim() !== '');
       if (!hasAnyUtmValue) {
-        setError('Cannot create an empty preset. Please set at least one UTM value.');
+        setError(t('utmErrEmptyPreset'));
         return;
       }
 
@@ -406,7 +408,7 @@ export default function UtmPresetWizardOnePerPage({ initialData, editingPresetId
           utm_term: params.utm_term || null,
         });
       } catch (e) {
-        setError(e.message || 'Could not save the UTM preset. Please try again.');
+        setError(e.message || t('utmErrSaveFailed'));
         setLoading(false);
       }
       return;
@@ -425,7 +427,7 @@ export default function UtmPresetWizardOnePerPage({ initialData, editingPresetId
   const PreviewBlock = () => (
     <div className="mt-6 rounded-2xl bg-white border border-slate-200 p-4">
       <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2">
-        Preview Query String
+        {t('utmPreviewTitle')}
       </p>
       <div className="font-mono text-sm break-all text-slate-700" dir="ltr">
         {previewQuery ? (
@@ -451,7 +453,7 @@ export default function UtmPresetWizardOnePerPage({ initialData, editingPresetId
             })}
           </>
         ) : (
-          <span className="text-slate-500">Select options above to build the query string.</span>
+          <span className="block text-start text-slate-500" dir={isRtl ? 'rtl' : 'ltr'}>{t('utmPreviewEmpty')}</span>
         )}
       </div>
     </div>
@@ -489,24 +491,24 @@ export default function UtmPresetWizardOnePerPage({ initialData, editingPresetId
                 <div
                   className={`inline-flex items-center gap-2 font-bold text-[10px] tracking-[0.2em] uppercase px-3 py-1 rounded-full ${currentStep?.badgeColor}`}
                 >
-                  <span>{currentStep?.badge}</span>
+                  <span>{t(currentStep?.badgeKey)}</span>
                 </div>
-                <span className="text-[10px] font-black text-gray-500 tracking-widest">
+                <span className="text-[10px] font-black text-gray-500 tracking-widest" dir="ltr">
                   {stepIndex + 1}/{totalSteps}
                 </span>
               </div>
               <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-[#1b1b1b]">
-                {currentStep?.title}{' '}
+                {t(currentStep?.titleKey)}{' '}
                 <span
                   className={
                     currentStep?.highlightClass ||
                     'bg-gradient-to-r from-[#a855f7] to-[#7c6ee8] bg-clip-text text-transparent'
                   }
                 >
-                  {currentStep?.highlight}
+                  {t(currentStep?.highlightKey)}
                 </span>
               </h1>
-              <p className="text-gray-500 font-medium text-2xl">{currentStep?.subtitle}</p>
+              <p className="text-gray-500 font-medium text-2xl">{t(currentStep?.subtitleKey)}</p>
             </div>
 
             {currentStep?.id === 'name' && (
@@ -520,8 +522,9 @@ export default function UtmPresetWizardOnePerPage({ initialData, editingPresetId
                       setPresetName(e.target.value);
                       setFieldErrors((prev) => ({ ...prev, name: null }));
                     }}
-                    placeholder="e.g. Summer Campaign Meta"
-                    aria-label="UTM preset name"
+                    placeholder={t('utmNamePlaceholder')}
+                    aria-label={t('utmNameAriaLabel')}
+                    dir="auto"
                     aria-describedby={fieldErrors.name ? 'utm-preset-name-error' : undefined}
                     className="w-full bg-transparent py-5 px-6 text-xl outline-none border-none text-[#1b1b1b] placeholder-slate-500"
                   />
@@ -542,7 +545,7 @@ export default function UtmPresetWizardOnePerPage({ initialData, editingPresetId
                     type="button"
                     onClick={() => handlePlatformSelect(p.id)}
                     aria-pressed={platform === p.id}
-                    className={`p-5 rounded-2xl border-2 text-left transition-all flex items-center gap-4 ${
+                    className={`p-5 rounded-2xl border-2 text-start transition-all flex items-center gap-4 ${
                       platform === p.id
                         ? 'border-[#a855f7] bg-[#a855f7]/5'
                         : 'border-slate-200 bg-white hover:border-slate-300'
@@ -572,14 +575,14 @@ export default function UtmPresetWizardOnePerPage({ initialData, editingPresetId
                               type="button"
                               onClick={() => handleChipClick(utmStep.key, option)}
                               aria-pressed={isSelected}
-                              aria-label={`${utmStep.label}: ${option}`}
+                              aria-label={`${t(utmStep.labelKey)}: ${option}`}
                               className={`px-4 py-2.5 rounded-xl text-sm font-bold transition-all border-2 ${
                                 isSelected
                                   ? 'border-primary bg-primary/10 text-[#1b1b1b]'
                                   : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300'
                               }`}
                             >
-                              {option}
+                              <span dir="ltr">{option}</span>
                             </button>
                           );
                         })}
@@ -605,10 +608,10 @@ export default function UtmPresetWizardOnePerPage({ initialData, editingPresetId
           <button
             type="button"
             onClick={goBack}
-            aria-label="Previous step"
+            aria-label={t('utmPrevStep')}
             className={`flex items-center justify-center p-5 rounded-2xl border border-slate-200 font-bold text-gray-400 hover:bg-slate-200 hover:text-[#1b1b1b] transition-all ${isFirst ? 'invisible' : ''}`}
           >
-            <span className="material-symbols-outlined text-2xl" aria-hidden="true">chevron_left</span>
+            <span className={`material-symbols-outlined text-2xl ${isRtl ? 'rotate-180' : ''}`} aria-hidden="true">chevron_left</span>
           </button>
           <button
             type="button"
@@ -620,12 +623,15 @@ export default function UtmPresetWizardOnePerPage({ initialData, editingPresetId
             {loading ? (
               <>
                 <span className="material-symbols-outlined animate-spin text-2xl" aria-hidden="true">refresh</span>
-                <span>Saving...</span>
+                <span>{t('utmSaving')}</span>
               </>
             ) : (
               <>
-                <span>{isLast ? (isEdit ? 'Update Preset' : 'Create Preset') : 'Next Step'}</span>
-                <span className="material-symbols-outlined text-2xl" aria-hidden="true">
+                <span>{isLast ? (isEdit ? t('utmUpdateBtn') : t('utmCreateBtn')) : t('utmNextStep')}</span>
+                <span
+                  className={`material-symbols-outlined text-2xl ${!isLast && isRtl ? 'rotate-180' : ''}`}
+                  aria-hidden="true"
+                >
                   {isLast ? 'check_circle' : 'arrow_forward'}
                 </span>
               </>

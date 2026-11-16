@@ -25,6 +25,7 @@ const Modal = ({
   type = 'alert',
   confirmText = 'Confirm',
   cancelText = 'Cancel',
+  okText = 'OK',
   onConfirm,
   isLoading = false,
   icon,
@@ -164,7 +165,7 @@ const Modal = ({
                   onClick={onConfirm ? handleConfirm : onClose}
                   disabled={isLoading}
                 >
-                  {onConfirm ? confirmText : 'OK'}
+                  {onConfirm ? confirmText : okText}
                 </button>
               )}
             </div>

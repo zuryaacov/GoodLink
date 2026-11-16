@@ -18,7 +18,7 @@ const PLATFORMS = {
 };
 
 const UtmPresetManager = () => {
-  const { t } = useLanguage();
+  const { t, isRtl } = useLanguage();
   const navigate = useNavigate();
   const location = useLocation();
   const [presets, setPresets] = useState([]);
@@ -115,8 +115,8 @@ const UtmPresetManager = () => {
       setModalState({
         isOpen: true,
         type: 'error',
-        title: 'Error',
-        message: 'Failed to load UTM presets. Please try again.',
+        title: t('utmErrorTitle'),
+        message: t('utmLoadFailed'),
         onConfirm: null,
         isLoading: false,
       });
@@ -187,8 +187,8 @@ const UtmPresetManager = () => {
     setModalState({
       isOpen: true,
       type: 'confirm',
-      title: 'Delete UTM Preset',
-      message: `Are you sure you want to delete "${preset.name}"? This action cannot be undone.`,
+      title: t('utmDeleteTitle'),
+      message: t('utmDeleteConfirm').replace('{name}', preset.name),
       onConfirm: async () => {
         try {
           setModalState((prev) => ({ ...prev, isLoading: true }));
@@ -199,8 +199,8 @@ const UtmPresetManager = () => {
             setModalState({
               isOpen: true,
               type: 'error',
-              title: 'Error',
-              message: 'You must be logged in to delete a preset.',
+              title: t('utmErrorTitle'),
+              message: t('utmErrLoginRequired'),
               onConfirm: null,
               isLoading: false,
             });
@@ -219,8 +219,8 @@ const UtmPresetManager = () => {
             setModalState({
               isOpen: true,
               type: 'error',
-              title: 'Error',
-              message: 'Preset not found or you do not have permission to delete it.',
+              title: t('utmErrorTitle'),
+              message: t('utmErrPresetNotFound'),
               onConfirm: null,
               isLoading: false,
             });
@@ -229,8 +229,8 @@ const UtmPresetManager = () => {
           await fetchPlanAndPresets();
           showToast({
             type: 'success',
-            title: 'UTM preset deleted',
-            message: 'The preset was removed successfully.',
+            title: t('utmToastDeletedTitle'),
+            message: t('utmToastDeletedMessage'),
           });
           setModalState({
             isOpen: false,
@@ -245,11 +245,11 @@ const UtmPresetManager = () => {
           const message =
             error?.message && !error.message.includes('fetch')
               ? error.message
-              : 'Failed to delete preset. Please try again.';
+              : t('utmDeleteFailed');
           setModalState({
             isOpen: true,
             type: 'error',
-            title: 'Error',
+            title: t('utmErrorTitle'),
             message,
             onConfirm: null,
             isLoading: false,
@@ -386,7 +386,7 @@ const UtmPresetManager = () => {
                       </span>
                       {preset.status === 'pending' && (
                         <span className="inline-block px-2 py-1 rounded-lg text-xs font-bold text-amber-800 bg-amber-400/10">
-                          Pending
+                          {t('utmPending')}
                         </span>
                       )}
                     </div>
@@ -399,7 +399,7 @@ const UtmPresetManager = () => {
                         setOpenMenuPresetId(openMenuPresetId === preset.id ? null : preset.id);
                       }}
                       className="p-2 rounded-lg bg-white border border-slate-200 text-slate-700 hover:text-[#1b1b1b] transition-colors"
-                      aria-label="Actions menu"
+                      aria-label={t('utmActionsMenu')}
                       aria-expanded={openMenuPresetId === preset.id}
                       aria-haspopup="true"
                     >
@@ -414,8 +414,8 @@ const UtmPresetManager = () => {
                         />
                         <div
                           role="menu"
-                          aria-label="UTM preset actions"
-                          className="absolute right-0 mt-2 w-40 bg-white border border-slate-200 rounded-xl shadow-2xl z-20 overflow-hidden min-w-max"
+                          aria-label={t('utmPresetActions')}
+                          className={`absolute ${isRtl ? 'left-0' : 'right-0'} mt-2 w-40 bg-white border border-slate-200 rounded-xl shadow-2xl z-20 overflow-hidden min-w-max`}
                         >
                           <button
                             role="menuitem"
@@ -424,7 +424,7 @@ const UtmPresetManager = () => {
                               setOpenMenuPresetId(null);
                               handleEdit(preset);
                             }}
-                            className="w-full px-4 py-3 text-left text-[#1b1b1b] hover:bg-white/5 transition-colors flex items-center gap-3 text-sm"
+                            className="w-full px-4 py-3 text-start text-[#1b1b1b] hover:bg-white/5 transition-colors flex items-center gap-3 text-sm"
                           >
                             <span className="material-symbols-outlined text-base" aria-hidden="true">edit</span>
                             {t('dashEdit')}
@@ -436,7 +436,7 @@ const UtmPresetManager = () => {
                               setOpenMenuPresetId(null);
                               handleDelete(preset);
                             }}
-                            className="w-full px-4 py-3 text-left text-red-500 hover:bg-red-400/10 transition-colors flex items-center gap-3 text-sm"
+                            className="w-full px-4 py-3 text-start text-red-500 hover:bg-red-400/10 transition-colors flex items-center gap-3 text-sm"
                           >
                             <span className="material-symbols-outlined text-base" aria-hidden="true">delete</span>
                             {t('dashDelete')}
@@ -464,14 +464,14 @@ const UtmPresetManager = () => {
                           className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 text-sm font-medium"
                         >
                           <span className="font-semibold text-[#a855f7]">{label}:</span>
-                          <span className="text-[#1b1b1b]">{value}</span>
+                          <span className="text-[#1b1b1b]" dir="ltr">{value}</span>
                         </span>
                       ))}
                   </div>
 
                   {/* Full UTM string below */}
                   {queryString ? (
-                    <div className="text-base font-mono font-bold break-all bg-white border border-slate-200 p-3 rounded-lg text-slate-600">
+                    <div dir="ltr" className="text-base font-mono font-bold break-all bg-white border border-slate-200 p-3 rounded-lg text-slate-600 text-left">
                       {renderQueryString(queryString)}
                     </div>
                   ) : (
@@ -486,7 +486,7 @@ const UtmPresetManager = () => {
                     type="button"
                     onClick={() => handleCopy(preset)}
                     className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-slate-200 hover:bg-slate-300 text-black rounded-lg transition-colors text-sm font-bold"
-                    aria-label={copiedId === preset.id ? 'Copied to clipboard' : `Copy UTM preset ${preset.name}`}
+                    aria-label={copiedId === preset.id ? t('utmCopiedAria') : t('utmCopyAria').replace('{name}', preset.name)}
                   >
                     {copiedId === preset.id ? (
                       <>
@@ -496,7 +496,7 @@ const UtmPresetManager = () => {
                     ) : (
                       <>
                         <Copy size={16} aria-hidden="true" />
-                        Copy UTM Preset
+                        {t('utmCopyPreset')}
                       </>
                     )}
                   </button>
@@ -515,6 +515,9 @@ const UtmPresetManager = () => {
         message={modalState.message}
         onConfirm={modalState.onConfirm}
         isLoading={modalState.isLoading}
+        confirmText={t('dashDelete')}
+        cancelText={t('dashCancel')}
+        okText={t('utmOk')}
       />
     </div>
   );
