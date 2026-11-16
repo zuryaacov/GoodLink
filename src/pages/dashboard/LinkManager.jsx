@@ -26,22 +26,45 @@ const KIND_BY_LEVEL = {
   2: 'group',
 };
 
-const KIND_LABEL = {
-  workspace: 'Workspace',
-  campaign: 'Campaign',
-  group: 'Group',
+const KIND_LABEL_KEY = {
+  workspace: 'modalKindWorkspace',
+  campaign: 'modalKindCampaign',
+  group: 'modalKindGroup',
 };
 
-const KIND_LABEL_PLURAL = {
-  workspace: 'Workspaces',
-  campaign: 'Campaigns',
-  group: 'Groups',
+const KIND_LABEL_PLURAL_KEY = {
+  workspace: 'dashWorkspaces',
+  campaign: 'dashCampaigns',
+  group: 'dashGroups',
 };
+
+const KIND_NAME_PROMPT_KEY = {
+  workspace: 'modalNameNewWorkspace',
+  campaign: 'modalNameNewCampaign',
+  group: 'modalNameNewGroup',
+};
+
+const fillTemplate = (template, vars) =>
+  Object.entries(vars).reduce((acc, [k, v]) => acc.split(`{${k}}`).join(String(v)), template);
 
 const SPACE_NAME_REGEX = /^[A-Za-z0-9 !@#$%&-]+$/;
 
 const LinkManager = () => {
   const { t } = useLanguage();
+  const getKindLabel = (kind, fallbackKey = 'modalKindItem') =>
+    t(KIND_LABEL_KEY[kind] || fallbackKey);
+  // Renders a translated template with {name}/{url} shown in bold
+  const renderBoldTemplate = (key, placeholder, value, suffix = null) => {
+    const [before, after = ''] = t(key).split(`{${placeholder}}`);
+    return (
+      <>
+        {before}
+        <strong>{value}</strong>
+        {after}
+        {suffix ? ` ${suffix}` : null}
+      </>
+    );
+  };
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const { showToast } = useToast();
@@ -140,11 +163,11 @@ const LinkManager = () => {
       try {
         const svgString = getQrSvgString(shortUrl);
         await navigator.clipboard.writeText(svgString);
-        setQrCopyStatus('Copied!');
+        setQrCopyStatus('copied');
         setTimeout(() => setQrCopyStatus(''), 2000);
       } catch (e) {
         console.error('Copy SVG failed', e);
-        setQrCopyStatus('Failed');
+        setQrCopyStatus('failed');
         setTimeout(() => setQrCopyStatus(''), 2000);
       }
     },
@@ -189,13 +212,13 @@ const LinkManager = () => {
     if (status === 'active') {
       return (
         <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-[#047857]/15 text-[#047857]">
-          Approved
+          {t('modalDetApproved')}
         </span>
       );
     }
     return (
       <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-red-500/15 text-red-600">
-        Rejected
+        {t('modalDetRejected')}
       </span>
     );
   };
@@ -452,8 +475,8 @@ const LinkManager = () => {
     return KIND_BY_LEVEL[selectedLevel] || null;
   }, [moveModal.selectedSpaceId, spaceById]);
   const moveChildLabelPlural = moveChildKind
-    ? KIND_LABEL_PLURAL[moveChildKind] || 'Spaces'
-    : 'Spaces';
+    ? t(KIND_LABEL_PLURAL_KEY[moveChildKind] || 'dashWorkspaces')
+    : t('dashWorkspaces');
 
   const openCreateSpaceModal = (kind) => {
     setCreateMenuOpen(false);
@@ -488,11 +511,11 @@ const LinkManager = () => {
 
   const validateSpaceName = (name) => {
     const trimmed = String(name || '').trim();
-    if (!trimmed) return 'Name is required.';
-    if (trimmed.length < 2) return 'Name must be at least 2 characters.';
-    if (trimmed.length > 80) return 'Name cannot exceed 80 characters.';
+    if (!trimmed) return t('modalNameRequired');
+    if (trimmed.length < 2) return t('modalNameTooShort');
+    if (trimmed.length > 80) return t('modalNameTooLong');
     if (!SPACE_NAME_REGEX.test(trimmed)) {
-      return 'Allowed: English letters, numbers, spaces, and !@#$%&-';
+      return t('modalNameInvalidChars');
     }
     return null;
   };
@@ -504,7 +527,7 @@ const LinkManager = () => {
       return;
     }
     if (!userId) {
-      setSpaceModal((prev) => ({ ...prev, error: 'You must be logged in.' }));
+      setSpaceModal((prev) => ({ ...prev, error: t('modalMustBeLoggedIn') }));
       return;
     }
 
@@ -526,7 +549,7 @@ const LinkManager = () => {
           setSpaceModal((prev) => ({
             ...prev,
             isLoading: false,
-            error: 'Maximum depth reached (3 levels).',
+            error: t('modalMaxDepth'),
           }));
           return;
         }
@@ -550,10 +573,10 @@ const LinkManager = () => {
         error?.code === '23505' ||
         /duplicate key value/i.test(dbMessage) ||
         /link_spaces_user_id_parent_id_name_key/i.test(dbMessage);
-      const spaceKindLabel = (KIND_LABEL[spaceModal.kind] || 'item').toLowerCase();
+      const spaceKindLabel = getKindLabel(spaceModal.kind).toLowerCase();
       const friendlyError = isDuplicateSpaceName
-        ? `You already have a ${spaceKindLabel} with this name.`
-        : error?.message || 'Failed to create item. Please try again.';
+        ? fillTemplate(t('modalDuplicateName'), { kind: spaceKindLabel })
+        : error?.message || t('modalCreateSpaceFail');
 
       setSpaceModal((prev) => ({
         ...prev,
@@ -570,9 +593,8 @@ const LinkManager = () => {
       setModalState({
         isOpen: true,
         type: 'alert',
-        title: 'Cannot cancel this item',
-        message:
-          'This item contains links. You cannot cancel it until you move or delete all links inside it.',
+        title: t('modalCannotCancelTitle'),
+        message: t('modalCannotCancelMsg'),
         onConfirm: null,
         isLoading: false,
       });
@@ -581,12 +603,8 @@ const LinkManager = () => {
     setModalState({
       isOpen: true,
       type: 'delete',
-      title: `Delete ${KIND_LABEL[space.kind] || 'item'}?`,
-      message: (
-        <>
-          Are you sure you want to delete <strong>{space.name}</strong>?
-        </>
-      ),
+      title: fillTemplate(t('modalDeleteSpaceTitle'), { kind: getKindLabel(space.kind) }),
+      message: renderBoldTemplate('modalDeleteSpaceMsg', 'name', space.name),
       onConfirm: async () => {
         setModalState((prev) => ({ ...prev, isLoading: true }));
         try {
@@ -606,8 +624,8 @@ const LinkManager = () => {
           setModalState({
             isOpen: true,
             type: 'error',
-            title: 'Error',
-            message: error?.message || 'Failed to delete item. Please try again.',
+            title: t('modalErrorTitle'),
+            message: error?.message || t('modalDeleteSpaceFail'),
             onConfirm: null,
             isLoading: false,
           });
@@ -683,8 +701,8 @@ const LinkManager = () => {
       fetchData();
       showToast({
         type: 'success',
-        title: 'Link deleted',
-        message: 'The link was removed successfully.',
+        title: t('modalLinkDeletedTitle'),
+        message: t('modalLinkDeletedMsg'),
       });
     } catch (err) {
       console.error('Error deleting link:', err);
@@ -692,8 +710,8 @@ const LinkManager = () => {
       setModalState({
         isOpen: true,
         type: 'error',
-        title: 'Error',
-        message: 'Error deleting link. Please try again.',
+        title: t('modalErrorTitle'),
+        message: t('modalDeleteLinkFail'),
         onConfirm: null,
         isLoading: false,
       });
@@ -737,7 +755,7 @@ const LinkManager = () => {
       setMoveModal((prev) => ({
         ...prev,
         isSaving: false,
-        error: error?.message || 'Failed to move link. Please try again.',
+        error: error?.message || t('modalMoveFail'),
       }));
     }
   };
@@ -828,8 +846,8 @@ const LinkManager = () => {
                   id={copyBtnId}
                   onClick={() => handleCopy(presetUrl, copyBtnId)}
                   className="text-[#1b1b1b] hover:text-primary transition-colors p-1.5 rounded flex-shrink-0 mt-0.5"
-                  title="Copy Preset URL"
-                  aria-label="Copy preset URL"
+                  title={t('modalUtmCopyPreset')}
+                  aria-label={t('modalUtmCopyPreset')}
                 >
                   <span className="material-symbols-outlined text-base" aria-hidden="true">content_copy</span>
                 </button>
@@ -876,8 +894,8 @@ const LinkManager = () => {
       setModalState({
         isOpen: true,
         type: 'error',
-        title: 'Error',
-        message: 'Failed to change link state (Active/Paused). Please try again.',
+        title: t('modalErrorTitle'),
+        message: t('modalToggleStatusFail'),
         onConfirm: null,
         isLoading: false,
       });
@@ -1042,7 +1060,7 @@ const LinkManager = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full overflow-visible pt-1">
             {childSpaces.map((space) => {
               const stats = getSpaceStats(space.id);
-              const kindLabel = KIND_LABEL[space.kind] || 'Campaign';
+              const kindLabel = getKindLabel(space.kind, 'modalKindCampaign');
               return (
                 <div
                   key={space.id}
@@ -1364,7 +1382,7 @@ const LinkManager = () => {
           setQrModal({ isOpen: false, link: null });
           setQrCopyStatus('');
         }}
-        title="QR Code"
+        title={t('modalQrTitle')}
         type="alert"
         hideIcon
         message={
@@ -1372,7 +1390,7 @@ const LinkManager = () => {
             <div className="flex flex-col items-center gap-2 sm:gap-4 p-0 sm:p-2 w-full min-w-0">
               <img
                 src={`https://api.qrserver.com/v1/create-qr-code/?size=400x400&bgcolor=FFFFFF&data=${encodeURIComponent(qrModal.link.short_url || '')}`}
-                alt={`QR Code for ${qrModal.link.short_url || 'link'}`}
+                alt={fillTemplate(t('modalQrAlt'), { url: qrModal.link.short_url || '' })}
                 className="w-full max-w-[200px] sm:max-w-[280px] md:max-w-[360px] h-auto rounded-xl border border-slate-200 bg-white p-1.5 sm:p-2"
               />
               <p className="text-[#1b1b1b] text-xs sm:text-sm font-mono break-all text-center max-w-full min-w-0 px-1">
@@ -1385,7 +1403,7 @@ const LinkManager = () => {
                   className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-slate-200 hover:bg-slate-300 text-[#1b1b1b] text-sm font-medium transition-colors"
                 >
                   <span className="material-symbols-outlined text-base" aria-hidden="true">download</span>
-                  Download PNG
+                  {t('modalQrDownloadPng')}
                 </button>
                 <button
                   type="button"
@@ -1393,7 +1411,7 @@ const LinkManager = () => {
                   className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-slate-200 hover:bg-slate-300 text-[#1b1b1b] text-sm font-medium transition-colors"
                 >
                   <span className="material-symbols-outlined text-base" aria-hidden="true">download</span>
-                  Download SVG
+                  {t('modalQrDownloadSvg')}
                 </button>
                 <button
                   type="button"
@@ -1401,7 +1419,11 @@ const LinkManager = () => {
                   className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-slate-200 hover:bg-slate-300 text-[#1b1b1b] text-sm font-medium transition-colors"
                 >
                   <span className="material-symbols-outlined text-base" aria-hidden="true">content_copy</span>
-                  {qrCopyStatus || 'Copy SVG code'}
+                  {qrCopyStatus === 'copied'
+                    ? t('modalQrCopied')
+                    : qrCopyStatus === 'failed'
+                      ? t('modalQrFailed')
+                      : t('modalQrCopySvg')}
                 </button>
               </div>
             </div>
@@ -1412,12 +1434,12 @@ const LinkManager = () => {
       <Modal
         isOpen={moveModal.isOpen}
         onClose={closeMoveModal}
-        title={`Move Link${moveModal.link ? `: ${moveModal.link.name || moveModal.link.short_url || ''}` : ''}`}
+        title={`${t('modalMoveLinkTitle')}${moveModal.link ? `: ${moveModal.link.name || moveModal.link.short_url || ''}` : ''}`}
         type="confirm"
         confirmText={
           moveModal.selectedSpaceId === (moveModal.link?.space_id || null)
-            ? 'Already Here'
-            : 'Move To Here'
+            ? t('modalMoveAlreadyHere')
+            : t('modalMoveToHere')
         }
         cancelText={t('dashCancel')}
         onConfirm={handleMoveLink}
@@ -1426,7 +1448,7 @@ const LinkManager = () => {
           <div className="space-y-4 text-left">
             <div className="space-y-2">
               <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-                Current Selection
+                {t('modalMoveCurrentSelection')}
               </p>
               <div className="flex flex-wrap items-center gap-2">
                 <button
@@ -1440,7 +1462,7 @@ const LinkManager = () => {
                       : 'bg-white border-slate-300 text-slate-700 hover:bg-slate-50'
                   }`}
                 >
-                  Root
+                  {t('modalMoveRoot')}
                 </button>
                 {moveSelectionPath.map((space) => {
                   const isActive = moveModal.selectedSpaceId === space.id;
@@ -1472,7 +1494,7 @@ const LinkManager = () => {
 
             <div className="space-y-2">
               <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-                {`Available ${moveChildLabelPlural} Here`}
+                {fillTemplate(t('modalMoveAvailableHere'), { kind: moveChildLabelPlural })}
               </p>
               {moveChildSpaces.length > 0 ? (
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
@@ -1497,7 +1519,7 @@ const LinkManager = () => {
                       >
                         <div className="text-xs font-semibold truncate">{space.name}</div>
                         <div className="text-[10px] uppercase tracking-wider opacity-70 mt-1">
-                          {KIND_LABEL[space.kind] || 'Space'}
+                          {getKindLabel(space.kind, 'modalKindSpace')}
                         </div>
                       </button>
                     );
@@ -1505,7 +1527,9 @@ const LinkManager = () => {
                 </div>
               ) : (
                 <p className="text-xs text-slate-500">
-                  {`No deeper ${moveChildLabelPlural.toLowerCase()} under this level. You can still move the link to the selected location.`}
+                  {fillTemplate(t('modalMoveNoDeeper'), {
+                    kind: moveChildLabelPlural.toLowerCase(),
+                  })}
                 </p>
               )}
             </div>
@@ -1528,30 +1552,30 @@ const LinkManager = () => {
       <Modal
         isOpen={!!detailsLink}
         onClose={() => setDetailsLink(null)}
-        title={detailsLink?.name || detailsLink?.short_url || 'Link Details'}
+        title={detailsLink?.name || detailsLink?.short_url || t('modalDetailsTitle')}
         message={
           detailsLink ? (
             <div className="space-y-3 text-left">
               {[
-                { label: 'Name', value: detailsLink.name },
-                { label: 'Short URL', value: detailsLink.short_url },
-                { label: 'Domain', value: detailsLink.domain },
-                { label: 'Slug', value: detailsLink.slug },
-                { label: 'Target URL', value: detailsLink.target_url },
-                { label: 'Fallback URL', value: detailsLink.fallback_url },
-                { label: 'Status', value: detailsLink.status },
-                { label: 'Tracking Mode', value: detailsLink.tracking_mode },
-                { label: 'Server-Side Tracking', value: detailsLink.server_side_tracking != null ? (detailsLink.server_side_tracking ? 'Yes' : 'No') : null },
-                { label: 'Created', value: detailsLink.created_at ? new Date(detailsLink.created_at).toLocaleString() : null },
-                { label: 'Updated', value: detailsLink.updated_at ? new Date(detailsLink.updated_at).toLocaleString() : null },
+                { id: 'name', label: t('modalDetName'), value: detailsLink.name },
+                { id: 'short_url', label: t('modalDetShortUrl'), value: detailsLink.short_url },
+                { id: 'domain', label: t('modalDetDomain'), value: detailsLink.domain },
+                { id: 'slug', label: t('modalDetSlug'), value: detailsLink.slug },
+                { id: 'target_url', label: t('modalDetTargetUrl'), value: detailsLink.target_url },
+                { id: 'fallback_url', label: t('modalDetFallbackUrl'), value: detailsLink.fallback_url },
+                { id: 'status', label: t('modalDetStatus'), value: detailsLink.status },
+                { id: 'tracking_mode', label: t('modalDetTrackingMode'), value: detailsLink.tracking_mode },
+                { id: 'server_side', label: t('modalDetServerSide'), value: detailsLink.server_side_tracking != null ? (detailsLink.server_side_tracking ? t('modalDetYes') : t('modalDetNo')) : null },
+                { id: 'created', label: t('modalDetCreated'), value: detailsLink.created_at ? new Date(detailsLink.created_at).toLocaleString() : null },
+                { id: 'updated', label: t('modalDetUpdated'), value: detailsLink.updated_at ? new Date(detailsLink.updated_at).toLocaleString() : null },
               ]
                 .filter(({ value }) => value != null && value !== '')
-                .map(({ label, value }) => (
-                  <div key={label} className="flex items-start justify-between py-2 border-b border-gray-200 gap-3">
+                .map(({ id, label, value }) => (
+                  <div key={id} className="flex items-start justify-between py-2 border-b border-gray-200 gap-3">
                     <span className="text-xs font-medium text-[#1b1b1b] shrink-0 mr-4">{label}</span>
                     <div className="text-right max-w-[70%]">
                       <span className="text-sm text-[#1b1b1b] break-all font-mono">{value}</span>
-                      {(label === 'Target URL' || label === 'Fallback URL') && (
+                      {(id === 'target_url' || id === 'fallback_url') && (
                         <div className="mt-1 flex justify-end">
                           {urlStatusBadge(getDetailsUrlStatus(value))}
                         </div>
@@ -1560,13 +1584,13 @@ const LinkManager = () => {
                   </div>
                 ))}
               <div className="py-2 border-b border-gray-200">
-                <span className="block text-xs font-medium text-[#1b1b1b] mb-2">Geo Redirect</span>
+                <span className="block text-xs font-medium text-[#1b1b1b] mb-2">{t('modalDetGeoRedirect')}</span>
                 {Array.isArray(detailsLink.geo_rules) && detailsLink.geo_rules.length > 0 ? (
                   <div className="space-y-2">
                     {detailsLink.geo_rules.map((rule, idx) => (
                       <div key={`${rule.country || 'country'}-${idx}`} className="flex items-start justify-between gap-4">
                         <div className="min-w-0">
-                          <p className="text-[11px] font-semibold text-slate-600">{rule.country || 'Country'}</p>
+                          <p className="text-[11px] font-semibold text-slate-600">{rule.country || t('modalDetCountry')}</p>
                           <p className="text-xs text-[#1b1b1b] break-all font-mono">{rule.url || '—'}</p>
                         </div>
                         <div className="shrink-0">{urlStatusBadge(getDetailsUrlStatus(rule.url))}</div>
@@ -1574,15 +1598,15 @@ const LinkManager = () => {
                     ))}
                   </div>
                 ) : (
-                  <span className="text-xs text-slate-500">None</span>
+                  <span className="text-xs text-slate-500">{t('modalDetNone')}</span>
                 )}
               </div>
               <div className="flex items-start justify-between py-2 border-b border-gray-200">
-                <span className="text-xs font-medium text-[#1b1b1b] shrink-0 mr-4">Pixels</span>
+                <span className="text-xs font-medium text-[#1b1b1b] shrink-0 mr-4">{t('modalDetPixels')}</span>
                 <span className="text-sm text-[#1b1b1b] break-all text-right max-w-[70%]">
                   {detailsPixelNames.length > 0
                     ? detailsPixelNames.map((p) => p.name).join(', ')
-                    : 'None'}
+                    : t('modalDetNone')}
                 </span>
               </div>
             </div>
@@ -1597,17 +1621,19 @@ const LinkManager = () => {
           !deleteLinkModal.isLoading &&
           setDeleteLinkModal({ isOpen: false, link: null, isLoading: false })
         }
-        title="Delete this link?"
+        title={t('modalDeleteLinkTitle')}
         message={
-          deleteLinkModal.link ? (
-            <>
-              Are you sure you want to delete <strong>{deleteLinkModal.link.short_url}</strong>?
-              This will stop all traffic to this destination.
-            </>
-          ) : null
+          deleteLinkModal.link
+            ? renderBoldTemplate(
+                'modalDeleteLinkConfirm',
+                'url',
+                deleteLinkModal.link.short_url,
+                t('modalDeleteLinkWarning')
+              )
+            : null
         }
         type="delete"
-        confirmText="Delete Link"
+        confirmText={t('modalDeleteLinkBtn')}
         cancelText={t('dashCancel')}
         onConfirm={handleDeleteLink}
         isLoading={deleteLinkModal.isLoading}
@@ -1616,19 +1642,19 @@ const LinkManager = () => {
       <Modal
         isOpen={utmPresetsModal.isOpen}
         onClose={() => setUtmPresetsModal({ isOpen: false, link: null })}
-        title="UTM Preset Links"
+        title={t('modalUtmTitle')}
         message={
           <div className="space-y-3">
             {utmPresetsModal.link ? (
               <>
                 <div className="text-sm text-slate-700">
-                  <span className="font-semibold">Link:</span>{' '}
+                  <span className="font-semibold">{t('modalUtmLink')}</span>{' '}
                   <span className="font-mono break-all">{utmPresetsModal.link.short_url}</span>
                 </div>
                 {renderUtmPresetsList(utmPresetsModal.link)}
               </>
             ) : (
-              <div className="text-sm text-slate-700">No data.</div>
+              <div className="text-sm text-slate-700">{t('modalUtmNoData')}</div>
             )}
           </div>
         }
@@ -1638,7 +1664,10 @@ const LinkManager = () => {
       <Modal
         isOpen={spaceModal.isOpen}
         onClose={closeCreateSpaceModal}
-        title={`${spaceModal.mode === 'edit' ? 'Update' : 'Create'} ${spaceModal.kind ? KIND_LABEL[spaceModal.kind] : 'Item'}`}
+        title={fillTemplate(
+          t(spaceModal.mode === 'edit' ? 'modalUpdateKindTitle' : 'modalCreateKindTitle'),
+          { kind: getKindLabel(spaceModal.kind) }
+        )}
         type="confirm"
         confirmText={spaceModal.mode === 'edit' ? t('dashUpdate') : t('dashCreate')}
         cancelText={t('dashCancel')}
@@ -1649,8 +1678,8 @@ const LinkManager = () => {
           <div className="space-y-3 text-left">
             <p className="text-sm text-slate-700">
               {spaceModal.mode === 'edit'
-                ? 'Update the name.'
-                : `Name your new ${spaceModal.kind ? KIND_LABEL[spaceModal.kind].toLowerCase() : 'item'}.`}
+                ? t('modalUpdateName')
+                : t(KIND_NAME_PROMPT_KEY[spaceModal.kind] || 'modalNameNewItem')}
             </p>
             <input
               ref={spaceNameInputRef}
@@ -1661,8 +1690,12 @@ const LinkManager = () => {
               }
               autoFocus
               className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm"
-              placeholder={`Enter ${spaceModal.kind ? KIND_LABEL[spaceModal.kind] : 'item'} name`}
-              aria-label={`${spaceModal.kind ? KIND_LABEL[spaceModal.kind] : 'Item'} name`}
+              placeholder={fillTemplate(t('modalEnterKindName'), {
+                kind: getKindLabel(spaceModal.kind),
+              })}
+              aria-label={fillTemplate(t('modalKindNameLabel'), {
+                kind: getKindLabel(spaceModal.kind),
+              })}
             />
             <div className="min-h-[20px]">
               {spaceModal.error ? <p className="text-sm text-red-500" role="alert">{spaceModal.error}</p> : null}
@@ -1766,7 +1799,7 @@ const LinkActionsMenu = ({
               className="w-full px-4 py-3 text-left text-[#1b1b1b] hover:bg-white/5 transition-colors flex items-center gap-3 text-sm"
             >
               <span className="material-symbols-outlined text-base" aria-hidden="true">insights</span>
-              Analytics
+              {t('dashAnalyticsTitle')}
             </button>
             <button
               role="menuitem"

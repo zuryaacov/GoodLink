@@ -1,5 +1,6 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useLanguage } from '../../i18n/LanguageContext';
 
 /**
  * Reusable Modal Component
@@ -23,15 +24,20 @@ const Modal = ({
   title,
   message,
   type = 'alert',
-  confirmText = 'Confirm',
-  cancelText = 'Cancel',
-  okText = 'OK',
+  confirmText,
+  cancelText,
+  okText,
   onConfirm,
   isLoading = false,
   icon,
   hideIcon = false,
   confirmButtonClass = 'btn-danger',
 }) => {
+  const { t } = useLanguage();
+  confirmText = confirmText ?? t('modalConfirm');
+  cancelText = cancelText ?? t('modalCancel');
+  okText = okText ?? t('modalOk');
+
   // Default icons based on type
   const getDefaultIcon = () => {
     if (icon) return icon;

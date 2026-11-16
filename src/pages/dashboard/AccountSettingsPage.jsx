@@ -927,10 +927,10 @@ export default function AccountSettingsPage() {
       <Modal
         isOpen={showCancelConfirmModal}
         onClose={() => setShowCancelConfirmModal(false)}
-        title="Cancel subscription?"
-        message="If you cancel your subscription, all your links will stop working."
+        title={t('modalCancelSubTitle')}
+        message={t('modalCancelSubMessage')}
         type="confirm"
-        confirmText="Confirm"
+        confirmText={t('modalConfirm')}
         cancelText={t('dashCancel')}
         onConfirm={handleCancelSubscription}
         isLoading={saving}

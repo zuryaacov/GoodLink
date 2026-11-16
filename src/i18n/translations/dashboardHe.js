@@ -587,6 +587,108 @@ const dashboardHe = {
   cdCopyToClipboard: 'העתקה ללוח',
   cdGeneratingRecords: 'יוצר רשומות DNS...',
   cdGeneratingRecordsDesc: 'Cloudflare מכין את הרשומות שלכם. זה יכול לקחת עד 60 שניות.',
+
+  // Modals (shared defaults)
+  modalConfirm: 'אישור',
+  modalCancel: 'ביטול',
+  modalOk: 'אישור',
+  modalErrorTitle: 'שגיאה',
+
+  // Account Settings – cancel subscription
+  modalCancelSubTitle: 'לבטל את המנוי?',
+  modalCancelSubMessage: 'אם תבטלו את המנוי, כל הקישורים שלכם יפסיקו לעבוד.',
+
+  // Link Manager – space kinds
+  modalKindWorkspace: 'סביבת עבודה',
+  modalKindCampaign: 'קמפיין',
+  modalKindGroup: 'קבוצה',
+  modalKindItem: 'פריט',
+  modalKindSpace: 'מרחב',
+  modalNameNewWorkspace: 'בחרו שם לסביבת העבודה החדשה.',
+  modalNameNewCampaign: 'בחרו שם לקמפיין החדש.',
+  modalNameNewGroup: 'בחרו שם לקבוצה החדשה.',
+  modalNameNewItem: 'בחרו שם לפריט החדש.',
+  modalUpdateName: 'עדכנו את השם.',
+  modalUpdateKindTitle: 'עדכון {kind}',
+  modalCreateKindTitle: 'יצירת {kind}',
+  modalEnterKindName: 'הזינו שם {kind}',
+  modalKindNameLabel: 'שם {kind}',
+
+  // Link Manager – space validation / errors
+  modalNameRequired: 'חובה להזין שם.',
+  modalNameTooShort: 'השם חייב להכיל לפחות 2 תווים.',
+  modalNameTooLong: 'השם לא יכול לעלות על 80 תווים.',
+  modalNameInvalidChars: 'מותר: אותיות באנגלית, מספרים, רווחים והתווים !@#$%&-',
+  modalMustBeLoggedIn: 'עליכם להיות מחוברים.',
+  modalMaxDepth: 'הגעתם לעומק המרבי (3 רמות).',
+  modalDuplicateName: 'כבר יש לכם {kind} בשם הזה.',
+  modalCreateSpaceFail: 'יצירת הפריט נכשלה. נסו שוב.',
+
+  // Link Manager – delete / cancel space
+  modalCannotCancelTitle: 'לא ניתן לבטל פריט זה',
+  modalCannotCancelMsg:
+    'הפריט הזה מכיל קישורים. לא ניתן לבטל אותו עד שתעבירו או תמחקו את כל הקישורים שבתוכו.',
+  modalDeleteSpaceTitle: 'למחוק {kind}?',
+  modalDeleteSpaceMsg: 'האם למחוק את {name}?',
+  modalDeleteSpaceFail: 'מחיקת הפריט נכשלה. נסו שוב.',
+
+  // Link Manager – delete link
+  modalLinkDeletedTitle: 'הקישור נמחק',
+  modalLinkDeletedMsg: 'הקישור הוסר בהצלחה.',
+  modalDeleteLinkFail: 'שגיאה במחיקת הקישור. נסו שוב.',
+  modalDeleteLinkTitle: 'למחוק את הקישור?',
+  modalDeleteLinkConfirm: 'האם למחוק את {url}?',
+  modalDeleteLinkWarning: 'פעולה זו תעצור את כל התנועה ליעד זה.',
+  modalDeleteLinkBtn: 'מחיקת קישור',
+  modalToggleStatusFail: 'שינוי מצב הקישור (פעיל/מושהה) נכשל. נסו שוב.',
+
+  // Link Manager – move link
+  modalMoveLinkTitle: 'העברת קישור',
+  modalMoveAlreadyHere: 'כבר כאן',
+  modalMoveToHere: 'העברה לכאן',
+  modalMoveCurrentSelection: 'הבחירה הנוכחית',
+  modalMoveRoot: 'ראשי',
+  modalMoveAvailableHere: 'זמינים כאן: {kind}',
+  modalMoveNoDeeper:
+    'אין רמות נוספות מתחת למיקום הזה. עדיין אפשר להעביר את הקישור למיקום שנבחר.',
+  modalMoveFail: 'העברת הקישור נכשלה. נסו שוב.',
+
+  // Link Manager – QR modal
+  modalQrTitle: 'קוד QR',
+  modalQrAlt: 'קוד QR עבור {url}',
+  modalQrDownloadPng: 'הורדת PNG',
+  modalQrDownloadSvg: 'הורדת SVG',
+  modalQrCopySvg: 'העתקת קוד SVG',
+  modalQrCopied: 'הועתק!',
+  modalQrFailed: 'נכשל',
+
+  // Link Manager – link details modal
+  modalDetailsTitle: 'פרטי הקישור',
+  modalDetName: 'שם',
+  modalDetShortUrl: 'קישור קצר',
+  modalDetDomain: 'דומיין',
+  modalDetSlug: 'סלאג',
+  modalDetTargetUrl: 'כתובת יעד',
+  modalDetFallbackUrl: 'כתובת גיבוי',
+  modalDetStatus: 'סטטוס',
+  modalDetTrackingMode: 'מצב מעקב',
+  modalDetServerSide: 'מעקב בצד השרת',
+  modalDetCreated: 'נוצר',
+  modalDetUpdated: 'עודכן',
+  modalDetGeoRedirect: 'הפניה לפי מיקום',
+  modalDetCountry: 'מדינה',
+  modalDetPixels: 'פיקסלים',
+  modalDetNone: 'אין',
+  modalDetYes: 'כן',
+  modalDetNo: 'לא',
+  modalDetApproved: 'מאושר',
+  modalDetRejected: 'נדחה',
+
+  // Link Manager – UTM presets modal
+  modalUtmTitle: 'קישורי תבניות UTM',
+  modalUtmLink: 'קישור:',
+  modalUtmNoData: 'אין נתונים.',
+  modalUtmCopyPreset: 'העתקת כתובת התבנית',
 };
 
 export default dashboardHe;

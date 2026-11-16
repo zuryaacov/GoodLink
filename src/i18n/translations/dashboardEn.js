@@ -589,6 +589,108 @@ const dashboardEn = {
   cdCopyToClipboard: 'Copy to clipboard',
   cdGeneratingRecords: 'Generating DNS Records...',
   cdGeneratingRecordsDesc: 'Cloudflare is preparing your records. This can take up to 60 seconds.',
+
+  // Modals (shared defaults)
+  modalConfirm: 'Confirm',
+  modalCancel: 'Cancel',
+  modalOk: 'OK',
+  modalErrorTitle: 'Error',
+
+  // Account Settings – cancel subscription
+  modalCancelSubTitle: 'Cancel subscription?',
+  modalCancelSubMessage: 'If you cancel your subscription, all your links will stop working.',
+
+  // Link Manager – space kinds
+  modalKindWorkspace: 'Workspace',
+  modalKindCampaign: 'Campaign',
+  modalKindGroup: 'Group',
+  modalKindItem: 'item',
+  modalKindSpace: 'Space',
+  modalNameNewWorkspace: 'Name your new workspace.',
+  modalNameNewCampaign: 'Name your new campaign.',
+  modalNameNewGroup: 'Name your new group.',
+  modalNameNewItem: 'Name your new item.',
+  modalUpdateName: 'Update the name.',
+  modalUpdateKindTitle: 'Update {kind}',
+  modalCreateKindTitle: 'Create {kind}',
+  modalEnterKindName: 'Enter {kind} name',
+  modalKindNameLabel: '{kind} name',
+
+  // Link Manager – space validation / errors
+  modalNameRequired: 'Name is required.',
+  modalNameTooShort: 'Name must be at least 2 characters.',
+  modalNameTooLong: 'Name cannot exceed 80 characters.',
+  modalNameInvalidChars: 'Allowed: English letters, numbers, spaces, and !@#$%&-',
+  modalMustBeLoggedIn: 'You must be logged in.',
+  modalMaxDepth: 'Maximum depth reached (3 levels).',
+  modalDuplicateName: 'You already have a {kind} with this name.',
+  modalCreateSpaceFail: 'Failed to create item. Please try again.',
+
+  // Link Manager – delete / cancel space
+  modalCannotCancelTitle: 'Cannot cancel this item',
+  modalCannotCancelMsg:
+    'This item contains links. You cannot cancel it until you move or delete all links inside it.',
+  modalDeleteSpaceTitle: 'Delete {kind}?',
+  modalDeleteSpaceMsg: 'Are you sure you want to delete {name}?',
+  modalDeleteSpaceFail: 'Failed to delete item. Please try again.',
+
+  // Link Manager – delete link
+  modalLinkDeletedTitle: 'Link deleted',
+  modalLinkDeletedMsg: 'The link was removed successfully.',
+  modalDeleteLinkFail: 'Error deleting link. Please try again.',
+  modalDeleteLinkTitle: 'Delete this link?',
+  modalDeleteLinkConfirm: 'Are you sure you want to delete {url}?',
+  modalDeleteLinkWarning: 'This will stop all traffic to this destination.',
+  modalDeleteLinkBtn: 'Delete Link',
+  modalToggleStatusFail: 'Failed to change link state (Active/Paused). Please try again.',
+
+  // Link Manager – move link
+  modalMoveLinkTitle: 'Move Link',
+  modalMoveAlreadyHere: 'Already Here',
+  modalMoveToHere: 'Move To Here',
+  modalMoveCurrentSelection: 'Current Selection',
+  modalMoveRoot: 'Root',
+  modalMoveAvailableHere: 'Available {kind} Here',
+  modalMoveNoDeeper:
+    'No deeper {kind} under this level. You can still move the link to the selected location.',
+  modalMoveFail: 'Failed to move link. Please try again.',
+
+  // Link Manager – QR modal
+  modalQrTitle: 'QR Code',
+  modalQrAlt: 'QR Code for {url}',
+  modalQrDownloadPng: 'Download PNG',
+  modalQrDownloadSvg: 'Download SVG',
+  modalQrCopySvg: 'Copy SVG code',
+  modalQrCopied: 'Copied!',
+  modalQrFailed: 'Failed',
+
+  // Link Manager – link details modal
+  modalDetailsTitle: 'Link Details',
+  modalDetName: 'Name',
+  modalDetShortUrl: 'Short URL',
+  modalDetDomain: 'Domain',
+  modalDetSlug: 'Slug',
+  modalDetTargetUrl: 'Target URL',
+  modalDetFallbackUrl: 'Fallback URL',
+  modalDetStatus: 'Status',
+  modalDetTrackingMode: 'Tracking Mode',
+  modalDetServerSide: 'Server-Side Tracking',
+  modalDetCreated: 'Created',
+  modalDetUpdated: 'Updated',
+  modalDetGeoRedirect: 'Geo Redirect',
+  modalDetCountry: 'Country',
+  modalDetPixels: 'Pixels',
+  modalDetNone: 'None',
+  modalDetYes: 'Yes',
+  modalDetNo: 'No',
+  modalDetApproved: 'Approved',
+  modalDetRejected: 'Rejected',
+
+  // Link Manager – UTM presets modal
+  modalUtmTitle: 'UTM Preset Links',
+  modalUtmLink: 'Link:',
+  modalUtmNoData: 'No data.',
+  modalUtmCopyPreset: 'Copy preset URL',
 };
 
 export default dashboardEn;

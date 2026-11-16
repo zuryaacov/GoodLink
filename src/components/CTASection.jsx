@@ -260,12 +260,6 @@ const CTASection = () => {
                     {t('freeForever')}
                   </span>
                 )}
-                {/* Logged-in: hide "Current Plan" green bubble; keep "Recommended" for free-trial only */}
-                {user && !isCurrentPlan && isRecommendedForTrial && (
-                  <span className="absolute -top-5 left-1/2 -translate-x-1/2 px-6 py-2 bg-[#0b996f] text-white text-sm font-black rounded-full uppercase tracking-widest shadow-lg">
-                    {t('recommended')}
-                  </span>
-                )}
 
                 <div className="flex flex-col h-full">
                   <div className="mb-8 text-center">
