@@ -2680,7 +2680,8 @@ export default Sentry.withSentry(
             }
 
             // Remaining invalid charset validation (non-bot malformed slug).
-            if (!/^[a-z0-9-]+$/.test(slug)) {
+            // Allow English a-z, Hebrew א-ת, digits, and hyphens.
+            if (!/^[a-z0-9\u0590-\u05FF-]+$/i.test(slug)) {
                 if (domain !== "glynk.to") {
                     const domainOwner = await getActiveCustomDomainOwner(env, domainCandidates);
                     if (domainOwner?.userId) {

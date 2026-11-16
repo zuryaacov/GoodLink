@@ -2,13 +2,16 @@
  * Slug Validation Utility
  * 
  * Comprehensive slug validation including:
- * - Character validation (English letters, numbers, hyphens only)
+ * - Character validation (English / Hebrew letters, numbers, hyphens)
  * - Lookalike character detection (Cyrillic, etc.)
  * - Length validation (3-30 characters)
- * - Auto lowercase conversion
+ * - Auto lowercase conversion (English)
  * - Availability checking
  * - Content moderation with OpenAI
  */
+
+const SLUG_CHARS_ERROR =
+    'Only English or Hebrew letters, numbers (0-9), and hyphens (-) are allowed.';
 
 /**
  * Check if a character is a valid English letter (a-z, A-Z)
@@ -16,6 +19,14 @@
 function isEnglishLetter(char) {
     const code = char.charCodeAt(0);
     return (code >= 65 && code <= 90) || (code >= 97 && code <= 122);
+}
+
+/**
+ * Check if a character is a Hebrew letter (א-ת and related marks in Hebrew block)
+ */
+function isHebrewLetter(char) {
+    const code = char.charCodeAt(0);
+    return code >= 0x0590 && code <= 0x05ff;
 }
 
 /**
@@ -115,15 +126,20 @@ export function validateSlugFormat(slug) {
         };
     }
 
-    // 4. Check for valid characters only (English letters, numbers, hyphens)
+    // 4. Check for valid characters only (English / Hebrew letters, numbers, hyphens)
     for (let i = 0; i < lowercased.length; i++) {
         const char = lowercased[i];
+
+        // Hebrew is explicitly allowed — skip lookalike checks for that range
+        if (isHebrewLetter(char)) {
+            continue;
+        }
 
         // Check for lookalike characters first (security check)
         if (isLookalikeCharacter(char)) {
             return {
                 isValid: false,
-                error: 'Only English letters (a-z), numbers (0-9), and hyphens (-) are allowed.',
+                error: SLUG_CHARS_ERROR,
             };
         }
 
@@ -131,7 +147,7 @@ export function validateSlugFormat(slug) {
         if (!isEnglishLetter(char) && !isDigit(char) && !isHyphen(char)) {
             return {
                 isValid: false,
-                error: 'Only English letters (a-z), numbers (0-9), and hyphens (-) are allowed.',
+                error: SLUG_CHARS_ERROR,
             };
         }
     }

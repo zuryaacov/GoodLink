@@ -113,13 +113,13 @@ export function sanitizeInput(value) {
   const stripped = cleaned.replace(/<[^>]*>/g, '');
 
   // Step 4 – restrict allowed characters for structured inputs:
-  // allow only: letters (a-z, A-Z), digits (0-9), spaces, hyphens (-), and dots (.)
-  // If any other characters are present (including Hebrew, emojis, punctuation, etc.) → reject.
-  if (/[^a-zA-Z0-9 .-]/.test(stripped)) {
+  // allow: English (a-z, A-Z), Hebrew (א-ת), digits (0-9), spaces, hyphens (-), and dots (.)
+  // Reject emojis, other scripts, and punctuation.
+  if (/[^a-zA-Z0-9\u0590-\u05FF .-]/.test(stripped)) {
     return {
       safe: false,
       error:
-        'Only letters (a-z), numbers (0-9), hyphens (-), dots (.) and spaces are allowed.',
+        'Only English or Hebrew letters, numbers (0-9), hyphens (-), dots (.) and spaces are allowed.',
     };
   }
 

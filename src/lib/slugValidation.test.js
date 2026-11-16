@@ -18,14 +18,24 @@ describe('validateSlugFormat', () => {
     expect(tooLong.error).toContain('cannot exceed 30');
   });
 
-  it('allows only english letters, digits and hyphens, and lowercases automatically', () => {
+  it('allows english letters, digits and hyphens, and lowercases automatically', () => {
     const ok = validateSlugFormat('AbC-123');
     expect(ok.isValid).toBe(true);
     expect(ok.normalizedSlug).toBe('abc-123');
 
     const invalid = validateSlugFormat('abc_123');
     expect(invalid.isValid).toBe(false);
-    expect(invalid.error).toContain('Only English letters');
+    expect(invalid.error).toContain('Only English or Hebrew letters');
+  });
+
+  it('allows Hebrew letters in slugs', () => {
+    const ok = validateSlugFormat('מבצע-קיץ');
+    expect(ok.isValid).toBe(true);
+    expect(ok.normalizedSlug).toBe('מבצע-קיץ');
+
+    const mixed = validateSlugFormat('Sale-מבצע');
+    expect(mixed.isValid).toBe(true);
+    expect(mixed.normalizedSlug).toBe('sale-מבצע');
   });
 
   it('rejects consecutive or edge hyphens', () => {

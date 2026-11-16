@@ -284,6 +284,10 @@ const dashboardEn = {
   lwErrValidateUrl: 'Could not validate the destination URL. Please try again.',
   lwErrEnterSlug: 'Please enter a slug.',
   lwErrValidSlug: 'Please enter a valid slug.',
+  lwErrNameChars:
+    'Only English or Hebrew letters, numbers (0-9), hyphens (-), dots (.) and spaces are allowed.',
+  lwErrSlugChars:
+    'Only English or Hebrew letters, numbers (0-9), and hyphens (-) are allowed.',
   lwErrValidateSlug: 'Could not validate the slug. Please try again.',
   lwErrEnterBotRedirect: 'Please enter a redirect URL for bots.',
   lwErrSelectCountry: 'Please select a country',

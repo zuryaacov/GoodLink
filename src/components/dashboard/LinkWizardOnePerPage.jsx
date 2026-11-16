@@ -297,8 +297,8 @@ export default function LinkWizardOnePerPage({
         highlightClass:
           'bg-gradient-to-r from-[#a855f7] to-[#7c6ee8] bg-clip-text text-transparent',
         subtitle: t('lwStepDomainSubtitle'),
-        // For testing: show when plan fits (even with only glynk.to). Normally: && domains.length > 1
-        show: isAdvancedOrPro,
+        // Skip when glynk.to is the only option — nothing to choose
+        show: isAdvancedOrPro && uniqueDomains(domains).length > 1,
       },
       {
         id: 'slug',
@@ -472,7 +472,12 @@ export default function LinkWizardOnePerPage({
     // XSS / injection check
     const nameCheck = sanitizeInput(name);
     if (!nameCheck.safe) {
-      setNameError(nameCheck.error);
+      const msg = nameCheck.error || '';
+      setNameError(
+        /Only (English or Hebrew )?letters|Only English letters/i.test(msg)
+          ? t('lwErrNameChars')
+          : msg
+      );
       return false;
     }
     setValidating(true);
@@ -585,7 +590,12 @@ export default function LinkWizardOnePerPage({
         initialData?.id || null
       );
       if (!result.isValid) {
-        setSlugError(result.error || t('lwErrValidSlug'));
+        const msg = result.error || '';
+        setSlugError(
+          /Only English or Hebrew letters|Only English letters/i.test(msg)
+            ? t('lwErrSlugChars')
+            : msg || t('lwErrValidSlug')
+        );
         return false;
       }
       if (result.normalizedSlug && result.normalizedSlug !== formData.slug) {

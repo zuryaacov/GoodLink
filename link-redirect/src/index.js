@@ -30,8 +30,8 @@ function extractSlug(pathname) {
     return null;
   }
   
-  // Validate slug format (alphanumeric and hyphens, 3-30 chars)
-  const slugPattern = /^[a-z0-9-]{3,30}$/i;
+  // Validate slug format (English / Hebrew letters, digits, hyphens; 3-30 chars)
+  const slugPattern = /^[a-z0-9\u0590-\u05FF-]{3,30}$/i;
   if (!slugPattern.test(path)) {
     return null;
   }

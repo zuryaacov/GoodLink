@@ -283,6 +283,10 @@ const dashboardHe = {
   lwErrValidateUrl: 'לא ניתן לאמת את כתובת היעד. נסו שוב.',
   lwErrEnterSlug: 'אנא הזינו סלאג.',
   lwErrValidSlug: 'אנא הזינו סלאג תקין.',
+  lwErrNameChars:
+    'מותרים רק אותיות באנגלית או בעברית, מספרים (0-9), מקפים (-), נקודות (.) ורווחים.',
+  lwErrSlugChars:
+    'מותרים רק אותיות באנגלית או בעברית, מספרים (0-9) ומקפים (-).',
   lwErrValidateSlug: 'לא ניתן לאמת את הסלאג. נסו שוב.',
   lwErrEnterBotRedirect: 'אנא הזינו כתובת הפניה לבוטים.',
   lwErrSelectCountry: 'אנא בחרו מדינה',
