@@ -7,8 +7,10 @@ import { logBackofficeEvent } from '../../lib/backofficeLogger';
 import { ArrowLeft } from 'lucide-react';
 import Modal from '../../components/common/Modal';
 import PixelWizardOnePerPage from '../../components/dashboard/PixelWizardOnePerPage';
+import { useLanguage } from '../../i18n/LanguageContext';
 
 const PixelBuilderPage = () => {
+  const { t, isRtl } = useLanguage();
   const { id } = useParams();
   const navigate = useNavigate();
   const isEditMode = !!id;
@@ -64,7 +66,7 @@ const PixelBuilderPage = () => {
     const {
       data: { user },
     } = await supabase.auth.getUser();
-    if (!user) throw new Error('You must be logged in to save CAPI');
+    if (!user) throw new Error(t('capiErrLoginRequired'));
 
     const trimmedName = payload.name.trim();
     const { data: existingPixels } = await supabase
@@ -76,7 +78,7 @@ const PixelBuilderPage = () => {
     const isDuplicate =
       existingPixels?.length > 0 &&
       (isEditMode && id ? existingPixels.some((p) => p.id !== id) : true);
-    if (isDuplicate) throw new Error('A CAPI profile with this name already exists.');
+    if (isDuplicate) throw new Error(t('capiErrDuplicateProfile'));
 
     const normalizedPixelId =
       payload.platform === 'tiktok' ? payload.pixelId.trim().toUpperCase() : payload.pixelId.trim();
@@ -118,8 +120,8 @@ const PixelBuilderPage = () => {
         state: {
           toast: {
             type: 'success',
-            title: 'CAPI updated',
-            message: 'Your CAPI profile was updated successfully.',
+            title: t('capiUpdatedTitle'),
+            message: t('capiUpdatedMsg'),
           },
         },
       });
@@ -132,7 +134,7 @@ const PixelBuilderPage = () => {
       if (error) {
         // Unique index conflict (same user/platform/pixel_id)
         if (error.code === '23505') {
-          throw new Error('This Pixel ID already exists for this platform.');
+          throw new Error(t('capiErrDuplicatePixelId'));
         }
         throw error;
       }
@@ -150,8 +152,8 @@ const PixelBuilderPage = () => {
         state: {
           toast: {
             type: 'success',
-            title: 'CAPI created',
-            message: 'Your new CAPI profile was created successfully.',
+            title: t('capiCreatedTitle'),
+            message: t('capiCreatedMsg'),
           },
         },
       });
@@ -171,7 +173,7 @@ const PixelBuilderPage = () => {
           <span className="material-symbols-outlined text-4xl text-slate-600 animate-spin">
             refresh
           </span>
-          <p className="text-[#1b1b1b] mt-4">Loading...</p>
+          <p className="text-[#1b1b1b] mt-4">{t('capiLoading')}</p>
         </div>
       </div>
     );
@@ -183,11 +185,14 @@ const PixelBuilderPage = () => {
         <div className="max-w-4xl mx-auto flex items-center gap-4">
           <button
             onClick={() => navigate('/dashboard/pixels')}
+            aria-label={t('capiBackToList')}
             className="p-2 text-[#1b1b1b] hover:text-[#1b1b1b] hover:bg-white/5 rounded-lg transition-colors"
           >
-            <ArrowLeft size={24} />
+            <ArrowLeft size={24} className={isRtl ? 'rotate-180' : ''} />
           </button>
-          <h1 className="text-xl font-bold text-[#1b1b1b]">{id ? 'Edit CAPI' : 'Create New CAPI'}</h1>
+          <h1 className="text-xl font-bold text-[#1b1b1b]">
+            {id ? t('capiEditTitle') : t('capiAddTitle')}
+          </h1>
         </div>
       </div>
       <div className="flex-1 min-h-0 flex flex-col">
@@ -202,7 +207,7 @@ const PixelBuilderPage = () => {
       <Modal
         isOpen={errorModal.isOpen}
         onClose={() => setErrorModal({ ...errorModal, isOpen: false })}
-        title="Error"
+        title={t('capiErrorTitle')}
         message={errorModal.message}
         type="error"
       />

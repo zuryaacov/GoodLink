@@ -10,7 +10,7 @@ import { useToast } from '../../components/common/ToastProvider.jsx';
 import { useLanguage } from '../../i18n/LanguageContext';
 
 const PixelManager = () => {
-  const { t } = useLanguage();
+  const { t, isRtl } = useLanguage();
   const navigate = useNavigate();
   const location = useLocation();
   const [pixels, setPixels] = useState([]);
@@ -171,8 +171,8 @@ const PixelManager = () => {
       fetchPixels();
       showToast({
         type: 'success',
-        title: 'CAPI deleted',
-        message: 'The CAPI profile was removed successfully.',
+        title: t('capiDeletedTitle'),
+        message: t('capiDeletedMsg'),
       });
     } catch (error) {
       console.error('Error deleting CAPI profile:', error);
@@ -180,8 +180,8 @@ const PixelManager = () => {
       setModalState({
         isOpen: true,
         type: 'error',
-        title: 'Error',
-        message: 'Error deleting CAPI profile. Please try again.',
+        title: t('capiErrorTitle'),
+        message: t('capiDeleteError'),
         onConfirm: null,
         isLoading: false,
       });
@@ -215,8 +215,8 @@ const PixelManager = () => {
       setModalState({
         isOpen: true,
         type: 'error',
-        title: 'Error',
-        message: 'Error updating CAPI status. Please try again.',
+        title: t('capiErrorTitle'),
+        message: t('capiStatusError'),
         onConfirm: null,
         isLoading: false,
       });
@@ -412,7 +412,7 @@ const PixelManager = () => {
           </p>
 
           {/* Value props */}
-          <div className="space-y-4 mb-10 text-left">
+          <div className="space-y-4 mb-10 text-start">
             <div className="flex items-center gap-3 p-3 bg-white/80 rounded-xl border border-slate-200 hover:border-primary/40 transition-colors">
               <Globe className="w-5 h-5 text-[#a855f7]" aria-hidden="true" />
               <div>
@@ -444,7 +444,11 @@ const PixelManager = () => {
           >
             <Zap className="w-5 h-5" />
             <span>{t('dashViewPlansUpgrade')}</span>
-            <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
+            <ArrowRight
+              className={`w-5 h-5 transition-transform ${
+                isRtl ? 'rotate-180 group-hover:-translate-x-1' : 'group-hover:translate-x-1'
+              }`}
+            />
           </button>
 
           <p className="mt-5 text-xs text-[#1b1b1b]">
@@ -524,7 +528,7 @@ const PixelManager = () => {
                       setOpenMenuPixelId(openMenuPixelId === pixel.id ? null : pixel.id);
                     }}
                     className="p-2 rounded-lg bg-white border border-slate-200 text-slate-700 hover:text-[#1b1b1b] transition-colors"
-                    aria-label="Actions menu"
+                    aria-label={t('capiActionsMenu')}
                     aria-expanded={openMenuPixelId === pixel.id}
                     aria-haspopup="true"
                   >
@@ -539,8 +543,8 @@ const PixelManager = () => {
                       />
                       <div
                         role="menu"
-                        aria-label="CAPI profile actions"
-                        className="absolute right-0 mt-2 w-40 bg-white border border-slate-200 rounded-xl shadow-2xl z-20 overflow-hidden min-w-max"
+                        aria-label={t('capiProfileActions')}
+                        className="absolute end-0 mt-2 w-40 bg-white border border-slate-200 rounded-xl shadow-2xl z-20 overflow-hidden min-w-max"
                       >
                         <button
                           role="menuitem"
@@ -549,7 +553,7 @@ const PixelManager = () => {
                             setOpenMenuPixelId(null);
                             navigate(`/dashboard/pixels/edit/${pixel.id}`);
                           }}
-                          className="w-full px-4 py-3 text-left text-[#1b1b1b] hover:bg-white/5 transition-colors flex items-center gap-3 text-sm"
+                          className="w-full px-4 py-3 text-start text-[#1b1b1b] hover:bg-white/5 transition-colors flex items-center gap-3 text-sm"
                         >
                           <span className="material-symbols-outlined text-base" aria-hidden="true">edit</span>
                           {t('dashEdit')}
@@ -566,7 +570,7 @@ const PixelManager = () => {
                               isLoading: false,
                             });
                           }}
-                          className="w-full px-4 py-3 text-left text-red-500 hover:bg-red-400/10 transition-colors flex items-center gap-3 text-sm"
+                          className="w-full px-4 py-3 text-start text-red-500 hover:bg-red-400/10 transition-colors flex items-center gap-3 text-sm"
                         >
                           <span className="material-symbols-outlined text-base" aria-hidden="true">delete</span>
                           {t('dashDelete')}
@@ -579,13 +583,13 @@ const PixelManager = () => {
 
               {/* Pixel ID */}
               <div className="p-3 bg-white rounded-lg border border-slate-200">
-                <p className="text-xs text-slate-500 mb-1">Pixel ID</p>
-                <p className="font-mono text-sm text-black break-all">{pixel.pixel_id || ''}</p>
+                <p className="text-xs text-slate-500 mb-1">{t('capiPixelIdLabel')}</p>
+                <p dir="ltr" className="font-mono text-sm text-black break-all text-start">{pixel.pixel_id || ''}</p>
               </div>
 
               {/* Event Info */}
               <div className="flex items-center gap-2 text-xs">
-                <span className="text-slate-500">Event:</span>
+                <span className="text-slate-500">{t('capiEventLabel')}</span>
                 <span className="text-black font-medium">
                   {pixel.event_type === 'custom' ? pixel.custom_event_name : pixel.event_type}
                 </span>
@@ -595,10 +599,9 @@ const PixelManager = () => {
               {pixel.platform === 'taboola' && (
                 <div className="p-3 bg-white rounded-lg border border-slate-200 text-xs">
                   <p className="text-slate-500 mb-1.5">
-                    Tracking URL / Suffix: Copy and paste the following into your Taboola campaign
-                    &quot;Suffix&quot; field
+                    {t('capiTaboolaSuffixHint')}
                   </p>
-                  <p className="text-slate-600 font-mono break-all">
+                  <p dir="ltr" className="text-slate-600 font-mono break-all text-start">
                     www.domain.com/slug
                     <span className="text-green-700">?tglid=&#123;ctoken&#125;</span>
                   </p>
@@ -609,10 +612,9 @@ const PixelManager = () => {
               {pixel.platform === 'outbrain' && (
                 <div className="p-3 bg-white rounded-lg border border-slate-200 text-xs">
                   <p className="text-slate-500 mb-1.5">
-                    Outbrain Tracking Setup Tracking URL / Suffix: Copy and paste the following into
-                    your Outbrain campaign &quot;Suffix&quot; field
+                    {t('capiOutbrainSuffixHint')}
                   </p>
-                  <p className="text-slate-600 font-mono break-all">
+                  <p dir="ltr" className="text-slate-600 font-mono break-all text-start">
                     www.domain.com/slug
                     <span className="text-green-700">?oglid=&#123;ob_click_id&#125;</span>
                   </p>
@@ -627,12 +629,12 @@ const PixelManager = () => {
                   className={`relative w-12 h-6 rounded-full transition-colors flex-shrink-0 ${
                     pixel.status === 'active' ? 'bg-[#00F59B]' : 'bg-slate-200'
                   }`}
-                  aria-label="Toggle CAPI status"
+                  aria-label={t('capiToggleStatus')}
                   aria-pressed={pixel.status === 'active'}
                   title={
                     pixel.status === 'active'
-                      ? 'Active - Click to pause'
-                      : 'Paused - Click to activate'
+                      ? t('capiActiveClickPause')
+                      : t('capiPausedClickActivate')
                   }
                 >
                   <span
@@ -657,15 +659,16 @@ const PixelManager = () => {
         onClose={() =>
           !deleteModalState.isLoading && setDeleteModalState({ ...deleteModalState, isOpen: false })
         }
-        title="Delete this CAPI profile?"
+        title={t('capiDeleteModalTitle')}
         message={
           <>
-            Are you sure you want to delete <strong>{deleteModalState.pixelName}</strong>? This
-            action cannot be undone.
+            {t('capiDeleteConfirmPrefix')}
+            <strong>{deleteModalState.pixelName}</strong>
+            {t('capiDeleteConfirmSuffix')}
           </>
         }
         type="delete"
-        confirmText="Delete CAPI"
+        confirmText={t('capiDeleteBtn')}
         cancelText={t('dashCancel')}
         onConfirm={handleDelete}
         isLoading={deleteModalState.isLoading}

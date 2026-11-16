@@ -5,6 +5,7 @@ import { checkForMaliciousInput, sanitizeInput } from '../../lib/inputSanitizati
 import { supabase } from '../../lib/supabase';
 import taboolaLogo from '../../assets/idRS-vCmxj_1769618141092.svg';
 import outbrainLogo from '../../assets/id-bNajMAc_1769618145922.svg';
+import { useLanguage } from '../../i18n/LanguageContext';
 
 const getPlatformLogo = (platform) => {
   const w = 'w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0';
@@ -117,9 +118,9 @@ const getPlatformLogo = (platform) => {
 };
 
 const PLATFORMS = [
-  { value: 'meta', label: 'Facebook', placeholder: 'Enter Dataset ID' },
-  { value: 'instagram', label: 'Instagram', placeholder: 'Enter Dataset ID' },
-  { value: 'tiktok', label: 'TikTok', placeholder: 'Pixel ID' },
+  { value: 'meta', label: 'Facebook', placeholderKey: 'capiPhDatasetId' },
+  { value: 'instagram', label: 'Instagram', placeholderKey: 'capiPhDatasetId' },
+  { value: 'tiktok', label: 'TikTok', placeholderKey: 'capiLabelPixelId' },
   // { value: 'google', label: 'Google Ads', placeholder: 'Google Conversion ID' },
   // { value: 'snapchat', label: 'Snapchat', placeholder: 'UUID Pixel ID' },
   // { value: 'outbrain', label: 'Outbrain', placeholder: 'Marketer ID (0-9, a-f)' },
@@ -128,15 +129,15 @@ const PLATFORMS = [
 
 // getPixelIdLabel imported from ../../lib/pixelValidation
 
-const getCapiTokenLabel = (platform) => {
+const getCapiTokenLabelKey = (platform) => {
   switch (platform) {
     case 'meta':
     case 'instagram':
-      return 'CAPI Access Token';
+      return 'capiTokenLabelCapi';
     case 'tiktok':
-      return 'Access Token';
+      return 'capiTokenLabelAccess';
     case 'google':
-      return 'Conversion Label';
+      return 'capiTokenLabelConversion';
     // case 'snapchat':
     //   return 'Access Token';
     // case 'outbrain':
@@ -144,32 +145,38 @@ const getCapiTokenLabel = (platform) => {
     // case 'taboola':
     //   return 'Client Secret';
     default:
-      return 'CAPI Access Token';
+      return 'capiTokenLabelCapi';
   }
 };
 
-const getCapiTokenPlaceholder = (platform) => {
+const getCapiTokenPlaceholderKey = (platform) => {
   switch (platform) {
     case 'meta':
     case 'instagram':
-      return 'Access Token';
     case 'tiktok':
-      return 'Access Token';
+      return 'capiTokenLabelAccess';
     case 'google':
-      return 'Conversion Label';
-    // case 'snapchat':
-    //   return 'Access Token';
-    // case 'outbrain':
-    //   return 'Access Token';
-    // case 'taboola':
-    //   return 'Client Secret';
+      return 'capiTokenLabelConversion';
     default:
-      return 'CAPI Access Token';
+      return 'capiTokenLabelCapi';
   }
 };
 
-const getEventTypeLabel = (platform) =>
-  platform === 'taboola' ? 'Name' : platform === 'outbrain' ? 'Conversion Name' : 'Event Type';
+// Localized label for the Pixel ID field (falls back to the shared English label)
+const getPixelIdLabelKey = (platform) => {
+  switch (platform) {
+    case 'meta':
+    case 'instagram':
+      return 'capiLabelDatasetId';
+    case 'google':
+      return 'capiLabelMeasurementId';
+    case 'taboola':
+    case 'outbrain':
+      return null;
+    default:
+      return 'capiLabelPixelId';
+  }
+};
 
 const STANDARD_EVENTS = {
   meta: [
@@ -241,52 +248,53 @@ const defaultEventForPlatform = (platform) => {
 const STEPS = [
   {
     id: 'name',
-    badge: 'Start',
+    badge: 'capiStepStart',
     badgeColor: 'text-[#10b981] bg-[#10b981]/10',
-    title: 'Name your',
-    highlight: 'CAPI',
+    title: 'capiNameTitle',
+    highlight: 'capiNameHighlight',
     highlightClass: 'bg-gradient-to-r from-[#a855f7] to-[#7c6ee8] bg-clip-text text-transparent',
-    subtitle: 'A friendly name for this CAPI profile.',
+    subtitle: 'capiNameSubtitle',
   },
   {
     id: 'platform',
-    badge: 'Platform',
+    badge: 'capiStepPlatform',
     badgeColor: 'text-[#135bec] bg-[#135bec]/10',
-    title: 'Select',
-    highlight: 'Company',
+    title: 'capiPlatformTitle',
+    highlight: 'capiPlatformHighlight',
     highlightClass: 'bg-gradient-to-r from-[#135bec] to-[#42a5f5] bg-clip-text text-transparent',
-    subtitle: 'Which ad platform is this CAPI profile for ?',
+    subtitle: 'capiPlatformSubtitle',
   },
   {
     id: 'pixelId',
-    badge: 'Tracking',
+    badge: 'capiStepTracking',
     badgeColor: 'text-blue-700 bg-blue-400/10',
-    title: 'Enter',
-    highlight: 'Pixel ID',
+    title: 'capiEnterTitle',
+    highlight: 'capiPixelIdHighlight',
     highlightClass: 'bg-gradient-to-r from-[#135bec] to-[#42a5f5] bg-clip-text text-transparent',
-    subtitle: 'The pixel or measurement ID from your ad platform.',
+    subtitle: 'capiPixelIdSubtitle',
   },
   {
     id: 'capiToken',
-    badge: 'CAPI',
+    badge: 'capiStepCapi',
     badgeColor: 'text-purple-700 bg-purple-500/10',
-    title: 'CAPI',
-    highlight: 'Token',
+    title: 'capiTokenTitle',
+    highlight: 'capiTokenHighlight',
     highlightClass: 'text-purple-700',
-    subtitle: 'Your token so we can send CAPI events.',
+    subtitle: 'capiTokenSubtitle',
   },
   {
     id: 'eventType',
-    badge: 'Event',
+    badge: 'capiStepEvent',
     badgeColor: 'text-yellow-500 bg-yellow-500/10',
-    title: 'Event',
-    highlight: 'Type',
+    title: 'capiEventTitle',
+    highlight: 'capiEventHighlight',
     highlightClass: 'text-yellow-500',
-    subtitle: 'The conversion event to send.',
+    subtitle: 'capiEventSubtitle',
   },
 ];
 
 export default function PixelWizardOnePerPage({ initialData, editingPixelId, onSave, onBack, isEdit }) {
+  const { t, isRtl } = useLanguage();
   const [stepIndex, setStepIndex] = useState(0);
   const [formData, setFormData] = useState({
     name: '',
@@ -328,45 +336,52 @@ export default function PixelWizardOnePerPage({ initialData, editingPixelId, onS
     currentStep?.id === 'pixelId' &&
     (formData.platform === 'meta' || formData.platform === 'instagram');
   const isGooglePixelStep = currentStep?.id === 'pixelId' && formData.platform === 'google';
-  const titleText =
-    isMetaOrInstagramDatasetStep ? 'Enter' : currentStep?.title;
-  const highlightText =
-    isMetaOrInstagramDatasetStep ? 'Dataset ID' : currentStep?.highlight;
+  const titleKey = isMetaOrInstagramDatasetStep ? 'capiEnterTitle' : currentStep?.title;
+  const highlightKey = isMetaOrInstagramDatasetStep
+    ? 'capiDatasetIdHighlight'
+    : currentStep?.highlight;
   const isTiktokTokenStep =
     currentStep?.id === 'capiToken' && formData.platform === 'tiktok';
   const isGoogleTokenStep =
     currentStep?.id === 'capiToken' && formData.platform === 'google';
-  const finalTitleText = isTiktokTokenStep
-    ? 'TikTok'
+  const finalTitleKey = isTiktokTokenStep
+    ? 'capiTiktokTokenTitle'
     : isGoogleTokenStep
-      ? 'Conversion'
+      ? 'capiGoogleTokenTitle'
       : isGooglePixelStep
-        ? 'Google'
-        : titleText;
-  const finalHighlightText = isTiktokTokenStep
-    ? 'Events API'
+        ? 'capiGoogleTitle'
+        : titleKey;
+  const finalHighlightKey = isTiktokTokenStep
+    ? 'capiTiktokTokenHighlight'
     : isGoogleTokenStep
-      ? 'Label'
-    : isGooglePixelStep
-      ? 'Conversion ID'
-      : highlightText;
-  const subtitleText =
-    isMetaOrInstagramDatasetStep
-      ? formData.platform === 'meta'
-        ? 'The Dataset ID from your Facebook account.'
-        : 'The Dataset ID from your Instagram account.'
-      : currentStep?.id === 'pixelId' && formData.platform === 'tiktok'
-        ? 'The Pixel ID from your TikTok platform.'
+      ? 'capiGoogleTokenHighlight'
       : isGooglePixelStep
-        ? 'The Conversion ID from your Google Ads account.'
-      : isTiktokTokenStep
-        ? 'Your Token so we can send Events API.'
-      : isGoogleTokenStep
-        ? 'The Conversion Label from your Google Ads account.'
-      : currentStep?.subtitle;
+        ? 'capiGooglePixelHighlight'
+        : highlightKey;
+  const subtitleKey = isMetaOrInstagramDatasetStep
+    ? formData.platform === 'meta'
+      ? 'capiMetaDatasetSubtitle'
+      : 'capiInstagramDatasetSubtitle'
+    : currentStep?.id === 'pixelId' && formData.platform === 'tiktok'
+      ? 'capiTiktokPixelSubtitle'
+      : isGooglePixelStep
+        ? 'capiGooglePixelSubtitle'
+        : isTiktokTokenStep
+          ? 'capiTiktokTokenSubtitle'
+          : isGoogleTokenStep
+            ? 'capiGoogleTokenSubtitle'
+            : currentStep?.subtitle;
+  const finalTitleText = finalTitleKey ? t(finalTitleKey) : '';
+  const finalHighlightText = finalHighlightKey ? t(finalHighlightKey) : '';
+  const subtitleText = subtitleKey ? t(subtitleKey) : '';
+  const pixelIdLabelKey = getPixelIdLabelKey(formData.platform);
+  const pixelIdLabel = pixelIdLabelKey ? t(pixelIdLabelKey) : getPixelIdLabel(formData.platform);
+  const pixelIdPlaceholder = currentPlatform?.placeholderKey
+    ? t(currentPlatform.placeholderKey)
+    : undefined;
   useEffect(() => {
     if (!currentStep) return;
-    const t = setTimeout(() => {
+    const focusTimer = setTimeout(() => {
       if (currentStep.id === 'name') {
         nameInputRef.current?.focus?.();
         nameInputRef.current?.select?.();
@@ -387,15 +402,15 @@ export default function PixelWizardOnePerPage({ initialData, editingPixelId, onS
         eventTypeInputRef.current?.select?.();
       }
     }, 0);
-    return () => clearTimeout(t);
+    return () => clearTimeout(focusTimer);
   }, [currentStep?.id, formData.platform]);
   const goNext = async () => {
     const validateCurrentStep = async () => {
       const nextErrors = {};
       if (currentStep?.id === 'name') {
         const name = formData.name?.trim() || '';
-        if (!name) nextErrors.name = 'Please enter a friendly name.';
-        else if (name.length > 100) nextErrors.name = 'Friendly name cannot exceed 100 characters.';
+        if (!name) nextErrors.name = t('capiErrNameRequired');
+        else if (name.length > 100) nextErrors.name = t('capiErrNameTooLong');
         else {
           const check = sanitizeInput(name);
           if (!check.safe) nextErrors.name = check.error;
@@ -414,7 +429,7 @@ export default function PixelWizardOnePerPage({ initialData, editingPixelId, onS
                 existing?.length > 0 &&
                 (isEdit && editingPixelId ? existing.some((p) => p.id !== editingPixelId) : true);
               if (isDuplicate) {
-                nextErrors.name = 'A CAPI profile with this name already exists. Please choose a different name.';
+                nextErrors.name = t('capiErrNameDuplicate');
               }
             }
           }
@@ -423,18 +438,26 @@ export default function PixelWizardOnePerPage({ initialData, editingPixelId, onS
       if (currentStep?.id === 'pixelId') {
         const pixelId = formData.pixelId?.trim() || '';
         if (!pixelId) {
-          nextErrors.pixelId = `Please enter ${getPixelIdLabel(formData.platform)}.`;
+          nextErrors.pixelId = t('capiErrFieldRequired').replace('{label}', pixelIdLabel);
         } else {
           const pixelIdXss = checkForMaliciousInput(pixelId);
           if (!pixelIdXss.safe) nextErrors.pixelId = pixelIdXss.error;
           else if (!validatePixelId(pixelId, formData.platform))
-            nextErrors.pixelId = `Please enter a valid ${getPixelIdLabel(formData.platform)} for ${formData.platform}.`;
+            nextErrors.pixelId = t('capiErrFieldInvalid')
+              .replace('{label}', pixelIdLabel)
+              .replace('{platform}', currentPlatform?.label || formData.platform);
         }
       }
       if (currentStep?.id === 'capiToken') {
         const tokenCheck = validateCapiToken(formData.capiToken, formData.platform);
         if (!tokenCheck.isValid)
-          nextErrors.capiToken = tokenCheck.error || 'Please enter a valid token.';
+          nextErrors.capiToken = tokenCheck.error
+            ? formData.platform === 'google'
+              ? t('capiErrTokenRequiredGoogle')
+              : formData.platform === 'taboola'
+                ? t('capiErrTokenRequiredTaboola')
+                : t('capiErrTokenRequired')
+            : t('capiErrTokenInvalid');
         else {
           const capiTokenXss = checkForMaliciousInput(formData.capiToken || '');
           if (!capiTokenXss.safe) nextErrors.capiToken = capiTokenXss.error;
@@ -447,11 +470,11 @@ export default function PixelWizardOnePerPage({ initialData, editingPixelId, onS
         ) {
           nextErrors.eventType =
             formData.platform === 'taboola'
-              ? 'Please enter an event name.'
-              : 'Please enter a conversion name.';
+              ? t('capiErrEventNameRequired')
+              : t('capiErrConversionNameRequired');
         } else if (formData.eventType === 'custom') {
           if (!formData.customEventName?.trim()) {
-            nextErrors.customEventName = 'Please enter a custom event name.';
+            nextErrors.customEventName = t('capiErrCustomEventRequired');
           } else {
             const check = checkForMaliciousInput(formData.customEventName);
             if (!check.safe) nextErrors.customEventName = check.error;
@@ -490,7 +513,7 @@ export default function PixelWizardOnePerPage({ initialData, editingPixelId, onS
                 : null,
         });
       } catch (e) {
-        setError(e.message || 'Could not save the CAPI profile. Please try again.');
+        setError(e.message || t('capiErrSaveFailed'));
         setLoading(false);
       }
       return;
@@ -524,7 +547,9 @@ export default function PixelWizardOnePerPage({ initialData, editingPixelId, onS
         aria-valuenow={stepIndex + 1}
         aria-valuemin={1}
         aria-valuemax={totalSteps}
-        aria-label={`Step ${stepIndex + 1} of ${totalSteps}`}
+        aria-label={t('capiStepOfTotal')
+          .replace('{current}', String(stepIndex + 1))
+          .replace('{total}', String(totalSteps))}
       >
         <div
           className="h-full bg-[#135bec] transition-all duration-500 shadow-[0_0_10px_#135bec]"
@@ -555,7 +580,7 @@ export default function PixelWizardOnePerPage({ initialData, editingPixelId, onS
                 <div
                   className={`inline-flex items-center gap-2 font-bold text-[10px] tracking-[0.2em] uppercase px-3 py-1 rounded-full ${currentStep?.badgeColor}`}
                 >
-                  <span>{currentStep?.badge}</span>
+                  <span>{currentStep?.badge ? t(currentStep.badge) : ''}</span>
                 </div>
                 <span className="text-[10px] font-black text-gray-500 tracking-widest">
                   {stepIndex + 1}/{totalSteps}
@@ -586,8 +611,8 @@ export default function PixelWizardOnePerPage({ initialData, editingPixelId, onS
                       setFormData((p) => ({ ...p, name: e.target.value }));
                       setFieldErrors((prev) => ({ ...prev, name: null }));
                     }}
-                    placeholder="e.g. FB - Main Account"
-                    aria-label="CAPI profile name"
+                    placeholder={t('capiPhName')}
+                    aria-label={t('capiAriaProfileName')}
                     aria-describedby={fieldErrors.name ? 'capi-name-error' : undefined}
                     className="w-full bg-transparent py-5 px-6 text-xl outline-none border-none text-[#1b1b1b] placeholder-slate-500"
                   />
@@ -608,7 +633,7 @@ export default function PixelWizardOnePerPage({ initialData, editingPixelId, onS
                     type="button"
                     onClick={() => setPlatform(p.value)}
                     aria-pressed={formData.platform === p.value}
-                    className={`p-5 rounded-2xl border-2 text-left transition-all flex items-center gap-4 ${
+                    className={`p-5 rounded-2xl border-2 text-start transition-all flex items-center gap-4 ${
                       formData.platform === p.value
                         ? 'border-[#a855f7] bg-[#a855f7]/5'
                         : 'border-slate-200 bg-white hover:border-slate-300'
@@ -638,14 +663,15 @@ export default function PixelWizardOnePerPage({ initialData, editingPixelId, onS
                       }));
                       setFieldErrors((prev) => ({ ...prev, pixelId: null }));
                     }}
-                    placeholder={currentPlatform?.placeholder}
-                    aria-label={getPixelIdLabel(formData.platform)}
+                    placeholder={pixelIdPlaceholder}
+                    aria-label={pixelIdLabel}
+                    dir="ltr"
                     aria-describedby={fieldErrors.pixelId ? 'capi-pixel-id-error' : undefined}
                     className="w-full bg-transparent py-5 px-6 text-xl outline-none border-none text-[#1b1b1b] placeholder-slate-500 font-mono"
                       autoFocus
                   />
                 </div>
-                <p className="text-slate-500 text-xs mt-1">{currentPlatform?.placeholder}</p>
+                <p className="text-slate-500 text-xs mt-1">{pixelIdPlaceholder}</p>
                 <div className="min-h-[20px] mt-1">
                   {fieldErrors.pixelId && (
                     <p id="capi-pixel-id-error" className="text-red-500 text-sm" role="alert">{fieldErrors.pixelId}</p>
@@ -664,9 +690,10 @@ export default function PixelWizardOnePerPage({ initialData, editingPixelId, onS
                       setFormData((p) => ({ ...p, capiToken: e.target.value }));
                       setFieldErrors((prev) => ({ ...prev, capiToken: null }));
                     }}
-                    placeholder={getCapiTokenPlaceholder(formData.platform)}
+                    placeholder={t(getCapiTokenPlaceholderKey(formData.platform))}
                     rows={4}
-                    aria-label={getCapiTokenLabel(formData.platform)}
+                    dir="ltr"
+                    aria-label={t(getCapiTokenLabelKey(formData.platform))}
                     aria-describedby={fieldErrors.capiToken ? 'capi-token-error' : undefined}
                     className="w-full bg-transparent py-4 px-6 text-base outline-none border-none text-[#1b1b1b] placeholder-slate-500 font-mono resize-y"
                     autoFocus
@@ -695,9 +722,10 @@ export default function PixelWizardOnePerPage({ initialData, editingPixelId, onS
                         }}
                         placeholder={
                           formData.platform === 'taboola'
-                            ? 'e.g. lead, purchase, page_view'
-                            : 'e.g. arrival, lead, purchase'
+                            ? t('capiPhTaboolaEvent')
+                            : t('capiPhOutbrainEvent')
                         }
+                        dir="ltr"
                         className="w-full bg-transparent py-5 px-6 text-xl outline-none border-none text-[#1b1b1b] placeholder-slate-500"
                       />
                     </div>
@@ -719,7 +747,7 @@ export default function PixelWizardOnePerPage({ initialData, editingPixelId, onS
                             customEventName: e.target.value === 'custom' ? p.customEventName : '',
                           }))
                         }
-                        aria-label="Conversion event type"
+                        aria-label={t('capiAriaEventType')}
                         aria-describedby={
                           fieldErrors.customEventName ? 'capi-custom-event-error' : undefined
                         }
@@ -731,11 +759,11 @@ export default function PixelWizardOnePerPage({ initialData, editingPixelId, onS
                             value={ev.value}
                             className="bg-white text-[#1b1b1b]"
                           >
-                            {ev.label}
+                            {ev.label.replace(' (Default)', t('capiDefaultSuffix'))}
                           </option>
                         ))}
                         <option value="custom" className="bg-white text-[#1b1b1b]">
-                          Custom Event
+                          {t('capiCustomEvent')}
                         </option>
                       </select>
                     </div>
@@ -748,8 +776,9 @@ export default function PixelWizardOnePerPage({ initialData, editingPixelId, onS
                             setFormData((p) => ({ ...p, customEventName: e.target.value }));
                             setFieldErrors((prev) => ({ ...prev, customEventName: null }));
                           }}
-                          placeholder="e.g. High_Quality_User"
-                          aria-label="Custom event name"
+                          placeholder={t('capiPhCustomEvent')}
+                          aria-label={t('capiAriaCustomEvent')}
+                          dir="ltr"
                           aria-describedby={fieldErrors.customEventName ? 'capi-custom-event-error' : undefined}
                           className="w-full bg-transparent py-5 px-6 text-xl outline-none border-none text-[#1b1b1b] placeholder-slate-500"
                         />
@@ -775,10 +804,15 @@ export default function PixelWizardOnePerPage({ initialData, editingPixelId, onS
           <button
             type="button"
             onClick={goBack}
-            aria-label="Previous step"
+            aria-label={t('capiPrevStep')}
             className={`flex items-center justify-center p-5 rounded-2xl border border-slate-200 font-bold text-gray-400 hover:bg-slate-200 hover:text-[#1b1b1b] transition-all ${isFirst ? 'invisible' : ''}`}
           >
-            <span className="material-symbols-outlined text-2xl" aria-hidden="true">chevron_left</span>
+            <span
+              className={`material-symbols-outlined text-2xl ${isRtl ? 'rotate-180' : ''}`}
+              aria-hidden="true"
+            >
+              chevron_left
+            </span>
           </button>
           <button
             type="button"
@@ -790,12 +824,23 @@ export default function PixelWizardOnePerPage({ initialData, editingPixelId, onS
             {loading ? (
               <>
                 <span className="material-symbols-outlined animate-spin text-2xl" aria-hidden="true">refresh</span>
-                <span>Saving...</span>
+                <span>{t('capiSaving')}</span>
               </>
             ) : (
               <>
-                <span>{isLast ? (isEdit ? 'Update CAPI' : 'Create CAPI') : 'Next Step'}</span>
-                <span className="material-symbols-outlined text-2xl" aria-hidden="true">
+                <span>
+                  {isLast
+                    ? isEdit
+                      ? t('capiUpdateBtn')
+                      : t('capiCreateBtn')
+                    : t('capiNextStep')}
+                </span>
+                <span
+                  className={`material-symbols-outlined text-2xl ${
+                    !isLast && isRtl ? 'rotate-180' : ''
+                  }`}
+                  aria-hidden="true"
+                >
                   {isLast ? 'check_circle' : 'arrow_forward'}
                 </span>
               </>
