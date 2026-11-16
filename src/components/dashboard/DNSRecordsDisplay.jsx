@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
+import { useLanguage } from '../../i18n/LanguageContext';
 
 // Extract host from full Cloudflare hostname
 // This handles complex domains like co.il, com.au, etc.
@@ -31,6 +32,7 @@ const extractDnsHost = (fullCfhName, userDomainInput) => {
 };
 
 const DNSRecordsDisplay = ({ records, domain }) => {
+  const { t } = useLanguage();
   const [copiedField, setCopiedField] = useState(null);
 
   const handleCopy = async (value, fieldName) => {
@@ -58,17 +60,17 @@ const DNSRecordsDisplay = ({ records, domain }) => {
     <button
       onClick={() => handleCopy(value, fieldName)}
       className={`px-3 py-1.5 bg-slate-200 hover:bg-slate-300 text-[#1b1b1b] text-xs font-medium rounded-lg transition-colors flex items-center gap-2 ${className}`}
-      aria-label={copiedField === fieldName ? 'Copied' : 'Copy to clipboard'}
+      aria-label={copiedField === fieldName ? t('cdCopied') : t('cdCopyToClipboard')}
     >
       {copiedField === fieldName ? (
         <>
           <span className="material-symbols-outlined text-sm" aria-hidden="true">check</span>
-          Copied
+          {t('cdCopied')}
         </>
       ) : (
         <>
           <span className="material-symbols-outlined text-sm" aria-hidden="true">content_copy</span>
-          Copy
+          {t('cdCopy')}
         </>
       )}
     </button>
@@ -78,12 +80,12 @@ const DNSRecordsDisplay = ({ records, domain }) => {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h4 className="text-lg font-bold text-[#1b1b1b] mb-2">🌐 Connect Your Custom Domain</h4>
+        <h4 className="text-lg font-bold text-[#1b1b1b] mb-2">{t('cdConnectTitle')}</h4>
         <p className="text-sm text-[#1b1b1b]">
-          Add all records exactly as shown below.
+          {t('cdAddRecordsExactly')}
         </p>
         <p className="text-xs text-primary mt-2 font-semibold">
-          Total records: {normalizedRecords.length}
+          {t('cdTotalRecords').replace('{n}', normalizedRecords.length)}
         </p>
       </div>
 
@@ -97,7 +99,7 @@ const DNSRecordsDisplay = ({ records, domain }) => {
               className="bg-white border border-slate-200 rounded-xl p-5 space-y-4"
             >
               <div className="flex items-center justify-between gap-3">
-                <h5 className="text-base font-bold text-[#1b1b1b]">Record {index + 1}</h5>
+                <h5 className="text-base font-bold text-[#1b1b1b]">{t('cdRecordN').replace('{n}', index + 1)}</h5>
                 <span className="px-2.5 py-1 rounded-md bg-primary/20 text-primary border border-primary/30 text-xs font-bold">
                   {record.type}
                 </span>
@@ -106,8 +108,8 @@ const DNSRecordsDisplay = ({ records, domain }) => {
               <div className="space-y-3">
                 <div className="flex items-center justify-between gap-3">
                   <div className="flex-1 min-w-0">
-                    <label className="text-xs text-slate-500 mb-1 block">Host/Name:</label>
-                    <code className="block px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm text-[#1b1b1b] font-mono break-all">
+                    <label className="text-xs text-slate-500 mb-1 block">{t('cdHostNameLabel')}</label>
+                    <code dir="ltr" className="block px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm text-[#1b1b1b] font-mono break-all text-start">
                       {record.host}
                     </code>
                   </div>
@@ -118,8 +120,8 @@ const DNSRecordsDisplay = ({ records, domain }) => {
 
                 <div className="flex items-center justify-between gap-3">
                   <div className="flex-1 min-w-0">
-                    <label className="text-xs text-slate-500 mb-1 block">Value:</label>
-                    <code className="block px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm text-[#1b1b1b] font-mono break-all">
+                    <label className="text-xs text-slate-500 mb-1 block">{t('cdValueLabel')}</label>
+                    <code dir="ltr" className="block px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm text-[#1b1b1b] font-mono break-all text-start">
                       {record.value}
                     </code>
                   </div>
@@ -142,9 +144,9 @@ const DNSRecordsDisplay = ({ records, domain }) => {
               pending
             </span>
             <div>
-              <p className="text-[#1b1b1b] font-bold text-sm">Generating DNS Records...</p>
+              <p className="text-[#1b1b1b] font-bold text-sm">{t('cdGeneratingRecords')}</p>
               <p className="text-[#1b1b1b] text-xs mt-1">
-                Cloudflare is preparing your records. This can take up to 60 seconds.
+                {t('cdGeneratingRecordsDesc')}
               </p>
             </div>
           </div>

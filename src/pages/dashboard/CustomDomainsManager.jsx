@@ -8,7 +8,7 @@ import { useToast } from '../../components/common/ToastProvider.jsx';
 import { useLanguage } from '../../i18n/LanguageContext';
 
 const CustomDomainsManager = () => {
-  const { t } = useLanguage();
+  const { t, isRtl } = useLanguage();
   const navigate = useNavigate();
   const location = useLocation();
   const [domains, setDomains] = useState([]);
@@ -219,8 +219,8 @@ const CustomDomainsManager = () => {
       fetchDomains();
       showToast({
         type: 'success',
-        title: 'Domain deleted',
-        message: 'The custom domain was removed successfully.',
+        title: t('cdToastDeletedTitle'),
+        message: t('cdToastDeletedMsg'),
       });
     } catch (error) {
       console.error('Error deleting domain:', error);
@@ -228,8 +228,8 @@ const CustomDomainsManager = () => {
       setModalState({
         isOpen: true,
         type: 'error',
-        title: 'Error',
-        message: 'Error deleting domain. Please try again.',
+        title: t('cdErrorTitle'),
+        message: t('cdErrorDeleting'),
         onConfirm: null,
         isLoading: false,
       });
@@ -241,8 +241,8 @@ const CustomDomainsManager = () => {
     setModalState({
       isOpen: true,
       type: 'alert',
-      title: 'Verifying DNS Records',
-      message: 'Please wait while we verify your DNS configuration...',
+      title: t('cdVerifyingTitle'),
+      message: t('cdVerifyingMsg'),
       onConfirm: null,
       isLoading: true,
     });
@@ -286,8 +286,8 @@ const CustomDomainsManager = () => {
         setModalState({
           isOpen: true,
           type: 'success',
-          title: 'DNS Verified Successfully!',
-          message: `Your domain ${domain.domain} has been verified and is now active.`,
+          title: t('cdVerifiedTitle'),
+          message: t('cdVerifiedMsg').replace('{domain}', domain.domain),
           onConfirm: null,
           isLoading: false,
         });
@@ -298,8 +298,8 @@ const CustomDomainsManager = () => {
         setModalState({
           isOpen: true,
           type: 'alert',
-          title: 'DNS Verification Pending',
-          message: `DNS records are still pending verification. Current status: ${result.ssl_status || 'pending'}. Please wait a few minutes and try again.`,
+          title: t('cdPendingTitle'),
+          message: t('cdPendingMsg').replace('{status}', result.ssl_status || 'pending'),
           onConfirm: null,
           isLoading: false,
         });
@@ -309,8 +309,8 @@ const CustomDomainsManager = () => {
       setModalState({
         isOpen: true,
         type: 'error',
-        title: 'Verification Failed',
-        message: error.message || 'Error verifying DNS records. Please try again.',
+        title: t('cdVerifyFailedTitle'),
+        message: error.message || t('cdVerifyFailedMsg'),
         onConfirm: null,
         isLoading: false,
       });
@@ -327,6 +327,21 @@ const CustomDomainsManager = () => {
         return 'bg-red-500/20 text-red-700 border-red-500/30';
       default:
         return 'bg-slate-200 text-[#1b1b1b] border-slate-500/30';
+    }
+  };
+
+  const getStatusLabel = (status) => {
+    switch (status) {
+      case 'active':
+        return t('cdStatusActive');
+      case 'pending':
+        return t('cdStatusPending');
+      case 'error':
+        return t('cdStatusError');
+      case 'deleted':
+        return t('cdStatusDeleted');
+      default:
+        return status ? status.charAt(0).toUpperCase() + status.slice(1).toLowerCase() : '';
     }
   };
 
@@ -410,7 +425,7 @@ const CustomDomainsManager = () => {
           </p>
 
           {/* Value props */}
-          <div className="space-y-4 mb-10 text-left">
+          <div className="space-y-4 mb-10 text-start">
             <div className="flex items-center gap-3 p-3 bg-white/80 rounded-xl border border-slate-200 hover:border-[#a855f7]/40 transition-colors">
               <Globe className="w-5 h-5 text-[#a855f7]" aria-hidden="true" />
               <div>
@@ -440,7 +455,7 @@ const CustomDomainsManager = () => {
           >
             <Zap className="w-5 h-5" aria-hidden="true" />
             <span>{t('dashViewPlansUpgrade')}</span>
-            <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" aria-hidden="true" />
+            <ArrowRight className={`w-5 h-5 transition-transform ${isRtl ? 'rotate-180 group-hover:-translate-x-1' : 'group-hover:translate-x-1'}`} aria-hidden="true" />
           </button>
 
           <p className="mt-5 text-xs text-[#1b1b1b]">
@@ -470,35 +485,19 @@ const CustomDomainsManager = () => {
       </div>
 
       <div className="bg-card-bg border border-card-border rounded-2xl p-6 space-y-4">
-        <h2 className="text-xl font-bold text-[#1b1b1b]">How To Connect Your Custom Domain</h2>
-        <p className="text-[#1b1b1b] text-sm">
-          To use your own domain with GoodLink.ai, you need to point your DNS settings to our
-          servers.
-        </p>
+        <h2 className="text-xl font-bold text-[#1b1b1b]">{t('cdHowToTitle')}</h2>
+        <p className="text-[#1b1b1b] text-sm">{t('cdHowToIntro')}</p>
         <div className="text-[#1b1b1b] text-sm space-y-2">
-          <p className="font-semibold">Follow these steps:</p>
-          <p>1. Log in to your domain registrar (e.g., GoDaddy, Namecheap, Cloudflare).</p>
-          <p>2. Navigate to the DNS Management section.</p>
-          <p>
-            3. Add the CNAME and TXT records exactly as shown in the Setup Wizard or in the
-            Details section of your domain card.
-          </p>
-          <p>
-            4. Important for Cloudflare users: Set the Proxy Status to &quot;DNS Only&quot; (Grey
-            Cloud). Do NOT use &quot;Proxied&quot; (Orange Cloud), as it will interfere with our
-            routing and SSL.
-          </p>
+          <p className="font-semibold">{t('cdHowToStepsIntro')}</p>
+          <p>{t('cdHowToStep1')}</p>
+          <p>{t('cdHowToStep2')}</p>
+          <p>{t('cdHowToStep3')}</p>
+          <p>{t('cdHowToStep4')}</p>
         </div>
         <div className="text-[#1b1b1b] text-sm space-y-2">
-          <p className="font-semibold">Verification & Timing</p>
-          <p>
-            Propagation: DNS changes usually take a few minutes, but can take up to 24 hours to
-            fully update globally.
-          </p>
-          <p>
-            Status: Your domain status will change to &quot;Active&quot; in your dashboard once the
-            connection is verified.
-          </p>
+          <p className="font-semibold">{t('cdVerifyTimingTitle')}</p>
+          <p>{t('cdPropagation')}</p>
+          <p>{t('cdStatusNote')}</p>
         </div>
       </div>
 
@@ -539,18 +538,19 @@ const CustomDomainsManager = () => {
                     <span className={`material-symbols-outlined text-base ${domain.status === 'active' ? 'text-green-700' : ''}`} aria-hidden="true">
                       {getStatusIcon(domain.status)}
                     </span>
-                    <span>{domain.status ? domain.status.charAt(0).toUpperCase() + domain.status.slice(1).toLowerCase() : ''}</span>
+                    <span>{getStatusLabel(domain.status)}</span>
                   </div>
                   {domain.root_redirect && (
                     <div className="flex items-center gap-2 text-[#1b1b1b] text-sm mt-1">
                       <span className="material-symbols-outlined text-sm" aria-hidden="true">
                         subdirectory_arrow_right
                       </span>
-                      <span className="text-slate-500">Root:</span>
+                      <span className="text-slate-500">{t('cdRoot')}</span>
                       <a
                         href={`https://${domain.root_redirect}`}
                         target="_blank"
                         rel="noopener noreferrer"
+                        dir="ltr"
                         className="text-primary hover:underline truncate max-w-[200px]"
                         title={domain.root_redirect}
                       >
@@ -568,7 +568,7 @@ const CustomDomainsManager = () => {
                       setOpenMenuDomainId(openMenuDomainId === domain.id ? null : domain.id);
                     }}
                     className="p-2 rounded-lg bg-white border border-slate-200 text-slate-700 hover:text-[#1b1b1b] transition-colors"
-                    aria-label="Actions menu"
+                    aria-label={t('cdActionsMenu')}
                     aria-expanded={openMenuDomainId === domain.id}
                     aria-haspopup="true"
                   >
@@ -583,8 +583,8 @@ const CustomDomainsManager = () => {
                       />
                       <div
                         role="menu"
-                        aria-label="Domain actions"
-                        className="absolute right-0 mt-2 w-48 bg-white border border-slate-200 rounded-xl shadow-2xl z-20 overflow-hidden min-w-max"
+                        aria-label={t('cdDomainActions')}
+                        className="absolute end-0 mt-2 w-48 bg-white border border-slate-200 rounded-xl shadow-2xl z-20 overflow-hidden min-w-max"
                       >
                         <button
                           role="menuitem"
@@ -593,7 +593,7 @@ const CustomDomainsManager = () => {
                             setOpenMenuDomainId(null);
                             setDetailsModalDomain(domain);
                           }}
-                          className="w-full px-4 py-3 text-left text-[#1b1b1b] hover:bg-white/5 transition-colors flex items-center gap-3 text-sm"
+                          className="w-full px-4 py-3 text-start text-[#1b1b1b] hover:bg-white/5 transition-colors flex items-center gap-3 text-sm"
                         >
                           <span className="material-symbols-outlined text-base" aria-hidden="true">info</span>
                           {t('dashDetails')}
@@ -605,7 +605,7 @@ const CustomDomainsManager = () => {
                             setOpenMenuDomainId(null);
                             navigate(`/dashboard/domains/edit/${domain.id}`);
                           }}
-                          className="w-full px-4 py-3 text-left text-[#1b1b1b] hover:bg-white/5 transition-colors flex items-center gap-3 text-sm"
+                          className="w-full px-4 py-3 text-start text-[#1b1b1b] hover:bg-white/5 transition-colors flex items-center gap-3 text-sm"
                         >
                           <span className="material-symbols-outlined text-base" aria-hidden="true">edit</span>
                           {t('dashEdit')}
@@ -617,7 +617,7 @@ const CustomDomainsManager = () => {
                             setOpenMenuDomainId(null);
                             handleDeleteClick(domain.id, domain.domain);
                           }}
-                          className="w-full px-4 py-3 text-left text-red-500 hover:bg-red-400/10 transition-colors flex items-center gap-3 text-sm"
+                          className="w-full px-4 py-3 text-start text-red-500 hover:bg-red-400/10 transition-colors flex items-center gap-3 text-sm"
                         >
                           <span className="material-symbols-outlined text-base" aria-hidden="true">delete</span>
                           {t('dashDelete')}
@@ -640,7 +640,7 @@ const CustomDomainsManager = () => {
           title={detailsModalDomain.domain}
           type="alert"
           message={
-            <div className="space-y-4 text-left">
+            <div className="space-y-4 text-start">
               {/* Verify DNS – when pending/error */}
               {(detailsModalDomain.status === 'pending' || detailsModalDomain.status === 'error') && (
                 <div className="flex justify-end">
@@ -652,7 +652,7 @@ const CustomDomainsManager = () => {
                     className="px-4 py-2 bg-[#a855f7] hover:bg-[#9333ea] text-white font-bold rounded-xl transition-all shadow-lg shadow-[#a855f7]/20 flex items-center justify-center gap-2 text-sm"
                   >
                     <span className="material-symbols-outlined text-lg" aria-hidden="true">verified</span>
-                    Verify DNS
+                    {t('cdVerifyDns')}
                   </button>
                 </div>
               )}
@@ -663,7 +663,7 @@ const CustomDomainsManager = () => {
                   <div className="flex items-center gap-2">
                     <span className="material-symbols-outlined text-sm" aria-hidden="true">dns</span>
                     <p className="text-xs uppercase tracking-widest font-black">
-                      DNS Configuration Required
+                      {t('cdDnsConfigRequired')}
                     </p>
                   </div>
                   {(() => {
@@ -688,7 +688,7 @@ const CustomDomainsManager = () => {
                         >
                           refresh
                         </span>
-                        Refresh
+                        {t('cdRefresh')}
                       </button>
                     );
                   })()}
@@ -702,8 +702,8 @@ const CustomDomainsManager = () => {
                     return (
                       <div className="bg-card-bg border border-card-border rounded-xl p-4 text-sm text-[#1b1b1b]">
                         {dnsLoadingByDomainId[detailsModalDomain.id]
-                          ? 'Loading DNS records...'
-                          : 'No DNS records available yet.'}
+                          ? t('cdLoadingDnsRecords')
+                          : t('cdNoDnsRecords')}
                       </div>
                     );
                   }
@@ -716,7 +716,7 @@ const CustomDomainsManager = () => {
                         >
                           <div className="flex items-center gap-3">
                             <div className="px-3 py-1 bg-primary/20 text-primary border border-primary/30 rounded-lg font-bold text-xs uppercase tracking-wider">
-                              Record {idx + 1}
+                              {t('cdRecordN').replace('{n}', idx + 1)}
                             </div>
                             <div className="h-px flex-1 bg-slate-200" />
                             <span className="text-xl text-primary font-black font-mono uppercase">
@@ -728,19 +728,19 @@ const CustomDomainsManager = () => {
                               <div className="flex items-center gap-2">
                                 <span className="material-symbols-outlined text-slate-500 text-sm" aria-hidden="true">label</span>
                                 <span className="text-[10px] uppercase font-black text-slate-600 tracking-[0.2em]">
-                                  Host / Name
+                                  {t('cdHostName')}
                                 </span>
                               </div>
                               <div className="flex items-center gap-3 bg-white p-3 rounded-xl border border-slate-200">
-                                <code className="text-sm md:text-base text-black font-mono font-bold flex-1 truncate selection:bg-primary/40">
+                                <code dir="ltr" className="text-sm md:text-base text-black font-mono font-bold flex-1 truncate text-start selection:bg-primary/40">
                                   {record.host || record.name}
                                 </code>
                                 <button
                                   type="button"
                                   onClick={() => navigator.clipboard.writeText(record.host || record.name)}
                                   className="w-10 h-10 flex items-center justify-center bg-white hover:bg-slate-100 text-[#1b1b1b] rounded-lg border border-slate-200 transition-all"
-                                  title="Copy Host"
-                                  aria-label="Copy host value"
+                                  title={t('cdCopyHost')}
+                                  aria-label={t('cdCopyHostAria')}
                                 >
                                   <span className="material-symbols-outlined text-xl" aria-hidden="true">content_copy</span>
                                 </button>
@@ -750,19 +750,19 @@ const CustomDomainsManager = () => {
                               <div className="flex items-center gap-2">
                                 <span className="material-symbols-outlined text-slate-500 text-sm" aria-hidden="true">shortcut</span>
                                 <span className="text-[10px] uppercase font-black text-slate-600 tracking-[0.2em]">
-                                  Target Value
+                                  {t('cdTargetValue')}
                                 </span>
                               </div>
                               <div className="flex items-center gap-3 bg-white p-3 rounded-xl border border-slate-200">
-                                <code className="text-sm md:text-lg text-black font-mono font-bold flex-1 break-all leading-tight selection:bg-primary/30">
+                                <code dir="ltr" className="text-sm md:text-lg text-black font-mono font-bold flex-1 break-all leading-tight text-start selection:bg-primary/30">
                                   {record.value}
                                 </code>
                                 <button
                                   type="button"
                                   onClick={() => navigator.clipboard.writeText(record.value)}
                                   className="w-10 h-10 flex items-center justify-center bg-white hover:bg-slate-100 text-[#1b1b1b] rounded-lg border border-slate-200 transition-all flex-shrink-0"
-                                  title="Copy Value"
-                                  aria-label="Copy target value"
+                                  title={t('cdCopyValue')}
+                                  aria-label={t('cdCopyValueAria')}
                                 >
                                   <span className="material-symbols-outlined text-xl" aria-hidden="true">content_copy</span>
                                 </button>
@@ -780,7 +780,7 @@ const CustomDomainsManager = () => {
               {detailsModalDomain.verified_at && (
                 <div className="pt-4 border-t border-slate-200 text-[11px] md:text-sm text-slate-500 flex items-center gap-2">
                   <span className="material-symbols-outlined text-lg" aria-hidden="true">calendar_today</span>
-                  <span className="font-semibold uppercase tracking-wide">Last Verified:</span>
+                  <span className="font-semibold uppercase tracking-wide">{t('cdLastVerified')}</span>
                   <span className="text-slate-600">
                     {new Date(detailsModalDomain.verified_at).toLocaleString()}
                   </span>
@@ -797,15 +797,19 @@ const CustomDomainsManager = () => {
         onClose={() =>
           !deleteModalState.isLoading && setDeleteModalState({ ...deleteModalState, isOpen: false })
         }
-        title="Delete this domain?"
-        message={
-          <>
-            Are you sure you want to delete <strong>{deleteModalState.domainName}</strong>? This
-            action cannot be undone.
-          </>
-        }
+        title={t('cdDeleteTitle')}
+        message={(() => {
+          const [before, after] = t('cdDeleteBody').split('{domain}');
+          return (
+            <>
+              {before}
+              <strong dir="ltr">{deleteModalState.domainName}</strong>
+              {after}
+            </>
+          );
+        })()}
         type="delete"
-        confirmText="Delete Domain"
+        confirmText={t('cdDeleteConfirm')}
         cancelText={t('dashCancel')}
         onConfirm={handleDeleteConfirm}
         isLoading={deleteModalState.isLoading}

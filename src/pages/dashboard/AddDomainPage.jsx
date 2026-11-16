@@ -5,6 +5,7 @@ import { ArrowLeft } from 'lucide-react';
 import DomainWizardOnePerPage from '../../components/dashboard/DomainWizardOnePerPage';
 import { validateDomain } from '../../lib/domainValidation';
 import { validateUrl } from '../../lib/urlValidation';
+import { useLanguage } from '../../i18n/LanguageContext';
 
 const twoPartTLDs = [
   'co.il',
@@ -105,7 +106,7 @@ function isBlockedRootRedirectHost(host) {
   );
 }
 
-function validateRootRedirectUrl(url, customDomain = '') {
+function validateRootRedirectUrl(url, customDomain = '', t = (k) => k) {
   if (!url || !url.trim()) return { isValid: true, sanitized: '' };
   const result = validateUrl(url);
   if (!result.isValid) return { isValid: false, error: result.error };
@@ -117,14 +118,14 @@ function validateRootRedirectUrl(url, customDomain = '') {
     if (isBlockedRootRedirectHost(redirectHostForComparison)) {
       return {
         isValid: false,
-        error: 'Root redirect cannot point to glynk.to or goodlink.ai.',
+        error: t('cdErrRootBlocked'),
       };
     }
 
     if (customHostForComparison && redirectHostForComparison === customHostForComparison) {
       return {
         isValid: false,
-        error: 'Root redirect cannot be the same as your custom domain.',
+        error: t('cdErrRootSame'),
       };
     }
 
@@ -139,13 +140,14 @@ function validateRootRedirectUrl(url, customDomain = '') {
       domainName = hostParts[0];
     }
     if (domainName && domainName.length < 2 && domainName !== 'www') {
-      return { isValid: false, error: 'Invalid domain' };
+      return { isValid: false, error: t('cdErrInvalidDomain') };
     }
   } catch (_) {}
   return { isValid: true, sanitized: result.normalizedUrl };
 }
 
 const AddDomainPage = () => {
+  const { t, isRtl } = useLanguage();
   const { id } = useParams();
   const navigate = useNavigate();
   const [domainName, setDomainName] = useState('');
@@ -259,7 +261,7 @@ const AddDomainPage = () => {
     const finalDomain = validation.sanitized;
     setDomainName(finalDomain);
 
-    const rootValidation = validateRootRedirectUrl(redirect, finalDomain);
+    const rootValidation = validateRootRedirectUrl(redirect, finalDomain, t);
     if (!rootValidation.isValid) {
       setRootRedirectError(rootValidation.error);
       throw new Error(rootValidation.error);
@@ -289,7 +291,7 @@ const AddDomainPage = () => {
     });
     if (!validation.isValid) throw new Error(validation.error);
     const finalDomain = validation.sanitized;
-    const rootValidation = validateRootRedirectUrl(redirect, finalDomain);
+    const rootValidation = validateRootRedirectUrl(redirect, finalDomain, t);
     if (!rootValidation.isValid) {
       setRootRedirectError(rootValidation.error);
       throw new Error(rootValidation.error);
@@ -300,7 +302,7 @@ const AddDomainPage = () => {
     const {
       data: { user },
     } = await supabase.auth.getUser();
-    if (!user) throw new Error('User not authenticated');
+    if (!user) throw new Error(t('cdErrNotAuth'));
 
     // Use sanitized domain as-is (naked or with subdomain per user input – no forcing www.)
     setDomainName(finalDomain);
@@ -328,7 +330,7 @@ const AddDomainPage = () => {
     const result = await response.json();
     if (!result.success)
       throw new Error(
-        result.error || 'Failed to register domain with Cloudflare. Please try again.'
+        result.error || t('cdErrRegisterFailed')
       );
 
     let currentRecords = result.dns_records || [];
@@ -383,7 +385,7 @@ const AddDomainPage = () => {
       const result = await res.json();
       if (!result.success)
         throw new Error(
-          result.error || 'Domain verification failed. Please check your DNS records.'
+          result.error || t('cdErrVerifyFailed')
         );
       if (Array.isArray(result.dns_records)) {
         setDnsRecords(result.dns_records);
@@ -393,17 +395,17 @@ const AddDomainPage = () => {
           state: {
             toast: {
               type: 'success',
-              title: id ? 'Domain updated' : 'Domain added',
-              message: 'Your custom domain is active and verified.',
+              title: id ? t('cdToastUpdatedTitle') : t('cdToastAddedTitle'),
+              message: t('cdToastActiveMsg'),
             },
           },
         });
       } else {
-        setVerifyError('DNS records are still pending. Please wait a few minutes and try again.');
+        setVerifyError(t('cdErrStillPending'));
       }
     } catch (err) {
       setVerifyError(
-        err.message || 'Error verifying domain. Please check your DNS records and try again.'
+        err.message || t('cdErrVerifyGeneric')
       );
     } finally {
       setIsVerifying(false);
@@ -417,7 +419,7 @@ const AddDomainPage = () => {
           <span className="material-symbols-outlined text-4xl text-slate-600 animate-spin">
             refresh
           </span>
-          <p className="text-[#1b1b1b] mt-4">Loading...</p>
+          <p className="text-[#1b1b1b] mt-4">{t('cdLoading')}</p>
         </div>
       </div>
     );
@@ -429,12 +431,13 @@ const AddDomainPage = () => {
         <div className="max-w-4xl mx-auto flex items-center gap-4">
           <button
             onClick={() => navigate('/dashboard/domains')}
+            aria-label={t('cdBackToDomains')}
             className="p-2 text-[#1b1b1b] hover:text-[#1b1b1b] hover:bg-white/5 rounded-lg transition-colors"
           >
-            <ArrowLeft size={24} />
+            <ArrowLeft size={24} className={isRtl ? 'rotate-180' : ''} />
           </button>
           <h1 className="text-xl font-bold text-[#1b1b1b]">
-            {id ? 'Edit Domain' : 'Add Custom Domain'}
+            {id ? t('cdEditDomain') : t('cdAddCustomDomain')}
           </h1>
         </div>
       </div>
@@ -464,8 +467,8 @@ const AddDomainPage = () => {
                   state: {
                     toast: {
                       type: 'success',
-                      title: 'Domain updated',
-                      message: 'Your custom domain was updated successfully.',
+                      title: t('cdToastUpdatedTitle'),
+                      message: t('cdToastUpdatedMsg'),
                     },
                   },
                 });

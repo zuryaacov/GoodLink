@@ -574,27 +574,55 @@ async function insertImpersonationAuditLog(env, payload) {
 }
 
 /**
+ * Chrome/Edge often hit short links twice (address-bar prefetch, speculation rules,
+ * HSTS upgrade, etc.). Detect speculative requests so we don't double-count clicks.
+ */
+function isSpeculativeOrPrefetchRequest(request) {
+    const secPurpose = String(
+        request.headers.get("Sec-Purpose") || request.headers.get("sec-purpose") || ""
+    ).toLowerCase();
+    const purpose = String(
+        request.headers.get("Purpose") || request.headers.get("purpose") || ""
+    ).toLowerCase();
+    const xMoz = String(request.headers.get("X-Moz") || "").toLowerCase();
+    const xPurpose = String(request.headers.get("X-Purpose") || "").toLowerCase();
+
+    if (secPurpose.includes("prefetch") || secPurpose.includes("prerender")) return true;
+    if (purpose.includes("prefetch") || purpose.includes("prerender")) return true;
+    if (xMoz === "prefetch") return true;
+    if (xPurpose.includes("prefetch")) return true;
+    return false;
+}
+
+/**
  * Send click record directly to Supabase via QStash
  * All data is collected from Cloudflare (no IPINFO)
  */
 async function logClickToSupabase(env, clickRecord) {
     try {
-        /*
-        const rayDedupKey = `log:${clickRecord.ray_id}:${clickRecord.slug}`;
-        const ipDedupKey = `ip_limit:${clickRecord.ip_address}:${clickRecord.slug}`;
+        const redis = new Redis({
+            url: env.UPSTASH_REDIS_REST_URL,
+            token: env.UPSTASH_REDIS_REST_TOKEN
+        });
 
-        // 1. Protection against technical retries (exact same request)
-        const isNewRay = await redis.set(rayDedupKey, "1", { nx: true, ex: 120 });
-        if (isNewRay === null) {
-            return;
+        const rayId = String(clickRecord.ray_id || "").trim();
+        const ip = String(clickRecord.ip_address || "unknown").trim();
+        const slug = String(clickRecord.slug || "root").trim().toLowerCase();
+        const linkId = String(clickRecord.link_id || "none").trim();
+
+        // 1. Same Cloudflare ray → exact technical retry
+        if (rayId) {
+            const isNewRay = await redis.set(`click_ray:${rayId}:${slug}`, "1", { nx: true, ex: 120 });
+            if (isNewRay === null) return;
         }
 
-        // 2. Protection against duplicate clicks (same IP to same slug within 1 second)
-        const isNewClick = await redis.set(ipDedupKey, "1", { nx: true, ex: 1 });
-        if (isNewClick === null) {
-            return;
-        }
-        */
+        // 2. Same visitor + link within 1 second → browser double-fetch / prefetch follow-up
+        const isNewClick = await redis.set(
+            `click_dedup:${linkId}:${ip}:${slug}`,
+            "1",
+            { nx: true, ex: 1 }
+        );
+        if (isNewClick === null) return;
 
         // Send directly to Supabase via QStash
         const supabaseUrl = `${env.SUPABASE_URL}/rest/v1/clicks`;
@@ -2651,7 +2679,9 @@ export default Sentry.withSentry(
                         redirectDestinationUrl: fallbackUrlForTermination || null
                     }
                 );
-                ctx.waitUntil(logClickToSupabase(env, clickRecord));
+                if (!isSpeculativeOrPrefetchRequest(request)) {
+                    ctx.waitUntil(logClickToSupabase(env, clickRecord));
+                }
                 queueAxiomLog(isBotVerdict ? "bot_blocked" : "invalid_request", slug || null, isBotVerdict, {
                     verdict,
                     backend_event: "terminate_with_log",
@@ -2939,7 +2969,10 @@ export default Sentry.withSentry(
                 isBot ? botReasonsForClick : [],
                 redirectMetaForClick
             );
-            ctx.waitUntil(logClickToSupabase(env, clickRecord));
+            // Skip speculative browser hits; Redis also dedups real double-fetches (~3s)
+            if (!isSpeculativeOrPrefetchRequest(request)) {
+                ctx.waitUntil(logClickToSupabase(env, clickRecord));
+            }
 
             // If blocked, redirect to fallback_url if exists, otherwise 404
             if (shouldBlock) {
@@ -3062,9 +3095,10 @@ export default Sentry.withSentry(
                     Boolean(linkData?.enable_click_limit) &&
                     Number.isFinite(Number(linkData?.max_clicks_allowed)) &&
                     Number(linkData.max_clicks_allowed) > 0 &&
-                    !isLikelyBot
+                    !isLikelyBot &&
+                    !isSpeculativeOrPrefetchRequest(request)
                 ) {
-                    const fingerprintSource = buildUniqueClickFingerprint(ip, userAgent, request.url);
+                    const fingerprintSource = buildUniqueClickFingerprint(ip, userAgent, decodedRequestUrl);
                     const fingerprintHash = await sha256Hex(fingerprintSource);
                     const uniqueClickKey = `link_unique_click:${String(linkData.id)}:${fingerprintHash}`;
                     const firstSeenResult = await redis.set(uniqueClickKey, "1", { nx: true });
@@ -3129,7 +3163,12 @@ export default Sentry.withSentry(
                     ...(clickIds.tglid && { tglid: clickIds.tglid })
                 };
 
-                if (wantsCapi && capiPixelsToSend.length > 0 && env.CAPI_RELAY_URL) {
+                if (
+                    wantsCapi &&
+                    capiPixelsToSend.length > 0 &&
+                    env.CAPI_RELAY_URL &&
+                    !isSpeculativeOrPrefetchRequest(request)
+                ) {
                     // Dedup: send CAPI only once per (IP, slug) within 2 seconds.
                     // Prevents double-firing from browser prefetch, bridge-page reload, or other duplicate requests.
                     const capiDedupKey = `capi:${ip}:${slug}`;

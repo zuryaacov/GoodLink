@@ -173,6 +173,7 @@ export function LanguageProvider({ children }) {
 // the previous Provider — useContext then returns null. Avoid crashing / Sentry noise.
 const HMR_FALLBACK = {
   language: 'en',
+  isRtl: false,
   dir: 'ltr',
   setLanguage: () => {},
   toggleLanguage: () => {},

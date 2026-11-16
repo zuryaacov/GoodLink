@@ -3,43 +3,44 @@ import { motion, AnimatePresence } from 'framer-motion';
 import DNSRecordsDisplay from './DNSRecordsDisplay';
 import { validateDomain } from '../../lib/domainValidation';
 import { supabase } from '../../lib/supabase';
+import { useLanguage } from '../../i18n/LanguageContext';
 
 const STEPS = [
   {
     id: 'domain',
-    badge: 'Start',
+    badge: 'cdStepBadgeStart',
     badgeColor: 'text-[#10b981] bg-[#10b981]/10',
-    title: 'Enter your',
-    highlight: 'Domain',
+    title: 'cdStepDomainTitle',
+    highlight: 'cdStepDomainHighlight',
     highlightClass: 'bg-gradient-to-r from-[#a855f7] to-[#7c6ee8] bg-clip-text text-transparent',
-    subtitle: 'Your custom domain (e.g. mybrand.com).',
+    subtitle: 'cdStepDomainSubtitle',
   },
   {
     id: 'rootRedirect',
-    badge: 'Redirect',
+    badge: 'cdStepBadgeRedirect',
     badgeColor: 'text-orange-500 bg-orange-500/10',
-    title: 'Root',
-    highlight: 'Redirect',
+    title: 'cdStepRootTitle',
+    highlight: 'cdStepRootHighlight',
     highlightClass: 'text-orange-500',
-    subtitle: 'Optional. Where to send visitors who open the domain without a slug or with an undefined slug.',
+    subtitle: 'cdStepRootSubtitle',
   },
   {
     id: 'dns',
-    badge: 'DNS',
+    badge: 'cdStepBadgeDns',
     badgeColor: 'text-[#135bec] bg-[#135bec]/10',
-    title: 'DNS',
-    highlight: 'Setup',
+    title: 'cdStepDnsTitle',
+    highlight: 'cdStepDnsHighlight',
     highlightClass: 'bg-gradient-to-r from-[#135bec] to-[#42a5f5] bg-clip-text text-transparent',
-    subtitle: 'Add these records at your domain registrar.',
+    subtitle: 'cdStepDnsSubtitle',
   },
   {
     id: 'verify',
-    badge: 'Verify',
+    badge: 'cdStepBadgeVerify',
     badgeColor: 'text-yellow-500 bg-yellow-500/10',
-    title: 'Verify',
-    highlight: 'Configuration',
+    title: 'cdStepVerifyTitle',
+    highlight: 'cdStepVerifyHighlight',
     highlightClass: 'text-yellow-500',
-    subtitle: 'Confirm DNS is set up correctly. May take a few minutes after adding records.',
+    subtitle: 'cdStepVerifySubtitle',
   },
 ];
 
@@ -60,6 +61,7 @@ export default function DomainWizardOnePerPage({
   rootRedirectError,
   isEdit,
 }) {
+  const { t, isRtl } = useLanguage();
   const steps = isEdit ? [STEPS[1]] : STEPS;
   const [stepIndex, setStepIndex] = useState(0);
   const [localError, setLocalError] = useState(null);
@@ -83,7 +85,7 @@ export default function DomainWizardOnePerPage({
 
   useEffect(() => {
     if (!currentStep) return;
-    const t = setTimeout(() => {
+    const timer = setTimeout(() => {
       if (currentStep.id === 'domain' && !isEdit) {
         domainInputRef.current?.focus?.();
         domainInputRef.current?.select?.();
@@ -94,7 +96,7 @@ export default function DomainWizardOnePerPage({
         rootRedirectInputRef.current?.select?.();
       }
     }, 0);
-    return () => clearTimeout(t);
+    return () => clearTimeout(timer);
   }, [currentStep?.id, isEdit]);
 
   const goNext = async () => {
@@ -108,13 +110,13 @@ export default function DomainWizardOnePerPage({
       });
 
       if (!validation.isValid) {
-        setFieldErrors((prev) => ({ ...prev, domain: validation.error || 'Please enter a valid domain.' }));
+        setFieldErrors((prev) => ({ ...prev, domain: validation.error || t('cdErrEnterValidDomain') }));
         return;
       }
 
       const finalDomain = (validation.sanitized || '').trim().toLowerCase();
       if (!finalDomain) {
-        setFieldErrors((prev) => ({ ...prev, domain: 'Please enter a valid domain.' }));
+        setFieldErrors((prev) => ({ ...prev, domain: t('cdErrEnterValidDomain') }));
         return;
       }
 
@@ -131,7 +133,7 @@ export default function DomainWizardOnePerPage({
         if (existing?.length > 0) {
           setFieldErrors((prev) => ({
             ...prev,
-            domain: 'This domain is already added. Use a different domain or edit the existing one.',
+            domain: t('cdErrDomainExists'),
           }));
           return;
         }
@@ -151,7 +153,7 @@ export default function DomainWizardOnePerPage({
       if (rootRedirectError) {
         setFieldErrors((prev) => ({
           ...prev,
-          rootRedirect: rootRedirectError || 'Please enter a valid redirect URL.',
+          rootRedirect: rootRedirectError || t('cdErrValidRedirect'),
         }));
         return;
       }
@@ -164,7 +166,7 @@ export default function DomainWizardOnePerPage({
           window.scrollTo({ top: 0, behavior: 'smooth' });
         }
       } catch (e) {
-        setLocalError(e.message || 'Could not register the domain. Please try again.');
+        setLocalError(e.message || t('cdErrRegisterDomain'));
       }
       return;
     }
@@ -203,7 +205,7 @@ export default function DomainWizardOnePerPage({
         aria-valuenow={stepIndex + 1}
         aria-valuemin={1}
         aria-valuemax={totalSteps}
-        aria-label={`Step ${stepIndex + 1} of ${totalSteps}`}
+        aria-label={t('cdStepOfAria').replace('{current}', stepIndex + 1).replace('{total}', totalSteps)}
       >
         <div
           className="h-full bg-[#135bec] transition-all duration-500 shadow-[0_0_10px_#135bec]"
@@ -234,24 +236,24 @@ export default function DomainWizardOnePerPage({
                 <div
                   className={`inline-flex items-center gap-2 font-bold text-[10px] tracking-[0.2em] uppercase px-3 py-1 rounded-full ${currentStep?.badgeColor}`}
                 >
-                  <span>{currentStep?.badge}</span>
+                  <span>{currentStep?.badge ? t(currentStep.badge) : ''}</span>
                 </div>
                 <span className="text-[10px] font-black text-gray-500 tracking-widest">
                   {stepIndex + 1}/{totalSteps}
                 </span>
               </div>
               <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-[#1b1b1b]">
-                {currentStep?.title}{' '}
+                {currentStep?.title ? t(currentStep.title) : ''}{' '}
                 <span
                   className={
                     currentStep?.highlightClass ||
                     'bg-gradient-to-r from-[#a855f7] to-[#7c6ee8] bg-clip-text text-transparent'
                   }
                 >
-                  {currentStep?.highlight}
+                  {currentStep?.highlight ? t(currentStep.highlight) : ''}
                 </span>
               </h1>
-              <p className="text-gray-500 font-medium text-2xl">{currentStep?.subtitle}</p>
+              <p className="text-gray-500 font-medium text-2xl">{currentStep?.subtitle ? t(currentStep.subtitle) : ''}</p>
             </div>
 
             {currentStep?.id === 'domain' && (
@@ -267,13 +269,14 @@ export default function DomainWizardOnePerPage({
                     }}
                     placeholder="mybrand.com"
                     disabled={!!isEdit}
-                    aria-label="Domain name"
+                    aria-label={t('cdDomainNameAria')}
+                    dir="ltr"
                     aria-describedby={fieldErrors.domain ? 'domain-error' : undefined}
-                    className="w-full bg-transparent py-5 px-6 text-xl outline-none border-none text-[#1b1b1b] placeholder-slate-500 disabled:opacity-60"
+                    className="w-full bg-transparent py-5 px-6 text-xl outline-none border-none text-[#1b1b1b] placeholder-slate-500 disabled:opacity-60 text-start"
                   />
                 </div>
                 <p className="text-slate-500 text-xs mt-1">
-                  Use the exact hostname you want (e.g. tipul.com or www.tipul.com).
+                  {t('cdDomainHint')}
                 </p>
                 <div className="min-h-[20px] mt-1">
                   {fieldErrors.domain && (
@@ -295,14 +298,15 @@ export default function DomainWizardOnePerPage({
                       setFieldErrors((prev) => ({ ...prev, rootRedirect: null }));
                     }}
                     placeholder="https://example.com"
-                    aria-label="Root redirect URL"
+                    aria-label={t('cdRootRedirectAria')}
+                    dir="ltr"
                     aria-describedby={fieldErrors.rootRedirect || rootRedirectError ? 'root-redirect-error' : undefined}
-                    className="w-full bg-transparent py-5 px-6 text-xl outline-none border-none text-[#1b1b1b] placeholder-slate-500"
+                    className="w-full bg-transparent py-5 px-6 text-xl outline-none border-none text-[#1b1b1b] placeholder-slate-500 text-start"
                     autoFocus
                   />
                 </div>
                 <p className="text-slate-500 text-xs mt-1">
-                  Leave empty if you don’t need a redirect for the root URL.
+                  {t('cdRootRedirectHint')}
                 </p>
                 <div className="min-h-[20px] mt-1">
                   {(fieldErrors.rootRedirect || rootRedirectError) && (
@@ -330,7 +334,7 @@ export default function DomainWizardOnePerPage({
                       >
                         refresh
                       </span>
-                      Refresh Records
+                      {t('cdRefreshRecords')}
                     </button>
                   )}
                 </div>
@@ -338,7 +342,7 @@ export default function DomainWizardOnePerPage({
                   <DNSRecordsDisplay records={dnsRecords} domain={domainName} />
                 ) : (
                   <div className="rounded-2xl bg-white border border-slate-200 p-6 text-[#1b1b1b] text-sm">
-                    Almost done — please complete the previous step and then continue.
+                    {t('cdAlmostDone')}
                   </div>
                 )}
               </div>
@@ -347,8 +351,7 @@ export default function DomainWizardOnePerPage({
             {currentStep?.id === 'verify' && (
               <div className="space-y-6">
                 <p className="text-[#1b1b1b] text-sm">
-                  Click the button below to verify your DNS configuration. Propagation can take a
-                  few minutes after adding records.
+                  {t('cdVerifyIntro')}
                 </p>
                 <button
                   type="button"
@@ -361,12 +364,12 @@ export default function DomainWizardOnePerPage({
                       <span className="material-symbols-outlined animate-spin text-2xl" aria-hidden="true">
                         refresh
                       </span>
-                      Verifying...
+                      {t('cdVerifying')}
                     </>
                   ) : (
                     <>
                       <span className="material-symbols-outlined text-2xl" aria-hidden="true">verified</span>
-                      Verify DNS Records
+                      {t('cdVerifyDnsRecords')}
                     </>
                   )}
                 </button>
@@ -381,10 +384,10 @@ export default function DomainWizardOnePerPage({
           <button
             type="button"
             onClick={goBack}
-            aria-label="Previous step"
+            aria-label={t('cdPrevStep')}
             className={`flex items-center justify-center p-5 rounded-2xl border border-slate-200 font-bold text-gray-400 hover:bg-slate-200 hover:text-[#1b1b1b] transition-all ${isFirst ? 'invisible' : ''}`}
           >
-            <span className="material-symbols-outlined text-2xl" aria-hidden="true">chevron_left</span>
+            <span className={`material-symbols-outlined text-2xl ${isRtl ? 'rotate-180' : ''}`} aria-hidden="true">chevron_left</span>
           </button>
           <button
             type="button"
@@ -397,24 +400,24 @@ export default function DomainWizardOnePerPage({
                 <span className="material-symbols-outlined animate-spin text-2xl" aria-hidden="true">refresh</span>
                 {currentStep?.id === 'rootRedirect'
                   ? isEdit
-                    ? 'Updating...'
-                    : 'Preparing records...'
-                  : 'Loading...'}
+                    ? t('cdUpdating')
+                    : t('cdPreparingRecords')
+                  : t('cdLoading')}
               </>
             ) : currentStep?.id === 'verify' ? (
               <>
-                <span>Done</span>
-                <span className="material-symbols-outlined text-2xl" aria-hidden="true">arrow_forward</span>
+                <span>{t('cdDone')}</span>
+                <span className={`material-symbols-outlined text-2xl ${isRtl ? 'rotate-180' : ''}`} aria-hidden="true">arrow_forward</span>
               </>
             ) : isEdit && currentStep?.id === 'rootRedirect' ? (
               <>
-                <span>Update Root Redirect</span>
+                <span>{t('cdUpdateRootRedirect')}</span>
                 <span className="material-symbols-outlined text-2xl" aria-hidden="true">check</span>
               </>
             ) : (
               <>
-                <span>Next Step</span>
-                <span className="material-symbols-outlined text-2xl" aria-hidden="true">arrow_forward</span>
+                <span>{t('cdNextStep')}</span>
+                <span className={`material-symbols-outlined text-2xl ${isRtl ? 'rotate-180' : ''}`} aria-hidden="true">arrow_forward</span>
               </>
             )}
           </button>
