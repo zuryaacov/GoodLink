@@ -13,8 +13,10 @@ import { ArrowLeft } from 'lucide-react';
 import LinkWizardOnePerPage from '../../components/dashboard/LinkWizardOnePerPage';
 import Modal from '../../components/common/Modal';
 import { logBackofficeEvent } from '../../lib/backofficeLogger';
+import { useLanguage } from '../../i18n/LanguageContext';
 
 const LinkBuilderPage = () => {
+  const { t, language } = useLanguage();
   const { id } = useParams();
   const navigate = useNavigate();
   const searchParams = new URLSearchParams(window.location.search);
@@ -274,8 +276,8 @@ const LinkBuilderPage = () => {
         setModalState({
           isOpen: true,
           type: 'alert',
-          title: 'Name already in use',
-          message: 'A link with this name already exists. Please choose a different name.',
+          title: t('lwNameAlreadyInUse'),
+          message: t('lwNameAlreadyInUseMsg'),
           onConfirm: null,
           isLoading: false,
         });
@@ -445,10 +447,10 @@ const LinkBuilderPage = () => {
         setModalState({
           isOpen: true,
           type: 'success',
-          title: 'Link Updated Successfully!',
+          title: t('lwLinkUpdatedTitle'),
           message: (
             <p>
-              <strong>Short URL:</strong> {shortUrl}
+              <strong>{t('dashShortLink')}:</strong> {shortUrl}
             </p>
           ),
           onConfirm: () => navigate(getLinksReturnPath(formData.spaceId)),
@@ -610,10 +612,10 @@ const LinkBuilderPage = () => {
         setModalState({
           isOpen: true,
           type: 'success',
-          title: 'Link Created Successfully!',
+          title: t('lwLinkCreatedTitle'),
           message: (
             <p>
-              <strong>Short URL:</strong> {shortUrl}
+              <strong>{t('dashShortLink')}:</strong> {shortUrl}
             </p>
           ),
           onConfirm: () => navigate(getLinksReturnPath(formData.spaceId)),
@@ -630,8 +632,8 @@ const LinkBuilderPage = () => {
       setModalState({
         isOpen: true,
         type: 'error',
-        title: 'Error',
-        message: error.message || 'Error saving link. Please try again.',
+        title: t('lwErrorTitle'),
+        message: error.message || t('lwErrorSaving'),
         onConfirm: null,
         isLoading: false,
       });
@@ -647,7 +649,7 @@ const LinkBuilderPage = () => {
           <span className="material-symbols-outlined text-4xl text-slate-600 animate-spin">
             refresh
           </span>
-          <p className="text-[#1b1b1b] mt-4">Loading...</p>
+          <p className="text-[#1b1b1b] mt-4">{t('lwLoading')}</p>
         </div>
       </div>
     );
@@ -664,11 +666,11 @@ const LinkBuilderPage = () => {
             onClick={() => navigate(getLinksReturnPath())}
             className="p-2 text-[#1b1b1b] hover:text-[#1b1b1b] hover:bg-white/5 rounded-lg transition-colors"
           >
-            <ArrowLeft size={24} />
+            <ArrowLeft size={24} className={language === 'he' ? 'rotate-180' : ''} />
           </button>
           <div className="flex-1 min-w-0">
             <h1 className="text-xl font-bold text-[#1b1b1b] truncate">
-              {isEditMode ? 'Edit Link' : 'Add New Link'}
+              {isEditMode ? t('lwEditLink') : t('lwAddNewLink')}
             </h1>
           </div>
         </div>

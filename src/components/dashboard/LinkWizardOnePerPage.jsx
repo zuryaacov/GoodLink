@@ -8,11 +8,12 @@ import { sanitizeInput } from '../../lib/inputSanitization';
 import countriesData from '../../data/countries.json';
 import taboolaLogo from '../../assets/idRS-vCmxj_1769618141092.svg';
 import outbrainLogo from '../../assets/id-bNajMAc_1769618145922.svg';
+import { useLanguage } from '../../i18n/LanguageContext';
 
-const BOT_OPTIONS = [
-  { value: 'no-tracking', label: 'Allow' },
-  { value: 'block', label: 'Block' },
-  { value: 'redirect', label: 'Redirect' },
+const BOT_OPTION_VALUES = [
+  { value: 'no-tracking', labelKey: 'lwBotAllow' },
+  { value: 'block', labelKey: 'lwBotBlock' },
+  { value: 'redirect', labelKey: 'lwBotRedirect' },
 ];
 
 const PLATFORM_NAMES = {
@@ -173,6 +174,10 @@ export default function LinkWizardOnePerPage({
   stepRefs,
   isSubmitting = false,
 }) {
+  const { t, language } = useLanguage();
+  const isHe = language === 'he';
+  const flipIcon = isHe ? 'rotate-180' : '';
+  const BOT_OPTIONS = BOT_OPTION_VALUES.map((o) => ({ value: o.value, label: t(o.labelKey) }));
   const browserTimeZone = Intl.DateTimeFormat?.().resolvedOptions?.().timeZone || 'UTC';
   const [domains, setDomains] = useState(['glynk.to']);
   const [domainStatuses, setDomainStatuses] = useState({}); // domain -> 'active' | 'pending'
@@ -244,110 +249,110 @@ export default function LinkWizardOnePerPage({
     const list = [
       {
         id: 'name',
-        badge: 'Start',
+        badge: t('lwStepNameBadge'),
         badgeColor: 'text-[#10b981] bg-[#10b981]/10',
-        title: 'Name your',
-        highlight: 'Link',
+        title: t('lwStepNameTitle'),
+        highlight: t('lwStepNameHighlight'),
         highlightClass:
           'bg-gradient-to-r from-[#a855f7] to-[#7c6ee8] bg-clip-text text-transparent',
-        subtitle: 'What should we call your link ?',
+        subtitle: t('lwStepNameSubtitle'),
       },
       {
         id: 'url',
-        badge: 'Destination',
+        badge: t('lwStepUrlBadge'),
         badgeColor: 'text-[#135bec] bg-[#135bec]/10',
-        title: 'Target',
-        highlight: 'URL',
+        title: t('lwStepUrlTitle'),
+        highlight: t('lwStepUrlHighlight'),
         highlightClass:
           'bg-gradient-to-r from-[#135bec] to-[#42a5f5] bg-clip-text text-transparent',
-        subtitle: 'Where should the user land ?',
+        subtitle: t('lwStepUrlSubtitle'),
       },
       {
         id: 'mode',
-        badge: 'Access',
+        badge: t('lwStepModeBadge'),
         badgeColor: 'text-[#0b996f] bg-[#0b996f]/10',
-        title: 'Choose',
-        highlight: 'Redirection Mode',
+        title: t('lwStepModeTitle'),
+        highlight: t('lwStepModeHighlight'),
         highlightClass:
           'bg-gradient-to-r from-[#0b996f] to-[#10b981] bg-clip-text text-transparent',
-        subtitle: 'Direct access or secured link controls.',
+        subtitle: t('lwStepModeSubtitle'),
       },
       {
         id: 'access',
-        badge: 'Security',
+        badge: t('lwStepAccessBadge'),
         badgeColor: 'text-[#135bec] bg-[#135bec]/10',
-        title: 'Configure',
-        highlight: 'Access Rules',
+        title: t('lwStepAccessTitle'),
+        highlight: t('lwStepAccessHighlight'),
         highlightClass:
           'bg-gradient-to-r from-[#135bec] to-[#42a5f5] bg-clip-text text-transparent',
-        subtitle: 'Set password, time limits, and click limits.',
+        subtitle: t('lwStepAccessSubtitle'),
         show: (formData.accessMode || 'direct') === 'controlled',
       },
       {
         id: 'domain',
-        badge: 'Domain',
+        badge: t('lwStepDomainBadge'),
         badgeColor: 'text-[#a855f7] bg-[#a855f7]/10',
-        title: 'Select',
-        highlight: 'Domain',
+        title: t('lwStepDomainTitle'),
+        highlight: t('lwStepDomainHighlight'),
         highlightClass:
           'bg-gradient-to-r from-[#a855f7] to-[#7c6ee8] bg-clip-text text-transparent',
-        subtitle: 'Choose the base for your short link.',
+        subtitle: t('lwStepDomainSubtitle'),
         // For testing: show when plan fits (even with only glynk.to). Normally: && domains.length > 1
         show: isAdvancedOrPro,
       },
       {
         id: 'slug',
-        badge: 'Alias',
+        badge: t('lwStepSlugBadge'),
         badgeColor: 'text-[#a855f7] bg-[#a855f7]/10',
-        title: 'Custom',
-        highlight: 'Slug',
+        title: t('lwStepSlugTitle'),
+        highlight: t('lwStepSlugHighlight'),
         highlightClass:
           'bg-gradient-to-r from-[#a855f7] to-[#7c6ee8] bg-clip-text text-transparent',
-        subtitle: 'Make it memorable.',
+        subtitle: t('lwStepSlugSubtitle'),
       },
       {
         id: 'bot',
-        badge: 'Security',
+        badge: t('lwStepBotBadge'),
         badgeColor: 'text-yellow-500 bg-yellow-500/10',
-        title: 'Bot',
-        highlight: 'Protection',
+        title: t('lwStepBotTitle'),
+        highlight: t('lwStepBotHighlight'),
         highlightClass: 'text-yellow-500',
-        subtitle: 'How should we handle bots ?',
+        subtitle: t('lwStepBotSubtitle'),
         show: isAdvancedOrPro,
       },
       {
         id: 'geo',
-        badge: 'Geography',
+        badge: t('lwStepGeoBadge'),
         badgeColor: 'text-orange-500 bg-orange-500/10',
-        title: 'Geo',
-        highlight: 'Targeting',
+        title: t('lwStepGeoTitle'),
+        highlight: t('lwStepGeoHighlight'),
         highlightClass: 'text-orange-500',
-        subtitle: 'Optional routing by country.',
+        subtitle: t('lwStepGeoSubtitle'),
         show: isPro,
       },
       {
         id: 'capi',
-        badge: 'Tracking',
+        badge: t('lwStepCapiBadge'),
         badgeColor: 'text-purple-500 bg-purple-500/10',
-        title: 'CAPI',
-        highlight: 'Select',
+        title: t('lwStepCapiTitle'),
+        highlight: t('lwStepCapiHighlight'),
         highlightClass: 'text-purple-500',
-        subtitle: 'Select Conversions API to fire events.',
+        subtitle: t('lwStepCapiSubtitle'),
         show: isPro,
       },
       {
         id: 'review',
-        badge: 'Launch',
+        badge: t('lwStepReviewBadge'),
         badgeColor: 'text-[#10b981] bg-[#10b981]/10',
-        title: 'Final',
-        highlight: 'Launch',
+        title: t('lwStepReviewTitle'),
+        highlight: t('lwStepReviewHighlight'),
         highlightClass: 'text-[#10b981]',
-        subtitle: 'Final review of your GoodLink.',
+        subtitle: t('lwStepReviewSubtitle'),
         isReview: true,
       },
     ];
     return list.filter((s) => s.show !== false);
-  }, [planType, domains.length, formData.accessMode]);
+  }, [planType, domains.length, formData.accessMode, t, language]);
 
   const totalSteps = steps.length;
   const currentStep = steps[stepIndex];
@@ -461,7 +466,7 @@ export default function LinkWizardOnePerPage({
       return true;
     }
     if (!name) {
-      setNameError('Please enter a name for your link.');
+      setNameError(t('lwErrEnterName'));
       return false;
     }
     // XSS / injection check
@@ -477,7 +482,7 @@ export default function LinkWizardOnePerPage({
         data: { user },
       } = await supabase.auth.getUser();
       if (!user) {
-        setNameError('Please log in to continue.');
+        setNameError(t('lwErrPleaseLogin'));
         return false;
       }
       let query = supabase
@@ -489,12 +494,12 @@ export default function LinkWizardOnePerPage({
       if (initialData?.id) query = query.neq('id', initialData.id);
       const { data: existing } = await query.limit(1);
       if (existing?.length > 0) {
-        setNameError('This name already exists in your links. Please use a different name.');
+        setNameError(t('lwErrNameExists'));
         return false;
       }
       return true;
     } catch (e) {
-      setNameError('Could not validate the link name. Please try again.');
+      setNameError(t('lwErrValidateName'));
       return false;
     } finally {
       setValidating(false);
@@ -516,12 +521,12 @@ export default function LinkWizardOnePerPage({
       return true;
     }
     if (!raw) {
-      setUrlError('Please enter a destination URL.');
+      setUrlError(t('lwErrEnterUrl'));
       return false;
     }
     const validation = validateUrl(raw);
     if (!validation.isValid) {
-      setUrlError(validation.error || 'Please enter a valid URL.');
+      setUrlError(validation.error || t('lwErrValidUrl'));
       return false;
     }
     const normalizedUrl = validation.normalizedUrl;
@@ -531,7 +536,7 @@ export default function LinkWizardOnePerPage({
     try {
       const safetyResult = await checkUrlSafety(normalizedUrl);
       if (!safetyResult.isSafe) {
-        setUrlError(safetyResult.error || 'URL safety check failed. This URL may be unsafe.');
+        setUrlError(safetyResult.error || t('lwErrUrlSafety'));
         setUrlSafety({ loading: false, isSafe: false });
         return false;
       }
@@ -541,7 +546,7 @@ export default function LinkWizardOnePerPage({
       }
       return true;
     } catch (e) {
-      setUrlError('Could not validate the destination URL. Please try again.');
+      setUrlError(t('lwErrValidateUrl'));
       setUrlSafety({ loading: false, isSafe: null });
       return false;
     }
@@ -556,7 +561,7 @@ export default function LinkWizardOnePerPage({
       return true;
     }
     if (!slug) {
-      setSlugError('Please enter a slug.');
+      setSlugError(t('lwErrEnterSlug'));
       return false;
     }
     const domain = formData.domain || domains[0];
@@ -567,7 +572,7 @@ export default function LinkWizardOnePerPage({
         data: { user },
       } = await supabase.auth.getUser();
       if (!user) {
-        setSlugError('Please log in to continue.');
+        setSlugError(t('lwErrPleaseLogin'));
         return false;
       }
       const result = await validateSlug(
@@ -580,7 +585,7 @@ export default function LinkWizardOnePerPage({
         initialData?.id || null
       );
       if (!result.isValid) {
-        setSlugError(result.error || 'Please enter a valid slug.');
+        setSlugError(result.error || t('lwErrValidSlug'));
         return false;
       }
       if (result.normalizedSlug && result.normalizedSlug !== formData.slug) {
@@ -588,7 +593,7 @@ export default function LinkWizardOnePerPage({
       }
       return true;
     } catch (e) {
-      setSlugError('Could not validate the slug. Please try again.');
+      setSlugError(t('lwErrValidateSlug'));
       return false;
     } finally {
       setValidating(false);
@@ -610,12 +615,12 @@ export default function LinkWizardOnePerPage({
       return true;
     }
     if (!url) {
-      setFallbackUrlError('Please enter a redirect URL for bots.');
+      setFallbackUrlError(t('lwErrEnterBotRedirect'));
       return false;
     }
     const v = validateBotRedirectUrl(url, formData.targetUrl || '');
     if (!v.isValid) {
-      setFallbackUrlError(v.error || 'Please enter a valid URL.');
+      setFallbackUrlError(v.error || t('lwErrValidUrl'));
       return false;
     }
     setFallbackUrlError(null);
@@ -680,12 +685,12 @@ export default function LinkWizardOnePerPage({
       validateBeforeSubmit: () => {
         if (formData.botAction !== 'redirect') return { isValid: true, normalizedUrl: null };
         if (!formData.fallbackUrl?.trim()) {
-          setFallbackUrlError('Please enter a redirect URL for bots.');
+          setFallbackUrlError(t('lwErrEnterBotRedirect'));
           return { isValid: false, normalizedUrl: null };
         }
         const v = validateBotRedirectUrl(formData.fallbackUrl, formData.targetUrl || '');
         if (!v.isValid) {
-          setFallbackUrlError(v.error || 'Please enter a valid URL.');
+          setFallbackUrlError(v.error || t('lwErrValidUrl'));
           return { isValid: false, normalizedUrl: null };
         }
         setFallbackUrlError(null);
@@ -732,7 +737,7 @@ export default function LinkWizardOnePerPage({
   const addGeoRule = () => {
     setGeoRuleErrors({ country: null, url: null });
     if (!newGeoRule.country?.trim()) {
-      setGeoRuleErrors((e) => ({ ...e, country: 'Please select a country' }));
+      setGeoRuleErrors((e) => ({ ...e, country: t('lwErrSelectCountry') }));
       return;
     }
     const rules = Array.isArray(formData.geoRules) ? formData.geoRules : [];
@@ -740,16 +745,16 @@ export default function LinkWizardOnePerPage({
     if (
       rules.some((r, idx) => r.country === newGeoRule.country && idx !== (editingGeoIndex ?? -1))
     ) {
-      setGeoRuleErrors((e) => ({ ...e, country: 'A rule for this country already exists' }));
+      setGeoRuleErrors((e) => ({ ...e, country: t('lwErrGeoCountryExists') }));
       return;
     }
     if (!newGeoRule.url?.trim()) {
-      setGeoRuleErrors((e) => ({ ...e, url: 'Please enter a URL' }));
+      setGeoRuleErrors((e) => ({ ...e, url: t('lwErrEnterGeoUrl') }));
       return;
     }
     const v = validateUrl(newGeoRule.url);
     if (!v.isValid) {
-      setGeoRuleErrors((e) => ({ ...e, url: v.error || 'Please enter a valid URL.' }));
+      setGeoRuleErrors((e) => ({ ...e, url: v.error || t('lwErrValidUrl') }));
       return;
     }
     const normalizedRule = {
@@ -798,7 +803,7 @@ export default function LinkWizardOnePerPage({
 
   useEffect(() => {
     if (!currentStep) return;
-    const t = setTimeout(() => {
+    const focusTimer = setTimeout(() => {
       if (currentStep.id === 'name') {
         nameInputRef.current?.focus?.();
         nameInputRef.current?.select?.();
@@ -824,7 +829,7 @@ export default function LinkWizardOnePerPage({
         geoThenUrlInputRef.current?.select?.();
       }
     }, 0);
-    return () => clearTimeout(t);
+    return () => clearTimeout(focusTimer);
   }, [currentStep?.id, formData.botAction, showGeoForm]);
 
   return (
@@ -836,7 +841,7 @@ export default function LinkWizardOnePerPage({
         aria-valuenow={stepIndex + 1}
         aria-valuemin={1}
         aria-valuemax={totalSteps}
-        aria-label={`Step ${stepIndex + 1} of ${totalSteps}`}
+        aria-label={t('lwStepOf').replace('{n}', String(stepIndex + 1)).replace('{total}', String(totalSteps))}
       >
         <div
           className="h-full bg-[#135bec] transition-all duration-500 shadow-[0_0_10px_#135bec]"
@@ -898,8 +903,8 @@ export default function LinkWizardOnePerPage({
                         updateFormData('name', e.target.value);
                         setNameError(null);
                       }}
-                      placeholder="e.g. Black Friday Promo"
-                      aria-label="Link name"
+                      placeholder={t('lwNamePlaceholder')}
+                      aria-label={t('lwLinkName')}
                       aria-describedby={nameError ? 'name-error' : undefined}
                       className="w-full bg-transparent py-5 px-6 text-xl outline-none border-none text-[#1b1b1b] placeholder-slate-500"
                     />
@@ -914,7 +919,7 @@ export default function LinkWizardOnePerPage({
                         <span className="material-symbols-outlined animate-spin text-sm" aria-hidden="true">
                           refresh
                         </span>
-                        Checking...
+                        {t('lwChecking')}
                       </p>
                     )}
                   </div>
@@ -928,6 +933,7 @@ export default function LinkWizardOnePerPage({
                     <input
                       ref={targetUrlInputRef}
                       type="url"
+                      dir="ltr"
                       value={formData.targetUrl || ''}
                       onChange={(e) => {
                         updateFormData('targetUrl', e.target.value.toLowerCase());
@@ -935,7 +941,7 @@ export default function LinkWizardOnePerPage({
                       }}
                       placeholder="https://..."
                       autoFocus
-                      aria-label="Target URL"
+                      aria-label={t('lwTargetUrlAria')}
                       aria-describedby={urlError ? 'url-error' : undefined}
                       className="w-full bg-transparent py-5 px-6 text-xl outline-none border-none text-[#1b1b1b] placeholder-slate-500"
                     />
@@ -948,13 +954,13 @@ export default function LinkWizardOnePerPage({
                         <span className="material-symbols-outlined animate-spin text-sm" aria-hidden="true">
                           refresh
                         </span>
-                        Scanning for safety...
+                        {t('lwScanningSafety')}
                       </p>
                     )}
                     {!urlError && !urlSafety.loading && urlSafety.isSafe === true && (
                       <p className="text-green-700 text-xs flex items-center gap-1" role="status">
                         <span className="material-symbols-outlined text-sm" aria-hidden="true">verified</span>
-                        Secure link
+                        {t('lwSecureLink')}
                       </p>
                     )}
                   </div>
@@ -967,29 +973,29 @@ export default function LinkWizardOnePerPage({
                   <button
                     type="button"
                     onClick={() => updateFormData('accessMode', 'direct')}
-                    className={`p-5 rounded-2xl border-2 text-left transition-all ${
+                    className={`p-5 rounded-2xl border-2 text-start transition-all ${
                       (formData.accessMode || 'direct') === 'direct'
                         ? 'border-[#10b981] bg-[#10b981]/5'
                         : 'border-slate-200 bg-white hover:border-[#10b981]/40'
                     }`}
                   >
-                    <p className="text-lg font-bold text-[#1b1b1b]">Direct Access</p>
+                    <p className="text-lg font-bold text-[#1b1b1b]">{t('lwDirectAccess')}</p>
                     <p className="text-sm text-slate-600 mt-2">
-                      Simple, fast redirection with no restrictions or security layers.
+                      {t('lwDirectAccessDesc')}
                     </p>
                   </button>
                   <button
                     type="button"
                     onClick={() => updateFormData('accessMode', 'controlled')}
-                    className={`p-5 rounded-2xl border-2 text-left transition-all ${
+                    className={`p-5 rounded-2xl border-2 text-start transition-all ${
                       (formData.accessMode || 'direct') === 'controlled'
                         ? 'border-[#135bec] bg-[#135bec]/5'
                         : 'border-slate-200 bg-white hover:border-[#135bec]/40'
                     }`}
                   >
-                    <p className="text-lg font-bold text-[#1b1b1b]">Access Control &amp; Limits</p>
+                    <p className="text-lg font-bold text-[#1b1b1b]">{t('lwAccessControl')}</p>
                     <p className="text-sm text-slate-600 mt-2">
-                      Secure your link with passwords, expiration dates, or click caps.
+                      {t('lwAccessControlDesc')}
                     </p>
                   </button>
                 </div>
@@ -1004,7 +1010,7 @@ export default function LinkWizardOnePerPage({
                         checked={!!formData.enablePasswordProtection}
                         onChange={(e) => updateFormData('enablePasswordProtection', e.target.checked)}
                       />
-                      <span className="font-bold text-[#1b1b1b]">Enable Password Protection</span>
+                      <span className="font-bold text-[#1b1b1b]">{t('lwEnablePassword')}</span>
                     </label>
                     {formData.enablePasswordProtection && (
                       <>
@@ -1012,7 +1018,7 @@ export default function LinkWizardOnePerPage({
                           type="text"
                           value={formData.accessPassword || ''}
                           onChange={(e) => updateFormData('accessPassword', e.target.value)}
-                          placeholder="Enter password..."
+                          placeholder={t('lwEnterPassword')}
                           className="w-full bg-white border border-slate-200 rounded-xl p-3 text-[#1b1b1b] outline-none focus:border-[#135bec]"
                         />
                         <label className="flex items-center gap-3">
@@ -1022,7 +1028,7 @@ export default function LinkWizardOnePerPage({
                             onChange={(e) => updateFormData('enableAntiBruteForce', e.target.checked)}
                           />
                           <span className="font-semibold text-[#1b1b1b]">
-                            Enable Anti-Brute Force Protection
+                            {t('lwEnableAntiBrute')}
                           </span>
                         </label>
                         {formData.enableAntiBruteForce && (
@@ -1032,7 +1038,7 @@ export default function LinkWizardOnePerPage({
                               min={1}
                               value={formData.maxLoginAttempts ?? 5}
                               onChange={(e) => updateFormData('maxLoginAttempts', e.target.value)}
-                              placeholder="e.g. 5"
+                              placeholder={`${t('lwEg')} 5`}
                               className="w-full bg-white border border-slate-200 rounded-xl p-3 text-[#1b1b1b] outline-none focus:border-[#135bec]"
                             />
                             <input
@@ -1040,13 +1046,13 @@ export default function LinkWizardOnePerPage({
                               min={1}
                               value={formData.lockoutDurationMinutes ?? 30}
                               onChange={(e) => updateFormData('lockoutDurationMinutes', e.target.value)}
-                              placeholder="e.g. 30"
+                              placeholder={`${t('lwEg')} 30`}
                               className="w-full bg-white border border-slate-200 rounded-xl p-3 text-[#1b1b1b] outline-none focus:border-[#135bec]"
                             />
                           </div>
                         )}
                         <p className="text-xs text-slate-500">
-                          Temporarily blocks the visitor&apos;s IP after multiple failed attempts.
+                          {t('lwAntiBruteHint')}
                         </p>
                       </>
                     )}
@@ -1065,7 +1071,7 @@ export default function LinkWizardOnePerPage({
                           }
                         }}
                       />
-                      <span className="font-bold text-[#1b1b1b]">Enable Time Limit</span>
+                      <span className="font-bold text-[#1b1b1b]">{t('lwEnableTimeLimit')}</span>
                     </label>
                     {formData.enableTimeLimit && (
                       <>
@@ -1082,7 +1088,7 @@ export default function LinkWizardOnePerPage({
                         >
                           {browserTimeZoneOption && (
                             <option value={browserTimeZoneOption.value}>
-                              Your Time Zone: {browserTimeZoneOption.label}
+                              {t('lwYourTimeZone').replace('{tz}', browserTimeZoneOption.label)}
                             </option>
                           )}
                           {timeZoneOptions.map((tz) => (
@@ -1092,10 +1098,10 @@ export default function LinkWizardOnePerPage({
                           ))}
                         </select>
                         <p className="text-xs text-slate-500">
-                          Detected from your browser: {browserTimeZoneOption?.label || browserTimeZone}
+                          {t('lwDetectedBrowserTz').replace('{tz}', browserTimeZoneOption?.label || browserTimeZone)}
                         </p>
                         <p className="text-xs text-slate-500">
-                          The link will deactivate based on the selected time zone.
+                          {t('lwTimeLimitHint')}
                         </p>
                       </>
                     )}
@@ -1108,7 +1114,7 @@ export default function LinkWizardOnePerPage({
                         checked={!!formData.enableClickLimit}
                         onChange={(e) => updateFormData('enableClickLimit', e.target.checked)}
                       />
-                      <span className="font-bold text-[#1b1b1b]">Enable Click Limit - Limited to [X] People (IP&apos;s)</span>
+                      <span className="font-bold text-[#1b1b1b]">{t('lwEnableClickLimit')}</span>
                     </label>
                     {formData.enableClickLimit && (
                       <>
@@ -1117,11 +1123,11 @@ export default function LinkWizardOnePerPage({
                           min={1}
                           value={formData.maxClicksAllowed || ''}
                           onChange={(e) => updateFormData('maxClicksAllowed', e.target.value)}
-                          placeholder="e.g. 1000"
+                          placeholder={`${t('lwEg')} 1000`}
                           className="w-full bg-white border border-slate-200 rounded-xl p-3 text-[#1b1b1b] outline-none focus:border-[#135bec]"
                         />
                         <p className="text-xs text-slate-500">
-                          Once this limit is reached, the link will no longer redirect visitors.
+                          {t('lwClickLimitHint')}
                         </p>
                       </>
                     )}
@@ -1145,7 +1151,7 @@ export default function LinkWizardOnePerPage({
                           if (d === 'glynk.to') updateFormData('selectedPixels', []);
                         }}
                         aria-pressed={isSelected}
-                        className={`p-6 rounded-2xl border-2 text-left transition-all ${
+                        className={`p-6 rounded-2xl border-2 text-start transition-all ${
                           isSelected
                             ? 'border-[#a855f7] bg-[#a855f7]/5 shadow-[0_0_20px_rgba(255,16,240,0.2)]'
                             : 'border-slate-200 bg-white hover:border-[#324467]'
@@ -1154,10 +1160,10 @@ export default function LinkWizardOnePerPage({
                         <span className="text-xl font-bold text-[#1b1b1b]">{d}</span>
                         <span className="block text-xs text-gray-500 uppercase mt-1">
                           {d === 'glynk.to'
-                            ? 'Short & Sweet'
+                            ? t('lwShortAndSweet')
                             : isPending
-                              ? 'Custom · Pending'
-                              : 'Custom'}
+                              ? t('lwCustomPending')
+                              : t('lwCustom')}
                         </span>
                       </button>
                     );
@@ -1168,7 +1174,7 @@ export default function LinkWizardOnePerPage({
               {/* Step: Slug */}
               {currentStep.id === 'slug' && (
                 <div className="space-y-2">
-                  <div className="flex items-center rounded-2xl bg-white border-2 border-slate-200 focus-within:border-[#135bec] overflow-hidden transition-all">
+                  <div dir="ltr" className="flex items-center rounded-2xl bg-white border-2 border-slate-200 focus-within:border-[#135bec] overflow-hidden transition-all">
                     <div className="pl-6 text-[#135bec] font-bold text-lg flex-shrink-0">
                       {selectedDomain}/
                     </div>
@@ -1182,7 +1188,7 @@ export default function LinkWizardOnePerPage({
                       }}
                       placeholder="my-deal"
                       autoFocus
-                      aria-label="Custom slug"
+                      aria-label={t('lwCustomSlugAria')}
                       aria-describedby={slugError ? 'slug-error' : undefined}
                       className="flex-1 bg-transparent py-5 px-3 text-xl outline-none font-semibold border-none text-[#1b1b1b] placeholder-slate-500"
                     />
@@ -1194,7 +1200,7 @@ export default function LinkWizardOnePerPage({
                         <span className="material-symbols-outlined animate-spin text-sm" aria-hidden="true">
                           refresh
                         </span>
-                        Checking availability...
+                        {t('lwCheckingAvailability')}
                       </p>
                     )}
                   </div>
@@ -1227,13 +1233,14 @@ export default function LinkWizardOnePerPage({
                   {formData.botAction === 'redirect' && (
                     <div className="pt-2">
                       <label htmlFor="bot-fallback-url" className="text-xs text-gray-500 mb-2 uppercase font-bold tracking-widest block">
-                        Redirect Bots to
+                        {t('lwRedirectBotsTo')}
                       </label>
                       <div className="rounded-xl bg-white border-2 border-slate-200 focus-within:border-[#135bec] transition-all">
                         <input
                           id="bot-fallback-url"
                           ref={botFallbackUrlInputRef}
                           type="url"
+                          dir="ltr"
                           value={formData.fallbackUrl || ''}
                           onChange={(e) => {
                             updateFormData('fallbackUrl', e.target.value.toLowerCase());
@@ -1272,7 +1279,7 @@ export default function LinkWizardOnePerPage({
                             <button
                               type="button"
                               onClick={() => beginEditGeoRule(idx)}
-                              className="text-left text-sm text-gray-500 truncate hover:text-[#135bec] underline-offset-2 hover:underline"
+                              className="text-start text-sm text-gray-500 truncate hover:text-[#135bec] underline-offset-2 hover:underline"
                             >
                               {rule.url}
                             </button>
@@ -1282,8 +1289,8 @@ export default function LinkWizardOnePerPage({
                               type="button"
                               onClick={() => beginEditGeoRule(idx)}
                               className="text-slate-500 hover:text-[#135bec] p-1"
-                              title="Edit rule"
-                              aria-label={`Edit geo rule for ${getCountryName(rule.country)}`}
+                              title={t('lwEditRule')}
+                              aria-label={`${t('lwEditRule')}: ${getCountryName(rule.country)}`}
                             >
                               <span className="material-symbols-outlined text-lg" aria-hidden="true">edit</span>
                             </button>
@@ -1291,8 +1298,8 @@ export default function LinkWizardOnePerPage({
                               type="button"
                               onClick={() => removeGeoRule(idx)}
                               className="text-red-500 hover:text-red-400 p-1"
-                              title="Delete rule"
-                              aria-label={`Delete geo rule for ${getCountryName(rule.country)}`}
+                              title={t('lwDeleteRule')}
+                              aria-label={`${t('lwDeleteRule')}: ${getCountryName(rule.country)}`}
                             >
                               <span className="material-symbols-outlined text-lg" aria-hidden="true">delete</span>
                             </button>
@@ -1308,13 +1315,13 @@ export default function LinkWizardOnePerPage({
                       className="w-full flex items-center justify-center gap-2 p-4 rounded-xl border-2 border-dashed border-slate-200 text-[#1b1b1b] hover:border-[#135bec] hover:text-[#1b1b1b] transition-all"
                     >
                       <span className="material-symbols-outlined" aria-hidden="true">add</span>
-                      Add geo rule
+                      {t('lwAddGeoRule')}
                     </button>
                   ) : (
                     <div className="p-4 bg-white border-2 border-slate-200 rounded-2xl space-y-4">
                       <div>
                         <label htmlFor="geo-country" className="text-xs font-bold text-gray-500 uppercase block mb-2">
-                          If Country is
+                          {t('lwIfCountryIs')}
                         </label>
                         <select
                           id="geo-country"
@@ -1325,7 +1332,7 @@ export default function LinkWizardOnePerPage({
                           aria-describedby={geoRuleErrors.country ? 'geo-country-error' : undefined}
                           className="w-full bg-white border border-slate-200 rounded-xl p-4 text-[#1b1b1b] outline-none focus:border-[#135bec]"
                         >
-                          <option value="">Select...</option>
+                          <option value="">{t('lwSelectEllipsis')}</option>
                           {countriesData.map((c) => (
                             <option key={c.code} value={c.code}>
                               {c.name}
@@ -1340,12 +1347,13 @@ export default function LinkWizardOnePerPage({
                       </div>
                       <div>
                         <label htmlFor="geo-url" className="text-xs font-bold text-gray-500 uppercase block mb-2">
-                          Then go to URL
+                          {t('lwThenGoToUrl')}
                         </label>
                         <input
                           id="geo-url"
                           ref={geoThenUrlInputRef}
                           type="url"
+                          dir="ltr"
                           value={newGeoRule.url}
                           onChange={(e) => setNewGeoRule((r) => ({ ...r, url: e.target.value.toLowerCase() }))}
                           placeholder="https://..."
@@ -1370,14 +1378,14 @@ export default function LinkWizardOnePerPage({
                           }}
                           className="flex-1 py-3 rounded-xl font-bold bg-slate-200 text-[#1b1b1b]"
                         >
-                          Cancel
+                          {t('dashCancel')}
                         </button>
                         <button
                           type="button"
                           onClick={addGeoRule}
                           className="flex-1 py-3 rounded-xl font-bold bg-[#10b981] text-[#1b1b1b]"
                         >
-                          {editingGeoIndex != null ? 'Update Rule' : 'Add Rule'}
+                          {editingGeoIndex != null ? t('lwUpdateRule') : t('lwAddRule')}
                         </button>
                       </div>
                     </div>
@@ -1390,13 +1398,13 @@ export default function LinkWizardOnePerPage({
                 <div className="flex flex-col min-h-0 flex-1">
                   {(formData.domain || 'glynk.to') === 'glynk.to' ? (
                     <p className="text-slate-600 text-[2rem] leading-relaxed">
-                      CAPI is available only when using a custom domain.
+                      {t('lwCapiCustomDomainOnly')}
                     </p>
                   ) : loadingPixels ? (
-                    <p className="text-[#1b1b1b]">Loading CAPI...</p>
+                    <p className="text-[#1b1b1b]">{t('lwLoadingCapi')}</p>
                   ) : availablePixels.length === 0 ? (
                     <p className="text-slate-500 text-sm">
-                      No CAPI profiles yet. Add one in CAPI Manager.
+                      {t('lwNoCapiYet')}
                     </p>
                   ) : (
                     <div
@@ -1423,7 +1431,7 @@ export default function LinkWizardOnePerPage({
                           >
                             <div className="flex items-center gap-4">
                               <div aria-hidden="true">{getPlatformLogo(pixel.platform)}</div>
-                              <div className="text-left">
+                              <div className="text-start">
                                 <div className="font-bold text-[#1b1b1b]">{pixel.name}</div>
                                 <div className="text-[10px] text-gray-500 uppercase">{name}</div>
                               </div>
@@ -1454,29 +1462,29 @@ export default function LinkWizardOnePerPage({
             >
               <div>
                 <span className="text-[10px] font-black text-gray-500 tracking-widest uppercase">
-                  Step {totalSteps} of {totalSteps}
+                  {t('lwStepOf').replace('{n}', String(totalSteps)).replace('{total}', String(totalSteps))}
                 </span>
               </div>
               <div className="w-20 h-20 bg-[#10b981]/20 text-[#10b981] rounded-full flex items-center justify-center mx-auto border-4 border-[#10b981]/10" aria-hidden="true">
                 <span className="material-symbols-outlined text-4xl">check</span>
               </div>
               <h1 className="text-3xl sm:text-4xl font-extrabold text-[#1b1b1b]">
-                Final <span className="text-[#10b981]">Launch</span>
+                {t('lwStepReviewTitle')} <span className="text-[#10b981]">{t('lwStepReviewHighlight')}</span>
               </h1>
               <p className="text-gray-500 font-medium text-2xl">
-                Review your GoodLink configuration below.
+                {t('lwReviewSubtitle')}
               </p>
 
-              <div className="bg-white border border-slate-200 rounded-2xl p-6 space-y-4 text-left">
+              <div className="bg-white border border-slate-200 rounded-2xl p-6 space-y-4 text-start">
                 <div className="flex justify-between items-center border-b border-slate-200 pb-3">
                   <span className="text-gray-500 text-[10px] font-bold uppercase tracking-widest">
-                    Link Name
+                    {t('lwLinkName')}
                   </span>
                   <span className="font-bold text-[#1b1b1b]">{formData.name || '—'}</span>
                 </div>
                 <div className="flex justify-between items-center border-b border-slate-200 pb-3">
                   <span className="text-gray-500 text-[10px] font-bold uppercase tracking-widest">
-                    Short Link
+                    {t('dashShortLink')}
                   </span>
                   <span className="font-bold text-[#a855f7] break-all">
                     https://{selectedDomain}/{formData.slug || '—'}
@@ -1484,7 +1492,7 @@ export default function LinkWizardOnePerPage({
                 </div>
                 <div className="flex justify-between items-center border-b border-slate-200 pb-3">
                   <span className="text-gray-500 text-[10px] font-bold uppercase tracking-widest">
-                    Destination
+                    {t('lwDestination')}
                   </span>
                   <span
                     className="text-xs text-gray-500 truncate max-w-[180px]"
@@ -1495,58 +1503,58 @@ export default function LinkWizardOnePerPage({
                 </div>
                 <div className="flex justify-between items-center border-b border-slate-200 pb-3">
                   <span className="text-gray-500 text-[10px] font-bold uppercase tracking-widest">
-                    Access Mode
+                    {t('lwAccessMode')}
                   </span>
                   <span className="font-bold text-[#1b1b1b] text-xs uppercase">
                     {(formData.accessMode || 'direct') === 'controlled'
-                      ? 'Access Control & Limits'
-                      : 'Direct Access'}
+                      ? t('lwAccessControl')
+                      : t('lwDirectAccess')}
                   </span>
                 </div>
                 <div className="flex justify-between items-center border-b border-slate-200 pb-3">
                   <span className="text-gray-500 text-[10px] font-bold uppercase tracking-widest">
-                    Bot Action
+                    {t('lwBotAction')}
                   </span>
                   <span className="font-bold text-yellow-700 text-xs uppercase">
                     {formData.botAction === 'redirect'
-                      ? 'Redirect'
+                      ? t('lwBotRedirect')
                       : formData.botAction === 'block'
-                        ? 'Block'
-                        : 'Allow'}
+                        ? t('lwBotBlock')
+                        : t('lwBotAllow')}
                   </span>
                 </div>
                 {(formData.accessMode || 'direct') === 'controlled' && (
                   <div className="flex justify-between items-center border-b border-slate-200 pb-3">
                     <span className="text-gray-500 text-[10px] font-bold uppercase tracking-widest">
-                      Access Rules
+                      {t('lwAccessRules')}
                     </span>
-                    <span className="font-bold text-[#135bec] text-xs text-right max-w-[180px]">
+                    <span className="font-bold text-[#135bec] text-xs text-end max-w-[180px]">
                       {[
-                        formData.enablePasswordProtection ? 'Password' : null,
-                        formData.enableClickLimit ? 'Click Limit' : null,
-                        formData.enableTimeLimit ? 'Time Limit' : null,
+                        formData.enablePasswordProtection ? t('lwPassword') : null,
+                        formData.enableClickLimit ? t('lwClickLimit') : null,
+                        formData.enableTimeLimit ? t('lwTimeLimit') : null,
                       ]
                         .filter(Boolean)
-                        .join(' + ') || 'None'}
+                        .join(' + ') || t('lwNone')}
                     </span>
                   </div>
                 )}
                 <div className="flex justify-between items-center border-b border-slate-200 pb-3">
                   <span className="text-gray-500 text-[10px] font-bold uppercase tracking-widest">
-                    Geo Rules
+                    {t('lwGeoRules')}
                   </span>
                   <span className="font-bold text-orange-700 text-xs">
-                    {(formData.geoRules || []).length} rule(s)
+                    {t('lwRulesCount').replace('{n}', String((formData.geoRules || []).length))}
                   </span>
                 </div>
                 <div className="flex justify-between items-center pb-1">
                   <span className="text-gray-500 text-[10px] font-bold uppercase tracking-widest">
-                    Tracking
+                    {t('lwTracking')}
                   </span>
-                  <span className="font-bold text-purple-700 text-xs text-right max-w-[180px]">
+                  <span className="font-bold text-purple-700 text-xs text-end max-w-[180px]">
                     {(formData.selectedPixels || []).length
-                      ? `${formData.selectedPixels.length} CAPI profile(s)`
-                      : 'None'}
+                      ? t('lwCapiProfilesCount').replace('{n}', String(formData.selectedPixels.length))
+                      : t('lwNone')}
                   </span>
                 </div>
 
@@ -1554,12 +1562,12 @@ export default function LinkWizardOnePerPage({
                 {formData.slug && (
                   <div className="border-t border-slate-200 pt-4 mt-4">
                     <span className="text-gray-500 text-[10px] font-bold uppercase tracking-widest block mb-3">
-                      QR Code
+                      {t('lwQrCode')}
                     </span>
                     <div className="flex flex-col items-center gap-2">
                       <img
                         src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&bgcolor=FFFFFF&data=${encodeURIComponent(`https://${selectedDomain}/${formData.slug}`)}`}
-                        alt={`QR Code for https://${selectedDomain}/${formData.slug}`}
+                        alt={`${t('lwQrCode')} - https://${selectedDomain}/${formData.slug}`}
                         className="w-[180px] h-[180px] rounded-xl border border-slate-200 bg-white p-2"
                       />
                     </div>
@@ -1577,12 +1585,12 @@ export default function LinkWizardOnePerPage({
           <button
             type="button"
             onClick={goBack}
-            aria-label="Previous step"
+            aria-label={t('lwPreviousStepAria')}
             className={`flex items-center justify-center p-5 rounded-2xl border border-slate-200 font-bold text-gray-400 hover:bg-slate-200 hover:text-[#1b1b1b] transition-all active:scale-90 ${
               isFirst ? 'invisible' : ''
             }`}
           >
-            <span className="material-symbols-outlined text-2xl" aria-hidden="true">chevron_left</span>
+            <span className={`material-symbols-outlined text-2xl ${flipIcon}`} aria-hidden="true">chevron_left</span>
           </button>
           <button
             type="button"
@@ -1593,12 +1601,15 @@ export default function LinkWizardOnePerPage({
             {isLast && isSubmitting ? (
               <>
                 <span className="material-symbols-outlined text-2xl animate-spin" aria-hidden="true">refresh</span>
-                <span>Saving...</span>
+                <span>{t('lwSaving')}</span>
               </>
             ) : (
               <>
-                <span>{isLast ? 'Complete Setup' : 'Next Step'}</span>
-                <span className="material-symbols-outlined text-2xl" aria-hidden="true">
+                <span>{isLast ? t('lwCompleteSetup') : t('lwNextStep')}</span>
+                <span
+                  className={`material-symbols-outlined text-2xl ${!isLast ? flipIcon : ''}`}
+                  aria-hidden="true"
+                >
                   {isLast ? 'rocket_launch' : 'arrow_forward'}
                 </span>
               </>
