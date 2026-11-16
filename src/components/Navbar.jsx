@@ -25,7 +25,7 @@ const Navbar = () => {
   const location = useLocation();
   const hamburgerRef = useRef(null);
   const mobileMenuRef = useRef(null);
-  const { t } = useLanguage();
+  const { t, language, setLanguage } = useLanguage();
 
   useEffect(() => {
     // Get initial user
@@ -156,6 +156,15 @@ const Navbar = () => {
         </nav>
 
         <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setLanguage(language === 'he' ? 'en' : 'he')}
+            aria-label={t('languageSwitcher')}
+            className="flex min-w-[44px] cursor-pointer items-center justify-center rounded-lg h-10 px-3 text-[#1b1b1b] text-sm font-bold leading-normal tracking-[0.015em] hover:bg-black/5 transition-colors"
+          >
+            {language === 'he' ? t('switchToEnglish') : t('switchToHebrew')}
+          </button>
+
           {/* Action Buttons - Hidden on mobile, shown in menu */}
           <div className="hidden sm:flex items-center gap-2">
             {user ? (

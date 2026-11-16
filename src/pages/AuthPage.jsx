@@ -9,6 +9,10 @@ import { TermsContent } from './TermsPage';
 import { PrivacyContent } from './PrivacyPage';
 import { useLanguage } from '../i18n/LanguageContext';
 
+// Password (email/password) auth temporarily disabled — Google only.
+// Set to true to re-enable email/password signup, login, and forgot-password.
+const PASSWORD_AUTH_ENABLED = false;
+
 const AuthPage = () => {
   const { t, language } = useLanguage();
   const [searchParams] = useSearchParams();
@@ -45,6 +49,13 @@ const AuthPage = () => {
   useEffect(() => {
     if (typeof window !== 'undefined') {
       window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
+    }
+  }, [view]);
+
+  // Password auth disabled: never stay on forgot-password view
+  useEffect(() => {
+    if (!PASSWORD_AUTH_ENABLED && view === 'forgot-password') {
+      setView('login');
     }
   }, [view]);
 
@@ -325,6 +336,8 @@ const AuthPage = () => {
   // When Turnstile token is ready and auto-submit is requested, complete signup automatically
   useEffect(() => {
     const runAutoSubmit = async () => {
+      // Password auth disabled — Google only
+      if (!PASSWORD_AUTH_ENABLED) return;
       if (
         view !== 'signup' ||
         !shouldRenderTurnstile ||
@@ -435,6 +448,8 @@ const AuthPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    // Password auth disabled — Google only
+    if (!PASSWORD_AUTH_ENABLED) return;
     setLoading(true);
     setError(null);
     setMessage(null);
@@ -747,6 +762,8 @@ const AuthPage = () => {
                   </div>
                 )}
 
+                {/* Password auth disabled — Google only. Set PASSWORD_AUTH_ENABLED = true to restore. */}
+                {PASSWORD_AUTH_ENABLED && (
                 <form onSubmit={handleSubmit} className="flex flex-col gap-4">
                   <div className="flex flex-col gap-2">
                     <label htmlFor="login-email" className="text-sm font-bold text-[#1b1b1b] ms-1">{t('authEmailLabel')}</label>
@@ -807,7 +824,9 @@ const AuthPage = () => {
                     {loading ? t('authSigningIn') : t('authSignIn')}
                   </button>
                 </form>
+                )}
 
+                {PASSWORD_AUTH_ENABLED && (
                 <div className="relative flex items-center justify-center my-2">
                   <div className="absolute inset-0 flex items-center">
                     <div className="w-full border-t border-slate-200"></div>
@@ -816,6 +835,7 @@ const AuthPage = () => {
                     {t('authOrContinueWith')}
                   </span>
                 </div>
+                )}
 
                 <button
                   onClick={handleGoogleLogin}
@@ -886,6 +906,8 @@ const AuthPage = () => {
                   </div>
                 )}
 
+                {/* Password auth disabled — Google only. Set PASSWORD_AUTH_ENABLED = true to restore. */}
+                {PASSWORD_AUTH_ENABLED && (
                 <form onSubmit={handleSubmit} className="flex flex-col gap-4">
                   <div className="flex flex-col gap-2">
                     <label htmlFor="signup-name" className="text-sm font-bold text-[#1b1b1b] ms-1">{t('authFullNameLabel')}</label>
@@ -1015,7 +1037,9 @@ const AuthPage = () => {
                     {loading ? t('authCreatingAccount') : t('authCreateAccount')}
                   </button>
                 </form>
+                )}
 
+                {PASSWORD_AUTH_ENABLED && (
                 <div className="relative flex items-center justify-center my-2">
                   <div className="absolute inset-0 flex items-center">
                     <div className="w-full border-t border-slate-200"></div>
@@ -1024,6 +1048,7 @@ const AuthPage = () => {
                     {t('authOrJoinWith')}
                   </span>
                 </div>
+                )}
 
                 <button
                   onClick={handleGoogleLogin}
@@ -1068,7 +1093,8 @@ const AuthPage = () => {
               </motion.div>
             )}
 
-            {view === 'forgot-password' && (
+            {/* Password auth disabled — Google only. Set PASSWORD_AUTH_ENABLED = true to restore. */}
+            {PASSWORD_AUTH_ENABLED && view === 'forgot-password' && (
               <motion.div
                 key="forgot"
                 initial={{ opacity: 0, y: 10 }}
