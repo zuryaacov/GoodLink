@@ -11,6 +11,19 @@ import { logAxiomInBackground } from "./services/axiomLogger";
 
 // --- Utility Functions ---
 
+/**
+ * Browsers send non-ASCII path segments percent-encoded (e.g. /%D7%99%D7%A2%D7%A7%D7%91).
+ * Links are stored in the DB as decoded Unicode (יעקב). Always decode before slug lookup.
+ */
+function decodePathname(pathname) {
+    const raw = String(pathname || "");
+    try {
+        return decodeURIComponent(raw);
+    } catch {
+        return raw;
+    }
+}
+
 function getGlynk404Page() {
     return `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>404 - Link Not Found</title><style>
@@ -952,7 +965,8 @@ export default Sentry.withSentry(
     {
         async fetch(request, env, ctx) {
             const url = new URL(request.url);
-            const path = url.pathname.toLowerCase();
+            // Decode percent-encoded Unicode slugs (Hebrew etc.) before routing / DB lookup
+            const path = decodePathname(url.pathname).toLowerCase();
             const domain = url.hostname.replace(/^www\./, '');
             const requestStartMs = Date.now();
 
